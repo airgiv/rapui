@@ -213,6 +213,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       </span>
     );
 
+  /* The pill-shaped layers inside the button (hover fill, loading stripes).
+     Inside a FormStack the pill we see is the stack's paint blob, and
+     hovering or focusing it swells that blob by 1.012 × 1.02 (focus
+     1.035 × 1.08 — keep in step with FormStack's blobStyle); the layers
+     swell with it on the same spring, or the rim would come out ~3px at the
+     round ends and ~1px at the top and bottom. And the goo's threshold
+     (blur 9, alpha × 22 − 9) lays a straight edge ~2px outside the geometry
+     but a round end only ~1px, so in a stack the layers are also 1px taller
+     each way: 2.5px of rim all round. */
+  const layer = cn(
+    "absolute -z-1 inset-x-0 rounded-pill pointer-events-none",
+    stack ? "-inset-y-px group-hover/btn:[scale:1.012_1.02] group-focus/btn:[scale:1.035_1.08]" : "inset-y-0",
+  );
+
   return (
     <button
       ref={ref}
@@ -241,37 +255,38 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
           every frame it is the pill again, one step smaller, and at rest
           on hover its edge sits the 1.5px border in all round. (It was a
           circle 1.5× the width rising from below: mid-flood it showed as
-          a lens, far from the round ends and close to the top and bottom.)
-          Inside a FormStack the pill we see is the stack's paint blob, and
-          hovering or focusing it swells that blob by 1.012 × 1.02 (focus
-          1.035 × 1.08 — keep in step with FormStack's blobStyle); the fill
-          swells with it on the same spring, or the rim would come out
-          ~3px at the round ends and ~1px at the top and bottom. And the
-          goo's threshold (blur 9, alpha × 22 − 9) lays a straight edge ~2px
-          outside the geometry but a round end only ~1px, so in a stack the
-          fill is also 1px taller each way: 2.5px of rim all round. */}
+          a lens, far from the round ends and close to the top and bottom.) */}
       <span
         aria-hidden
         data-slot="button-fill"
         className={cn(
-          "absolute -z-1 inset-x-0 rounded-pill bg-(--btn-blob) pointer-events-none",
-          stack ? "-inset-y-px" : "inset-y-0",
+          layer,
+          "bg-(--btn-blob)",
           "[clip-path:inset(calc(var(--btn-h)/2)_round_9999px)] group-hover/btn:[clip-path:inset(0_round_9999px)]",
           "[transition:clip-path_var(--rap-dur-slow)_var(--rap-ease-out),scale_420ms_var(--rap-ease-spring)]",
-          stack && "group-hover/btn:[scale:1.012_1.02] group-focus/btn:[scale:1.035_1.08]",
         )}
       />
-      {/* loading: diagonal stripes run across the pill, a barber pole for "working" */}
-      {state === "loading" && (
-        <span
-          aria-hidden
-          className={cn(
-            "absolute inset-0 -z-1 rounded-[inherit] overflow-hidden pointer-events-none opacity-100",
-            "bg-[repeating-linear-gradient(-45deg,transparent_0_14px,color-mix(in_srgb,var(--btn-fg)_16%,transparent)_14px_28px)] [background-size:40px_40px]",
-            "fun:animate-stripes",
-          )}
-        />
-      )}
+      {/* loading: diagonal stripes run across the pill, a barber pole for
+          "working". They sit on exactly the fill's geometry — same box, same
+          swell in a stack — so they too are a concentric pill with one inset
+          all round. (They were a plain inset-0 box: in a stack, pressing the
+          button focuses it and its blob swells 1.035 × 1.08, which left the
+          stripes ~11px short of the round ends but only ~4.5px short of the
+          top and bottom.) The layer is always in the tree and only shown
+          while loading: mounted on the press it appeared already swollen
+          while the blob was still springing up to its focus swell, and
+          poked ~9px past the round ends for the first frames. */}
+      <span
+        aria-hidden
+        data-slot="button-stripes"
+        className={cn(
+          layer,
+          "overflow-hidden [transition:scale_420ms_var(--rap-ease-spring)]",
+          state === "loading"
+            ? "bg-[repeating-linear-gradient(-45deg,transparent_0_14px,color-mix(in_srgb,var(--btn-fg)_16%,transparent)_14px_28px)] [background-size:40px_40px] fun:animate-stripes"
+            : "invisible",
+        )}
+      />
       {label}
       {hasIcon && (
         <span

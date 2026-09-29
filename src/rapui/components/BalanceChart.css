@@ -106,7 +106,10 @@
      looked clipped rather than rounded — which is why 26 is
      the Corner knob's default rather than its middle. */
   border-radius: var(--bal-r, 26px);
-  background: var(--fill-slab, rgba(var(--ink-rgb), 0.035));
+  /* rap/ui: the card's own ground is the sheet's white. Bencho tinted it 3.5%
+     ink, which is what the pull reveals — but at rest that tint showed as a grey
+     strip under the sheet (the 8px squash room), a band nobody could explain. */
+  background: var(--fill-slab, var(--card));
   overflow: hidden;
   font-family: var(--font-ui);
   /* ── the card grows with the pull ─────────────────────────

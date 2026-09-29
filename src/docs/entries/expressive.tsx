@@ -44,7 +44,7 @@ const ICON_GRID = "grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-tile 
 const ICON_CELL =
   "flex flex-col items-center justify-center gap-2 h-[92px] rounded-[18px] bg-paper text-ink [&>span]:max-w-[88px] [&>span]:text-[0.6875rem] [&>span]:text-mute [&>span]:truncate";
 
-const COLORS = ["acid", "flame", "blue", "plum", "bubble", "sky", "ink", "paper"] as const;
+const COLORS = ["acid", "flame", "blue", "plum", "bubble", "sky", "green", "ink", "paper"] as const;
 const SHAPES = [
   "pill",
   "label",
@@ -352,7 +352,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     name: "Sticker",
     group: "Expressive",
     description:
-      "A printed vinyl sticker in fifteen crisp cut shapes — pill, label, punched price tag, perforated stamp, speech bubble, arch, the hot-drop burst, a scalloped seal with running text — in every accent colour plus ink and paper. Flat print by default; opt in to a paper finish (shadow and rim light), grain or a white die-cut border. Delight: hover one and its outline morphs as the tilt flips (the circle ruffles into a scallop, the burst puffs its lobes); a label peels its corner back; slap lands it with a thump.",
+      "A printed vinyl sticker in fifteen crisp cut shapes — pill, label, punched price tag, perforated stamp, speech bubble, arch, the hot-drop burst, a scalloped seal with running text — in every accent colour plus green, ink and paper. Flat print by default; opt in to a paper finish (shadow and rim light), grain or a white die-cut border. Delight: hover one and its outline morphs as the tilt flips (the circle ruffles into a scallop, the burst puffs its lobes); a label peels its corner back; slap lands it with a thump.",
     controls: stickerControls,
     Demo: StickerFromProps,
     code: (p) => {
@@ -441,7 +441,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
             <Sticker shape="label" color="paper" size="1.4rem" rotate={-3}>
               peel me
             </Sticker>
-            <Sticker shape="pill" color="ink" dot size="1.4rem" rotate={3}>
+            <Sticker shape="pill" color="green" dot size="1.4rem" rotate={3}>
               live
             </Sticker>
             <Sticker shape="heart" color="flame" diecut size="1rem" rotate={8} className="w-28">
@@ -453,7 +453,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
 <Sticker shape="stamp" color="plum" grain airmail>air mail</Sticker>
 <Sticker color="acid" paper>on paper</Sticker>  {/* shadow + rim light */}
 <Sticker shape="label" color="paper">peel me</Sticker>  {/* hover="peel" by default */}
-<Sticker color="ink" dot>live</Sticker>`,
+<Sticker color="green" dot>live</Sticker>`,
       },
     ],
   },

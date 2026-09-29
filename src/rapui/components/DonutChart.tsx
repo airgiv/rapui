@@ -55,11 +55,13 @@ import { ChartCard, ChartDelta, ChartFigure } from "./ChartKit";
 import "./DonutChart.css";
 
 /* Tones are rap/ui tokens, never hex, so both themes answer. The default order
-   leads with ink (the Readymag move: the biggest share is the plainest), then
+   leads with a soft grey (the biggest share is the plainest — but solid ink on a
+   16px ring was the loudest thing on the page, so it is the muted ink now), then
    the blue/orange signal pair, then the two pastels, and plum last because it
    is the one with the least contrast on the dark card. */
 const TONES = {
   ink: "text-ink",
+  grey: "text-ink/30",
   blue: "text-blue",
   flame: "text-flame",
   sky: "text-sky",
@@ -70,7 +72,7 @@ const TONES = {
   mute: "text-mute",
 } as const;
 export type DonutTone = keyof typeof TONES;
-const ORDER: DonutTone[] = ["ink", "blue", "flame", "sky", "bubble", "plum"];
+const ORDER: DonutTone[] = ["grey", "blue", "flame", "sky", "bubble", "plum"];
 
 export interface DonutDatum {
   label: string;
