@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TimeScrubber } from "../../rapui";
 import { ElasticSlider, Knob, ScrubNumber, TimeWheel, WheelPicker } from "../../rapui/groups/scrubbers";
-import { Eye, Minus, Moon, Plus, RefreshCw, Sun, Volume1, Volume2 } from "../../rapui/icons";
+import { Eye, Moon, RefreshCw, Sun, Volume1, Volume2 } from "../../rapui/icons";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
 
