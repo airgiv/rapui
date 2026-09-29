@@ -13,8 +13,9 @@ import { entries as chartsB } from "./entries/charts-b";
 import { entries as galleries } from "./entries/galleries";
 import { entries as players } from "./entries/players";
 import { entries as tools } from "./entries/tools";
+import { entries as patterns } from "./entries/patterns";
 
 /** Every documented component, sorted by sidebar group then name. */
-export const ENTRIES: DocEntry[] = [...actions, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...charts, ...chartsA, ...chartsB, ...galleries, ...players, ...tools, ...navigation, ...expressive].sort(
+export const ENTRIES: DocEntry[] = [...actions, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...charts, ...chartsA, ...chartsB, ...galleries, ...players, ...tools, ...patterns, ...navigation, ...expressive].sort(
   (a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || a.name.localeCompare(b.name),
 );

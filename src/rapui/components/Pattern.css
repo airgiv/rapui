@@ -1,0 +1,27 @@
+/* Pattern — the spotlight mask and the drift, which utilities cannot say.
+
+   The spotlight: the lit copy of the pattern shows only inside a soft circle
+   at the pointer (--rap-px / --rap-py, written by Pattern.tsx on the parent's
+   pointermove), and fades in and out with --rap-pon as the pointer enters and
+   leaves. Its colour is --rap-pattern-spot, ink by default.
+
+   The drift: the mask slides one cell down and across, linearly, forever. The
+   mask position of a faded pattern has two layers; only the first (the cell)
+   moves. Calm / reduced motion: still. */
+@layer theme, base, components, utilities;
+
+.rap-pattern-spot {
+  color: var(--rap-pattern-spot, var(--rap-ink));
+  opacity: calc(var(--rap-pon, 0) * 0.9);
+  transition: opacity 300ms var(--rap-ease-out);
+  mask-image: radial-gradient(circle 9rem at var(--rap-px, -20rem) var(--rap-py, -20rem), #000 0%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle 9rem at var(--rap-px, -20rem) var(--rap-py, -20rem), #000 0%, transparent 100%);
+}
+
+@keyframes rap-pattern-drift {
+  from { mask-position: 0 0, center; -webkit-mask-position: 0 0, center; }
+  to { mask-position: var(--rap-pattern-size) var(--rap-pattern-size), center; -webkit-mask-position: var(--rap-pattern-size) var(--rap-pattern-size), center; }
+}
+.rap-pattern-drift { animation: rap-pattern-drift 6s linear infinite; }
+[data-rap-motion="calm"] .rap-pattern-drift { animation: none; }
+@media (prefers-reduced-motion: reduce) { .rap-pattern-drift { animation: none; } }
