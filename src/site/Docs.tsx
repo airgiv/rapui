@@ -230,7 +230,7 @@ export function Docs({
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    document.title = `${entry.name} · rap/ui`;
+    document.title = `${entry.name} · rapui`;
   }, [entry]);
 
   return (
