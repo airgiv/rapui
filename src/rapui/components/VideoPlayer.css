@@ -1,0 +1,15 @@
+/* VideoPlayer — the one keyframe utilities cannot say: the progress line,
+   let go, squishes like a rubber band dropped on the desk — fat (×2.2),
+   thin (×0.55), a hair fat (×1.2), rest — over 480ms on --rap-ease-out.
+   Scale on the Y axis only, from the centre, so the line keeps its length
+   and the playhead does not move. Played behind the `fun:` variant in
+   VideoPlayer.tsx, so calm and reduced motion never see it. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-vp-squish {
+  0% { scale: 1 1; }
+  22% { scale: 1 2.2; }
+  48% { scale: 1 0.55; }
+  72% { scale: 1 1.2; }
+  100% { scale: 1 1; }
+}
