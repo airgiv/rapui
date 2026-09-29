@@ -17,8 +17,12 @@
    Scoped to .bar-well (the component's root) so nothing leaks.
 
      --ink        glyphs, wedge         → --rap-ink
-     --pane       the rail's glass      → --rap-paper-2 (white surface)
-                                           at 80%: see below
+     --pane       the rail's surface    → --rap-paper-2, solid white:
+                                           rap/ui is flat. Under
+                                           [data-surface="glass"] it
+                                           becomes 60% white, Bencho's
+                                           own recipe, so the frost
+                                           has something to show.
      --pane-edge  the Stroke hairline   → --rap-line
      --inlay      a tool under hover    → --rap-paper-3, the same
                                            recessed grey rap/ui's
@@ -48,15 +52,11 @@
 
    --g-shadow is deliberately NOT defined: it is read as
    var(--g-shadow, <the whole recipe>), so it is an override
-   hook, and setting it would throw the recipe away.
-
-   --pane at 80% rather than the 60% the comment says: on
-   rap/ui's #f5f5f5 ground a 60% white rail is barely a
-   different colour from the page. */
+   hook, and setting it would throw the recipe away. */
 .bar-well {
   --ink: var(--rap-ink);
   --ink-rgb: 40, 40, 40;
-  --pane: color-mix(in srgb, var(--rap-paper-2) 80%, transparent);
+  --pane: var(--rap-paper-2);
   --pane-edge: var(--rap-line);
   --inlay: var(--rap-paper-3);
   --pick: var(--rap-blue);
@@ -72,6 +72,9 @@
   --g-edge-far: 0.35;
   --g-spec: 0.6;
   --g-lift: 0.12;}
+
+[data-surface="glass"] .bar-well {
+  --pane: color-mix(in srgb, var(--rap-paper-2) 60%, transparent);}
 
 [data-rap-theme="dark"] .bar-well {
   --ink-rgb: 245, 245, 245;

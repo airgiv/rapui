@@ -37,10 +37,10 @@
 .rap-biglink__meta {
   margin-left: auto;
   align-self: center;
-  font-family: var(--rap-font-mono);
-  font-size: var(--rap-size-small);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-family: var(--rap-font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--rap-mute);
   transition: color var(--rap-dur) var(--rap-ease-rm);
 }

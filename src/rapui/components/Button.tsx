@@ -1,10 +1,10 @@
-import { forwardRef, useImperativeHandle, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { forwardRef, useImperativeHandle, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
 import { useMagnetic } from "../hooks/useMagnetic";
 import { cx } from "../utils";
 import { RollText } from "./RollText";
 import "./Button.css";
 
-export type ButtonVariant = "solid" | "accent" | "blue" | "outline" | "ghost" | "acid";
+export type ButtonVariant = "solid" | "accent" | "blue" | "soft" | "outline" | "ghost" | "acid";
 export type ButtonSize = "sm" | "md" | "lg" | "xl";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -79,5 +79,26 @@ export function CircleButton({ size = 160, variant = "accent", className, childr
       <span className="rap-cbtn__fill" aria-hidden />
       <span className="rap-cbtn__label">{children ?? <Arrow />}</span>
     </button>
+  );
+}
+
+export interface ButtonGroupProps extends HTMLAttributes<HTMLDivElement> {
+  /** Stack vertically instead of in a row. */
+  vertical?: boolean;
+  /** Stretch the buttons to share the full width equally. */
+  fill?: boolean;
+}
+
+/**
+ * Buttons packed edge to edge with a 2px seam, the way Readymag lays out
+ * its actions: a group reads as one object rather than a row of loose pills.
+ */
+export function ButtonGroup({ vertical = false, fill = false, className, ...rest }: ButtonGroupProps) {
+  return (
+    <div
+      role="group"
+      className={cx("rap-btn-group", vertical && "rap-btn-group--vertical", fill && "rap-btn-group--fill", className)}
+      {...rest}
+    />
   );
 }

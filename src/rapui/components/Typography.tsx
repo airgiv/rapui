@@ -20,12 +20,17 @@ export function Display({ as = "h2", size = "xl", tight = true, className, ...re
   });
 }
 
-/** Italic serif accent — drop inside a Display for the editorial mix. */
-export function Serif({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cx("rap-serif", className)} {...rest} />;
+export type AccentTone = "flame" | "blue" | "plum" | "mute";
+
+/**
+ * Same face, different colour — how rap/ui marks the word that matters.
+ * `mute` gives the two-tone grey/ink headline Readymag uses a lot.
+ */
+export function Accent({ className, tone = "flame", ...rest }: HTMLAttributes<HTMLSpanElement> & { tone?: AccentTone }) {
+  return <span className={cx("rap-accent", `rap-accent--${tone}`, className)} {...rest} />;
 }
 
-/** Tiny mono label with a live dot. */
+/** Small label with a live dot. */
 export function Eyebrow({ className, dot = true, children, ...rest }: HTMLAttributes<HTMLSpanElement> & { dot?: boolean }) {
   return (
     <span className={cx("rap-eyebrow", className)} {...rest}>

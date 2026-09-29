@@ -21,7 +21,7 @@
 }
 .rap-rbadge:hover .rap-rbadge__ring { animation-duration: calc(var(--rap-rb-dur) / 4); }
 .rap-rbadge__ring text {
-  font-family: var(--rap-font-mono);
+  font-family: var(--rap-font-sans);
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;

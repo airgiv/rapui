@@ -26,11 +26,10 @@
   --rap-accent: var(--rap-flame);
   --rap-accent-ink: #ffffff;
 
-  /* type */
-  --rap-font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-serif: "Instrument Serif", "Times New Roman", serif;
-  --rap-font-sans: "Inter Tight Variable", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  /* type — one family does everything; mono is for code only */
+  --rap-font-display: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
 
   /* fluid scale */
   --rap-size-mega: clamp(3.5rem, 13vw, 15rem);
@@ -40,6 +39,10 @@
   --rap-size-md: clamp(1.25rem, 2vw, 1.75rem);
   --rap-size-body: clamp(1rem, 1.1vw, 1.125rem);
   --rap-size-small: 0.8125rem;
+
+  /* spacing — Readymag packs controls edge to edge */
+  --rap-gap-tight: 2px;
+  --rap-gap-tile: 4px;
 
   /* shape */
   --rap-radius-xs: 6px;

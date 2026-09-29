@@ -1,6 +1,7 @@
 /* Adapted from Bencho — https://bencho.dev — MIT licence,
    see bencho.dev/licence. Renamed Toolbar → CanvasToolbar;
-   the one behavioural change is noted at `Btn` below. The
+   the behavioural change is noted at `Btn` below, the default
+   corner at BAR_CORNER. The
    tokens its CSS reads are mapped onto rap/ui's in
    CanvasToolbar.css. */
 import { useState } from "react";
@@ -52,7 +53,11 @@ const TAIL = [
    rule that makes a corner hug what is inside it. So the knob
    sets the RAIL and the tools follow, and there is no setting
    where a square rail holds rounded tools. */
-const BAR_CORNER = 15;
+/* rap/ui: 23, from 15 — half the rail's height (38px slot +
+   4px pad each side = 46), so the rail is a full pill and the
+   38px tools inside it (23 − 4 = 19) are circles. Readymag's
+   controls are round, and the concentric rule above still holds. */
+const BAR_CORNER = 23;
 const BAR_MAX = 25;
 
 /* ── hoisted out of the component (rap/ui change) ───────────

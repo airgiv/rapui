@@ -1,6 +1,6 @@
 # rap/ui
 
-A fancy, airy, editorial React component kit. It looks like Readymag: cool grey paper, white cards, soft ink, and an orange + blue signal pair. The type is set huge, the air generous, the buttons unusual, and a lot of it moves.
+A fancy but clean React component kit in the spirit of Readymag: cool grey paper, white cards, soft ink, an orange + blue signal pair, one typeface set big, round shapes, and controls packed edge to edge.
 
 ## Run the preview site
 
@@ -13,14 +13,17 @@ npm run dev        # http://localhost:5173
 
 ```tsx
 import "rapui/styles.css";
-import "rapui/fonts"; // Bricolage Grotesque, Instrument Serif, Inter Tight, JetBrains Mono
+import "rapui/fonts"; // Onest (+ Geist Mono for code)
 
-import { Button, Display, Serif, Cursor } from "rapui";
+import { Button, ButtonGroup, Display, Accent, Cursor } from "rapui";
 
 <div className="rap-root">
   <Cursor />
-  <Display size="mega">Loud <Serif>interfaces</Serif></Display>
-  <Button size="xl" variant="blue" icon magnetic>Start a project</Button>
+  <Display size="mega">Loud <Accent>interfaces</Accent></Display>
+  <ButtonGroup>
+    <Button size="lg" variant="blue" icon>Start a project</Button>
+    <Button size="lg" variant="soft">Pricing</Button>
+  </ButtonGroup>
 </div>
 ```
 
@@ -30,13 +33,13 @@ import { Button, Display, Serif, Cursor } from "rapui";
 
 | Group | Components |
 | --- | --- |
-| Type | `Display` (md → mega), `Serif`, `Eyebrow`, `Lead`, `Highlight`, `RollText`, `SplitReveal` |
-| Actions | `Button` (solid / accent / blue / acid / outline / ghost), `CircleButton`, `BigLink`, `Magnetic` |
+| Type | `Display` (md → mega), `Accent`, `Eyebrow`, `Lead`, `Highlight`, `RollText`, `SplitReveal` |
+| Actions | `Button` (solid / accent / blue / soft / acid / outline / ghost), `ButtonGroup`, `CircleButton`, `BigLink`, `Magnetic` |
 | Surfaces | `FeatureCard`, `TiltCard`, `Sticker`, `RotatingBadge`, `Marquee` |
 | Inputs | `Field`, `Switch`, `Tabs`, `Accordion`, `Checklist`, `CanvasToolbar` |
 | Ambient | `Counter`, `Cursor`, `Grain` |
 
-Tokens live in `src/rapui/styles/tokens.css`. That file holds the colours (`--rap-paper`, `--rap-ink`, `--rap-flame #EC520B`, `--rap-blue #0582FF`, `--rap-plum`, `--rap-acid`…), fluid type sizes, radii and Readymag's `cubic-bezier(.4,.24,.4,1)` easing. For dark mode, set `data-rap-theme="dark"` on `<html>`.
+Tokens live in `src/rapui/styles/tokens.css`. That file holds the colours (`--rap-paper`, `--rap-ink`, `--rap-flame #EC520B`, `--rap-blue #0582FF`, `--rap-plum`, `--rap-acid`…), fluid type sizes, radii, the 2px / 4px gaps between controls and tiles, and Readymag's `cubic-bezier(.4,.24,.4,1)` easing. For dark mode, set `data-rap-theme="dark"` on `<html>`.
 
 ## Layout
 

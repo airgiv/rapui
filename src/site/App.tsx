@@ -1,10 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import {
+  Accent,
   Accordion,
   CanvasToolbar,
   Checklist,
   BigLink,
   Button,
+  ButtonGroup,
   CircleButton,
   Counter,
   Cursor,
@@ -12,14 +14,12 @@ import {
   Eyebrow,
   FeatureCard,
   Field,
-  Grain,
   Highlight,
   Lead,
   Magnetic,
   Marquee,
   RollText,
   RotatingBadge,
-  Serif,
   SplitReveal,
   Sticker,
   Switch,
@@ -34,7 +34,7 @@ function Header({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => voi
   return (
     <header className="site-header">
       <a href="#top" className="site-logo" data-rap-cursor="Home">
-        rap<Serif>/</Serif>ui
+        rap<Accent>/</Accent>ui
         <Sticker color="acid" rotate={-10} size="0.55rem" className="site-logo__tag">
           v0.1
         </Sticker>
@@ -72,9 +72,9 @@ function Hero() {
           </Sticker>
         </span>
         <span className="hero__line hero__line--indent">
-          <Serif>
+          <Accent>
             <SplitReveal delay={250}>interfaces,</SplitReveal>
-          </Serif>
+          </Accent>
         </span>
         <span className="hero__line">
           <SplitReveal by="char" stagger={35} delay={400}>zero</SplitReveal>{" "}
@@ -90,14 +90,14 @@ function Hero() {
           rap/ui is a <Highlight>fancy, airy, editorial</Highlight> component kit — huge type, unusual buttons and motion
           that makes people scroll back up.
         </Lead>
-        <div className="hero__actions">
-          <Button size="lg" variant="blue" icon magnetic onClick={() => document.getElementById("components")?.scrollIntoView({ behavior: "smooth" })}>
+        <ButtonGroup className="hero__actions">
+          <Button size="lg" variant="blue" icon onClick={() => document.getElementById("components")?.scrollIntoView({ behavior: "smooth" })}>
             Browse components
           </Button>
-          <Button size="lg" variant="outline" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
+          <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
             npm i rapui
           </Button>
-        </div>
+        </ButtonGroup>
         <RotatingBadge className="hero__badge" text="scroll ✳ to ✳ explore ✳ rap/ui ✳ " size={150} center={<span className="hero__down">↓</span>} />
       </div>
     </section>
@@ -117,9 +117,9 @@ function Bands() {
         ))}
       </Marquee>
       <Marquee className="band band--ink" rotate={1.8} duration={36} reverse gap="2.5rem">
-        {NAMES.map((n, i) => (
-          <span className="band__word band__word--serif" key={n}>
-            {i % 2 ? <Serif>{n}</Serif> : n} <span className="band__dot" />
+        {NAMES.map((n) => (
+          <span className="band__word" key={n}>
+            {n} <span className="band__dot" />
           </span>
         ))}
       </Marquee>
@@ -150,7 +150,7 @@ function Showcase({
   n,
   id,
   title,
-  serif,
+  sub,
   desc,
   code,
   children,
@@ -159,7 +159,7 @@ function Showcase({
   n: number;
   id: string;
   title: string;
-  serif?: string;
+  sub?: string;
   desc: ReactNode;
   code: string;
   children: ReactNode;
@@ -170,7 +170,7 @@ function Showcase({
       <div className="show__head">
         <span className="show__num">{String(n).padStart(2, "0")}</span>
         <Display size="xl" className="show__title">
-          <SplitReveal>{title}</SplitReveal> {serif && <Serif>{serif}</Serif>}
+          <SplitReveal>{title}</SplitReveal> {sub && <Accent tone="mute">{sub}</Accent>}
         </Display>
         <p className="show__desc">{desc}</p>
       </div>
@@ -218,7 +218,7 @@ function Components() {
       <div className="components__intro">
         <Eyebrow>The kit</Eyebrow>
         <Display size="xxl">
-          Every piece <Serif>performs</Serif>
+          Every piece <Accent tone="mute">performs</Accent>
         </Display>
         <div className="index">
           {[
@@ -252,40 +252,49 @@ function Components() {
         n={1}
         id="buttons"
         title="Buttons"
-        serif="with nerve"
-        desc="Pills with a colour blob that swells from below, letters that roll, an arrow bubble that spins. Five variants, four sizes, optional magnetic pull."
-        code={`import { Button } from "rapui";
+        sub="with nerve"
+        desc="Pills with a colour blob that swells from below, letters that roll, an arrow bubble that spins. Seven variants, four sizes. Group them with ButtonGroup and they sit edge to edge, 2px apart, like on Readymag."
+        code={`import { Button, ButtonGroup } from "rapui";
 
 <Button size="xl" variant="solid" icon magnetic>Start a project</Button>
-<Button size="lg" variant="accent" icon>Accent</Button>
-<Button size="lg" variant="acid">Acid</Button>
-<Button size="lg" variant="outline" icon>Outline</Button>
+// buttons in a group sit edge to edge with a 2px seam
+<ButtonGroup>
+  <Button size="lg" variant="blue" icon>Blue</Button>
+  <Button size="lg" variant="accent">Accent</Button>
+  <Button size="lg" variant="soft">Soft</Button>
+</ButtonGroup>
 <Button variant="ghost" icon>Read the manifesto</Button>`}
       >
         <div className="demo-wrap">
           <Button size="xl" icon magnetic>
             Start a project
           </Button>
-          <div className="demo-row">
-            <Button size="lg" variant="accent" icon>
+          <ButtonGroup>
+            <Button size="lg" variant="blue" icon>
+              Blue
+            </Button>
+            <Button size="lg" variant="accent">
               Accent
+            </Button>
+            <Button size="lg" variant="soft">
+              Soft
             </Button>
             <Button size="lg" variant="acid">
               Acid
             </Button>
-            <Button size="lg" variant="outline" icon>
-              Outline
-            </Button>
-          </div>
-          <div className="demo-row">
+          </ButtonGroup>
+          <ButtonGroup>
             <Button size="sm">Small</Button>
-            <Button size="md" variant="outline">
+            <Button size="md" variant="soft">
               Medium
             </Button>
-            <Button variant="ghost" icon>
-              Read the manifesto
+            <Button size="md" variant="outline">
+              Outline
             </Button>
-          </div>
+          </ButtonGroup>
+          <Button variant="ghost" icon>
+            Read the manifesto
+          </Button>
         </div>
       </Showcase>
 
@@ -293,7 +302,7 @@ function Components() {
         n={2}
         id="circle"
         title="Circle"
-        serif="CTA"
+        sub="CTA"
         desc="A round, magnetic call-to-action. Ink floods in from the centre on hover. Put a word, an arrow or both."
         code={`import { CircleButton } from "rapui";
 
@@ -317,7 +326,7 @@ function Components() {
         n={3}
         id="biglink"
         title="Big"
-        serif="links"
+        sub="links"
         desc="Headline-sized text links straight from the Readymag playbook: the word turns orange, an arrow slides in, the meta caption follows. Stack them into a menu or a project index."
         code={`import { BigLink } from "rapui";
 
@@ -337,7 +346,7 @@ function Components() {
         n={4}
         id="feature"
         title="Feature"
-        serif="cards"
+        sub="cards"
         desc="Airy tiles with a big media slot, a short bold title and a whisper-small caption. Media zooms on hover, the card lifts. Seven tones."
         code={`import { FeatureCard } from "rapui";
 
@@ -352,7 +361,7 @@ function Components() {
           <FeatureCard title="Built-in animations" tone="blue" media={<span className="demo-emoji">↻</span>}>
             Craft engaging storytelling and interactive experiences
           </FeatureCard>
-          <FeatureCard title="Advanced typography" tone="grey" media={<span className="demo-emoji demo-emoji--serif">Aa</span>}>
+          <FeatureCard title="Advanced typography" tone="grey" media={<span className="demo-emoji">Aa</span>}>
             Enhance design aesthetics and readability
           </FeatureCard>
           <FeatureCard title="Collaboration" tone="flame" media={<span className="demo-emoji">☺</span>}>
@@ -365,23 +374,23 @@ function Components() {
         n={5}
         id="type"
         title="Typography"
-        serif="that shouts"
+        sub="that shouts"
         desc={
           <>
-            Bricolage Grotesque for display (medium weight, tight tracking), Instrument Serif italic for accents, Inter Tight for text, JetBrains Mono for labels. Fluid
+            One family, Onest, for everything: medium weight and tight tracking for headlines, plain for text. Accent words change colour, not font. Fluid
             <code> clamp()</code> sizes from <em>md</em> to <em>mega</em>.
           </>
         }
-        code={`import { Display, Serif, Eyebrow, Lead, Highlight } from "rapui";
+        code={`import { Display, Accent, Eyebrow, Lead, Highlight } from "rapui";
 
 <Eyebrow>Chapter one</Eyebrow>
-<Display size="xxl">Make it <Serif>unforgettable</Serif></Display>
+<Display size="xxl">Make it <Accent>unforgettable</Accent></Display>
 <Lead>Big type, lots of air, and a <Highlight>highlighter</Highlight> swipe.</Lead>`}
       >
         <div className="demo-type">
           <Eyebrow>Chapter one</Eyebrow>
           <Display size="xxl">
-            Make it <Serif>unforgettable</Serif>
+            Make it <Accent>unforgettable</Accent>
           </Display>
           <Lead>
             Big type, lots of air, and a <Highlight>highlighter</Highlight> swipe — or a <Highlight color="bubble">pink</Highlight> one, or{" "}
@@ -401,25 +410,25 @@ function Components() {
         n={6}
         id="marquee"
         title="Marquee"
-        serif="forever"
+        sub="forever"
         desc="Seamless infinite ticker. Tilt it, reverse it, stack two in opposite directions. Pauses on hover."
         stageClass="show__stage--bleed"
-        code={`import { Marquee, Serif } from "rapui";
+        code={`import { Marquee, Accent } from "rapui";
 
 <Marquee rotate={-3} duration={20}>
-  <span>Available for work</span> <Serif>✳</Serif>
+  <span>Available for work</span> <Accent tone="mute">✳</Accent>
 </Marquee>`}
       >
         <div className="demo-marquees">
           <Marquee rotate={-3} duration={18} className="demo-mq demo-mq--flame">
             <span>Available for work</span>
-            <Serif>✳</Serif>
+            <span>✳</span>
           </Marquee>
           <Marquee rotate={2} duration={24} reverse className="demo-mq demo-mq--line">
             <Sticker color="acid" rotate={-6}>fresh</Sticker>
             <span>Motion</span>
             <Sticker color="bubble" shape="circle" rotate={8}>hi!</Sticker>
-            <Serif>editorial</Serif>
+            <Accent tone="blue">editorial</Accent>
           </Marquee>
         </div>
       </Showcase>
@@ -428,7 +437,7 @@ function Components() {
         n={7}
         id="stickers"
         title="Stickers"
-        serif="& tags"
+        sub="& tags"
         desc="Rotated labels that wobble when you touch them. Pill, circle, tag, star and spinning burst — in every accent."
         code={`import { Sticker } from "rapui";
 
@@ -469,7 +478,7 @@ function Components() {
         n={8}
         id="badge"
         title="Rotating"
-        serif="badge"
+        sub="badge"
         desc="Running circular text around anything. Spins faster when hovered. Great as a scroll hint or a stamp on a card."
         code={`import { RotatingBadge } from "rapui";
 
@@ -488,7 +497,7 @@ function Components() {
         n={9}
         id="reveal"
         title="Split"
-        serif="reveal"
+        sub="reveal"
         desc="Words (or letters) rise from behind a mask as the block scrolls into view. Pure CSS transitions, IntersectionObserver trigger."
         code={`import { SplitReveal, Display } from "rapui";
 
@@ -504,7 +513,7 @@ function Components() {
         n={10}
         id="tilt"
         title="Tilt"
-        serif="cards"
+        sub="cards"
         desc="Cards that lean toward your cursor in 3D with a soft spotlight glow. Six tones."
         code={`import { TiltCard, Display } from "rapui";
 
@@ -524,7 +533,7 @@ function Components() {
             <div className="demo-card">
               <span className="demo-card__k">Case 02</span>
               <Display size="lg">
-                Motion <Serif>system</Serif>
+                Motion system
               </Display>
               <span className="demo-card__f">Product — 2025</span>
             </div>
@@ -543,7 +552,7 @@ function Components() {
         n={11}
         id="field"
         title="Field"
-        serif="giant"
+        sub="giant"
         desc="Oversized underline input. The italic label floats into a mono caption, the accent line draws itself on focus."
         code={`import { Field } from "rapui";
 
@@ -557,7 +566,7 @@ function Components() {
         n={12}
         id="switch"
         title="Switch"
-        serif="chunky"
+        sub="chunky"
         desc="A fat toggle with a springy knob that stretches while you press it. Tiny on/off words inside."
         code={`import { Switch } from "rapui";
 
@@ -571,7 +580,7 @@ function Components() {
         n={13}
         id="tabs"
         title="Tabs"
-        serif="gooey"
+        sub="gooey"
         desc="Pill tabs with an indicator that springs between options. Arrow-key navigation, panels blur in. (These preview/code switches use it too.)"
         code={`import { Tabs } from "rapui";
 
@@ -584,7 +593,7 @@ function Components() {
         <Tabs
           items={[
             { value: "all", label: "All work", content: <Lead>Everything we made this year — 42 projects, 3 awards, 0 regrets.</Lead> },
-            { value: "brand", label: "Branding", content: <Lead>Logos, systems, and a lot of <Serif>very</Serif> big type.</Lead> },
+            { value: "brand", label: "Branding", content: <Lead>Logos, systems, and a lot of very big type.</Lead> },
             { value: "web", label: "Web", content: <Lead>Sites that scroll like magazines and click like toys.</Lead> },
             { value: "motion", label: "Motion", content: <Lead>Things that move, on purpose.</Lead> },
           ]}
@@ -595,7 +604,7 @@ function Components() {
         n={14}
         id="accordion"
         title="Accordion"
-        serif="editorial"
+        sub="editorial"
         desc="Big numbered rows. A colour swipe on hover, a plus that turns into a cross, smooth height via grid-rows."
         code={`import { Accordion } from "rapui";
 
@@ -619,7 +628,7 @@ function Components() {
         n={15}
         id="counter"
         title="Counter"
-        serif="count up"
+        sub="count up"
         desc="Numbers that tick up with an exponential ease once visible. Prefix, suffix, decimals."
         code={`import { Counter, Display } from "rapui";
 
@@ -645,7 +654,7 @@ function Components() {
         n={16}
         id="cursor"
         title="Cursor"
-        serif="& magnetic"
+        sub="& magnetic"
         desc={
           <>
             A trailing blend-mode cursor that grows over interactive things and shows a label over anything with{" "}
@@ -667,7 +676,7 @@ function Components() {
             Hover me
           </div>
           <div className="demo-hover demo-hover--blue" data-rap-cursor="View">
-            <Serif>and me</Serif>
+            and me
           </div>
           <Magnetic strength={0.6}>
             <Sticker shape="circle" color="acid" size="1.8rem" rotate={-8}>
@@ -684,7 +693,7 @@ function Components() {
         id="checklist"
         stageClass="show__stage--ground"
         title="Checklist"
-        serif="one spring"
+        sub="one spring"
         desc={
           <>
             From Bencho (MIT). Fill, tick, strike-through and fading ink are all read off one spring per row. Tick the last task and
@@ -706,7 +715,7 @@ function Components() {
         n={18}
         id="toolbar"
         title="Canvas"
-        serif="toolbar"
+        sub="toolbar"
         desc={
           <>
             From Bencho (MIT). A floating tool rail that remembers your last shape. The selected tool gets a blue pad that scales in.
@@ -742,12 +751,12 @@ function RevealDemo() {
       <Display size="xl">
         <SplitReveal>Every word earns its entrance</SplitReveal>
       </Display>
-      <Display size="lg" className="demo-reveal__serif">
-        <Serif>
+      <Display size="lg">
+        <Accent tone="mute">
           <SplitReveal by="char" stagger={30} delay={500}>letter by letter by letter</SplitReveal>
-        </Serif>
+        </Accent>
       </Display>
-      <Button size="sm" variant="outline" onClick={() => setK((x) => x + 1)}>
+      <Button size="sm" variant="soft" onClick={() => setK((x) => x + 1)}>
         Replay
       </Button>
     </div>
@@ -770,7 +779,7 @@ function Tokens() {
     <section className="tokens" id="tokens">
       <Eyebrow>Tokens</Eyebrow>
       <Display size="xxl">
-        Grey paper, soft ink & <Serif>six loud friends</Serif>
+        Grey paper, soft ink <Accent tone="mute">& six loud friends</Accent>
       </Display>
       <div className="swatches">
         {SWATCHES.map((s) => (
@@ -789,18 +798,18 @@ function Tokens() {
 
       <div className="specimens">
         <div className="specimen">
-          <span className="specimen__k">Display — Bricolage Grotesque</span>
-          <span className="specimen__big specimen__big--display">Aa</span>
-          <span className="specimen__abc">ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789</span>
+          <span className="specimen__k">Onest — headlines, 450, −4.5% tracking</span>
+          <span className="specimen__big specimen__big--display">Aa Бб</span>
+          <span className="specimen__abc">ABCDEFGHIJKLMNOPQRSTUVWXYZ АБВГДЕЖЗИЙКЛМН 0123456789</span>
         </div>
         <div className="specimen">
-          <span className="specimen__k">Accent — Instrument Serif Italic</span>
-          <span className="specimen__big specimen__big--serif">Aa</span>
-          <span className="specimen__abc specimen__abc--serif">abcdefghijklmnopqrstuvwxyz &amp; ✳</span>
+          <span className="specimen__k">Onest — interface, 400–600</span>
+          <span className="specimen__big specimen__big--sans">Aa Бб</span>
+          <span className="specimen__abc specimen__abc--sans">The quick brown fox · Съешь же ещё этих мягких булок</span>
         </div>
         <div className="specimen">
-          <span className="specimen__k">Text — Inter Tight · Mono — JetBrains</span>
-          <span className="specimen__big specimen__big--sans">Aa</span>
+          <span className="specimen__k">Geist Mono — code only</span>
+          <span className="specimen__big specimen__big--mono">{"{}"}</span>
           <span className="specimen__abc specimen__abc--mono">const nerve = true; // 0123</span>
         </div>
       </div>
@@ -815,14 +824,14 @@ function Install() {
         <div>
           <Eyebrow>Install</Eyebrow>
           <Display size="xxl">
-            Two lines <Serif>and you’re loud</Serif>
+            Two lines <Accent tone="mute">and you’re loud</Accent>
           </Display>
         </div>
         <div className="install__steps">
           <Code>{`npm install rapui`}</Code>
           <Code>{`// main.tsx
 import "rapui/styles.css";
-import "rapui/fonts"; // optional: Bricolage Grotesque, Instrument Serif, Inter Tight
+import "rapui/fonts"; // optional: Onest + Geist Mono
 
 import { Button, Cursor } from "rapui";
 
@@ -845,7 +854,7 @@ function Footer() {
     <footer className="footer">
       <div className="footer__cta">
         <Display size="xxl">
-          Got an idea<Serif>?</Serif>
+          Got an idea<Accent>?</Accent>
         </Display>
         <CircleButton size={180} variant="accent">
           Say
@@ -854,7 +863,7 @@ function Footer() {
         </CircleButton>
       </div>
       <div className="footer__giant" aria-hidden>
-        rap<Serif>/</Serif>ui
+        rap<Accent>/</Accent>ui
       </div>
       <div className="footer__bottom">
         <span>© 2026 rap/ui — MIT</span>
@@ -878,7 +887,6 @@ export function App() {
   return (
     <div className="rap-root site">
       <Cursor />
-      <Grain opacity={dark ? 0.06 : 0.09} />
       <Header dark={dark} setDark={setDark} />
       <main>
         <Hero />

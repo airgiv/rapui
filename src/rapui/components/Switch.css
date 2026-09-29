@@ -41,7 +41,7 @@
 .rap-switch__text {
   position: absolute;
   top: 50%;
-  font-family: var(--rap-font-mono);
+  font-family: var(--rap-font-sans);
   font-size: calc(var(--sw-h) * 0.3);
   font-weight: 600;
   text-transform: uppercase;

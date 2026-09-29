@@ -5,11 +5,11 @@ export { cx } from "./utils";
 export { useInView } from "./hooks/useInView";
 export { useMagnetic } from "./hooks/useMagnetic";
 
-export { Display, Serif, Eyebrow, Lead, Highlight } from "./components/Typography";
-export type { DisplayProps } from "./components/Typography";
+export { Display, Accent, Eyebrow, Lead, Highlight } from "./components/Typography";
+export type { DisplayProps, AccentTone } from "./components/Typography";
 export { RollText } from "./components/RollText";
-export { Button, CircleButton, Arrow } from "./components/Button";
-export type { ButtonProps, ButtonVariant, ButtonSize, CircleButtonProps } from "./components/Button";
+export { Button, ButtonGroup, CircleButton, Arrow } from "./components/Button";
+export type { ButtonProps, ButtonGroupProps, ButtonVariant, ButtonSize, CircleButtonProps } from "./components/Button";
 export { Magnetic } from "./components/Magnetic";
 export { Marquee } from "./components/Marquee";
 export { SplitReveal } from "./components/SplitReveal";

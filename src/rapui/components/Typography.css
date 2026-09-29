@@ -13,23 +13,18 @@
 .rap-display--lg { font-size: var(--rap-size-lg); line-height: 1; }
 .rap-display--md { font-size: var(--rap-size-md); line-height: 1.1; letter-spacing: -0.02em; }
 
-.rap-serif {
-  font-family: var(--rap-font-serif);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  /* serif sits optically smaller next to the wide display face */
-  font-size: 1.12em;
-}
+.rap-accent { color: var(--rap-flame); }
+.rap-accent--blue { color: var(--rap-blue); }
+.rap-accent--plum { color: var(--rap-plum); }
+.rap-accent--mute { color: var(--rap-mute); }
 
 .rap-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.6em;
-  font-family: var(--rap-font-mono);
-  font-size: var(--rap-size-small);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--rap-ink);
 }
 .rap-eyebrow__dot {

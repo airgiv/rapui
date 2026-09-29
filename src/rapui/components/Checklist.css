@@ -17,6 +17,11 @@
    the CSS below builds `rgba(var(--ink-rgb), 0.16)` and that is
    the legacy comma syntax.
 
+   --chk-mark is rap/ui's own addition: the colour the box fills
+   with. rap/ui's signal blue, so a ticked box reads as the same
+   "chosen" state as the Canvas toolbar's selected tool. The tick
+   is still drawn in the card colour on top of it.
+
    --fill-slab / --fill-on / --fill-on-rgb are Bencho's per-card
    "Fill" override; rap/ui has no such control, so they alias
    the card and ink here. Override them on a wrapper
@@ -29,7 +34,8 @@
   --pane-edge: var(--rap-line);
   --fill-slab: var(--card);
   --fill-on: var(--ink);
-  --fill-on-rgb: var(--ink-rgb);}
+  --fill-on-rgb: var(--ink-rgb);
+  --chk-mark: var(--rap-blue);}
 
 [data-rap-theme="dark"] .chk {
   --ink-rgb: 245, 245, 245;}
@@ -219,7 +225,7 @@
 .chk-fill {
   position: absolute;
   inset: 0;
-  background: var(--fill-on, var(--ink));
+  background: var(--chk-mark, var(--fill-on, var(--ink)));
   /* from the middle out — an origin at a corner would read as
      a panel sliding in rather than as the box filling */
   transform-origin: center;}

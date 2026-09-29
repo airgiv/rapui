@@ -28,7 +28,7 @@
 }
 .rap-acc__head:hover::before { transform: scaleY(1); }
 .rap-acc__head:hover { color: var(--rap-flame); }
-.rap-acc__num { font-family: var(--rap-font-mono); font-size: var(--rap-size-small); opacity: 0.6; }
+.rap-acc__num { font-size: 0.875rem; font-weight: 500; color: var(--rap-mute); font-variant-numeric: tabular-nums; }
 .rap-acc__title {
   font-family: var(--rap-font-display);
   font-weight: 500;
@@ -38,7 +38,7 @@
   transition: transform var(--rap-dur) var(--rap-ease-out);
 }
 .rap-acc__head:hover .rap-acc__title { transform: translateX(0.6rem); }
-.rap-acc__meta { font-family: var(--rap-font-serif); font-style: italic; font-size: var(--rap-size-md); }
+.rap-acc__meta { font-size: 0.875rem; font-weight: 500; color: var(--rap-mute); }
 .rap-acc__icon {
   position: relative;
   width: 2.5rem;

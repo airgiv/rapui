@@ -84,6 +84,8 @@
 /* variants */
 .rap-btn--accent { --btn-bg: var(--rap-accent); --btn-fg: var(--rap-accent-ink); --btn-blob: var(--rap-ink); --btn-blob-fg: var(--rap-paper); }
 .rap-btn--blue { --btn-bg: var(--rap-blue); --btn-fg: #fff; --btn-blob: var(--rap-ink); --btn-blob-fg: var(--rap-paper); }
+.rap-btn--soft { --btn-bg: var(--rap-paper-3); --btn-fg: var(--rap-ink); --btn-blob: var(--rap-ink); --btn-blob-fg: var(--rap-paper); }
+.rap-btn--soft .rap-btn__icon { background: var(--rap-paper-2); color: var(--rap-ink); }
 .rap-btn--acid { --btn-bg: var(--rap-acid); --btn-fg: #282828; --btn-blob: var(--rap-ink); --btn-blob-fg: var(--rap-paper); }
 .rap-btn--outline { --btn-bg: transparent; --btn-fg: var(--rap-ink); --btn-border: var(--rap-ink); --btn-blob: var(--rap-ink); --btn-blob-fg: var(--rap-paper); }
 .rap-btn--outline .rap-btn__icon { background: var(--rap-ink); color: var(--rap-paper); }
@@ -147,3 +149,14 @@
 .rap-cbtn--acid { --c-bg: var(--rap-acid); --c-fg: #282828; --c-fill: var(--rap-ink); --c-fill-fg: var(--rap-paper); }
 .rap-cbtn--blue { --c-bg: var(--rap-blue); --c-fg: #fff; --c-fill: var(--rap-ink); --c-fill-fg: var(--rap-paper); }
 .rap-cbtn--outline { --c-bg: transparent; --c-fg: var(--rap-ink); border-color: var(--rap-ink); }
+
+/* group: edge to edge, 2px seam */
+.rap-btn-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rap-gap-tight);
+}
+.rap-btn-group--vertical { flex-direction: column; align-items: stretch; }
+.rap-btn-group--fill { display: flex; }
+.rap-btn-group--fill > * { flex: 1 1 0; }

@@ -16,7 +16,6 @@
   border-radius: var(--rap-radius-pill);
   transform: rotate(var(--rap-st-rot));
   transition: transform var(--rap-dur) var(--rap-ease-spring);
-  box-shadow: 0 0.12em 0 0 rgb(0 0 0 / 0.14);
 }
 .rap-sticker:hover { transform: rotate(calc(var(--rap-st-rot) * -1)) scale(1.08); }
 

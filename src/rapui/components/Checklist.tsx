@@ -1,7 +1,7 @@
 /* Adapted from Bencho — https://bencho.dev — MIT licence,
-   see bencho.dev/licence. Source kept as published; the only
-   change is the stylesheet import below, and the tokens its
-   CSS reads are mapped onto rap/ui's in Checklist.css. */
+   see bencho.dev/licence. Source kept as published apart from
+   the stylesheet import below and CORNER (see there); the tokens
+   its CSS reads are mapped onto rap/ui's in Checklist.css. */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import "./Checklist.css";
@@ -175,7 +175,10 @@ const ROW = 40;
    half again the cap height of the words it belonged to and
    read as the subject of the row rather than as its switch. */
 const BOX = 18;
-const CORNER = 18;
+/* rap/ui: 28, from 18 — the card corner every rap/ui surface
+   uses (--rap-radius), so the checklist sits in the family of
+   round, Readymag-style cards rather than Bencho's tighter wall. */
+const CORNER = 28;
 const BOUNCE = 50;
 
 /* ── the rule follows the tick, it does not race it ────────
