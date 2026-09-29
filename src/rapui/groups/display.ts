@@ -46,3 +46,5 @@ export { Spinner } from "../components/Spinner";
 export type { SpinnerProps } from "../components/Spinner";
 export { EmptyState } from "../components/EmptyState";
 export type { EmptyStateProps } from "../components/EmptyState";
+export { Pattern, patternStyle } from "../components/Pattern";
+export type { PatternProps, PatternOptions, PatternVariant, PatternFade } from "../components/Pattern";
