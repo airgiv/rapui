@@ -337,7 +337,7 @@ export const entries: DocEntry[] = [
     ${sep}`;
       return `import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator${
         p.collapse ? ", BreadcrumbEllipsis" : ""
-      } } from "rapui";
+      } } from "@rapui/react";
 
 <Breadcrumb${p.size !== "md" ? ` size="${p.size}"` : ""}>
   <BreadcrumbList>
@@ -413,7 +413,7 @@ ${middle}
       );
     },
     code: (p) =>
-      `import { Paginator } from "rapui";
+      `import { Paginator } from "@rapui/react";
 
 const [page, setPage] = useState(1);
 
@@ -524,7 +524,7 @@ const [page, setPage] = useState(1);
       `import {
   NavigationMenu, NavigationMenuCard, NavigationMenuContent, NavigationMenuGrid,
   NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger,
-} from "rapui";
+} from "@rapui/react";
 
 <NavigationMenu${p.size !== "md" ? ` size="${p.size}"` : ""}>
   <NavigationMenuList>
@@ -609,7 +609,7 @@ const [page, setPage] = useState(1);
       );
     },
     code: (p) =>
-      `import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "rapui";
+      `import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "@rapui/react";
 
 <TabsRoot defaultValue="overview"${attrs(p, tabsControls, ["icons"])}>
   <TabsList aria-label="Project">
@@ -655,7 +655,7 @@ const [page, setPage] = useState(1);
       );
     },
     code: (p) =>
-      `import { Stepper } from "rapui";
+      `import { Stepper } from "@rapui/react";
 
 const steps = [
   { title: "Template", description: "Mono portfolio" },
@@ -797,7 +797,7 @@ const steps = [
       `import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader,
   SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger,
-} from "rapui";
+} from "@rapui/react";
 
 // ⌘B / Ctrl+B toggles. The shell fills its parent — give that a height.
 <div style={{ height: "100vh" }}>
@@ -899,7 +899,7 @@ const steps = [
       );
     },
     code: (p) =>
-      `import { ScrollArea } from "rapui";
+      `import { ScrollArea } from "@rapui/react";
 
 <ScrollArea${attrs(p, scrollControls, ["height"])} style={{ height: ${p.height} }}>
   …long content…
@@ -1002,14 +1002,14 @@ const steps = [
     },
     code: (p) =>
       p.orientation === "vertical"
-        ? `import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "rapui";
+        ? `import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@rapui/react";
 
 <ResizablePanelGroup orientation="vertical"${p.variant !== "tiles" ? ` variant="${p.variant}"` : ""}>
   <ResizablePanel defaultSize="68" minSize="30">Canvas</ResizablePanel>
   <ResizableHandle${p.withHandle ? " withHandle" : ""} />
   <ResizablePanel defaultSize="32" minSize="15"${p.collapsible ? ' collapsible collapsedSize="0"' : ""}>Timeline</ResizablePanel>
 </ResizablePanelGroup>`
-        : `import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "rapui";
+        : `import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@rapui/react";
 
 // numbers = pixels, strings = percent ("22") or units ("160px", "12rem")
 <ResizablePanelGroup${p.variant !== "tiles" ? ` variant="${p.variant}"` : ""}>
@@ -1060,7 +1060,7 @@ const steps = [
       );
     },
     code: (p) =>
-      `import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "rapui";
+      `import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@rapui/react";
 
 <Collapsible${attrs(p, collapsibleControls, ["size"])}>
   <CollapsibleTrigger${p.size !== "md" ? ` size="${p.size}"` : ""}><Settings /> Advanced export settings</CollapsibleTrigger>
@@ -1156,7 +1156,7 @@ const steps = [
       );
     },
     code: (p) =>
-      `import { Carousel, CarouselContent, CarouselDots, CarouselItem, CarouselNext, CarouselPrevious } from "rapui";
+      `import { Carousel, CarouselContent, CarouselDots, CarouselItem, CarouselNext, CarouselPrevious } from "@rapui/react";
 
 <Carousel${p.orientation !== "horizontal" ? ` orientation="${p.orientation}"` : ""}${
         p.loop ? " opts={{ loop: true }}" : ""

@@ -204,7 +204,7 @@ export const entries: DocEntry[] = [
 </FormStack>`,
       },
     ],
-    code: (p) => `import { FormStack, Input, Button } from "rapui";
+    code: (p) => `import { FormStack, Input, Button } from "@rapui/react";
 
 <FormStack state={state} errorIndex={1}${p.liquid ? "" : " liquid={false}"} onSubmit={submit}>
   <Input size="hero" type="email" placeholder="Email" />
@@ -236,7 +236,7 @@ export const entries: DocEntry[] = [
         {String(p.label)}
       </Button>
     ),
-    code: (p) => `import { Button } from "rapui";
+    code: (p) => `import { Button } from "@rapui/react";
 
 <Button${attrs(p, buttonControls, ["label", "size"])}${p.size !== "md" ? ` size="${p.size}"` : ""}>${p.label}</Button>`,
     examples: [
@@ -279,7 +279,7 @@ export const entries: DocEntry[] = [
         </div>
       );
     },
-    code: (p) => `import { Button, ButtonGroup } from "rapui";
+    code: (p) => `import { Button, ButtonGroup } from "@rapui/react";
 
 <ButtonGroup${attrs(p, groupControls, ["size"])}>
   <Button variant="blue" icon>Publish</Button>
@@ -298,7 +298,7 @@ export const entries: DocEntry[] = [
         {p.label ? String(p.label) : undefined}
       </CircleButton>
     ),
-    code: (p) => `import { CircleButton } from "rapui";
+    code: (p) => `import { CircleButton } from "@rapui/react";
 
 <CircleButton${attrs(p, circleControls, ["label"])}${p.label ? `>${p.label}</CircleButton>` : " />"}`,
   },
@@ -317,7 +317,7 @@ export const entries: DocEntry[] = [
         ))}
       </div>
     ),
-    code: (p) => `import { BigLink } from "rapui";
+    code: (p) => `import { BigLink } from "@rapui/react";
 
 <BigLink href="/work"${attrs(p, bigLinkControls)}>Work</BigLink>`,
   },
@@ -341,7 +341,7 @@ export const entries: DocEntry[] = [
         />
       );
     },
-    code: (p) => `import { Switch } from "rapui";
+    code: (p) => `import { Switch } from "@rapui/react";
 
 <Switch checked={on} onCheckedChange={setOn}${attrs(p, switchControls)} />`,
   },
@@ -361,7 +361,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { Field } from "rapui";
+    code: (p) => `import { Field } from "@rapui/react";
 
 <Field${attrs(p, fieldControls)} />`,
   },
@@ -386,7 +386,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { Accordion } from "rapui";
+    code: (p) => `import { Accordion } from "@rapui/react";
 
 <Accordion${attrs(p, accordionControls)} items={[
   { title: "Strategy", meta: "1 week", content: "…" },

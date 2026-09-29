@@ -140,7 +140,7 @@ export const entries: DocEntry[] = [
         </p>
       </div>
     ),
-    code: (p) => `import { Sparkline } from "rapui";
+    code: (p) => `import { Sparkline } from "@rapui/react";
 
 <Sparkline data={[${(SERIES[String(p.series)] ?? SERIES.pages).join(", ")}]}${attrs(p, sparkControls, ["series"])} />`,
     examples: [
@@ -175,7 +175,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { BarsChart } from "rapui";
+    code: (p) => `import { BarsChart } from "@rapui/react";
 
 <BarsChart${attrs(p, barsControls)}
   ranges={[
@@ -204,7 +204,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { DonutChart } from "rapui";
+    code: (p) => `import { DonutChart } from "@rapui/react";
 
 <DonutChart${attrs(p, donutControls)}
   change={3412}

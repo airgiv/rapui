@@ -14,7 +14,7 @@ npm run dev        # http://localhost:5173
 ## Use it
 
 ```bash
-npm i rapui
+npm i @rapui/react
 ```
 
 React 18 or 19. Every runtime dependency (Radix, framer-motion, recharts…) installs with it; the package is split per component, so your bundle only carries what you import.
@@ -22,10 +22,10 @@ React 18 or 19. Every runtime dependency (Radix, framer-motion, recharts…) ins
 **Plain app (no Tailwind needed):**
 
 ```tsx
-import "rapui/styles.css"; // precompiled theme + utilities; resets only inside rapui parts, never your app
-import "rapui/fonts";      // Onest (+ Geist Mono for code)
+import "@rapui/react/styles.css"; // precompiled theme + utilities; resets only inside rapui parts, never your app
+import "@rapui/react/fonts";      // Onest (+ Geist Mono for code)
 
-import { Button, ButtonGroup, Display, Accent, SoundProvider } from "rapui";
+import { Button, ButtonGroup, Display, Accent, SoundProvider } from "@rapui/react";
 
 <SoundProvider enabled={false}>
   <Display size="mega">Loud <Accent>interfaces</Accent></Display>
@@ -42,8 +42,8 @@ Put `className="rap-root"` on `<body>` (or your app's root) for rapui's paper ba
 
 ```css
 @import "tailwindcss";
-@import "rapui/theme.css";          /* tokens → bg-surface, text-ink, rounded-pill, fun:, calm: … */
-@source "../node_modules/rapui/dist";
+@import "@rapui/react/theme.css";          /* tokens → bg-surface, text-ink, rounded-pill, fun:, calm: … */
+@source "../node_modules/@rapui/react/dist";
 ```
 
 Then `bg-surface`, `text-ink`, `rounded-pill`, `h-control`, `ease-rm`, `animate-hop`, `fun:`/`calm:` are available in your own components too.

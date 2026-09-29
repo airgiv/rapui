@@ -65,7 +65,7 @@ export const entries: DocEntry[] = [
         </div>
       );
     },
-    code: (p) => `import { HoldButton } from "rapui";
+    code: (p) => `import { HoldButton } from "@rapui/react";
 
 <HoldButton${attrs(p, holdControls, ["label"])} onConfirm={deleteProject}>
   ${p.label}
@@ -120,7 +120,7 @@ export const entries: DocEntry[] = [
         </div>
       );
     },
-    code: (p) => `import { SlideButton } from "rapui";
+    code: (p) => `import { SlideButton } from "@rapui/react";
 
 <SlideButton${attrs(p, slideControls)} onConfirm={publishSite} />`,
     examples: [
@@ -155,7 +155,7 @@ export const entries: DocEntry[] = [
         </div>
       );
     },
-    code: (p) => `import { ConfirmButton } from "rapui";
+    code: (p) => `import { ConfirmButton } from "@rapui/react";
 
 <ConfirmButton${attrs(p, confirmControls)} onConfirm={deleteWorkspace} />`,
     examples: [

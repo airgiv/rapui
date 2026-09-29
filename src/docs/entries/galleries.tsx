@@ -325,7 +325,7 @@ export const entries: DocEntry[] = [
         </WithLightbox>
       </div>
     ),
-    code: (p) => `import { TiltGallery, Lightbox, useLightbox } from "rapui";
+    code: (p) => `import { TiltGallery, Lightbox, useLightbox } from "@rapui/react";
 
 ${LB_SNIPPET}
 
@@ -356,7 +356,7 @@ ${LB_SNIPPET}
         </WithLightbox>
       </div>
     ),
-    code: (p) => `import { CardStack } from "rapui";
+    code: (p) => `import { CardStack } from "@rapui/react";
 
 <CardStack items={posters} aria-label="Posters"${attrs(p, stackControls)} onOpen={lb.open} />`,
   },
@@ -385,7 +385,7 @@ ${LB_SNIPPET}
         </WithLightbox>
       </div>
     ),
-    code: (p) => `import { WarpStrip } from "rapui";
+    code: (p) => `import { WarpStrip } from "@rapui/react";
 
 <WarpStrip items={posters}${attrs(p, stripControls)} onOpen={lb.open} />`,
     examples: [
@@ -423,7 +423,7 @@ ${LB_SNIPPET}
         </WithLightbox>
       </div>
     ),
-    code: (p) => `import { ShapeGallery } from "rapui";
+    code: (p) => `import { ShapeGallery } from "@rapui/react";
 
 // shape per item is optional: "circle" | "pill" | "arch" | "blob" | "flower" | "rect"
 <ShapeGallery items={posters}${attrs(p, shapeControls)} onOpen={lb.open} />`,
@@ -442,7 +442,7 @@ ${LB_SNIPPET}
         </WithLightbox>
       </div>
     ),
-    code: (p) => `import { FanGallery } from "rapui";
+    code: (p) => `import { FanGallery } from "@rapui/react";
 
 <FanGallery items={posters}${attrs(p, fanControls)} onOpen={lb.open} />`,
   },
@@ -478,7 +478,7 @@ ${LB_SNIPPET}
         </div>
       );
     },
-    code: (p) => `import { Lightbox, useLightbox } from "rapui";
+    code: (p) => `import { Lightbox, useLightbox } from "@rapui/react";
 
 const lb = useLightbox();
 

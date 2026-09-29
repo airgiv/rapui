@@ -84,7 +84,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { AudioPlayer } from "rapui";
+    code: (p) => `import { AudioPlayer } from "@rapui/react";
 
 <AudioPlayer src="/media/grid-lines.wav"${attrs(p, audioControls, ["speeds"])}${p.speeds ? "" : " rates={[]}"} />`,
     examples: [
@@ -113,7 +113,7 @@ export const entries: DocEntry[] = [
         <Playlist tracks={TRACKS} label={String(p.label) || undefined} loop={Boolean(p.loop)} />
       </div>
     ),
-    code: (p) => `import { Playlist } from "rapui";
+    code: (p) => `import { Playlist } from "@rapui/react";
 
 const tracks = [
   { src: "/media/grid-lines.wav", title: "Grid Lines", artist: "The Baseline Club" },
@@ -144,7 +144,7 @@ const tracks = [
         />
       </div>
     ),
-    code: (p) => `import { VideoPlayer } from "rapui";
+    code: (p) => `import { VideoPlayer } from "@rapui/react";
 ${
       p.chapters
         ? `
@@ -175,7 +175,7 @@ const chapters = [
         </div>
       </div>
     ),
-    code: (p) => `import { VoiceNote } from "rapui";
+    code: (p) => `import { VoiceNote } from "@rapui/react";
 
 <VoiceNote src="/media/voice-note.wav"${attrs(p, voiceControls, ["speeds"])}${p.speeds ? "" : " rates={[]}"} />`,
   },

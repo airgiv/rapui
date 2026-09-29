@@ -1,5 +1,5 @@
 {
-  "name": "rapui",
+  "name": "@rapui/react",
   "version": "0.1.0",
   "description": "A playful React UI kit on Radix + Tailwind v4: the breadth of shadcn/ui, plus hold buttons, liquid forms, charts you scrub and galleries you throw.",
   "keywords": [
@@ -98,5 +98,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

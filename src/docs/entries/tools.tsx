@@ -73,7 +73,7 @@ export const entries: DocEntry[] = [
       "The big tool bar of a canvas editor, at hero-input scale: 60–88px slots with the bespoke editor icons, tool groups, a “+” flyout of widgets, arrow keys and 1–9 to pick. Delight: one pad crawls between tools like a caterpillar and each icon does its own little gesture when you pick it — the ball bounces, the pen scribbles, the sticker peels.",
     controls: toolbarControls,
     Demo: ToolbarPlayground,
-    code: (p) => `import { EditorToolbar } from "rapui";
+    code: (p) => `import { EditorToolbar } from "@rapui/react";
 
 const [tool, setTool] = useState("select");
 
@@ -82,7 +82,7 @@ const [tool, setTool] = useState("select");
       {
         title: "On a canvas: picking a tool changes what lands on the paper",
         Demo: ToolbarDemo,
-        code: `import { EditorToolbar, EDITOR_TOOLS, EDITOR_WIDGETS } from "rapui";
+        code: `import { EditorToolbar, EDITOR_TOOLS, EDITOR_WIDGETS } from "@rapui/react";
 
 <EditorToolbar
   value={tool}
@@ -129,7 +129,7 @@ const [tool, setTool] = useState("select");
     code: (p) => {
       const tone =
         p.tint === "per icon" ? ` tone="var(--rap-acid)"` : p.tint === "none" ? "" : ` tone="var(--rap-${p.tint})"`;
-      return `import { editorIcons, TextIcon } from "rapui";
+      return `import { editorIcons, TextIcon } from "@rapui/react";
 
 <TextIcon${attrs(p, iconControls, ["tint"])}${tone} />
 <editorIcons.animation size={44} />

@@ -291,7 +291,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { Rating } from "rapui";
+      `import { Rating } from "@rapui/react";
 
 <Rating defaultValue={3}${attrs(p, ratingControls, ["color"])}${p.color !== "ink" ? ` className="${RATING_TONE[String(p.color)]}"` : ""} />`,
   },
@@ -317,7 +317,7 @@ export const entries: DocEntry[] = [
       </div>
     ),
     code: (p) =>
-      `import { Input, Label } from "rapui";
+      `import { Input, Label } from "@rapui/react";
 
 <Label htmlFor="email">Email</Label>
 <Input id="email"${attrs(p, inputControls, ["icon"])}${p.icon ? " prefix={<AtSign />}" : ""} />`,
@@ -394,7 +394,7 @@ export const entries: DocEntry[] = [
       </div>
     ),
     code: (p) =>
-      `import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "rapui";
+      `import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@rapui/react";
 
 <Select${p.disabled ? " disabled" : ""}>
   <SelectTrigger${p.size !== "md" ? ` size="${p.size}"` : ""}>
@@ -436,7 +436,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { Checkbox, Label } from "rapui";
+      `import { Checkbox, Label } from "@rapui/react";
 
 <Checkbox id="digest"${p.size !== "md" ? ` size="${p.size}"` : ""}${
         p.state === "indeterminate" ? ' checked="indeterminate"' : p.state === "true" ? " defaultChecked" : ""
@@ -508,7 +508,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { Slider } from "rapui";
+      `import { Slider } from "@rapui/react";
 
 <Slider defaultValue={${p.mode === "range" ? "[20, 70]" : "[40]"}} max={100}${p.step !== 1 ? ` step={${p.step}}` : ""}${
         p.bubble ? " formatValue={(v) => `${v}%`}" : " bubble={false}"
@@ -539,7 +539,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { ToggleGroup, ToggleGroupItem } from "rapui";
+      `import { ToggleGroup, ToggleGroupItem } from "@rapui/react";
 
 <ToggleGroup type="${p.type}" defaultValue=${p.type === "multiple" ? '{["week"]}' : '"week"'}${attrs(p, toggleControls, ["type"])}>
   <ToggleGroupItem value="day">Day</ToggleGroupItem>
@@ -575,7 +575,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { Label, Textarea } from "rapui";
+      `import { Label, Textarea } from "@rapui/react";
 
 <Label htmlFor="about">Project description</Label>
 <Textarea id="about"${attrs(p, textareaControls)} />`,
@@ -633,14 +633,14 @@ export const entries: DocEntry[] = [
     },
     code: (p) =>
       p.variant === "card"
-        ? `import { RadioGroup, RadioGroupItem } from "rapui";
+        ? `import { RadioGroup, RadioGroupItem } from "@rapui/react";
 
 <RadioGroup variant="card" defaultValue="svg"${attrs(p, radioControls, ["variant"])}>
   <RadioGroupItem value="png" label="PNG" description="Raster, transparent background" />
   <RadioGroupItem value="svg" label="SVG" description="Vector, editable in Figma" />
   <RadioGroupItem value="pdf" label="PDF" description="Print-ready, fonts embedded" />
 </RadioGroup>`
-        : `import { Label, RadioGroup, RadioGroupItem } from "rapui";
+        : `import { Label, RadioGroup, RadioGroupItem } from "@rapui/react";
 
 <RadioGroup defaultValue="svg"${attrs(p, radioControls, ["variant"])}>
   <div>
@@ -695,7 +695,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { Toggle } from "rapui";
+      `import { Toggle } from "@rapui/react";
 
 <Toggle defaultPressed${attrs(p, toggleSingleControls, ["content"])} aria-label="Snap to grid">
   ${[p.content !== "text" ? "<Grid3x3 />" : "", p.content !== "icon" ? "Snap to grid" : ""].filter(Boolean).join("\n  ")}
@@ -785,7 +785,7 @@ export const entries: DocEntry[] = [
       const slot = (i: number) => `    <InputOTPSlot index={${i}} />`;
       const group = (a: number, b: number) =>
         `  <InputOTPGroup>\n${Array.from({ length: b - a }, (_, i) => slot(a + i)).join("\n")}\n  </InputOTPGroup>`;
-      return `import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, REGEXP_ONLY_DIGITS } from "rapui";
+      return `import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, REGEXP_ONLY_DIGITS } from "@rapui/react";
 
 <InputOTP maxLength={${len}} pattern={REGEXP_ONLY_DIGITS}${attrs(p, otpControls, ["length", "separator"])}>
 ${p.separator ? `${group(0, half)}\n  <InputOTPSeparator />\n${group(half, len)}` : group(0, len)}
@@ -821,7 +821,7 @@ ${p.separator ? `${group(0, half)}\n  <InputOTPSeparator />\n${group(half, len)}
       );
     },
     code: (p) =>
-      `import { Combobox } from "rapui";
+      `import { Combobox } from "@rapui/react";
 
 const fonts = [
   { value: "onest", label: "Onest" },
@@ -878,7 +878,7 @@ const fonts = [
         !p.showOutsideDays ? " showOutsideDays={false}" : "",
         p.disablePast ? " disabled={{ before: new Date() }}" : "",
       ].join("");
-      return `import { Calendar } from "rapui";
+      return `import { Calendar } from "@rapui/react";
 
 <Calendar mode="${p.mode}" selected={${sel}} onSelect={set${sel[0].toUpperCase()}${sel.slice(1)}}${extra} />`;
     },
@@ -910,7 +910,7 @@ const fonts = [
       );
     },
     code: (p) =>
-      `import { DatePicker } from "rapui";
+      `import { DatePicker } from "@rapui/react";
 
 ${
         p.mode === "range"
@@ -1001,7 +1001,7 @@ ${
       return <div style={{ width: "min(100%, 24rem)" }}>{control}</div>;
     },
     code: (p) =>
-      `import { FormField, Input } from "rapui";
+      `import { FormField, Input } from "@rapui/react";
 
 <FormField label="${p.label}"${p.hint ? ` hint="${p.hint}"` : ""}${p.error ? ` error="${p.error}"` : ""}${p.required ? " required" : ""}>
   ${
@@ -1078,7 +1078,7 @@ ${
       );
     },
     code: (p) =>
-      `import { NumberField } from "rapui";
+      `import { NumberField } from "@rapui/react";
 
 <NumberField defaultValue={24}${attrs(p, numberControls, ["min", "max", "step"])} min={${p.min}} max={${p.max}} step={${p.step}} />`,
     examples: [

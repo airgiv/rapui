@@ -233,7 +233,7 @@
   :root { --rap-playful: 1; }
   [data-rap-motion="calm"] { --rap-playful: 0; }
 
-  /* A scoped reset. `rapui/styles.css` ships without Tailwind's preflight so it never
+  /* A scoped reset. `@rapui/react/styles.css` ships without Tailwind's preflight so it never
      restyles the host app — but the components are drawn assuming it: border-box
      sizing, borderless transparent buttons, no default margins or list bullets, block
      svgs. This gives them exactly that, and only inside rapui parts (every part carries

@@ -251,7 +251,7 @@ export const entries: DocEntry[] = [
         </div>
       );
     },
-    code: (p) => `import { SoundProvider, useSound } from "rapui";
+    code: (p) => `import { SoundProvider, useSound } from "@rapui/react";
 
 // once, around the app (off by default — nothing plays without it)
 <SoundProvider enabled volume={${p.volume}} fun={${p.fun}} haptics>
@@ -281,7 +281,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         ))}
       </div>
     ),
-    code: (p) => `import { Check, ChevronDown, Search } from "rapui/icons"; // or: import { icons } from "rapui"
+    code: (p) => `import { Check, ChevronDown, Search } from "@rapui/react/icons"; // or: import { icons } from "@rapui/react"
 
 <Search${attrs(p, iconControls)} />`,
   },
@@ -303,7 +303,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         float={Boolean(p.float)}
       />
     ),
-    code: (p) => `import { FancyIcon } from "rapui";
+    code: (p) => `import { FancyIcon } from "@rapui/react";
 
 <FancyIcon${attrs(p, fancyControls)} />`,
     examples: [
@@ -341,7 +341,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         </Lead>
       </div>
     ),
-    code: (p) => `import { Display, Accent, Eyebrow, Lead, Highlight } from "rapui";
+    code: (p) => `import { Display, Accent, Eyebrow, Lead, Highlight } from "@rapui/react";
 
 <Eyebrow>Chapter one</Eyebrow>
 <Display size="${p.size}">${p.text} <Accent${p.tone !== "flame" ? ` tone="${p.tone}"` : ""}>${p.accent}</Accent></Display>
@@ -358,7 +358,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     code: (p) => {
       const round = ROUND_SHAPES.includes(String(p.shape));
       const skip = ["label", "spin", ...(round && p.ring ? [] : ["ring"]), ...(p.hover === "auto" ? ["hover"] : [])];
-      return `import { Sticker } from "rapui";
+      return `import { Sticker } from "@rapui/react";
 
 <Sticker${attrs(p, stickerControls, skip)}${spinAttr(p.spin)}>${p.label}</Sticker>`;
     },
@@ -481,7 +481,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         </Marquee>
       </div>
     ),
-    code: (p) => `import { Marquee } from "rapui";
+    code: (p) => `import { Marquee } from "@rapui/react";
 
 <Marquee${attrs(p, marqueeControls)}>
   <span>Available for work</span>
@@ -497,7 +497,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     Demo: ({ p }) => (
       <RotatingBadge text={String(p.text)} color={p.color as "acid"} size={Number(p.size)} duration={Number(p.duration)} />
     ),
-    code: (p) => `import { RotatingBadge } from "rapui";
+    code: (p) => `import { RotatingBadge } from "@rapui/react";
 
 <RotatingBadge${attrs(p, badgeControls)} />`,
   },
@@ -514,7 +514,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         </SplitReveal>
       </Display>
     ),
-    code: (p) => `import { SplitReveal, Display } from "rapui";
+    code: (p) => `import { SplitReveal, Display } from "@rapui/react";
 
 <Display size="xl">
   <SplitReveal${attrs(p, revealControls, ["text"])}>${p.text}</SplitReveal>
@@ -530,7 +530,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         <RollText>Hover this line</RollText>
       </Display>
     ),
-    code: () => `import { RollText } from "rapui";
+    code: () => `import { RollText } from "@rapui/react";
 
 <a className="rap-roll-host" href="/work"><RollText>Work</RollText></a>`,
   },
@@ -551,7 +551,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         </TiltCard>
       </div>
     ),
-    code: (p) => `import { TiltCard } from "rapui";
+    code: (p) => `import { TiltCard } from "@rapui/react";
 
 <TiltCard${attrs(p, tiltControls)}>…</TiltCard>`,
   },
@@ -568,7 +568,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         </FeatureCard>
       </div>
     ),
-    code: (p) => `import { FeatureCard } from "rapui";
+    code: (p) => `import { FeatureCard } from "@rapui/react";
 
 <FeatureCard${attrs(p, featureControls, ["text", "title"])} title="${p.title}" media={<img src="/anim.webp" alt="" />}>
   ${p.text}
@@ -585,7 +585,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         <Counter to={Number(p.to)} suffix={String(p.suffix)} duration={Number(p.duration)} />
       </Display>
     ),
-    code: (p) => `import { Counter, Display } from "rapui";
+    code: (p) => `import { Counter, Display } from "@rapui/react";
 
 <Display size="mega"><Counter${attrs(p, counterControls)} /></Display>`,
   },
@@ -608,7 +608,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         />
       );
     },
-    code: () => `import { Tabs } from "rapui";
+    code: () => `import { Tabs } from "@rapui/react";
 
 <Tabs items={[
   { value: "all", label: "All work", content: <Grid /> },
@@ -628,7 +628,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         </Sticker>
       </Magnetic>
     ),
-    code: (p) => `import { Magnetic } from "rapui";
+    code: (p) => `import { Magnetic } from "@rapui/react";
 
 <Magnetic strength={${p.strength}}>…</Magnetic>`,
   },
@@ -653,7 +653,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         />
       </div>
     ),
-    code: (p) => `import { Checklist } from "rapui";
+    code: (p) => `import { Checklist } from "@rapui/react";
 
 <Checklist${attrs(p, checklistControls)} />`,
     examples: [
@@ -686,7 +686,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
           <CanvasToolbar corner={Number(p.corner)} />
         </div>
       ),
-    code: (p) => `import { CanvasToolbar } from "rapui";
+    code: (p) => `import { CanvasToolbar } from "@rapui/react";
 
 ${p.surface === "glass" ? `<div data-surface="glass">\n  <CanvasToolbar${attrs(p, toolbarControls, ["surface"])} />\n</div>` : `<CanvasToolbar${attrs(p, toolbarControls, ["surface"])} />`}`,
   },

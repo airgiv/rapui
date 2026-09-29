@@ -75,7 +75,7 @@ export const entries: DocEntry[] = [
         <GaugeDemo p={p} />
       </div>
     ),
-    code: (p) => `import { GaugeChart } from "rapui";
+    code: (p) => `import { GaugeChart } from "@rapui/react";
 
 const [score, setScore] = useState(${Number(p.value)});
 ${p.zones ? `\nconst zones = [\n  { to: 49, tone: "down" },\n  { to: 89, tone: "warn" },\n  { to: 100, tone: "up" },\n];\n` : ""}
@@ -97,7 +97,7 @@ ${p.zones ? `\nconst zones = [\n  { to: 49, tone: "down" },\n  { to: 89, tone: "
         <HeatGrid shape={p.shape as "square" | "dot"} tone={p.tone as "ink" | "up"} weeks={Number(p.weeks)} corner={Number(p.corner)} />
       </div>
     ),
-    code: (p) => `import { HeatGrid } from "rapui";
+    code: (p) => `import { HeatGrid } from "@rapui/react";
 
 <HeatGrid
   metrics={[
@@ -119,7 +119,7 @@ ${p.zones ? `\nconst zones = [\n  { to: 49, tone: "down" },\n  { to: 89, tone: "
         <RaceBars rows={Number(p.rows)} unit={String(p.unit)} corner={Number(p.corner)} />
       </div>
     ),
-    code: (p) => `import { RaceBars } from "rapui";
+    code: (p) => `import { RaceBars } from "@rapui/react";
 
 <RaceBars
   periods={[

@@ -310,7 +310,7 @@ export const entries: DocEntry[] = [
       </Dialog>
     ),
     code: (p) =>
-      `import { Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input } from "rapui";
+      `import { Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input } from "@rapui/react";
 
 <Dialog>
   <DialogTrigger asChild>
@@ -415,7 +415,7 @@ export const entries: DocEntry[] = [
       </AlertDialog>
     ),
     code: (p) =>
-      `import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button } from "rapui";
+      `import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button } from "@rapui/react";
 
 <AlertDialog>
   <AlertDialogTrigger asChild>
@@ -516,7 +516,7 @@ export const entries: DocEntry[] = [
       </Sheet>
     ),
     code: (p) =>
-      `import { Button, Sheet, SheetBody, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "rapui";
+      `import { Button, Sheet, SheetBody, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@rapui/react";
 
 <Sheet>
   <SheetTrigger asChild>
@@ -613,7 +613,7 @@ export const entries: DocEntry[] = [
       </Drawer>
     ),
     code: (p) =>
-      `import { Button, Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "rapui";
+      `import { Button, Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@rapui/react";
 
 <Drawer${p.dismissible ? "" : " dismissible={false}"}>
   <DrawerTrigger asChild>
@@ -671,7 +671,7 @@ export const entries: DocEntry[] = [
       </Popover>
     ),
     code: (p) =>
-      `import { Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from "rapui";
+      `import { Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from "@rapui/react";
 
 <Popover>
   <PopoverTrigger asChild>
@@ -780,7 +780,7 @@ export const entries: DocEntry[] = [
       </p>
     ),
     code: (p) =>
-      `import { HoverCard, HoverCardContent, HoverCardTrigger } from "rapui";
+      `import { HoverCard, HoverCardContent, HoverCardTrigger } from "@rapui/react";
 
 <HoverCard${p.openDelay !== 300 ? ` openDelay={${p.openDelay}}` : ""}>
   <HoverCardTrigger asChild>
@@ -832,7 +832,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "rapui";
+      `import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@rapui/react";
 
 <TooltipProvider${p.delayDuration !== 300 ? ` delayDuration={${p.delayDuration}}` : ""}>
   <Tooltip>
@@ -914,7 +914,7 @@ export const entries: DocEntry[] = [
   DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut,
   DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
-} from "rapui";
+} from "@rapui/react";
 
 <DropdownMenu>
   <DropdownMenuTrigger asChild>
@@ -1040,7 +1040,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuTrigger } from "rapui";
+      `import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuTrigger } from "@rapui/react";
 
 <ContextMenu>
   <ContextMenuTrigger asChild>
@@ -1160,7 +1160,7 @@ export const entries: DocEntry[] = [
       );
     },
     code: (p) =>
-      `import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarTrigger } from "rapui";
+      `import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarTrigger } from "@rapui/react";
 
 <Menubar${attrs(p, menubarControls, ["shortcuts"])}>
   <MenubarMenu>
@@ -1198,7 +1198,7 @@ export const entries: DocEntry[] = [
       </div>
     ),
     code: (p) =>
-      `import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from "rapui";
+      `import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from "@rapui/react";
 
 <Command>
   <CommandInput placeholder="${p.placeholder}" />

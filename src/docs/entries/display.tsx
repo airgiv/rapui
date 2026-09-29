@@ -326,7 +326,7 @@ export const entries: DocEntry[] = [
         </div>
       );
     },
-    code: (p) => `import { Badge } from "rapui";
+    code: (p) => `import { Badge } from "@rapui/react";
 
 <Badge${attrs(p, badgeControls, ["label"])}>${p.label}</Badge>`,
     examples: [
@@ -400,7 +400,7 @@ export const entries: DocEntry[] = [
         </div>
       );
     },
-    code: (p) => `import { Avatar, AvatarGroup } from "rapui";
+    code: (p) => `import { Avatar, AvatarGroup } from "@rapui/react";
 
 <Avatar${attrs(p, avatarControls, ["image", "max"])}${p.image ? ' src="/team/mira.jpg"' : ""} />
 
@@ -465,7 +465,7 @@ export const entries: DocEntry[] = [
         </Card>
       </Paper>
     ),
-    code: (p) => `import { Card, CardHeader, CardTitle, CardDescription, CardFooter, Button, ButtonGroup } from "rapui";
+    code: (p) => `import { Card, CardHeader, CardTitle, CardDescription, CardFooter, Button, ButtonGroup } from "@rapui/react";
 
 <Card${attrs(p, cardControls, ["footer", "title", "pressable"])}${p.pressable ? " onClick={openProject}" : ""}>
   <CardHeader>
@@ -585,7 +585,7 @@ export const entries: DocEntry[] = [
     },
     code: (p) => `import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption, Badge${
       p.avatars ? ", Avatar" : ""
-    } } from "rapui";
+    } } from "@rapui/react";
 
 <Table>${p.caption ? "\n  <TableCaption>Invoices sent in September 2026.</TableCaption>" : ""}
   <TableHeader>
@@ -635,7 +635,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { DataTable, createDataTableColumns, Badge } from "rapui";
+    code: (p) => `import { DataTable, createDataTableColumns, Badge } from "@rapui/react";
 
 const col = createDataTableColumns<Project>();
 const columns = col.columns([
@@ -670,7 +670,7 @@ const columns = col.columns([
         </div>
       );
     },
-    code: (p) => `import { AspectRatio } from "rapui";
+    code: (p) => `import { AspectRatio } from "@rapui/react";
 
 <AspectRatio${attrs(p, aspectControls, ["ratio"])} ratio={${p.ratio}}>
   <img src="/covers/kunsthal.jpg" alt="Cover of the Kunsthal Oost microsite" />
@@ -736,7 +736,7 @@ const columns = col.columns([
     code: (p) => {
       const keys = String(p.keys).split(/\s+/).filter(Boolean);
       const a = attrs(p, kbdControls, ["keys"]);
-      return `import { Kbd, KbdGroup } from "rapui";
+      return `import { Kbd, KbdGroup } from "@rapui/react";
 
 <KbdGroup>
 ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
@@ -887,7 +887,7 @@ ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
       return `import { ${Chart}, ${p.type === "bar" ? "Bar" : "Area"}, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, chartAxisProps, chartGridProps, chartLineProps${
         p.legend ? ", ChartLegend" : ""
-      }, type ChartConfig } from "rapui";
+      }, type ChartConfig } from "@rapui/react";
 
 const config = {
   published: { label: "Published", color: "var(--rap-chart-up)" },${p.drafts ? `\n  drafts: { label: "Drafts", color: "var(--rap-mute)" },` : ""}
@@ -945,12 +945,12 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
     },
     code: (p) =>
       p.orientation === "vertical"
-        ? `import { Separator } from "rapui";
+        ? `import { Separator } from "@rapui/react";
 
 <span>Pages</span>
 <Separator orientation="vertical" />
 <span>Assets</span>`
-        : `import { Separator } from "rapui";
+        : `import { Separator } from "@rapui/react";
 
 <Separator${p.label ? ` label="${p.label}"` : ""} />`,
   },
@@ -992,7 +992,7 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
         </div>
       );
     },
-    code: (p) => `import { EmptyState, FancyIcon, Button } from "rapui";
+    code: (p) => `import { EmptyState, FancyIcon, Button } from "@rapui/react";
 
 <EmptyState${attrs(p, emptyControls, ["title", "description", "action"])}
   icon={<FancyIcon icon="folder" tone="blue" size={38} />}
@@ -1071,7 +1071,7 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
         </div>
       );
     },
-    code: (p) => `import { Alert, Button } from "rapui";
+    code: (p) => `import { Alert, Button } from "@rapui/react";
 
 <Alert${attrs(p, alertControls, ["title", "description", "action", "dismissible"])}
   title="${p.title}"${p.action ? `\n  action={<Button size="sm" variant="soft">Check DNS</Button>}` : ""}${
@@ -1155,7 +1155,7 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
         </div>
       </>
     ),
-    code: (p) => `import { Toaster, toast } from "rapui";
+    code: (p) => `import { Toaster, toast } from "@rapui/react";
 
 // once, near the root
 <Toaster${attrs(p, toastControls)} />
@@ -1219,12 +1219,12 @@ toast("Project moved to trash", { action: { label: "Undo", onClick: restore } })
     },
     code: (p) =>
       p.variant === "circular"
-        ? `import { CircularProgress } from "rapui";
+        ? `import { CircularProgress } from "@rapui/react";
 
 <CircularProgress value={${p.value}}${p.tone !== "blue" ? ` tone="${p.tone}"` : ""}${
             p.size === "sm" ? " size={64}" : p.size === "lg" ? " size={120} thickness={10}" : ""
           } />`
-        : `import { Progress } from "rapui";
+        : `import { Progress } from "@rapui/react";
 
 <Progress${attrs(p, progressControls, ["variant"])} />`,
     examples: [
@@ -1300,7 +1300,7 @@ toast("Project moved to trash", { action: { label: "Undo", onClick: restore } })
         </div>
       );
     },
-    code: (p) => `import { Skeleton, SkeletonCircle, SkeletonText } from "rapui";
+    code: (p) => `import { Skeleton, SkeletonCircle, SkeletonText } from "@rapui/react";
 
 ${
   p.layout === "block"
@@ -1342,7 +1342,7 @@ ${
         </div>
       );
     },
-    code: (p) => `import { Spinner } from "rapui";
+    code: (p) => `import { Spinner } from "@rapui/react";
 
 <span style={{ color: "var(--rap-${p.color})" }}>
   <Spinner${attrs(p, spinnerControls, ["color"])} />

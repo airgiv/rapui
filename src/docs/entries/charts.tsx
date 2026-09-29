@@ -37,7 +37,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { BalanceChart } from "rapui";
+    code: (p) => `import { BalanceChart } from "@rapui/react";
 
 <BalanceChart${attrs(p, balanceControls)} />`,
   },
@@ -54,7 +54,7 @@ export const entries: DocEntry[] = [
         <ProgressTicks value={Number(p.value)} />
       </div>
     ),
-    code: (p) => `import { ProgressTicks } from "rapui";
+    code: (p) => `import { ProgressTicks } from "@rapui/react";
 
 <ProgressTicks${attrs(p, ticksControls)} />`,
   },

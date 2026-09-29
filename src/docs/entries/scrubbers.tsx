@@ -308,7 +308,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { TimeScrubber } from "rapui";
+    code: (p) => `import { TimeScrubber } from "@rapui/react";
 
 <TimeScrubber${attrs(p, timeControls)} />`,
   },
@@ -325,7 +325,7 @@ export const entries: DocEntry[] = [
         <RangeDial snap={String(p.snap)} density={Number(p.density)} reach={Number(p.reach)} />
       </div>
     ),
-    code: (p) => `import { RangeDial } from "rapui";
+    code: (p) => `import { RangeDial } from "@rapui/react";
 
 <RangeDial${attrs(p, dialControls)} />`,
   },
@@ -349,7 +349,7 @@ export const entries: DocEntry[] = [
         />
       </div>
     ),
-    code: (p) => `import { Knob } from "rapui";
+    code: (p) => `import { Knob } from "@rapui/react";
 
 <Knob${attrs(p, knobControls)} />`,
     examples: [
@@ -395,7 +395,7 @@ export const entries: DocEntry[] = [
           : name === "months"
             ? `const months = ["January", "February", "March", …];`
             : `const typefaces = ["Onest", "Geist", "Inter", "Söhne", …];`;
-      return `import { WheelPicker } from "rapui";
+      return `import { WheelPicker } from "@rapui/react";
 
 ${decl}
 
@@ -460,8 +460,8 @@ ${decl}
         </div>
       </div>
     ),
-    code: (p) => `import { ElasticSlider } from "rapui";
-import { Moon, Sun } from "rapui/icons";
+    code: (p) => `import { ElasticSlider } from "@rapui/react";
+import { Moon, Sun } from "@rapui/react/icons";
 
 <ElasticSlider aria-label="Canvas brightness"${attrs(p, elasticControls, ["icons"])}${p.icons ? " icons={[<Moon />, <Sun />]}" : ""} />`,
     examples: [
@@ -505,7 +505,7 @@ import { Moon, Sun } from "rapui/icons";
         />
       </div>
     ),
-    code: (p) => `import { ScrubNumber } from "rapui";
+    code: (p) => `import { ScrubNumber } from "@rapui/react";
 
 <ScrubNumber${attrs(p, scrubControls).replace(/step="([\d.]+)"/, "step={$1}")} />`,
     examples: [
@@ -541,7 +541,7 @@ import { Moon, Sun } from "rapui/icons";
         </div>
       </div>
     ),
-    code: (p) => `import { DateScrubber } from "rapui";
+    code: (p) => `import { DateScrubber } from "@rapui/react";
 
 const [date, setDate] = useState("2026-10-02");
 
@@ -588,7 +588,7 @@ const [date, setDate] = useState("2026-10-02");
         />
       </div>
     ),
-    code: (p) => `import { TempoDial } from "rapui";
+    code: (p) => `import { TempoDial } from "@rapui/react";
 
 <TempoDial${attrs(p, tempoControls).replace(/beats="(\d)"/, "beats={$1}")} onValueChange={setBpm} />`,
   },
@@ -611,7 +611,7 @@ const [date, setDate] = useState("2026-10-02");
         />
       </div>
     ),
-    code: (p) => `import { HueRing } from "rapui";
+    code: (p) => `import { HueRing } from "@rapui/react";
 
 <HueRing${attrs(p, hueControls).replace(/ticks="(\d+)"/, "ticks={$1}")} onValueChange={setHue} />`,
     examples: [
@@ -648,7 +648,7 @@ const [date, setDate] = useState("2026-10-02");
         </div>
       </div>
     ),
-    code: (p) => `import { LensRuler } from "rapui";
+    code: (p) => `import { LensRuler } from "@rapui/react";
 
 <LensRuler${attrs(p, lensControls).replace(/step="([\d.]+)"/, "step={$1}")} value={temp} onValueChange={setTemp} />`,
     examples: [
@@ -681,7 +681,7 @@ const [date, setDate] = useState("2026-10-02");
         </div>
       </div>
     ),
-    code: (p) => `import { SplitSlider } from "rapui";
+    code: (p) => `import { SplitSlider } from "@rapui/react";
 
 <SplitSlider labels={["${p.left}", "${p.right}"]}${attrs(p, splitControls, ["left", "right"]).replace(/step="(\d+)"/, "step={$1}")} onValueChange={setShare} />`,
   },
