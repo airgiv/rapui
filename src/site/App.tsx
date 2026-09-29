@@ -37,13 +37,13 @@ import {
   Counter,
   type SoundSettings,
 } from "../rapui";
-import { ArrowLeft, ArrowRight } from "../rapui/icons";
+import { ArrowLeft, ArrowRight, Volume1, Volume2 } from "../rapui/icons";
 import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
 import { isCalm } from "../rapui/hooks/useGlide";
-import { HueRing } from "../rapui/groups/scrubbers";
+import { ElasticSlider } from "../rapui/groups/scrubbers";
 import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
 import { DialsDemo } from "./demos/DialsDemo";
@@ -162,11 +162,17 @@ function HeroSwitch() {
   );
 }
 
-/* The white tile: one of our own dials instead of a chart — the hue ring, turned
-   by drag or wheel; it names the colour it lands on itself. */
-function HeroHue() {
-  const [hue, setHue] = useState(28);
-  return <HueRing aria-label="Colour" value={hue} onValueChange={setHue} size={200} />;
+/* The white tile: one of our own controls, kept simple — the rubber-band slider
+   under a big reading of its value. Pull past either end and the band stretches
+   and the end icon bumps; let go and it snaps back. */
+function HeroVolume() {
+  const [v, setV] = useState(64);
+  return (
+    <div className="flex w-full max-w-64 flex-col gap-5">
+      <span className="font-display text-[3.5rem] font-medium tracking-[-0.05em] tabular-nums leading-none">{v}%</span>
+      <ElasticSlider aria-label="Volume" value={v} onValueChange={setV} icons={[<Volume1 key="lo" />, <Volume2 key="hi" />]} bubble="never" />
+    </div>
+  );
 }
 
 function Hero() {
@@ -220,7 +226,7 @@ function Hero() {
           <HeroSwitch />
         </div>
         <div className={cn(TILE, "[--i:4] bg-paper-2")}>
-          <HeroHue />
+          <HeroVolume />
         </div>
       </div>
     </section>
