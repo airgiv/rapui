@@ -97,8 +97,11 @@ function Playground({ entry }: { entry: DocEntry }) {
   const hasControls = (entry.controls?.length ?? 0) > 0;
   return (
     <>
-      <section className={cn("grid gap-tile grid-cols-[minmax(0,1fr)]", hasControls && "min-[901px]:grid-cols-[minmax(0,1fr)_18rem]")}>
-        <div className={STAGE}>
+      <section
+        data-slot="docs-play"
+        className={cn("grid gap-tile grid-cols-[minmax(0,1fr)]", hasControls && "min-[901px]:grid-cols-[minmax(0,1fr)_18rem]")}
+      >
+        <div data-slot="docs-stage" className={STAGE}>
           <Demo p={p} />
         </div>
         {hasControls && (
