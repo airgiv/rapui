@@ -1,0 +1,24 @@
+/* Rating — only the keyframes utilities cannot say. Everything else is
+   Tailwind in Rating.tsx.
+
+   The stamp: squash, jump past full size with a small twist (--tw, which
+   alternates star to star), settle. The drop: sink and shrink, then come
+   back to rest as a grey star. A spark flies out along its angle (--a)
+   to a radius (--r) and fades. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-rating-pop {
+  0% { transform: scale(0.6); }
+  35% { transform: scale(1.32) rotate(var(--tw, 8deg)); }
+  65% { transform: scale(0.92) rotate(calc(var(--tw, 8deg) * -0.4)); }
+  100% { transform: scale(1); }
+}
+@keyframes rap-rating-drop {
+  40% { transform: translateY(12%) scale(0.72); }
+  100% { transform: none; }
+}
+@keyframes rap-rating-spark {
+  0% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(-1 * var(--r))) scale(0.2); opacity: 0; }
+}
+.rap-rating-spark { animation: rap-rating-spark 520ms var(--rap-ease-out) both; }

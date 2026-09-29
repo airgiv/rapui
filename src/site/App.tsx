@@ -35,15 +35,15 @@ import {
   VoiceNote,
   useSound,
   Counter,
+  Rating,
   type SoundSettings,
 } from "../rapui";
-import { ArrowLeft, ArrowRight, Volume1, Volume2 } from "../rapui/icons";
+import { ArrowLeft, ArrowRight } from "../rapui/icons";
 import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
 import { isCalm } from "../rapui/hooks/useGlide";
-import { ElasticSlider } from "../rapui/groups/scrubbers";
 import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
 import { DialsDemo } from "./demos/DialsDemo";
@@ -56,7 +56,7 @@ import { ART } from "../docs/entries/galleries";
 
 /* How many components the docs list. Kept by hand so the landing does not pull
    the docs registry (and every demo in it) into the first bundle. */
-const COUNT = 108;
+const COUNT = 109;
 
 /* ───────────────────────── shared class strings ───────────────────────── */
 
@@ -162,17 +162,11 @@ function HeroSwitch() {
   );
 }
 
-/* The white tile: one of our own controls, kept simple — the rubber-band slider
-   under a big reading of its value. Pull past either end and the band stretches
-   and the end icon bumps; let go and it snaps back. */
-function HeroVolume() {
-  const [v, setV] = useState(64);
-  return (
-    <div className="flex w-full max-w-64 flex-col gap-5">
-      <span className="font-display text-[3.5rem] font-medium tracking-[-0.05em] tabular-nums leading-none">{v}%</span>
-      <ElasticSlider aria-label="Volume" value={v} onValueChange={setV} icons={[<Volume1 key="lo" />, <Volume2 key="hi" />]} bubble="never" />
-    </div>
-  );
+/* The white tile: the Rating, big — a row of five flame stars as wide and heavy in
+   its tile as the hold button, the sticker and the switch are in theirs. Raise the
+   score and the new stars stamp in one by one; the clicked one throws sparks. */
+function HeroRating() {
+  return <Rating defaultValue={4} size="clamp(2.25rem, 3.8vw, 3.5rem)" className="text-flame" aria-label="Rate rapui" />;
 }
 
 function Hero() {
@@ -226,7 +220,7 @@ function Hero() {
           <HeroSwitch />
         </div>
         <div className={cn(TILE, "[--i:4] bg-paper-2")}>
-          <HeroVolume />
+          <HeroRating />
         </div>
       </div>
     </section>
@@ -392,7 +386,7 @@ function GiantToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => 
 /* The numbers, huge, as plain cards: the figure at the top, the sentence at the
    bottom, nothing else. The figure is the library's Counter — it recounts IN PLACE
    when the card scrolls into view, on an expo ease, so nothing flies in and nothing
-   gets clipped: 108 counts up, 0 counts down from a hundred, 1 from ten. */
+   gets clipped: the count counts up, 0 counts down from a hundred, 1 from ten. */
 const STAT = "flex flex-col gap-5 min-h-[24rem] justify-between p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg overflow-hidden";
 const BIG = "font-display font-medium tracking-[-0.05em] text-[clamp(6rem,11vw,11rem)] leading-[0.92]";
 const STAT_TEXT = "m-0 max-w-[24ch] text-[1.2rem] leading-[1.35] opacity-80";

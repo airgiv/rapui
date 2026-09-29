@@ -42,4 +42,6 @@ export type { DatePickerProps, DatePickerSingleProps, DatePickerRangeProps, Date
 export { FormField, FieldGroup, useFormField } from "../components/FormField";
 export type { FormFieldProps, FieldGroupProps } from "../components/FormField";
 export { NumberField } from "../components/NumberField";
+export { Rating } from "../components/Rating";
+export type { RatingProps } from "../components/Rating";
 export type { NumberFieldProps } from "../components/NumberField";
