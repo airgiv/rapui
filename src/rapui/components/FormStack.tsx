@@ -57,6 +57,8 @@ export interface FormStackProps extends FormHTMLAttributes<HTMLFormElement> {
   errorIndex?: number;
   /** Melt the pills into one liquid shape. Off: plain touching pills, like Readymag. */
   liquid?: boolean;
+  /** column (a login form) or row (a newsletter / search bar: field and button side by side). */
+  direction?: "column" | "row";
 }
 
 interface Blob {
@@ -74,7 +76,7 @@ interface Blob {
 const FIELD = "color-mix(in srgb, var(--rap-ink) 6%, var(--rap-surface))";
 
 export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function FormStack(
-  { state = "idle", errorIndex, liquid = true, className, style, children, ...rest },
+  { state = "idle", errorIndex, liquid = true, direction = "column", className, style, children, ...rest },
   forwarded,
 ) {
   const form = useRef<HTMLFormElement>(null);
@@ -187,7 +189,8 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
         data-slot="form-stack"
         data-state={state}
         className={cn(
-          "relative isolate flex flex-col w-full",
+          "relative isolate flex w-full",
+          direction === "column" ? "flex-col" : "flex-row items-stretch [&>[data-slot=input]]:flex-1 [&>[data-slot=button]]:w-auto [&>[data-slot=button]]:flex-none",
           // inside a stack the pills lose their own background: the blob layer draws it
           "[&>[data-slot=input]]:bg-transparent! [&>[data-slot=button]]:bg-transparent!",
           className,

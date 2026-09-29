@@ -118,6 +118,37 @@ export const entries: DocEntry[] = [
       "Readymag's big form: 88px pills stacked edge to edge, fields then the button, reading as one object. Delight: the pills are one liquid shape (a goo filter pools the notches into necks), focus swells a field, submitting sucks the fields into the button, and an error spits them back out with the wrong one shaking.",
     controls: stackControls,
     Demo: LoginDemo,
+    examples: [
+      {
+        title: "In a row: newsletter",
+        Demo: function Newsletter() {
+          const [state, setState] = useState<StackState>("idle");
+          return (
+            <div className="w-[min(100%,40rem)]">
+              <FormStack
+                direction="row"
+                state={state}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setState("loading");
+                  window.setTimeout(() => setState("success"), 1300);
+                  window.setTimeout(() => setState("idle"), 3400);
+                }}
+              >
+                <Input size="hero" type="email" placeholder="Your email" aria-label="Email" />
+                <Button size="hero" variant="blue" type="submit" icon successLabel="You're in">
+                  Subscribe
+                </Button>
+              </FormStack>
+            </div>
+          );
+        },
+        code: `<FormStack direction="row" state={state} onSubmit={submit}>
+  <Input size="hero" type="email" placeholder="Your email" />
+  <Button size="hero" variant="blue" type="submit" icon successLabel="You're in">Subscribe</Button>
+</FormStack>`,
+      },
+    ],
     code: (p) => `import { FormStack, Input, Button } from "rapui";
 
 <FormStack state={state} errorIndex={1}${p.liquid ? "" : " liquid={false}"} onSubmit={submit}>
