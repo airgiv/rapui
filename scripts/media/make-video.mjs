@@ -39,7 +39,7 @@ const PAGE = `<!doctype html><style>
 body{margin:0;background:#000}</style><canvas id=c width=${W} height=${H}></canvas>
 <script>
 const c = document.getElementById("c"), g = c.getContext("2d");
-const P = { paper:"#f5f5f5", ink:"#282828", flame:"#ec520b", blue:"#0582ff", acid:"#d7ff3c", bubble:"#ff9be0", sky:"#8fd3ff", plum:"#8e0d99" };
+const P = { paper:"#f5f5f5", ink:"#282828", flame:"#ff5b1a", blue:"#0582ff", acid:"#d7ff3c", bubble:"#ff9be0", sky:"#8fd3ff", plum:"#8e0d99" };
 const ease = (x) => x < 0 ? 0 : x > 1 ? 1 : 1 - Math.pow(1 - x, 3);
 const spring = (x) => { if (x <= 0) return 0; if (x >= 1.6) return 1; return 1 - Math.exp(-6 * x) * Math.cos(9 * x); };
 const pill = (x, y, w, h, fill) => { g.fillStyle = fill; g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.fill(); };
@@ -57,7 +57,7 @@ function draw(t) {
     pill(-200 + 260 * ease((t - 0.3) / 1), 250, 300, 64, P.blue);
     const k = ease((t - 0.6) / 0.9);
     g.globalAlpha = k; text("Studio reel", 44, 130 + 20 * (1 - k), 64, P.ink); g.globalAlpha = 1;
-    text("rap/ui · 2026", 46, 170, 18, P.ink, 500);
+    text("rapui · 2026", 46, 170, 18, P.ink, 500);
   } else if (t < 6) {                            /* Shapes: ink ground, marbles bouncing on a grid */
     const u = t - 3;
     g.fillStyle = P.ink; g.fillRect(0, 0, ${W}, ${H});
@@ -93,7 +93,7 @@ function draw(t) {
     const k = spring(u / 1.1);
     g.save(); g.translate(320, 180); g.scale(k, k);
     pill(-150, -44, 300, 88, "#ffffff");
-    text("Made with rap/ui", 0, 9, 30, P.ink, 600, "center");
+    text("Made with rapui", 0, 9, 30, P.ink, 600, "center");
     g.restore();
   }
   /* a burnt-in timecode, bottom left: small, so the player's own controls stay the story */

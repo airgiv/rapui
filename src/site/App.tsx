@@ -35,6 +35,15 @@ import {
   Tabs,
   TiltCard,
   TimeScrubber,
+  AudioPlayer,
+  CardStack,
+  FanGallery,
+  Lightbox,
+  ShapeGallery,
+  useLightbox,
+  VideoPlayer,
+  WarpStrip,
+  VoiceNote,
   type SoundSettings,
   type StackState,
 } from "../rapui";
@@ -43,6 +52,10 @@ import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
+import gridLines from "./media/grid-lines.wav";
+import voiceNote from "./media/voice-note.wav";
+import reel from "./media/reel.webm";
+import { ART } from "../docs/entries/galleries";
 
 /* How many components the docs list. Kept by hand so the landing does not pull
    the docs registry (and every demo in it) into the first bundle. */
@@ -362,6 +375,23 @@ function LoginDemo() {
   );
 }
 
+function GalleriesDemo() {
+  const lb = useLightbox();
+  return (
+    <div className="grid gap-16 w-full min-w-0">
+      <WarpStrip items={ART} onOpen={lb.open} aria-label="Posters" />
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-12 px-[clamp(1.25rem,5vw,5rem)] items-center justify-items-center">
+        <CardStack items={ART} aria-label="Poster pile" onOpen={lb.open} />
+        <FanGallery items={ART.slice(0, 9)} onOpen={lb.open} />
+      </div>
+      <div className="px-[clamp(1.25rem,5vw,5rem)]">
+        <ShapeGallery items={ART.slice(0, 7)} onOpen={lb.open} />
+      </div>
+      <Lightbox items={ART} {...lb.props} />
+    </div>
+  );
+}
+
 function Wall() {
   const [knob, setKnob] = useState(42);
   return (
@@ -457,6 +487,54 @@ function Wall() {
           <div className="flex flex-col items-center gap-10">
             <TimeScrubber />
             <Knob size="lg" label="Gain" value={knob} onValueChange={setKnob} />
+          </div>
+        </div>
+      </Showcase>
+
+      <Showcase
+        id="galleries"
+        title="Galleries"
+        sub="with a sense of humour"
+        desc="A strip that skews and stretches with your speed, a messy pile you throw cards off, a hand of cards that fans apart, a collage of stickers that morph their shape on hover. Click any picture: it flies out full screen, swipe to go on, pull down to put it back."
+        code={`import { WarpStrip, CardStack, FanGallery, Lightbox, useLightbox } from "rapui";
+
+const lb = useLightbox();
+
+<WarpStrip items={posters} onOpen={lb.open} />
+<CardStack items={posters} onOpen={lb.open} />
+<FanGallery items={posters} onOpen={lb.open} />
+<Lightbox items={posters} {...lb.props} />`}
+        stageClass="px-0 [&>*]:min-w-0"
+      >
+        <GalleriesDemo />
+      </Showcase>
+
+      <Showcase
+        id="media"
+        title="Players"
+        sub="that dance a little"
+        desc="Audio with a waveform you scrub like a chart, bars that breathe to the live level; video whose controls float in one pill, snap to chapters and skew the frame as you drag; a voice note for chat. Keyboard all the way."
+        code={`import { AudioPlayer, VideoPlayer, VoiceNote } from "rapui";
+
+<VideoPlayer src="/reel.webm" title="Studio reel" chapters={chapters} />
+<AudioPlayer src="/grid-lines.wav" title="Grid Lines" artist="The Baseline Club" />
+<VoiceNote src="/note.wav" from="me" sent="14:02" />`}
+        stageClass="bg-paper"
+      >
+        <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-tile w-full items-start max-[1000px]:grid-cols-1">
+          <VideoPlayer
+            src={reel}
+            title="Studio reel"
+            chapters={[
+              { at: 0, title: "Intro" },
+              { at: 3, title: "Shapes" },
+              { at: 6, title: "Type" },
+              { at: 9, title: "Outro" },
+            ]}
+          />
+          <div className="flex flex-col gap-tile min-w-0">
+            <AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" />
+            <VoiceNote src={voiceNote} from="me" sent="14:02" className="self-end" />
           </div>
         </div>
       </Showcase>

@@ -1,6 +1,6 @@
-# rap/ui
+# rapui
 
-A fancy but clean React component kit in the spirit of Readymag: cool grey paper, white cards, soft ink, an orange + blue signal pair, one typeface set big, round shapes, and controls packed edge to edge.
+All the components, none of the boring. A React component kit with the breadth of shadcn/ui on the same Radix + Tailwind v4 base, in the spirit of Readymag: cool grey paper, white cards, soft ink, an orange + blue signal pair, one typeface set big, round shapes, and controls packed edge to edge.
 
 ## Run the preview site
 
@@ -28,7 +28,7 @@ import { Button, ButtonGroup, Display, Accent, SoundProvider } from "rapui";
 </SoundProvider>
 ```
 
-**App already on Tailwind v4** — use the rap/ui theme in your own build instead:
+**App already on Tailwind v4** — use the rapui theme in your own build instead:
 
 ```css
 @import "tailwindcss";
@@ -42,15 +42,19 @@ Then `bg-surface`, `text-ink`, `rounded-pill`, `h-control`, `ease-rm`, `animate-
 
 ## What's inside
 
-80+ components, browsable with live settings at **`#docs`** on the preview site (sidebar on the left, component with its settings panel on the right, generated code below).
+110+ components, browsable with live settings at **`#docs`** on the preview site (sidebar on the left, component with its settings panel on the right, generated code below).
 
 | Group | Components |
 | --- | --- |
-| Actions | Button (7 variants), ButtonGroup, CircleButton, BigLink |
+| Actions | Button (7 variants), ButtonGroup, CircleButton, BigLink, HoldButton, SlideButton, ConfirmButton, FormStack |
 | Forms | Input, Textarea, Select, Combobox, Checkbox, RadioGroup, Switch, Toggle, ToggleGroup, Slider, NumberField, InputOTP, Calendar, DatePicker, FormField, Label, Giant field |
 | Overlays | Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip, DropdownMenu, ContextMenu, Menubar, Command |
 | Navigation | Tabs, Breadcrumb, Pagination, NavigationMenu, Sidebar, Stepper |
-| Data display | Table, DataTable, Card, Badge, Avatar, Chart, Kbd, Separator, AspectRatio, EmptyState |
+| Scrubbers | TimeScrubber, RangeDial, Knob, WheelPicker, ElasticSlider, ScrubNumber |
+| Data display | Table, DataTable, Card, Badge, Avatar, Kbd, Separator, AspectRatio, EmptyState |
+| Charts | Chart (Recharts), BalanceChart, Sparkline, BarsChart, DonutChart, GaugeChart, HeatGrid, RaceBars, ProgressTicks, ChartKit parts |
+| Galleries | TiltGallery, CardStack, WarpStrip, ShapeGallery, FanGallery, Lightbox |
+| Media | AudioPlayer, Playlist, VideoPlayer, VoiceNote |
 | Feedback | Alert, Toast, Progress, Skeleton, Spinner |
 | Layout | Accordion, Collapsible, Resizable, ScrollArea, Carousel |
 | Expressive | Typography, Sticker, Marquee, RotatingBadge, SplitReveal, RollText, TiltCard, FeatureCard, Counter, Magnetic, Animated tabs, Checklist, CanvasToolbar |
