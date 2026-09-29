@@ -270,7 +270,7 @@ export const entries: DocEntry[] = [
     name: "Rating",
     group: "Forms",
     description:
-      "A row of big soft stars for a score. Hover previews it: stars you would add fill faintly, stars you would take away fade. Arrow keys move it, Home clears, End fills. Delight: raising the score stamps each new star in turn with a squash and a little twist, the clicked one throws sparks; lowering it drops the stars that go out.",
+      "A row of big soft stars for a score. Click a star, or press one and slide: the stars fill and empty under your finger. Hover previews it: stars you would add fill faintly, stars you would take away fade. Arrow keys move it, Home clears, End fills. Delight: raising the score stamps each new star in turn with a squash and a little twist, the clicked one throws sparks; lowering it drops the stars that go out.",
     controls: ratingControls,
     Demo: ({ p }) => {
       const [v, setV] = useState(3);

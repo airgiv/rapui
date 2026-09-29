@@ -137,11 +137,11 @@ function Header({
 const HEAD = "font-display font-medium tracking-[-0.055em] text-[clamp(2.8rem,7.6vw,8.4rem)] leading-[0.9]";
 const TILE = "relative grid place-items-center min-h-[15rem] p-6 rounded-lg overflow-hidden";
 
-/* Fun mode, as a mouth. The switch sits in the middle, and under it one wide white
-   arc: a smile while fun is on. Switch it off and the smile is ERASED — rubbed out
-   from its left end — and a frown of the same width is drawn back from the right,
-   an arc bowing up instead of down. Switch on and it runs in reverse. Both are the
-   same trick: pathLength=1 and a dash that slides along the line. */
+/* Fun mode, as a mouth. The switch sits dead centre with its label under it, and
+   the mouth is drawn around it: fun on, a wide white smile UNDER the switch; fun off,
+   the smile is erased — rubbed out from its left end — and a frown of the same width
+   is drawn ABOVE the switch, from the right, bowing up. Switch on and it runs in
+   reverse. One trick for both: pathLength=1 and a dash sliding along the line. */
 function HeroSwitch() {
   const [on, setOn] = useState(true);
   const line = (visible: boolean, hidden: number) => ({
@@ -149,14 +149,23 @@ function HeroSwitch() {
     strokeDashoffset: visible ? 0 : hidden,
     transition: `stroke-dashoffset ${visible ? 520 : 380}ms var(--rap-ease-${visible ? "out" : "in-out"}) ${visible ? 300 : 0}ms`,
   });
+  const ARC = "w-[min(100%,15rem)] overflow-visible";
   return (
-    <div className="flex w-full flex-col items-center gap-7">
-      <Switch size="lg" checked={on} onCheckedChange={setOn} label={on ? "Fun mode" : "Serious mode"} />
-      <svg viewBox="0 0 300 100" className="w-[min(100%,17rem)] overflow-visible" aria-hidden>
-        {/* smile: drawn left to right, erased from the left */}
-        <path d="M14 18 Q150 118 286 18" pathLength={1} fill="none" stroke="white" strokeWidth="11" strokeLinecap="round" style={line(on, -1.05)} />
-        {/* frown: drawn from the right */}
-        <path d="M286 86 Q150 -14 14 86" pathLength={1} fill="none" stroke="white" strokeWidth="11" strokeLinecap="round" style={line(!on, 1.05)} />
+    <div className="flex w-full flex-col items-center gap-3">
+      {/* frown, above: drawn from the right */}
+      <svg viewBox="0 0 300 70" className={ARC} aria-hidden>
+        <path d="M286 62 Q150 -22 14 62" pathLength={1} fill="none" stroke="white" strokeWidth="12" strokeLinecap="round" style={line(!on, 1.05)} />
+      </svg>
+      <Switch
+        size="lg"
+        checked={on}
+        onCheckedChange={setOn}
+        label={on ? "Fun mode" : "Serious mode"}
+        className="flex-col gap-2 [&_label]:font-medium"
+      />
+      {/* smile, below: drawn left to right, erased from the left */}
+      <svg viewBox="0 0 300 70" className={ARC} aria-hidden>
+        <path d="M14 8 Q150 92 286 8" pathLength={1} fill="none" stroke="white" strokeWidth="12" strokeLinecap="round" style={line(on, -1.05)} />
       </svg>
     </div>
   );
