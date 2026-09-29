@@ -8,7 +8,9 @@
    Raising the score pops every newly lit star in turn, left to
    right, 55ms apart: a squash, a jump past full size with a small
    alternating twist, and down — like a row of rubber stamps. The
-   star you clicked also throws six sparks. Lowering it drops the
+   star you clicked also throws six sparks. Reach the top score and
+   the whole row goes BOOM: every star jumps big in a wave from the
+   left and bursts into its own ring of sparks and streaks. Lowering it drops the
    stars that go out: they sink and shrink back into the grey.
    Clicking the current score again clears it (allowClear).
 
@@ -50,7 +52,7 @@ const STAR = "M12 2.7L15.23 8.45L21.7 9.75L17.23 14.6L18 21.15L12 18.4L6 21.15L6
 /** A star's last animation: `k` restarts it, `delay` staggers a run of stars. */
 interface StarAnim {
   k: number;
-  kind: "pop" | "drop";
+  kind: "pop" | "drop" | "cheer";
   delay: number;
 }
 
@@ -77,6 +79,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
   // per star, so a fast drag never cuts the stamp of the star before
   const [anims, setAnims] = useState<Record<number, StarAnim>>({});
   const [spark, setSpark] = useState<{ k: number; at: number; delay: number } | null>(null);
+  const [cheer, setCheer] = useState<number | null>(null);
   const seq = useRef(0);
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -86,6 +89,20 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
   const sound = useSound();
   const live = !readOnly && !disabled;
   const rs = typeof size === "number" ? `${size}px` : size;
+
+  /* full marks: every star jumps in a wave, 70ms apart, and bursts */
+  const CHEER_GAP = 70;
+  const celebrate = () => {
+    if (isMotionCalm(root.current)) return;
+    setAnims(() => {
+      const out: Record<number, StarAnim> = {};
+      for (let n = 1; n <= max; n++) out[n] = { k: ++seq.current, kind: "cheer", delay: (n - 1) * CHEER_GAP };
+      return out;
+    });
+    setSpark(null);
+    setCheer(++seq.current);
+    sound.play("success", { strength: 0.7 });
+  };
 
   const set = (next: number, { sparks = true } = {}) => {
     next = Math.max(0, Math.min(max, next));
@@ -102,9 +119,11 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
           out[n] = { k: ++seq.current, kind: up ? "pop" : "drop", delay: up ? (n - prev - 1) * 55 : (prev - n) * 40 };
         return out;
       });
-      if (up && sparks) setSpark({ k: ++seq.current, at: next, delay: (next - prev - 1) * 55 + 80 });
+      if (up && sparks && next !== max) setSpark({ k: ++seq.current, at: next, delay: (next - prev - 1) * 55 + 80 });
+      if (next !== max) setCheer(null);
     }
-    if (next > prev) sound.play("pop", { strength: 0.5, pitch: 0.85 + next * 0.08 });
+    if (next > prev && next === max && sparks) celebrate();
+    else if (next > prev) sound.play("pop", { strength: 0.5, pitch: 0.85 + next * 0.08 });
     else sound.play("drop", { strength: 0.4 });
     if (valueProp === undefined) setInner(next);
     onValueChange?.(next);
@@ -144,6 +163,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     if (!d || d.id !== e.pointerId) return;
     drag.current = null;
     if (!d.moved && allowClear && d.downOn === d.startValue) set(0);
+    else if (d.moved && valueRef.current === max && d.startValue < max) celebrate();
     else if (d.moved && valueRef.current > d.startValue && !isMotionCalm(root.current))
       // a drag that raised the score ends with the sparks on the last star
       setSpark({ k: ++seq.current, at: valueRef.current, delay: 0 });
@@ -196,7 +216,9 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
           ? {}
           : a.kind === "pop"
             ? { animation: `rap-rating-pop 520ms var(--rap-ease-out) ${a.delay}ms both`, ["--tw" as string]: n % 2 ? "-9deg" : "9deg" }
-            : { animation: `rap-rating-drop 360ms var(--rap-ease-out) ${a.delay}ms both` };
+            : a.kind === "cheer"
+              ? { animation: `rap-rating-cheer 760ms var(--rap-ease-out) ${a.delay}ms both`, ["--tw" as string]: n % 2 ? "-14deg" : "14deg" }
+              : { animation: `rap-rating-drop 360ms var(--rap-ease-out) ${a.delay}ms both` };
         return (
           <button
             key={i}
@@ -245,6 +267,28 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
                     style={{ width: "calc(var(--rs) * 0.12)", height: "calc(var(--rs) * 0.12)", ["--a" as string]: `${k * 60 + 30}deg`, ["--r" as string]: "calc(var(--rs) * 0.85)", animationDelay: `${spark.delay}ms` }}
                   />
                 ))}
+              </span>
+            )}
+            {cheer !== null && value === max && (
+              /* the burst: ten per star, a dot and a streak in turn, on two radii,
+                 each star's ring turned a little so the row never looks stamped */
+              <span key={`c${cheer}`} aria-hidden className="pointer-events-none absolute inset-0">
+                {Array.from({ length: 10 }, (_, k) => {
+                  const streak = k % 2 === 1;
+                  return (
+                    <span
+                      key={k}
+                      className="rap-rating-burst absolute left-1/2 top-1/2 rounded-full bg-current"
+                      style={{
+                        width: streak ? "calc(var(--rs) * 0.07)" : "calc(var(--rs) * 0.15)",
+                        height: streak ? "calc(var(--rs) * 0.26)" : "calc(var(--rs) * 0.15)",
+                        ["--a" as string]: `${k * 36 + n * 17}deg`,
+                        ["--r" as string]: streak ? "calc(var(--rs) * 1.05)" : "calc(var(--rs) * 1.35)",
+                        animationDelay: `${(n - 1) * CHEER_GAP + 140}ms`,
+                      }}
+                    />
+                  );
+                })}
               </span>
             )}
           </button>
