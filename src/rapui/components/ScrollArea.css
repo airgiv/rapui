@@ -1,0 +1,42 @@
+.rap-scroll {
+  --sc-size: 6px;
+  --sc-pad: 3px;
+  /* keeps the thumb clear of rounded corners */
+  --sc-inset: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.rap-scroll__viewport { width: 100%; height: 100%; border-radius: inherit; }
+.rap-scroll__viewport:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-scroll__bar {
+  display: flex;
+  padding: var(--sc-pad);
+  touch-action: none;
+  user-select: none;
+  transition: opacity var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-scroll__bar[data-state="hidden"] { opacity: 0; }
+.rap-scroll__bar[data-orientation="vertical"] { width: calc(var(--sc-size) + var(--sc-pad) * 2); height: 100%; padding-block: var(--sc-inset); }
+.rap-scroll__bar[data-orientation="horizontal"] { flex-direction: column; height: calc(var(--sc-size) + var(--sc-pad) * 2); padding-inline: var(--sc-inset); }
+.rap-scroll__thumb {
+  position: relative;
+  flex: 1;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill-strong);
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-scroll__bar:hover .rap-scroll__thumb { background: var(--rap-mute); }
+.rap-scroll__thumb:active { background: var(--rap-ink-2); }
+/* bigger hit area than the visible thumb */
+.rap-scroll__thumb::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  min-width: 24px;
+  min-height: 24px;
+  transform: translate(-50%, -50%);
+}
+.rap-scroll__corner { background: transparent; }

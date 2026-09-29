@@ -1,0 +1,62 @@
+.rap-carousel {
+  --car-gap: var(--rap-gap-tile);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  font-family: var(--rap-font-sans);
+  outline: none;
+}
+.rap-carousel--vertical { flex-direction: row; align-items: stretch; }
+.rap-carousel--vertical > :not(.rap-carousel__viewport) { align-self: center; }
+.rap-carousel__viewport { overflow: hidden; border-radius: var(--rap-radius); min-width: 0; flex: 1; }
+.rap-carousel__track { display: flex; margin-left: calc(var(--car-gap) * -1); }
+.rap-carousel--vertical .rap-carousel__track { flex-direction: column; height: 100%; margin-left: 0; margin-top: calc(var(--car-gap) * -1); }
+.rap-carousel__item {
+  flex: 0 0 100%;
+  min-width: 0;
+  min-height: 0;
+  padding-left: var(--car-gap);
+}
+.rap-carousel--vertical .rap-carousel__item { padding-left: 0; padding-top: var(--car-gap); }
+/* slide children get the round corners */
+.rap-carousel__item > * { border-radius: var(--rap-radius); }
+
+.rap-carousel__nav {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--rap-control-h);
+  height: var(--rap-control-h);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rap-fill);
+  color: var(--rap-ink);
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), opacity var(--rap-dur-fast) var(--rap-ease-rm),
+    transform var(--rap-dur-fast) var(--rap-ease-spring);
+}
+.rap-carousel__nav:hover { background: var(--rap-fill-hover); }
+.rap-carousel__nav:active { transform: scale(0.92); }
+.rap-carousel__nav:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-carousel__nav:disabled { opacity: 0.35; pointer-events: none; }
+.rap-carousel__nav svg { width: 20px; height: 20px; }
+
+.rap-carousel__dots { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.rap-carousel__dots--vertical { flex-direction: column; }
+.rap-carousel__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill-strong);
+  cursor: pointer;
+  transition: width var(--rap-dur-fast) var(--rap-ease-rm), height var(--rap-dur-fast) var(--rap-ease-rm),
+    background var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-carousel__dot:hover { background: var(--rap-mute); }
+.rap-carousel__dot[data-active] { width: 24px; background: var(--rap-ink); }
+.rap-carousel__dots--vertical .rap-carousel__dot[data-active] { width: 8px; height: 24px; }
+.rap-carousel__dot:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }

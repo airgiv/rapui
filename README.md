@@ -31,22 +31,33 @@ import { Button, ButtonGroup, Display, Accent, Cursor } from "rapui";
 
 ## What's inside
 
+70 components, browsable with live settings at **`#docs`** on the preview site (sidebar on the left, component with its settings panel on the right, generated code below).
+
 | Group | Components |
 | --- | --- |
-| Type | `Display` (md → mega), `Accent`, `Eyebrow`, `Lead`, `Highlight`, `RollText`, `SplitReveal` |
-| Actions | `Button` (solid / accent / blue / soft / acid / outline / ghost), `ButtonGroup`, `CircleButton`, `BigLink`, `Magnetic` |
-| Surfaces | `FeatureCard`, `TiltCard`, `Sticker`, `RotatingBadge`, `Marquee` |
-| Inputs | `Field`, `Switch`, `Tabs`, `Accordion`, `Checklist`, `CanvasToolbar` |
-| Ambient | `Counter`, `Cursor`, `Grain` |
+| Actions | Button (7 variants), ButtonGroup, CircleButton, BigLink |
+| Forms | Input, Textarea, Select, Combobox, Checkbox, RadioGroup, Switch, Toggle, ToggleGroup, Slider, NumberField, InputOTP, Calendar, DatePicker, FormField, Label, Giant field |
+| Overlays | Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip, DropdownMenu, ContextMenu, Menubar, Command |
+| Navigation | Tabs, Breadcrumb, Pagination, NavigationMenu, Sidebar, Stepper |
+| Data display | Table, DataTable, Card, Badge, Avatar, Chart, Kbd, Separator, AspectRatio, EmptyState |
+| Feedback | Alert, Toast, Progress, Skeleton, Spinner |
+| Layout | Accordion, Collapsible, Resizable, ScrollArea, Carousel |
+| Expressive | Typography, Sticker, Marquee, RotatingBadge, SplitReveal, RollText, TiltCard, FeatureCard, Counter, Magnetic, Animated tabs, Checklist, CanvasToolbar |
 
-Tokens live in `src/rapui/styles/tokens.css`. That file holds the colours (`--rap-paper`, `--rap-ink`, `--rap-flame #EC520B`, `--rap-blue #0582FF`, `--rap-plum`, `--rap-acid`…), fluid type sizes, radii, the 2px / 4px gaps between controls and tiles, and Readymag's `cubic-bezier(.4,.24,.4,1)` easing. For dark mode, set `data-rap-theme="dark"` on `<html>`.
+### Stack
+
+The same technical base as shadcn/ui: **Radix UI** primitives for behaviour and accessibility, plus `react-day-picker`, `cmdk`, `sonner`, `vaul`, `input-otp`, `embla-carousel-react`, `react-resizable-panels`, `@tanstack/react-table`, `recharts` and `lucide-react`. Styling is plain CSS on design tokens (like Mantine), one stylesheet per component, no Tailwind. See [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) before adding a component.
+
+Tokens live in `src/rapui/styles/tokens.css`. That file holds the colours (`--rap-paper`, `--rap-ink`, `--rap-flame #EC520B`, `--rap-blue #0582FF`, `--rap-plum`, `--rap-acid`…), control heights and fills, fluid type sizes, radii, the 2px / 4px gaps between controls and tiles, and Readymag's `cubic-bezier(.4,.24,.4,1)` easing. For dark mode, set `data-rap-theme="dark"` on `<html>`.
 
 ## Layout
 
 ```
-src/rapui/            the library (one .tsx + .css per component)
-src/rapui/styles/     tokens + opt-in base
-src/site/             the preview site
+src/rapui/components/  the library (one .tsx + .css per component)
+src/rapui/groups/      barrels per docs group
+src/rapui/styles/      tokens, base, shared floating-surface classes
+src/docs/              docs entries (one file per group), types, code generator
+src/site/              the preview site: landing (#top) and the explorer (#docs)
 ```
 
 ## Credits

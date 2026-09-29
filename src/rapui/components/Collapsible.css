@@ -1,0 +1,51 @@
+.rap-collapsible { display: flex; flex-direction: column; gap: var(--rap-gap-tight); font-family: var(--rap-font-sans); }
+.rap-collapsible__trigger {
+  --co-h: var(--rap-control-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  height: var(--co-h);
+  padding: 0 calc(var(--co-h) * 0.3) 0 calc(var(--co-h) * 0.4);
+  border: 0;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill);
+  color: var(--rap-ink);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-collapsible__trigger--sm { --co-h: var(--rap-control-h-sm); font-size: 0.875rem; }
+.rap-collapsible__trigger--lg { --co-h: var(--rap-control-h-lg); font-size: 1rem; }
+.rap-collapsible__trigger:hover { background: var(--rap-fill-hover); }
+.rap-collapsible__trigger:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-collapsible__trigger:disabled { opacity: 0.5; pointer-events: none; }
+.rap-collapsible__label { display: inline-flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.rap-collapsible__label svg { width: 18px; height: 18px; flex: none; }
+.rap-collapsible__chevron {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  opacity: 0.6;
+  transition: transform var(--rap-dur-fast) var(--rap-ease-rm);
+}
+/* also turns chevrons placed by hand inside an asChild trigger */
+[data-state="open"] > .rap-collapsible__chevron,
+[data-state="open"] > * > .rap-collapsible__chevron { transform: rotate(180deg); }
+
+.rap-collapsible__content { overflow: hidden; }
+.rap-collapsible__content[data-state="open"] { animation: rap-collapsible-open var(--rap-dur) var(--rap-ease-out); }
+.rap-collapsible__content[data-state="closed"] { animation: rap-collapsible-close calc(var(--rap-dur) * 0.6) var(--rap-ease-rm); }
+@keyframes rap-collapsible-open {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+@keyframes rap-collapsible-close {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
