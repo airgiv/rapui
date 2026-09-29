@@ -58,3 +58,5 @@ export * from "./groups/navigation";
 export * from "./groups/scrubbers";
 export * from "./groups/buttons";
 export * from "./groups/charts";
+export * from "./groups/galleries";
+export * from "./groups/players";

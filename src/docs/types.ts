@@ -9,6 +9,8 @@ export const GROUPS = [
   "Navigation",
   "Data display",
   "Charts",
+  "Galleries",
+  "Media",
   "Feedback",
   "Layout",
   "Expressive",
