@@ -1,13 +1,34 @@
-import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ElementRef,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "../icons";
+import { useSound } from "../sound";
 import { cx } from "../utils";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./Dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, useMergedRef } from "./Dialog";
+import { useRowGlide } from "./DropdownMenu";
+import "./DropdownMenu.css";
 import "./Command.css";
 
 /**
  * Searchable command list (cmdk): filter as you type, arrow keys to move,
  * Enter to run. Put it inline or in a <CommandDialog> for a ⌘K palette.
+ *
+ * Delight: the same as the menus (useRowGlide in DropdownMenu) — when the
+ * list appears its rows are dealt in top to bottom, and ONE highlight glides
+ * between rows like a caterpillar, following cmdk's `data-selected` whether
+ * you arrow, hover or type (typing re-selects the first match, so the pill
+ * visibly runs up to it). The deal plays once when the list mounts, not on
+ * every keystroke — re-dealing while typing would be noise. The palette
+ * (CommandDialog) keeps a quick drop-in of its own rather than the Dialog's
+ * toss: ⌘K is opened dozens of times a day. Sound: pop on palette open, a
+ * soft detent per row, tick on run.
  */
 export const Command = forwardRef<ElementRef<typeof CommandPrimitive>, ComponentPropsWithoutRef<typeof CommandPrimitive>>(
   function Command({ className, ...rest }, ref) {
@@ -60,9 +81,30 @@ export const CommandInput = forwardRef<
   );
 });
 
+const pickCmdk = (root: HTMLElement) => root.querySelector<HTMLElement>('[cmdk-item][data-selected="true"]');
+const CMDK_WATCH = ["data-selected"];
+const CMDK_ROWS = "[cmdk-item], [cmdk-group-heading], .rap-menu-separator";
+
 export const CommandList = forwardRef<ElementRef<typeof CommandPrimitive.List>, ComponentPropsWithoutRef<typeof CommandPrimitive.List>>(
-  function CommandList({ className, ...rest }, ref) {
-    return <CommandPrimitive.List ref={ref} className={cx("rap-command-list", className)} {...rest} />;
+  function CommandList({ className, children, ...rest }, ref) {
+    const { attach, glider } = useRowGlide({ pick: pickCmdk, watch: CMDK_WATCH, rows: CMDK_ROWS, pop: 0 });
+    const setRef = useMergedRef(ref, attach);
+    // deal only on the first appearance; rows that come back while filtering just appear
+    const [dealing, setDealing] = useState(true);
+    useEffect(() => {
+      const id = window.setTimeout(() => setDealing(false), 700);
+      return () => window.clearTimeout(id);
+    }, []);
+    return (
+      <CommandPrimitive.List
+        ref={setRef}
+        className={cx("rap-command-list", "rap-command-list--glide", dealing && "rap-command-list--deal", className)}
+        {...rest}
+      >
+        {glider}
+        {children}
+      </CommandPrimitive.List>
+    );
   },
 );
 
@@ -86,8 +128,19 @@ export const CommandSeparator = forwardRef<
 });
 
 export const CommandItem = forwardRef<ElementRef<typeof CommandPrimitive.Item>, ComponentPropsWithoutRef<typeof CommandPrimitive.Item>>(
-  function CommandItem({ className, ...rest }, ref) {
-    return <CommandPrimitive.Item ref={ref} className={cx("rap-menu-item", "rap-command-item", className)} {...rest} />;
+  function CommandItem({ className, onSelect, ...rest }, ref) {
+    const sound = useSound();
+    return (
+      <CommandPrimitive.Item
+        ref={ref}
+        className={cx("rap-menu-item", "rap-command-item", className)}
+        onSelect={(value) => {
+          sound.play("tick");
+          onSelect?.(value);
+        }}
+        {...rest}
+      />
+    );
   },
 );
 

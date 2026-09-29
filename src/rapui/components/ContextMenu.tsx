@@ -2,11 +2,17 @@ import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAt
 import { ContextMenu as ContextMenuPrimitive } from "radix-ui";
 import { Check, ChevronRight } from "../icons";
 import { cx } from "../utils";
-import type { MenuItemExtras } from "./DropdownMenu";
+import { useMergedRef } from "./Dialog";
+import { useRowGlide, type MenuItemExtras } from "./DropdownMenu";
 import "./DropdownMenu.css";
 import "./ContextMenu.css";
 
-/* Right-click menu. Same parts as DropdownMenu: <ContextMenu><ContextMenuTrigger>area</ContextMenuTrigger><ContextMenuContent>… */
+/* Right-click menu. Same parts as DropdownMenu: <ContextMenu><ContextMenuTrigger>area</ContextMenuTrigger><ContextMenuContent>…
+
+   Delight: the same as DropdownMenu (see useRowGlide there) — rows are dealt
+   onto the panel as it opens at the pointer, and ONE highlight glides between
+   rows like a caterpillar instead of each row lighting up. Sound: pop on open,
+   a soft detent per row, tick on choose. */
 
 export const ContextMenu = ContextMenuPrimitive.Root;
 export const ContextMenuTrigger = ContextMenuPrimitive.Trigger;
@@ -18,15 +24,20 @@ export const ContextMenuRadioGroup = ContextMenuPrimitive.RadioGroup;
 export const ContextMenuContent = forwardRef<
   ElementRef<typeof ContextMenuPrimitive.Content>,
   ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content>
->(function ContextMenuContent({ className, collisionPadding = 8, ...rest }, ref) {
+>(function ContextMenuContent({ className, collisionPadding = 8, children, ...rest }, ref) {
+  const { attach, glider } = useRowGlide({ pop: 0.7 });
+  const setRef = useMergedRef(ref, attach);
   return (
     <ContextMenuPrimitive.Portal>
       <ContextMenuPrimitive.Content
-        ref={ref}
+        ref={setRef}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", "rap-context-menu", className)}
+        className={cx("rap-pop", "rap-menu", "rap-context-menu", "rap-menu--glide", className)}
         {...rest}
-      />
+      >
+        {glider}
+        {children}
+      </ContextMenuPrimitive.Content>
     </ContextMenuPrimitive.Portal>
   );
 });
@@ -114,17 +125,22 @@ export const ContextMenuSubTrigger = forwardRef<
 export const ContextMenuSubContent = forwardRef<
   ElementRef<typeof ContextMenuPrimitive.SubContent>,
   ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent>
->(function ContextMenuSubContent({ className, sideOffset = 6, alignOffset = -4, collisionPadding = 8, ...rest }, ref) {
+>(function ContextMenuSubContent({ className, sideOffset = 6, alignOffset = -4, collisionPadding = 8, children, ...rest }, ref) {
+  const { attach, glider } = useRowGlide({ pop: 0.5 });
+  const setRef = useMergedRef(ref, attach);
   return (
     <ContextMenuPrimitive.Portal>
       <ContextMenuPrimitive.SubContent
-        ref={ref}
+        ref={setRef}
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", className)}
+        className={cx("rap-pop", "rap-menu", "rap-menu--glide", className)}
         {...rest}
-      />
+      >
+        {glider}
+        {children}
+      </ContextMenuPrimitive.SubContent>
     </ContextMenuPrimitive.Portal>
   );
 });

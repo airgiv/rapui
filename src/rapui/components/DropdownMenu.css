@@ -29,3 +29,38 @@
 .rap-menu-item .rap-menu-chevron { width: 16px; height: 16px; margin-left: auto; color: var(--rap-mute); }
 .rap-menu-shortcut + .rap-menu-chevron { margin-left: 0.5rem; }
 .rap-menu-dot { display: block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+/* ── delight: dealt rows + one gliding highlight (see useRowGlide) ── */
+.rap-menu--glide { position: relative; isolation: isolate; }
+.rap-menu-glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: 14px;
+  background: var(--rap-fill);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms var(--rap-ease-rm), background-color var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-menu-glider[data-on] { opacity: 1; }
+.rap-menu-glider[data-tone="danger"] { background: color-mix(in srgb, var(--rap-danger) 12%, transparent); }
+/* the glider paints the highlight, not the row */
+.rap-menu--glide .rap-menu-item[data-highlighted],
+.rap-menu--glide .rap-menu-subtrigger[data-state="open"] { background: transparent; }
+
+/* rows dealt onto the panel, top to bottom (--i set in document order) */
+.rap-menu--glide :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) {
+  animation: rap-deal-in 240ms var(--rap-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 22ms);
+}
+
+/* calm: no deal, no glide — rows light up on their own again */
+[data-rap-motion="calm"] .rap-menu--glide :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) { animation: none; }
+[data-rap-motion="calm"] .rap-menu-glider { display: none; }
+[data-rap-motion="calm"] .rap-menu--glide .rap-menu-item[data-highlighted],
+[data-rap-motion="calm"] .rap-menu--glide .rap-menu-subtrigger[data-state="open"] { background: var(--rap-fill); }
+[data-rap-motion="calm"] .rap-menu--glide .rap-menu-item--danger[data-highlighted] { background: color-mix(in srgb, var(--rap-danger) 12%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .rap-menu--glide :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) { animation: none !important; }
+}

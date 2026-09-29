@@ -5,3 +5,31 @@
   letter-spacing: -0.01em;
   outline: none;
 }
+
+/* ── delight: swing out of the trigger (also used by HoverCard) ──
+   --swing-tilt / --swing-dx / --swing-dy come from Radix's data-side. */
+.rap-pop.rap-pop--swing {
+  --swing-tilt: -5deg;
+  --swing-dx: 0px;
+  --swing-dy: -10px;
+  animation: rap-pop-swing-in 480ms var(--rap-ease-out);
+  /* useSpring tune 30 (k .128, d .68) sampled every 2 frames: ~4% overshoot on scale */
+  animation-timing-function: linear(0, 0.226, 0.551, 0.829, 1.006, 1.087, 1.099, 1.077, 1.044, 1.017, 0.999, 0.991, 0.99, 0.992, 0.996, 1);
+}
+.rap-pop--swing[data-side="top"] { --swing-tilt: 5deg; --swing-dx: 0px; --swing-dy: 10px; }
+.rap-pop--swing[data-side="right"] { --swing-tilt: 5deg; --swing-dx: -10px; --swing-dy: 0px; }
+.rap-pop--swing[data-side="left"] { --swing-tilt: -5deg; --swing-dx: 10px; --swing-dy: 0px; }
+.rap-pop.rap-pop--swing[data-state="closed"] { animation: rap-pop-swing-out 150ms var(--rap-ease-rm) forwards; }
+@keyframes rap-pop-swing-in {
+  /* one segment only: linear() easing applies per keyframe interval */
+  from { opacity: 0; scale: 0.6; rotate: var(--swing-tilt); translate: var(--swing-dx) var(--swing-dy); }
+}
+@keyframes rap-pop-swing-out {
+  to { opacity: 0; scale: 0.8; rotate: calc(var(--swing-tilt) * 0.5); translate: calc(var(--swing-dx) * 0.5) calc(var(--swing-dy) * 0.5); }
+}
+[data-rap-motion="calm"] .rap-pop.rap-pop--swing { animation: rap-pop-in 200ms var(--rap-ease-out); }
+[data-rap-motion="calm"] .rap-pop.rap-pop--swing[data-state="closed"] { animation: rap-pop-out 140ms var(--rap-ease-rm) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-pop.rap-pop--swing { animation: rap-pop-in 1ms linear; }
+  .rap-pop.rap-pop--swing[data-state="closed"] { animation: rap-pop-out 1ms linear forwards; }
+}

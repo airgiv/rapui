@@ -16,15 +16,21 @@
   font-family: var(--rap-font-sans);
 }
 .rap-drawer:focus { outline: none; }
+/* taffy handle: --drawer-stretch (px) is written by a spring while you drag;
+   width grows by it and height shrinks so the area stays about the same */
 .rap-drawer__handle {
+  --drawer-stretch: 0px;
   flex: none;
-  width: 44px;
+  width: calc(44px + var(--drawer-stretch));
   height: 5px;
+  scale: 1 clamp(0.45, var(--drawer-thin, 1), 1.4);
   margin: 0 auto 16px;
   border-radius: var(--rap-radius-pill);
   background: var(--rap-fill-strong);
   cursor: grab;
 }
+.rap-drawer.vaul-dragging .rap-drawer__handle { cursor: grabbing; }
+[data-rap-motion="calm"] .rap-drawer__handle { --drawer-stretch: 0px !important; --drawer-thin: 1 !important; }
 .rap-drawer__inner {
   display: flex;
   flex-direction: column;

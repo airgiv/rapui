@@ -178,7 +178,7 @@ const hoverControls: Control[] = [
 const tooltipControls: Control[] = [
   { type: "select", prop: "side", options: ["top", "bottom", "right", "left"], default: "top" },
   { type: "number", prop: "delayDuration", label: "delay", min: 0, max: 1000, step: 50, default: 300 },
-  { type: "boolean", prop: "arrow", default: false },
+  { type: "boolean", prop: "arrow", default: true, codeDefault: false },
   { type: "boolean", prop: "shortcut", label: "show shortcut", default: true },
 ];
 
@@ -282,7 +282,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix Dialog",
     description:
-      "A centred card over a dimmed page for focused tasks. Focus stays inside; Esc or a click outside closes it.",
+      "A centred card over a dimmed page for focused tasks. Focus stays inside; Esc or a click outside closes it. Delight: open it and it is tossed onto the table, turning as it lands; close it and watch it fall away under gravity.",
     controls: dialogControls,
     Demo: ({ p }) => (
       <Dialog>
@@ -390,7 +390,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix AlertDialog",
     description:
-      "Asks for a decision before something irreversible. A click outside does not close it; Cancel gets focus first.",
+      "Asks for a decision before something irreversible. A click outside does not close it; Cancel gets focus first. Delight: rest the pointer on a danger action and it trembles nervously; confirm and the card falls away like a Dialog.",
     controls: alertControls,
     Demo: ({ p }) => (
       <AlertDialog>
@@ -471,7 +471,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix Dialog",
     description:
-      "A panel that slides in from any edge and floats 8px off the viewport. Use it for settings and details that keep the page in view.",
+      "A panel that slides in from any edge and floats 8px off the viewport. Use it for settings and details that keep the page in view. Delight: the panel arrives on a spring, running a touch past its place, and then its contents are dealt in one after another.",
     controls: sheetControls,
     Demo: ({ p }) => (
       <Sheet>
@@ -570,7 +570,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "vaul",
     description:
-      "A panel that rises from the bottom and follows your finger. Drag it down or flick to close. Best for touch-first flows.",
+      "A panel that rises from the bottom and follows your finger. Drag it down or flick to close. Best for touch-first flows. Delight: grab the drawer and pull; the handle stretches thin like taffy and snaps back with a wobble when you let go.",
     controls: drawerControls,
     Demo: ({ p }) => (
       <Drawer dismissible={Boolean(p.dismissible)}>
@@ -639,7 +639,7 @@ export const entries: DocEntry[] = [
     name: "Popover",
     group: "Overlays",
     basedOn: "Radix Popover",
-    description: "A small floating panel for quick edits next to the thing being edited. Closes on outside click or Esc.",
+    description: "A small floating panel for quick edits next to the thing being edited. Closes on outside click or Esc. Delight: it swings out of the trigger on a spring, like a sign on a hinge, tilted toward the side it opens to; switch the side to see it swing the other way.",
     controls: popoverControls,
     Demo: ({ p }) => (
       <Popover>
@@ -742,7 +742,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix HoverCard",
     description:
-      "A preview that appears when a pointer rests on a link. Extra context for sighted mouse users; the link must still work on its own.",
+      "A preview that appears when a pointer rests on a link. Extra context for sighted mouse users; the link must still work on its own. Delight: once it swings open, move the pointer around and onto it; the card tilts in 3D toward your pointer as if your finger were resting on it.",
     controls: hoverControls,
     Demo: ({ p }) => (
       <p style={{ margin: 0, fontSize: "1.0625rem" }}>
@@ -801,7 +801,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix Tooltip",
     description:
-      "A short ink label on hover or keyboard focus. Name icon-only buttons with it; never hide essential information inside.",
+      "A short ink label on hover or keyboard focus. Name icon-only buttons with it; never hide essential information inside. Delight: it pops with a springy overshoot and, with the arrow on, the arrow wags once toward the trigger; sweep along a row of triggers and the pops get quick and small.",
     controls: tooltipControls,
     Demo: ({ p }) => {
       const tools = [
@@ -853,7 +853,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix DropdownMenu",
     description:
-      "A list of actions behind a button. Supports icons, shortcuts, checkable and radio rows, and nested sub-menus.",
+      "A list of actions behind a button. Supports icons, shortcuts, checkable and radio rows, and nested sub-menus. Delight: the rows are dealt in as it opens, and one highlight glides from row to row like a caterpillar; arrow down quickly to watch it stretch, and it turns red over the trash row.",
     controls: dropdownControls,
     Demo: function DropdownDemo({ p }) {
       const [grid, setGrid] = useState(true);
@@ -948,7 +948,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix ContextMenu",
     description:
-      "The right-click menu, placed at the pointer. Same parts as the dropdown menu; long-press opens it on touch screens.",
+      "The right-click menu, placed at the pointer. Same parts as the dropdown menu; long-press opens it on touch screens. Delight: rows are dealt in where you clicked, and a single highlight glides between them as you move.",
     controls: contextControls,
     Demo: function ContextDemo({ p }) {
       const [locked, setLocked] = useState(false);
@@ -1063,7 +1063,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "Radix Menubar",
     description:
-      "An app-style menu bar on a pill track. Once a menu is open, hovering or arrowing to the next trigger switches menus.",
+      "An app-style menu bar on a pill track. Once a menu is open, hovering or arrowing to the next trigger switches menus. Delight: open a menu and slide along the bar; the ink pill travels from trigger to trigger, and inside each menu one highlight glides between the dealt-in rows.",
     controls: menubarControls,
     Demo: function MenubarDemo({ p }) {
       const [rulers, setRulers] = useState(true);
@@ -1185,7 +1185,7 @@ export const entries: DocEntry[] = [
     group: "Overlays",
     basedOn: "cmdk",
     description:
-      "A searchable list of commands: type to filter, arrows to move, Enter to run. Inline, or as a ⌘K palette with CommandDialog.",
+      "A searchable list of commands: type to filter, arrows to move, Enter to run. Inline, or as a ⌘K palette with CommandDialog. Delight: the rows are dealt in when the list appears, and one highlight glides between them; type a few letters and watch it run up to the first match.",
     controls: commandControls,
     Demo: ({ p }) => (
       <div style={{ width: "min(100%, 26rem)" }}>

@@ -19,10 +19,24 @@
   box-shadow: var(--rap-shadow-pop);
   font-family: var(--rap-font-sans);
   transform: translate(-50%, -50%);
-  animation: rap-dialog-in var(--rap-dur) var(--rap-ease-out);
+  /* tossed onto the table (motion.css); translate/rotate/scale stack on the centring transform */
+  animation: rap-toss-in var(--rap-dur) var(--rap-ease-out);
 }
 .rap-dialog:focus { outline: none; }
-.rap-dialog[data-state="closed"] { animation: rap-dialog-out 180ms var(--rap-ease-rm) forwards; }
+/* …and it falls off it under gravity; Radix waits for this before unmounting */
+.rap-dialog[data-state="closed"] { animation: rap-fall-out 420ms var(--rap-ease-gravity) forwards; pointer-events: none; }
+/* the scrim stays dim while the card is falling */
+.rap-scrim.rap-dialog-scrim[data-state="closed"] { animation-duration: 380ms; }
+
+/* calm / reduced motion: the old quiet fade and lift */
+[data-rap-motion="calm"] .rap-dialog { animation: rap-dialog-in var(--rap-dur) var(--rap-ease-out); }
+[data-rap-motion="calm"] .rap-dialog[data-state="closed"] { animation: rap-dialog-out 180ms var(--rap-ease-rm) forwards; }
+[data-rap-motion="calm"] .rap-scrim.rap-dialog-scrim[data-state="closed"] { animation-duration: 160ms; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-dialog { animation: rap-dialog-in var(--rap-dur) var(--rap-ease-out); }
+  .rap-dialog[data-state="closed"] { animation: rap-dialog-out 1ms linear forwards; }
+  .rap-scrim.rap-dialog-scrim[data-state="closed"] { animation-duration: 1ms; }
+}
 .rap-dialog--sm { --dlg-w: 400px; --dlg-pad: 24px; }
 .rap-dialog--lg { --dlg-w: 720px; --dlg-pad: 32px; }
 @keyframes rap-dialog-in { from { opacity: 0; transform: translate(-50%, calc(-50% + 16px)) scale(0.97); } }

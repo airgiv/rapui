@@ -13,8 +13,10 @@
   color: var(--rap-ink);
   box-shadow: var(--rap-shadow-pop);
   font-family: var(--rap-font-sans);
-  animation-duration: var(--rap-dur);
+  animation-duration: 440ms;
   animation-timing-function: var(--rap-ease-out);
+  /* useSpring tune 20 (k .112, d .66) sampled per 2 frames: ~5% overshoot, one settle */
+  animation-timing-function: linear(0, 0.191, 0.469, 0.717, 0.893, 0.995, 1.041, 1.051, 1.043, 1.029, 1.016, 1.007, 1);
 }
 .rap-sheet:focus { outline: none; }
 .rap-sheet[data-state="closed"] { animation-duration: 260ms; animation-timing-function: var(--rap-ease-rm); animation-fill-mode: forwards; }
@@ -60,3 +62,38 @@
 .rap-sheet-footer { margin-top: auto; }
 .rap-sheet--top .rap-sheet-footer,
 .rap-sheet--bottom .rap-sheet-footer { margin-top: 0; }
+
+/* contents dealt in once the panel has (nearly) stopped */
+.rap-sheet[data-state="open"] > :not(.rap-sheet-body),
+.rap-sheet[data-state="open"] .rap-sheet-body > :not(:only-child),
+.rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * {
+  animation: rap-deal-in 320ms var(--rap-ease-out) both;
+  animation-delay: calc(120ms + var(--i, 0) * 45ms);
+}
+/* body rows: its children, or its wrapper's children when it has a single wrapper */
+.rap-sheet > :nth-child(2), .rap-sheet-body > :nth-child(2), .rap-sheet-body > :only-child > :nth-child(2) { --i: 1; }
+.rap-sheet > :nth-child(3), .rap-sheet-body > :nth-child(3), .rap-sheet-body > :only-child > :nth-child(3) { --i: 2; }
+.rap-sheet > :nth-child(4), .rap-sheet-body > :nth-child(4), .rap-sheet-body > :only-child > :nth-child(4) { --i: 3; }
+.rap-sheet > :nth-child(5), .rap-sheet-body > :nth-child(5), .rap-sheet-body > :only-child > :nth-child(5) { --i: 4; }
+.rap-sheet > :nth-child(6), .rap-sheet-body > :nth-child(6), .rap-sheet-body > :only-child > :nth-child(6) { --i: 5; }
+.rap-sheet > :nth-child(7), .rap-sheet-body > :nth-child(7), .rap-sheet-body > :only-child > :nth-child(7) { --i: 6; }
+.rap-sheet > :nth-child(n + 8), .rap-sheet-body > :nth-child(n + 8), .rap-sheet-body > :only-child > :nth-child(n + 8) { --i: 7; }
+/* body rows start after the header */
+.rap-sheet[data-state="open"] .rap-sheet-body > :not(:only-child),
+.rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * { animation-delay: calc(165ms + var(--i, 0) * 45ms); }
+/* the close button just appears with the panel */
+.rap-sheet[data-state="open"] > .rap-sheet__x { animation-delay: 60ms; }
+
+[data-rap-motion="calm"] .rap-sheet { animation-timing-function: var(--rap-ease-out); animation-duration: var(--rap-dur); }
+[data-rap-motion="calm"] .rap-sheet[data-state="closed"] { animation-duration: 260ms; animation-timing-function: var(--rap-ease-rm); }
+[data-rap-motion="calm"] .rap-sheet[data-state="open"] > *,
+[data-rap-motion="calm"] .rap-sheet[data-state="open"] .rap-sheet-body > *,
+[data-rap-motion="calm"] .rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-sheet { animation-duration: 1ms !important; }
+  .rap-sheet[data-state="open"] > *,
+  .rap-sheet[data-state="open"] .rap-sheet-body > *,
+  .rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * { animation: none !important; }
+}
+/* the scrim leaves with the panel, not with a falling dialog */
+.rap-scrim.rap-sheet-scrim[data-state="closed"] { animation-duration: 260ms; }

@@ -36,3 +36,21 @@
 .rap-menubar__trigger[data-disabled] { opacity: 0.4; pointer-events: none; }
 .rap-menubar__trigger svg { width: 18px; height: 18px; }
 .rap-menubar-menu { max-height: var(--radix-menubar-content-available-height, none); }
+
+/* ── delight: the open menu's ink pill travels between triggers ── */
+.rap-menubar--glide { position: relative; isolation: isolate; }
+.rap-menubar__glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-ink);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms var(--rap-ease-rm);
+}
+.rap-menubar__glider[data-on] { opacity: 1; }
+.rap-menubar--glide .rap-menubar__trigger[data-state="open"] { background: transparent; }
+[data-rap-motion="calm"] .rap-menubar__glider { display: none; }
+[data-rap-motion="calm"] .rap-menubar--glide .rap-menubar__trigger[data-state="open"] { background: var(--rap-ink); }

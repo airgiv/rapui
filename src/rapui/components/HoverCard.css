@@ -5,3 +5,15 @@
   letter-spacing: -0.01em;
   outline: none;
 }
+
+/* pointer tilt: --hc-rx / --hc-ry are written by springs in HoverCard.tsx.
+   `transform` is free here (the swing uses translate/rotate/scale), so they stack. */
+.rap-hovercard {
+  /* shifted to the centre and back, so it pivots on its middle while the swing keeps Radix's origin */
+  transform: translate(var(--hc-ox, 0px), var(--hc-oy, 0px)) perspective(700px) rotateX(var(--hc-rx, 0deg))
+    rotateY(var(--hc-ry, 0deg)) translate(calc(-1 * var(--hc-ox, 0px)), calc(-1 * var(--hc-oy, 0px)));
+}
+[data-rap-motion="calm"] .rap-hovercard { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-hovercard { transform: none; }
+}

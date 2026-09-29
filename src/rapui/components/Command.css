@@ -64,6 +64,19 @@
 .rap-command-item[data-disabled="false"] { opacity: 1; pointer-events: auto; }
 .rap-command-item[data-disabled="true"] { opacity: 0.4; pointer-events: none; }
 .rap-command-item[data-selected="true"] { background: var(--rap-fill); }
+
+/* ── delight: one gliding highlight (useRowGlide) + rows dealt in on mount ── */
+.rap-command-list--glide { position: relative; isolation: isolate; }
+.rap-command-list--glide .rap-command-item[data-selected="true"] { background: transparent; }
+.rap-command-list--deal :is([cmdk-item], [cmdk-group-heading], .rap-menu-separator) {
+  animation: rap-deal-in 240ms var(--rap-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 22ms);
+}
+[data-rap-motion="calm"] .rap-command-list--deal :is([cmdk-item], [cmdk-group-heading], .rap-menu-separator) { animation: none; }
+[data-rap-motion="calm"] .rap-command-list--glide .rap-command-item[data-selected="true"] { background: var(--rap-fill); }
+@media (prefers-reduced-motion: reduce) {
+  .rap-command-list--deal :is([cmdk-item], [cmdk-group-heading], .rap-menu-separator) { animation: none !important; }
+}
 .rap-command-item > svg { color: var(--rap-ink-2); }
 .rap-command-item[hidden] { display: none; }
 
@@ -72,7 +85,7 @@
 .rap-command-dialog .rap-command-input { height: var(--rap-control-h-lg); }
 .rap-command-dialog .rap-command-list { max-height: min(400px, 60vh); padding: 0 0 2px; }
 /* anchored near the top so the box doesn't jump while the list filters */
-.rap-dialog.rap-command-dialog { top: 18vh; max-height: 72vh; transform: translate(-50%, 0); animation-name: rap-command-in; }
-.rap-dialog.rap-command-dialog[data-state="closed"] { animation-name: rap-command-out; }
+.rap-dialog.rap-command-dialog { top: 18vh; max-height: 72vh; transform: translate(-50%, 0); animation: rap-command-in var(--rap-dur) var(--rap-ease-out); }
+.rap-dialog.rap-command-dialog[data-state="closed"] { animation: rap-command-out 180ms var(--rap-ease-rm) forwards; }
 @keyframes rap-command-in { from { opacity: 0; transform: translate(-50%, 12px) scale(0.98); } }
 @keyframes rap-command-out { to { opacity: 0; transform: translate(-50%, 0) scale(0.98); } }
