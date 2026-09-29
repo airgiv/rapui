@@ -22,6 +22,9 @@ import {
   SplitReveal,
   Sticker,
   Switch,
+  Sheet,
+  SheetContent,
+  SheetTitle,
   Tabs,
   TiltCard,
   AudioPlayer,
@@ -38,7 +41,7 @@ import {
   Rating,
   type SoundSettings,
 } from "../rapui";
-import { ArrowLeft, ArrowRight } from "../rapui/icons";
+import { ArrowLeft, ArrowRight, Menu } from "../rapui/icons";
 import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
@@ -67,6 +70,13 @@ const COPY = "m-0 text-ink-2 text-[1.15rem] leading-[1.5] max-w-[46ch] [&_code]:
 
 /* ───────────────────────── layout pieces ───────────────────────── */
 
+const NAV = [
+  ["#docs", "Docs"],
+  ["#wall", "Components"],
+  ["#tech", "Under the hood"],
+  ["#install", "Install"],
+] as const;
+
 function Header({
   dark,
   setDark,
@@ -78,6 +88,7 @@ function Header({
   sound: SoundSettings;
   setSound: (v: SoundSettings) => void;
 }) {
+  const [menu, setMenu] = useState(false);
   return (
     // An inverted bar: the header carries the OPPOSITE theme, so its own paper is
     // the page's ink (black on the light page, near-white on the dark one) and every
@@ -100,12 +111,7 @@ function Header({
           the bar — instead of rolling letters; the words sit a pixel high to meet the
           optical middle of the lowercase logo */}
       <nav className="flex gap-1 text-[1.05rem] font-medium max-[860px]:hidden">
-        {[
-          ["#docs", "Docs"],
-          ["#wall", "Components"],
-          ["#tech", "Under the hood"],
-          ["#install", "Install"],
-        ].map(([href, label]) => (
+        {NAV.map(([href, label]) => (
           <a
             key={href}
             href={href}
@@ -115,14 +121,59 @@ function Header({
           </a>
         ))}
       </nav>
-      {/* on a phone everything packs a little tighter so the header pill fits */}
+      {/* on a phone everything packs a little tighter so the header pill fits; the
+          sound switch (no room for its word) moves into the menu, where it is labelled */}
       <div className="flex items-center gap-3 max-[480px]:gap-2">
-        <SoundControls value={sound} onChange={setSound} tight />
+        <span className="contents max-[860px]:hidden">
+          <SoundControls value={sound} onChange={setSound} />
+        </span>
         <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
-        <Button size="md" icon className="max-[480px]:hidden" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
+        <Button size="md" icon className="max-[860px]:hidden" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
           Get it
         </Button>
+        <button
+          type="button"
+          onClick={() => setMenu(true)}
+          aria-label="Menu"
+          className="hidden max-[860px]:grid place-items-center size-11 rounded-full bg-ink text-paper transition-transform active:scale-90 [&_svg]:size-5"
+        >
+          <Menu />
+        </button>
       </div>
+      <Sheet open={menu} onOpenChange={setMenu}>
+        <SheetContent side="right" className="gap-6 [--sheet-size:360px]" data-rap-theme={dark ? "dark" : "light"}>
+          <SheetTitle className="sr-only">Menu</SheetTitle>
+          <nav className="flex flex-col pt-10">
+            {NAV.map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                onClick={() => setMenu(false)}
+                className="py-2 text-[2.2rem] font-medium tracking-[-0.04em] leading-[1.05] transition-colors hover:text-flame"
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+          <div className="mt-auto flex flex-col gap-5">
+            <label className="flex items-center justify-between text-[1.05rem] font-medium">
+              <span>Sound effects</span>
+              <Switch checked={sound.enabled} onCheckedChange={(enabled) => setSound({ ...sound, enabled })} />
+            </label>
+            <Button
+              size="lg"
+              icon
+              className="w-full justify-between"
+              onClick={() => {
+                setMenu(false);
+                document.getElementById("install")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Get it
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </header>
   );
 }
