@@ -45,7 +45,6 @@ import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
-import { Floaty, HeroScene } from "./HeroScene";
 import { isCalm } from "../rapui/hooks/useGlide";
 import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
@@ -59,7 +58,7 @@ import { ART } from "../docs/entries/galleries";
 
 /* How many components the docs list. Kept by hand so the landing does not pull
    the docs registry (and every demo in it) into the first bundle. */
-const COUNT = 110;
+const COUNT = 108;
 
 /* ───────────────────────── shared class strings ───────────────────────── */
 
@@ -93,14 +92,30 @@ function Header({
         "rounded-pill bg-paper text-ink",
       )}
     >
-      <a href="#top" className="text-[2.1rem] max-[480px]:text-[1.6rem]" data-rap-cursor="Home" aria-label="rapui, back to top">
-        <Wordmark />
+      {/* Optically centred on the x-height, not on the box: the p's tail makes the
+          mark's box 35% taller than its letters, so box-centring floats the word high.
+          The letters' middle is at 18.4 of 50 units, so it drops by 0.13em. */}
+      <a href="#top" className="flex items-center text-[2.1rem] max-[480px]:text-[1.6rem]" data-rap-cursor="Home" aria-label="rapui, back to top">
+        <Wordmark className="translate-y-[0.13em] align-baseline" />
       </a>
-      <nav className="flex gap-9 text-[1.05rem] font-medium max-[860px]:hidden">
-        <a href="#docs"><RollText>Docs</RollText></a>
-        <a href="#wall"><RollText>Components</RollText></a>
-        <a href="#tech"><RollText>Under the hood</RollText></a>
-        <a href="#install"><RollText>Install</RollText></a>
+      {/* a soft pill behind the link on hover — the same shape as everything else in
+          the bar — instead of rolling letters; the words sit a pixel high to meet the
+          optical middle of the lowercase logo */}
+      <nav className="flex gap-1 text-[1.05rem] font-medium max-[860px]:hidden">
+        {[
+          ["#docs", "Docs"],
+          ["#wall", "Components"],
+          ["#tech", "Under the hood"],
+          ["#install", "Install"],
+        ].map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="px-4 h-11 flex items-center leading-none -translate-y-px rounded-pill transition-colors duration-200 hover:bg-ink/12 focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            {label}
+          </a>
+        ))}
       </nav>
       {/* on a phone everything packs a little tighter so the header pill fits */}
       <div className="flex items-center gap-3 max-[480px]:gap-2">
@@ -114,46 +129,121 @@ function Header({
   );
 }
 
-/* one line of the headline: huge, and a single loose object */
-const LINE = "flex flex-wrap items-center gap-x-[0.2em] font-display font-medium tracking-[-0.055em] text-[clamp(3.2rem,10.5vw,11rem)] leading-[0.82] whitespace-nowrap max-[700px]:whitespace-normal";
+/* one line of the headline */
+const LINE = "flex flex-wrap items-center gap-x-[0.2em] font-display font-medium tracking-[-0.055em] text-[clamp(3.2rem,10.5vw,11rem)] leading-[0.86] whitespace-nowrap max-[700px]:whitespace-normal";
 
-/* Three lines, three objects. The last round had every word and four little
-   cards loose on the table, which read as confetti rather than a headline. Now
-   each LINE is one piece: a degree or two of tilt, a little drift with the
-   pointer, and you can pick a whole line up and it springs back. The tag and the
-   burst belong to their lines and move with them. No shadows: the page is flat. */
-function Hero() {
+/* ── the hero ─────────────────────────────────────────────────
+   No parallax. The headline makes the claim and the page proves it
+   in the same breath: the orange word keeps changing — buttons,
+   toggles, sliders, charts, stickers, players — and beside it, a
+   live component of exactly that kind drops in, ready to be used.
+   It rolls every 2.4s; hovering the hero holds it; clicking the word
+   moves it on. Calm and reduced motion keep it on the first word. */
+const KINDS: { word: string; demo: ReactNode }[] = [
+  {
+    word: "buttons",
+    demo: (
+      <HoldButton size="hero" variant="ink" doneLabel="Shipped">
+        Hold to ship
+      </HoldButton>
+    ),
+  },
+  { word: "toggles", demo: <HeroToggle /> },
+  { word: "sliders", demo: <HeroSlider /> },
+  {
+    word: "charts",
+    demo: (
+      <div className="bg-paper-2 rounded-[26px] px-6 py-5 w-72">
+        <p className="m-0 text-[2rem] font-medium tracking-[-0.03em] tabular-nums leading-none">
+          $58,834<span className="text-[1.4rem] opacity-35">.75</span>
+        </p>
+        <p className="mt-2 mb-3 text-[0.8rem] font-medium text-success">+2.1% today</p>
+        <Sparkline data={[12, 14, 13, 17, 16, 19, 18, 22, 21, 25]} width={240} height={56} />
+      </div>
+    ),
+  },
+  {
+    word: "stickers",
+    demo: (
+      <Sticker shape="burst" color="flame" spin={false} rotate={10} size="1.3rem" className="w-44">
+        hot
+        <br />
+        drop
+      </Sticker>
+    ),
+  },
+  { word: "players", demo: <VoiceNote src={voiceNote} from="me" sent="14:02" /> },
+];
+
+function HeroToggle() {
+  const [on, setOn] = useState(true);
+  return <Switch size="lg" checked={on} onCheckedChange={setOn} label="Dark mode" />;
+}
+function HeroSlider() {
+  const [v, setV] = useState(64);
   return (
-    <section className="relative min-h-svh pt-36 px-(--gutter) pb-14 flex flex-col justify-between gap-14 max-[900px]:min-h-0 max-[900px]:pt-28" id="top">
-      <HeroScene>
-        <h1 className="m-0 flex flex-col items-start" aria-label="All the components, none of the boring bits">
-          <Floaty depth={8} rotate={-1.5} className={LINE}>
-            <span aria-hidden>All the</span>
-          </Floaty>
-          <Floaty depth={16} rotate={1.2} className={cn(LINE, "text-flame ml-[8vw] max-[900px]:ml-0")}>
-            <span aria-hidden>components,</span>
-            <Sticker
-              shape="burst"
-              color="acid"
-              spin={false}
-              size="clamp(0.8rem,1.2vw,1.1rem)"
-              rotate={12}
-              className="absolute -top-[0.35em] left-full -ml-[0.05em] w-[clamp(5.5rem,9vw,8.5rem)] tracking-normal max-[1100px]:hidden"
+    <div className="w-72">
+      <ElasticSlider aria-label="Volume" value={v} onValueChange={setV} icons={[<Volume1 key="a" />, <Volume2 key="b" />]} />
+    </div>
+  );
+}
+
+function Hero() {
+  const [k, setK] = useState(0);
+  const held = useRef(false);
+  const box = useRef<HTMLElement>(null);
+  const sound = useSound();
+  useEffect(() => {
+    if (isCalm(box.current)) return;
+    const t = window.setInterval(() => {
+      if (!held.current && document.visibilityState === "visible") setK((x) => (x + 1) % KINDS.length);
+    }, 2400);
+    return () => window.clearInterval(t);
+  }, []);
+  const kind = KINDS[k];
+  return (
+    <section
+      ref={box}
+      className="relative min-h-svh pt-36 px-(--gutter) pb-14 flex flex-col justify-between gap-14 max-[900px]:min-h-0 max-[900px]:pt-28"
+      id="top"
+      onPointerEnter={() => (held.current = true)}
+      onPointerLeave={() => (held.current = false)}
+    >
+      <div className="relative">
+        <h1 className="m-0 flex flex-col items-start">
+          <span className={LINE}>All the</span>
+          <span className={cn(LINE, "ml-[8vw] max-[900px]:ml-0")}>
+            <button
+              type="button"
+              onClick={() => {
+                setK((x) => (x + 1) % KINDS.length);
+                sound.play("pop", { strength: 0.5 });
+              }}
+              className="relative overflow-hidden text-flame cursor-pointer pb-[0.08em] -mb-[0.08em] text-left"
+              aria-label={`${kind.word}, show another kind`}
             >
-              {COUNT}+
-              <br />
-              inside
-            </Sticker>
-          </Floaty>
-          <Floaty depth={11} rotate={-0.8} className={LINE}>
-            <span aria-hidden>none of the</span>
+              <span key={kind.word} className="inline-block fun:animate-hero-roll">
+                {kind.word},
+              </span>
+            </button>
+          </span>
+          <span className={LINE}>
+            none of the
             <Sticker color="blue" rotate={-7} size="clamp(1.1rem, 3vw, 2.8rem)" className="px-[0.9em] py-[0.35em] tracking-normal">
               boring
             </Sticker>
-            <span aria-hidden>bits.</span>
-          </Floaty>
+            bits.
+          </span>
         </h1>
-      </HeroScene>
+        {/* the proof, live: a component of the kind the headline just named. It sits
+            in the empty top-right corner beside the short first line, so the headline
+            keeps the full width; on narrow screens it drops below. */}
+        <div className="absolute right-0 top-0 grid place-items-center w-[26rem] h-[min(22vw,17rem)] max-[1100px]:static max-[1100px]:mt-10 max-[1100px]:w-auto max-[1100px]:h-48 max-[1100px]:place-items-center max-[1100px]:justify-items-start">
+          <div key={kind.word} className="fun:animate-hero-pop">
+            {kind.demo}
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-[1.3fr_1fr] items-end gap-10 max-[900px]:grid-cols-1">
         <Lead className="max-w-[46ch]">
@@ -163,7 +253,7 @@ function Hero() {
         </Lead>
         <ButtonGroup className="justify-self-end max-[900px]:justify-self-start">
           <Button size="lg" variant="blue" icon onClick={() => (window.location.hash = "docs")}>
-            Browse {COUNT}+ components
+            Browse {COUNT} components
           </Button>
           <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
             npm i rapui
@@ -253,23 +343,24 @@ function SameApi() {
   return (
     <section className="px-(--gutter) pt-10 pb-32 flex flex-col gap-12" id="same-api">
       <div className="grid grid-cols-[1fr_minmax(0,30rem)] gap-10 items-end max-[900px]:grid-cols-1">
-        <Display size="xxl">
-          Same API. <Accent>Just rapui it.</Accent>
-        </Display>
-        <div className="flex flex-col gap-6">
-          <p className={COPY}>
-            If you know shadcn/ui you already know rapui: Radix underneath, <code>cn()</code>, <code>cva</code> variants, a{" "}
-            <code>data-slot</code> on every part. Same props — flip the switch and the screen gets rapui’d.
-          </p>
-          <Switch size="lg" checked={fun} onCheckedChange={setFun} label={fun ? "rapui’d" : "rapui it"} />
-        </div>
+        {/* the switch IS the third line of the headline: as big as the words, so it
+            cannot be missed, and pressing it is the sentence's verb */}
+        <h2 className="m-0 flex flex-col items-start font-display font-medium tracking-[-0.055em] text-[clamp(2.8rem,7vw,7rem)] leading-[0.92]">
+          <span>Same API.</span>
+          <span className="text-flame">Just rapui it.</span>
+          <GiantToggle on={fun} onChange={setFun} />
+        </h2>
+        <p className={COPY}>
+          If you know shadcn/ui you already know rapui: Radix underneath, <code>cn()</code>, <code>cva</code> variants, a{" "}
+          <code>data-slot</code> on every part. Same props on both sides of the switch — only the nerve changes.
+        </p>
       </div>
-      <div className="grid grid-cols-2 gap-tile max-w-[60rem] w-full mx-auto max-[700px]:grid-cols-1">
+      <div className="grid grid-cols-4 gap-tile w-full max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
         {tiles.map((t, i) => (
           <div
             key={`${i}-${fun}`}
             className={cn(
-              "grid place-items-center min-h-52 p-8 rounded-lg transition-colors duration-300",
+              "grid place-items-center min-h-[22rem] p-8 rounded-lg transition-colors duration-300",
               fun ? "bg-paper-2 fun:animate-toss-in" : "bg-white shadow-[inset_0_0_0_1px_#e4e4e7]",
             )}
             style={{ animationDelay: `${i * 70}ms` }}
@@ -278,13 +369,37 @@ function SameApi() {
           </div>
         ))}
       </div>
-      <div className="max-w-[60rem] w-full mx-auto">
-        <Code>{`<Button icon>Publish</Button>
-<Switch checked={on} onCheckedChange={setOn} label="Autosave" />
-<Input placeholder="Project name" />
-<Slider value={[vol]} onValueChange={([v]) => setVol(v)} />`}</Code>
-      </div>
     </section>
+  );
+}
+
+/* A switch the size of a word. Its track is an em-sized pill so it scales with
+   the headline; the knob springs across on the back curve and says what it is. */
+function GiantToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  const sound = useSound();
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label="rapui it"
+      onClick={() => {
+        onChange(!on);
+        sound.play(on ? "toggleOff" : "toggleOn");
+      }}
+      className={cn(
+        "relative mt-[0.12em] h-[0.95em] w-[1.9em] rounded-pill cursor-pointer transition-colors duration-300",
+        "focus-visible:outline-4 focus-visible:outline-ring focus-visible:outline-offset-4",
+        on ? "bg-flame" : "bg-ink/15",
+      )}
+    >
+      <span
+        className="absolute top-[0.09em] left-[0.09em] size-[0.77em] rounded-full bg-white grid place-items-center transition-transform duration-500 ease-back"
+        style={{ transform: on ? "translateX(0.95em)" : "translateX(0)" }}
+      >
+        <span className="text-[0.19em] font-sans font-medium tracking-normal leading-none text-[#282828]">{on ? "rapui" : "plain"}</span>
+      </span>
+    </button>
   );
 }
 
@@ -305,40 +420,43 @@ function Stats() {
   }, [calm]);
   return (
     <section className="grid grid-cols-3 gap-tile px-(--gutter) pb-32 max-[1000px]:grid-cols-1">
+      {/* the number and its sentence read as one line — the text sits right under
+          the figure — and the live proof, if any, waits at the bottom of the card */}
       <div className={STAT}>
-        <span className={BIG}>
-          <Counter to={COUNT} />
-          <span className="text-flame">+</span>
-        </span>
-        <p className={STAT_TEXT}>components — from Dialog and DataTable to a button you have to hold.</p>
-      </div>
-      <div className={STAT}>
-        <span className={BIG}>
-          <Counter to={0} from={99} />
-        </span>
-        <div className="flex flex-col gap-6">
-          {/* the thing we don't ship: touch it and it gets rapui'd */}
-          <button
-            type="button"
-            className={cn(
-              "self-start h-11 px-5 rounded-[4px] bg-[#e4e4e7] text-[#52525b] text-[14px] font-medium cursor-pointer",
-              "transition-[border-radius,background-color,color,height,padding,font-size] duration-500 ease-spring",
-              "hover:rounded-[999px] hover:bg-flame hover:text-white hover:h-14 hover:px-8 hover:text-[1.1rem]",
-            )}
-          >
-            Grey rectangle
-          </button>
-          <p className={STAT_TEXT}>grey rectangles with 4px corners. Hover the one above.</p>
+        <div className="flex flex-col gap-4">
+          <span className={BIG}>
+            <Counter to={COUNT} />
+          </span>
+          <p className={STAT_TEXT}>components, from Dialog and DataTable to a button you have to hold.</p>
         </div>
       </div>
       <div className={STAT}>
-        <span className={BIG}>
-          <Counter to={1} from={9} />
-        </span>
-        <div className="flex flex-col gap-6">
-          <Switch size="lg" checked={calm} onCheckedChange={setCalm} label={calm ? "Calm — the page stands still" : "Calm mode"} />
-          <p className={STAT_TEXT}>attribute turns every joke off, for the serious screens. That switch really does it.</p>
+        <div className="flex flex-col gap-4">
+          <span className={BIG}>
+            <Counter to={0} from={99} />
+          </span>
+          <p className={STAT_TEXT}>grey rectangles with 4px corners. Hover the one below.</p>
         </div>
+        {/* the thing we don't ship: touch it and it gets rapui'd */}
+        <button
+          type="button"
+          className={cn(
+            "self-start h-11 px-5 rounded-[4px] bg-[#e4e4e7] text-[#52525b] text-[14px] font-medium cursor-pointer",
+            "transition-[border-radius,background-color,color,height,padding,font-size] duration-500 ease-spring",
+            "hover:rounded-[999px] hover:bg-flame hover:text-white hover:h-14 hover:px-8 hover:text-[1.1rem]",
+          )}
+        >
+          Grey rectangle
+        </button>
+      </div>
+      <div className={STAT}>
+        <div className="flex flex-col gap-4">
+          <span className={BIG}>
+            <Counter to={1} from={9} />
+          </span>
+          <p className={STAT_TEXT}>attribute turns every joke off, for the serious screens. The switch below really does it.</p>
+        </div>
+        <Switch size="lg" checked={calm} onCheckedChange={setCalm} label={calm ? "Calm — the page stands still" : "Calm mode"} />
       </div>
     </section>
   );
@@ -445,42 +563,14 @@ const BUBBLE = "max-w-[min(100%,34rem)] px-6 py-4 text-[clamp(1.1rem,1.8vw,1.5re
 const THEM = "rounded-[28px] rounded-bl-[8px] bg-paper-2 text-ink";
 const ME = "rounded-[28px] rounded-br-[8px] bg-ink text-paper";
 
-function ChatPop({ side, className, children }: { side: "them" | "me"; className?: string; children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (isCalm(el)) return setShown(true);
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setShown(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "0px 0px -12% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-  const tilt = side === "me" ? 6 : -6;
-  return (
-    <div
-      ref={ref}
-      className={cn(side === "me" ? "self-end origin-bottom-right" : "self-start origin-bottom-left", className)}
-      style={{
-        opacity: shown ? 1 : 0,
-        translate: shown ? "0 0" : "0 48px",
-        rotate: shown ? "0deg" : `${tilt}deg`,
-        scale: shown ? "1" : "0.82",
-        transition: "opacity 260ms linear, translate 700ms var(--rap-ease-back), rotate 700ms var(--rap-ease-back), scale 700ms var(--rap-ease-back)",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
+/* The conversation plays as you scroll. A tall runway holds a sticky pink window
+   (a phone-sized share of the screen, not a wall); how far you are through the
+   runway is how many messages have arrived. Messages are bottom-aligned like a
+   real chat, so each new one pushes the rest up and older ones slide out of the
+   top. Each arrives on mount: up from below, tilted toward its sender's side,
+   over-shooting on the back curve. Scroll back and they un-send. Calm shows the
+   whole thread at once. */
+const DOT_GRID = "[background-image:radial-gradient(circle,rgb(255_255_255/0.55)_1.4px,transparent_1.7px)] [background-size:24px_24px]";
 
 function MediaChat() {
   const chapters = [
@@ -489,25 +579,62 @@ function MediaChat() {
     { at: 6, title: "Type" },
     { at: 9, title: "Outro" },
   ];
+  const items: { side: "them" | "me"; className?: string; node: ReactNode }[] = [
+    { side: "them", className: cn(BUBBLE, THEM), node: "Cut the reel for Friday. Tell me what you think 👀" },
+    { side: "them", className: "w-[min(100%,36rem)]", node: <VideoPlayer src={reel} title="Studio reel" chapters={chapters} /> },
+    { side: "me", className: cn(BUBBLE, ME), node: "wait — the whole frame leans when I scrub?? 😂" },
+    { side: "me", node: <VoiceNote src={voiceNote} from="me" sent="14:02" /> },
+    { side: "them", className: cn(BUBBLE, THEM), node: "It does. And here’s the track for it:" },
+    { side: "them", className: "w-[min(100%,30rem)]", node: <AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" /> },
+    {
+      side: "them",
+      className: cn(THEM, "flex gap-1.5 px-5 py-5"),
+      node: [0, 1, 2].map((d) => (
+        <span key={d} className="size-2.5 rounded-full bg-ink/35 fun:animate-dot" style={{ animationDelay: `${d * 160}ms` }} />
+      )),
+    },
+  ];
+  const runway = useRef<HTMLDivElement>(null);
+  const [n, setN] = useState(1);
+  const sound = useSound();
+  const last = useRef(1);
+  useEffect(() => {
+    const el = runway.current;
+    if (!el) return;
+    if (isCalm(el)) return setN(items.length);
+    const read = () => {
+      const r = el.getBoundingClientRect();
+      const travel = r.height - window.innerHeight;
+      const p = Math.min(1, Math.max(0, (window.innerHeight * 0.35 - r.top) / Math.max(1, travel)));
+      const next = 1 + Math.min(items.length - 1, Math.floor(p * items.length));
+      if (next > last.current) sound.play("pop", { strength: 0.4, pitch: 0.9 + next * 0.05 });
+      last.current = next;
+      setN(next);
+    };
+    read();
+    window.addEventListener("scroll", read, { passive: true });
+    window.addEventListener("resize", read);
+    return () => {
+      window.removeEventListener("scroll", read);
+      window.removeEventListener("resize", read);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <div className="flex flex-col gap-3 w-[min(100%,54rem)] mx-auto">
-      <ChatPop side="them" className={cn(BUBBLE, THEM)}>Cut the reel for Friday. Tell me what you think 👀</ChatPop>
-      <ChatPop side="them" className="w-[min(100%,40rem)]">
-        <VideoPlayer src={reel} title="Studio reel" chapters={chapters} />
-      </ChatPop>
-      <ChatPop side="me" className={cn(BUBBLE, ME)}>wait — the whole frame leans when I scrub?? 😂</ChatPop>
-      <ChatPop side="me">
-        <VoiceNote src={voiceNote} from="me" sent="14:02" />
-      </ChatPop>
-      <ChatPop side="them" className={cn(BUBBLE, THEM)}>It does. And here’s the track for it:</ChatPop>
-      <ChatPop side="them" className="w-[min(100%,30rem)]">
-        <AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" />
-      </ChatPop>
-      <ChatPop side="them" className={cn(THEM, "flex gap-1.5 px-5 py-5")}>
-        {[0, 1, 2].map((d) => (
-          <span key={d} className="size-2.5 rounded-full bg-ink/35 fun:animate-dot" style={{ animationDelay: `${d * 160}ms` }} />
-        ))}
-      </ChatPop>
+    <div ref={runway} className="relative" style={{ height: `calc(min(74vh, 42rem) + ${items.length * 18}vh)` }}>
+      <div className={cn("sticky top-28 h-[min(74vh,42rem)] rounded-lg bg-bubble overflow-hidden", DOT_GRID)}>
+        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-[clamp(1rem,3vw,2.5rem)] w-[min(100%,56rem)] mx-auto">
+          {items.slice(0, n).map((it, i) => (
+            <div
+              key={i}
+              className={cn(it.side === "me" ? "self-end origin-bottom-right" : "self-start origin-bottom-left", "fun:animate-chat-pop", it.className)}
+              style={{ ["--tilt" as string]: it.side === "me" ? "7deg" : "-7deg" }}
+            >
+              {it.node}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -572,10 +699,10 @@ function Wall() {
 <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} />`}
         stageClass="bg-paper place-items-stretch"
       >
-        {/* A mosaic, not a grid of equal boxes: each chart keeps its own size and
-            they pack into centred columns with one small gap between neighbours —
-            no empty tile around a small chart. */}
-        <div className="columns-[20rem] gap-tile max-w-[66rem] mx-auto w-full [&>*]:mb-tile [&>*]:break-inside-avoid [&>*]:mx-auto">
+        {/* A plain grid of 20rem tracks — the width every chart card is drawn at —
+            centred, with one gap both ways, so nothing is squeezed or cut and the
+            spacing is the same between every pair of cards. */}
+        <div className="grid grid-cols-[repeat(3,20rem)] justify-center items-start gap-5 w-full max-[1300px]:grid-cols-[repeat(2,20rem)] max-[860px]:grid-cols-[minmax(0,20rem)]">
           {/* each chart in its own wrapper: BalanceChart cancels its pull-stretch with a
               negative margin, which a margin set on it directly would undo */}
           {[
@@ -628,20 +755,18 @@ const lb = useLightbox();
         <GalleriesDemo />
       </Showcase>
 
-      <Showcase
-        id="media"
-        title="Players"
-        sub="that dance a little"
-        desc="Audio with a waveform you scrub like a chart, bars that breathe to the live level; video whose controls float in one pill, snap to chapters and skew the frame as you drag; a voice note for chat. Keyboard all the way."
-        code={`import { AudioPlayer, VideoPlayer, VoiceNote } from "rapui";
-
-<VideoPlayer src="/reel.webm" title="Studio reel" chapters={chapters} />
-<AudioPlayer src="/grid-lines.wav" title="Grid Lines" artist="The Baseline Club" />
-<VoiceNote src="/note.wav" from="me" sent="14:02" />`}
-        stageClass="bg-bubble"
-      >
+      <section className="pt-20 pb-24 border-t-[1.5px] border-line" id="media">
+        <div className="grid grid-cols-[1fr_minmax(0,28rem)] gap-x-10 gap-y-6 items-end mb-10 max-[900px]:grid-cols-1">
+          <Display size="xl">
+            <SplitReveal>Players</SplitReveal> <Accent tone="mute">that dance a little</Accent>
+          </Display>
+          <p className={COPY}>
+            Audio with a waveform you scrub like a chart, bars that breathe to the live level; video whose controls float in one
+            pill, snap to chapters and skew the frame as you drag; a voice note for chat. Scroll — the conversation plays.
+          </p>
+        </div>
         <MediaChat />
-      </Showcase>
+      </section>
 
       <Showcase
         id="tools"
@@ -955,7 +1080,7 @@ function Footer() {
     <footer className="relative -mt-10 pt-24 px-(--gutter) pb-8 rounded-t-lg bg-ink text-paper overflow-hidden dark:bg-paper-2 dark:text-ink">
       <div className="flex justify-between items-center flex-wrap gap-8">
         <Display size="xxl">
-          Bored yet<Accent>?</Accent>
+          Bored yet?
         </Display>
         <CircleButton size={180} variant="accent" className="[--c-fill:var(--rap-acid)] [--c-fill-fg:#282828]" onClick={() => (window.location.hash = "docs")}>
           Open

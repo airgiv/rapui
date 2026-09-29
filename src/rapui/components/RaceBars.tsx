@@ -73,10 +73,10 @@ export interface RaceBarsProps extends HTMLAttributes<HTMLDivElement> {
   corner?: number;
 }
 
-const ROW = 34;
+const ROW = 44;
 
 export const RaceBars = forwardRef<HTMLDivElement, RaceBarsProps>(function RaceBars(
-  { periods = DEMO, defaultPeriod, unit = "visits", rows = 6, corner, className, ...rest },
+  { periods = DEMO, defaultPeriod, unit = "visits", rows = 4, corner, className, ...rest },
   ref,
 ) {
   const [periodId, setPeriodId] = useState(defaultPeriod ?? periods[0]?.id);
@@ -248,7 +248,7 @@ function RaceRow({
             {Math.round(n).toLocaleString("en-GB")}
           </span>
         </div>
-        <div data-slot="race-bars-track" className="relative h-1.5 rounded-pill bg-ink/7">
+        <div data-slot="race-bars-track" className="relative h-3 rounded-pill bg-ink/7">
           <i
             data-slot="race-bars-bar"
             /* grey pills with one in colour, the BarsChart way: solid ink bars
