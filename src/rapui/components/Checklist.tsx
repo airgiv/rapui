@@ -1,832 +1,999 @@
-/* Adapted from Bencho — https://bencho.dev — MIT licence,
-   see bencho.dev/licence. Source kept as published apart from
-   the stylesheet import below and the sizes marked "rap/ui"; the tokens
-   its CSS reads are mapped onto rap/ui's in Checklist.css. */
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+/* Adapted in part from Bencho — https://bencho.dev — MIT licence,
+   see bencho.dev/licence. What is still Bencho's is marked
+   "(Bencho)" below: the one-spring-per-row rule and its clamped
+   readings (the LAG/RUN window), the add-a-task row, the reset,
+   and the whole of `finish="heap"` — the collapse, the lean that
+   comes from the overhang, the daylight between two slips, the
+   gravity timing. The liquid rows, the scribble, the roll to the
+   Done pile, the progress pill and the party are rap/ui's own. */
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type HTMLAttributes,
+  type KeyboardEvent,
+  type ReactNode,
+  type Ref,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSound } from "../sound";
+import { useSpring } from "../hooks/useSpring";
+import { isCalm } from "../hooks/useGlide";
+import { clamp, cn, prefersReducedMotion } from "../utils";
 import "./Checklist.css";
 
 /* ══ Checklist ════════════════════════════════════════════
-   Three tasks, and the only thing this block does is cross
-   one out.
+   A card of big round rows. Tick one and it is POURED: the
+   round box bursts into a splash, liquid runs out of it across
+   the whole pill and turns the words its own colour, a pen
+   scribbles the task out — and then the row rolls down into a
+   Done pile at the bottom while the rest close the gap. Tick the
+   last one and the progress pill on top is brim-full, the card
+   squashes like a jelly and throws a handful of rap/ui shapes.
 
-   ONE SPRING PER ROW, AND EVERYTHING IS READ OFF IT. The box
-   filling, the tick drawing, the rule crossing the words and
-   the words giving up their ink are four readings of a single
-   number, not four things animated toward the same moment.
-   With four transitions there are four chances for one to
-   arrive early and break the illusion that this is one event;
-   with one number there are none — the same rule the player
-   follows, and the reason nothing in this component's
-   stylesheet carries a transition of its own.
+   ── EVERYTHING IS A READING OF A SPRING (Bencho) ─────────
+   Nothing in a row is animated toward a moment; each part
+   reads a number, so no part can arrive early. The box's dot
+   and its tick read the row's spring — the dot raw, so it
+   swells past full and settles, the tick clamped (an
+   overshooting stroke draws past its own end and pulls back,
+   which is a glitch, not a bounce). The liquid, the scribble
+   and the fading words read the POUR, a second, heavier spring
+   started by the same tick (see usePour): the box answers
+   first, the colour follows out of it, and the scribble waits
+   a tenth of the pour in (Bencho's LAG/RUN window), so the
+   words are crossed out as the colour reaches them — cause,
+   then effect.
 
-   WHERE THE OVERSHOOT IS ALLOWED, AND WHERE IT IS NOT. A
-   spring goes past its target and comes back, which is what
-   makes a check feel like a press rather than a state change
-   — but only some of these can survive that. The fill takes
-   the raw value, so the box swells past full and settles. The
-   TICK and the RULE take it clamped: a tick that overshoots
-   draws itself past its own end and pulls back, which is a
-   glitch rather than a bounce, and a rule that overshoots
-   runs off the end of the word it is crossing out.
+   ── WHY LIQUID, AND WHY FROM THE BOX ─────────────────────
+   rap/ui's "done" is a fill (HoldButton, Stepper, FormStack):
+   colour arriving from somewhere, not a state being swapped.
+   Here it arrives from the thing you pressed. The liquid is a
+   clip-path circle centred on the box whose radius reads the
+   spring; its rim wobbles (two sines, 5 and 3 lobes, phase
+   advancing with the fill itself, so no timer) and the wobble
+   is strongest mid-pour and gone at both ends — the pill is
+   round at rest, liquid only while it moves. The words are a
+   second copy of the row in the liquid's ink, clipped by the
+   same circle, so they change colour exactly where it reaches.
+   Seven droplets fly off the box on the way in (CSS, `fun:`).
 
-   One spring, two readings of it, and the difference is one
-   `clamp`. */
+   ── THE SCRIBBLE ─────────────────────────────────────────
+   Not a ruler line: one stroke there and a quicker one back,
+   jittered per task (a seeded random, stable across renders),
+   drawn with stroke-dashoffset in the row's own pixels — the
+   label is measured, so the stroke is cut for those words and
+   its thickness never stretches.
 
-/* ── inlined from lab/spring ──────────────────────── */
-/* ── one spring, for everything that settles ───────────────
-   The maths was already on this bench twice, copied by hand:
-   Humidity's wheel and Brightness's column both accumulate
-   velocity toward a target, damp it, and snap when both the
-   delta and the velocity fall under 0.02. Two copies is a
-   coincidence; five would be a policy, so it comes out here
-   before the elastic blocks are written against it.
+   ── THE ROLL ─────────────────────────────────────────────
+   480ms after the tick — long enough to see it poured and
+   crossed out, short enough that you do not wait — the row is
+   filed and rolls to the top of the Done pile. Every row sits
+   on its own pixel spring for `y` (a FLIP without measuring:
+   rows are one fixed height, so the new place is arithmetic),
+   so the rows below slide up into the hole as the filed one
+   travels. The filed row lifts off the card while it travels
+   (3% and the pop shadow, both fading with the distance left)
+   and its box ROLLS: it turns by distance / radius, so a
+   150px trip is two full turns and the tick comes to rest
+   upright because the angle is read off the distance still to
+   go. The travel spring is heavier than the tick's (`bounce`
+   halved): a row overshooting its slot by a third of its
+   height lands on its neighbour.
 
-   The two shipped copies are deliberately NOT refactored onto
-   this. They work, they are tuned, and rewriting the innards
-   of two live components to prove a point about duplication
-   is how a good afternoon becomes a bad one. This is the one
-   new code uses.
+   Rows in the pile lean ±0.6° in turn — laid down by hand,
+   like the Toast pile — and newest sits on top, nearest the
+   open tasks, so the shortest trip is always the latest one.
+   Ticking the top row over and over is the fast way through
+   the list: the next task slides up under your finger.
 
-   Frames, not milliseconds. `dt` is expressed in sixtieths of
-   a second and the damping is RAISED to it rather than
-   multiplied by it, so a dropped frame decays the same amount
-   of energy as the two frames it replaced. Multiplying is the
-   version that makes a spring behave differently on a busy
-   page, which is the hardest kind of bug to see.
+   ── THE FINISH ───────────────────────────────────────────
+   `finish="party"` (default): once the last row has landed,
+   the card squashes (1.035 × 0.955, then back through a small
+   rebound — a jelly, not a zoom) and 28 little shapes (dot,
+   pill, sparkle, ring, squiggle, flower in the accent colours)
+   are thrown up from the progress pill and rain down over the
+   card under gravity (a short throw, a long fall: the shapes
+   should land on the list, not leave the stage). `finish="heap"`: Bencho's collapse, below. `"none"`:
+   the pill fills and that is all. After `resetAfter` the list
+   drains and rolls back into its first order.
 
-   The loop parks itself the moment the value has settled.
-   CLAUDE.md is not complimentary about the one permanent
-   requestAnimationFrame already on this bench and there is no
-   case for five more. */
+   Calm (`calm`, data-rap-motion="calm" or reduced motion): the
+   state change stays — rows fill and are crossed out at once,
+   in place, no roll, no splash, no finish. Sound (opt-in): a
+   tick that rises in pitch as the list empties, a release on
+   untick, success on the party, a thud when the heap lands. */
 
-/* 0..100 into the two numbers a spring actually has.
-
-   50 is what Humidity and Brightness were tuned at, which is
-   the rule every elastic knob on this bench follows — see
-   lab/motion. Turn the panel to the middle and nothing has
-   changed.
-
-   Both ends have to be usable, which is what fixes the range:
-   at 0 it is slow and heavy and still arrives, at 100 it is
-   quick with a visible overshoot, and nowhere in between does
-   it ring for longer than it takes to read. */
-/* The pair is chosen by DAMPING RATIO and then written back
-   as stiffness and decay, because the ratio is the thing a
-   person is actually setting and the two numbers on their own
-   do not say what they add up to.
-
-     zeta = -ln(d) / (2 * sqrt(k))
-
-   The first version of this ran 0.06..0.26 stiffness against
-   0.93..0.74 decay, which reads as a sensible spread and is
-   not one: it puts zeta between 0.15 and 0.16 across the
-   WHOLE range, so every setting overshot by about sixty per
-   cent and the knob only changed how fast it did it. Pull's
-   return went 130px past its own resting position and lifted
-   the content off the top of the card.
-
-     0   → zeta ~0.85, heavy, arrives without a ring
-     50  → zeta ~0.41, near where Humidity and Brightness sit
-     100 → zeta ~0.20, lively, two visible rebounds
-
-   Both ends shippable, which is the constraint that fixed the
-   numbers rather than taste. */
-const springOf = (tune: number) => ({
-  /* stiffness: how hard it is pulled toward the target */
-  k: 0.08 + (tune / 100) * 0.16,
-  /* decay, per frame: how much of the velocity survives */
-  d: 0.62 + (tune / 100) * 0.2,
-});
-
-/* Units matter. The snap threshold is absolute, so a caller
-   works in pixels or in 0..100 — a spring driven over 0..1
-   would be "settled" before it had visibly moved. */
-function useSpring(target: number, tune = 50, instant = false) {
-  const [at, setAt] = useState(target);
-  const cur = useRef(target);
-  const vel = useRef(0);
-  const raf = useRef(0);
-
-  useEffect(() => {
-    if (instant) {
-      cur.current = target;
-      vel.current = 0;
-      setAt(target);
-      return;
-    }
-    const { k, d } = springOf(tune);
-    let prev = 0;
-    const tick = (t: number) => {
-      const dt = prev ? clamp((t - prev) / 16.67, 0, 2.5) : 1;
-      prev = t;
-      vel.current += (target - cur.current) * k * dt;
-      vel.current *= Math.pow(d, dt);
-      cur.current += vel.current * dt;
-      if (Math.abs(target - cur.current) < 0.02 && Math.abs(vel.current) < 0.02) {
-        cur.current = target;
-        vel.current = 0;
-        setAt(target);
-        raf.current = 0;
-        return;
-      }
-      setAt(cur.current);
-      raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf.current);
-      raf.current = 0;
-    };
-    /* `tune` sits here beside `target` for the reason
-       Brightness spells out: the loop closes over it, so
-       without it a knob turned mid-flight would do nothing
-       until something else restarted the effect. Restarting
-       picks up from the refs, so it continues rather than
-       snapping. */
-  }, [target, tune, instant]);
-
-  return at;
-}
-
-/* Read once, the way the wheel and the pill nav do. A
-   preference, not a live input. */
-const stillness = () =>
-  typeof window !== "undefined" &&
-  !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-
-/* rap/ui: 360, from 300 — the type is set at 18px here rather
-   than 14 (see .chk-say), and the card grows with it so the
-   longest default task still leaves the same share of air. */
-const W = 360;
-/* the inset, and it is the SAME on all four sides — which is
-   not what `padding: 14px` gives you here. See the note where
-   it is used. */
-/* rap/ui: 18, from 14 — scaled with the type. */
-const PAD = 18;
-/* 40, down from 52. The gap between two tasks is whatever the
-   row has left over after the box, twice — so 52 put 30px
-   between them and read as a list of three separate things.
-   40 leaves 18, which is a list. */
-/* rap/ui: 52, from 40 — the same 40:14 row-to-type ratio at
-   18px type. The gap between two boxes works out to 28, which
-   is Bencho's 22 scaled by the same factor, so it still reads
-   as a list rather than three separate things. */
+/* ── sizes ─────────────────────────────────────────────── */
+/* the card's inset: 8, so a 52px pill (radius 26) sits
+   concentric in a 34px card corner */
+const PAD = 8;
+/* the progress pill is a control (44), the rows a large
+   control (52): the header reads as smaller than a task */
+const HEAD = 44;
 const ROW = 52;
-/* 18, against 14px text. 22 was the first number and it had
-   no reasoning behind it beyond looking balanced on its own —
-   which is the trap with a control next to type: a checkbox is
-   sized against the LINE it sits beside, and at 22 it was
-   half again the cap height of the words it belonged to and
-   read as the subject of the row rather than as its switch. */
-/* rap/ui: 24, from 18 — the same box-to-type ratio at 18px. */
+/* tiles sit 4px apart (--rap-gap-tile) */
+const GAP = 4;
+/* the "Done" caption above the pile */
+const DIV = 30;
 const BOX = 24;
-/* rap/ui: 28, from 18 — the card corner every rap/ui surface
-   uses (--rap-radius), so the checklist sits in the family of
-   round, Readymag-style cards rather than Bencho's tighter wall. */
-const CORNER = 28;
-/* rap/ui: the box corner as a share of its side — 0.38, up from
-   Bencho's 0.32, to match the rounder rap/ui Checkbox. */
-const ROUND = 0.38;
+const CORNER = 34;
 const BOUNCE = 50;
-
-/* ── the rule follows the tick, it does not race it ────────
-   Both are read off the same spring, but the rule starts a
-   tenth of the way in and finishes a little early — so the
-   box answers first and the words are crossed out after,
-   which is the order the two things actually happen in when a
-   person ticks something off a list. Started together they
-   read as one wipe across the whole row; started apart they
-   read as cause and effect.
-
-   It is a window on the same number rather than a second
-   timer, so there is nothing to keep in step. */
+/* the scribble's window on the spring (Bencho's LAG/RUN) */
 const LAG = 0.12;
 const RUN = 0.72;
+/* see THE ROLL */
+const ROLL_MS = 480;
+/* let the last row land before the finish starts */
+const FINALE_MS = 420;
+const HOLD = 3200;
+const MAX = 6;
+const TASKS = ["Book the studio", "Send the estimate", "Pick a typeface"];
 
-/* ══ the finish ═══════════════════════════════════════════
-   Tick the last open task and the list FALLS DOWN.
+export type ChecklistTone = "mix" | "blue" | "flame" | "acid" | "bubble" | "sky" | "plum" | "ink";
+export type ChecklistFinish = "party" | "heap" | "none";
 
-   What was here was a celebration: a box that bounced, three
-   marks that redrew, the rows gathering in, a squish, and a
-   four-point glint out of the middle of the card. All of it
-   ran off one clock, which was the right way to build the
-   wrong idea — five flourishes agreeing with each other is
-   still five flourishes, and the glint in particular was a
-   sparkle sitting on top of a list, which is what every
-   "well done" animation on the internet already is.
+/* the liquid and the ink it carries — Sticker's pairs: light
+   accents keep dark ink in both themes, so a fixed #282828
+   (as in Sticker), not --rap-ink, which turns light in dark */
+const TONE: Record<Exclude<ChecklistTone, "mix">, string> = {
+  blue: "[--chk-tone:var(--rap-blue)] [--chk-tone-ink:#fff]",
+  flame: "[--chk-tone:var(--rap-flame)] [--chk-tone-ink:#fff]",
+  plum: "[--chk-tone:var(--rap-plum)] [--chk-tone-ink:#fff]",
+  acid: "[--chk-tone:var(--rap-acid)] [--chk-tone-ink:#282828]",
+  bubble: "[--chk-tone:var(--rap-bubble)] [--chk-tone-ink:#282828]",
+  sky: "[--chk-tone:var(--rap-sky)] [--chk-tone-ink:#282828]",
+  ink: "[--chk-tone:var(--rap-ink)] [--chk-tone-ink:var(--rap-paper-2)]",
+};
+/* "mix" deals the accents out by row, like a sheet of stickers */
+const MIX: Exclude<ChecklistTone, "mix" | "ink">[] = ["blue", "flame", "acid", "bubble", "sky", "plum"];
 
-   This is one idea instead. Finishing the list takes the
-   floor out from under it: the three rows stop being held up,
-   fall, and land in a heap on the bottom edge of the card.
-   Nothing congratulates you. The list is simply over, and it
-   behaves like something that is over.
+const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+/* a seeded random: the same task always gets the same scribble */
+const rnd = (seed: number, k: number) => {
+  const s = Math.sin(seed * 12.9898 + k * 78.233) * 43758.5453;
+  return s - Math.floor(s);
+};
 
-   And the card is the size it always was. See the note on the
-   collapse below: the distance comes out of the list closing
-   up, not out of empty floor added under it. */
+/* ── the heap (Bencho) ─────────────────────────────────────
+   Finishing the list takes the floor out from under it: the
+   rows stop being held up, fall, and land in a heap on the
+   bottom of the card. THE FALL IS A COLLAPSE: the card keeps
+   its height, so the distance comes from the rows closing up —
+   each slip lies over the one below by the slack above that
+   one's words, so the bottom row barely moves and the top one
+   travels the whole compaction. One gravity: the furthest fall
+   takes DROP_MS and the others √(distance) of it, which is
+   where the cascade comes from — nothing is delayed.
 
-/* ── THE FALL IS A COLLAPSE, not a drop ───────────────────
-   The card is exactly as tall as its three rows again, which
-   is where it started and where it belongs — a checklist with
-   a hundred pixels of empty floor under it is a checklist that
-   looks unfinished. So there is nowhere to fall TO, and the
-   distance has to come from somewhere else.
-
-   It comes from the rows closing up. A row is 40px tall and
-   the thing you can see in it — the box and the words — is
-   barely twenty: the rest is the reason the whole row is a
-   target rather than the checkbox alone. Standing in a list
-   those gaps are what makes it a list. Lying in a heap they
-   are nothing, and the slips settle against each other.
-
-   So the heap is tighter than the list by twice that slack per
-   row, and THAT is the fall. The bottom row barely moves, the
-   top one travels the whole compaction, and each lands where
-   the one below it stopped. */
-
-/* ── what a row actually looks like ───────────────────────
-   The taller of its checkbox and its line of type, and NOTHING
-   added on top of that — both MEASURED, because the line box
-   of 14px type is not 14px and a guess at it is a guess at how
-   close two slips can lie. Derived from the Box knob, so the heap
-   stays tight at every setting of it rather than at the
-   default one.
-
-   It carried four pixels of air at first, on the reasoning
-   that a slip wants a margin. It does not: the slip is the
-   card's own colour, so its edge is invisible and the margin
-   is not protecting anything — the only thing that must not
-   happen is a neighbour's slip covering this row's words, and
-   the derived gap already guarantees with room to spare. What the
-   four pixels DID do was eat the fall, because every pixel of
-   slack a slip keeps is a pixel the heap cannot close up.
-   Measured at the largest Box: 10px of collapse with the
-   padding, 18 without it. */
-const BODY = (side: number, line: number) => Math.max(side, line);
-
-/* how long the FURTHEST fall takes; the others are shorter in
-   proportion, because they are all under one gravity */
+   THE TILT IS THE OVERHANG: a slip longer than the one it
+   lands on hangs over by the difference and tips that way, and
+   the lean accumulates from the floor up. It saturates (two
+   degrees for sixteen pixels, never six — the angle where a
+   slip stops resting and starts looking dropped). The daylight
+   between two slips is computed from the leans where the INK
+   is, so a tilted edge never covers the words below it. */
 const DROP_MS = 0.46;
-/* how far it comes back up off the floor, at most. A landing
-   with no bounce at all reads as a card being placed — but a
-   9px rebound on an 8px fall reads as a trampoline, so it is
-   capped against the distance actually travelled. */
 const REBOUND = 8;
-/* Framer wants an array it can own, and `as const` alone hands
-   it a readonly one — spread at the call site */
 const FALL_EASE = ["easeIn", "easeOut", "easeIn"] as const;
-
-/* how long the heap lies there before the list comes back */
-const HOLD = 3000;
-
-/* ── the heap ──────────────────────────────────────────────
-   Three slips landing on each other do not land square, and
-   the tilt is what stops this reading as the list closing up.
-   Small — three degrees is a shrug, not a mess — and different
-   per row so the eye cannot find a pattern in it. */
-/* ── THE TILT IS THE OVERHANG ──────────────────────────────
-   It was a hand-written fan: five numbers, the same lean every
-   time, whatever was written on the slips. Which is fine until
-   you notice what it is pretending to be. A slip lying on
-   another slip is held up by exactly as much of it as there is
-   underneath; the rest hangs, and what hangs, tips.
-
-   So the lean comes out of the WORDS now. Each row is measured
-   — the box, the gap and the line of type, to the end of the
-   text — and a slip that is longer than the one it lands on
-   overhangs to the right by the difference and leans that way.
-   A shorter one is fully carried and adds nothing of its own.
-
-   It ACCUMULATES from the floor up, because a slip resting on
-   a tilted slip starts tilted: the bottom one lies flat on the
-   card, and every one above inherits the lean of what it is
-   lying on plus whatever its own overhang adds. That is what
-   makes a heap of long-then-short read differently from
-   short-then-long, which is the whole point of measuring.
-
-   The response SATURATES rather than being a rate. Straight
-   degrees-per-pixel put the default list at 0.9 degrees, which
-   is a heap you have to be told is leaning, and then needed a
-   clamp anyway the moment somebody typed a long task. This
-   curve is at two degrees for the sixteen pixels those three
-   tasks differ by, four and a half by sixty, and never reaches
-   six — which is the angle where a slip stops looking like it
-   is resting on something and starts looking dropped. */
 const MAX_LEAN = 6;
 const REACH = 40;
 const leanOf = (over: number) => MAX_LEAN * (1 - Math.exp(-over / REACH));
-/* the sideways untidiness, which the words have no opinion
-   about — this is the one thing left that is just chosen */
-const DRIFT = [-5, 4, -2, 5, -3];
-
-/* ── the daylight between two slips ───────────────────────
-   Tilting a slip moves its ends: two of them leaning by
-   different amounts converge on one side, and if they converge
-   by more than the gap the upper one's edge covers the lower
-   one's words. So the spacing is computed from the leans
-   rather than picked — and since the leans now come from the
-   text, per render.
-
-   MEASURED WHERE THE INK IS, not across the row. This used to
-   ask what the slips do at x = 272, which is the end of the
-   ROW — and the row is invisible. A slip is the card's own
-   colour; the only place it can hide anything is where there
-   is something under it to hide, and the words stop at 131 to
-   147px. Asking the question at the end of the row inflated
-   the gap to 5.7px for a two degree lean when the real answer
-   at the end of the WORDS is 0.4, and pushed every slip five
-   pixels apart for a collision that could not happen.
-
-   Rotation is about the row's middle, so a point at x is
-   displaced by (x - middle) * sin. The worst case between two
-   slips is at the far end of the longer one's ink. */
-const SPAN = W - PAD * 2;
-const MID = SPAN / 2;
+const DRIFT = [-5, 4, -2, 5, -3, 3, -4];
 const sin = (deg: number) => Math.sin((deg * Math.PI) / 180);
-const gapFor = (leans: number[], runs: number[]) =>
+const gapFor = (leans: number[], runs: number[], mid: number) =>
   1 +
   Math.max(
     0,
     ...leans.slice(1).map((below, i) => {
-      const ink = Math.max(runs[i] ?? MID, runs[i + 1] ?? MID);
-      return Math.max(0, (ink - MID) * (sin(leans[i]) - sin(below)));
+      const ink = Math.max(runs[i] ?? mid, runs[i + 1] ?? mid);
+      return Math.max(0, (ink - mid) * (sin(leans[i]) - sin(below)));
     }),
   );
 
-/* ── what is on the list ───────────────────────────────────
-   Three real lines, short enough that the rule crosses each
-   one in a single visible stroke and different enough in
-   length that you can see it is measuring the WORDS rather
-   than the row. Placeholder text would have made them the
-   same length and lost that. */
-const TASKS = ["Book the studio", "Send the estimate", "Pick a typeface"];
+interface Task {
+  id: number;
+  text: string;
+  done: boolean;
+  /** 0 = in the open list; otherwise the order it was filed in */
+  filed: number;
+}
 
-/* ── and it can be added to ────────────────────────────────
-   Five, which is three that come with it and two of your own.
-   A cap rather than an open list because the card is a fixed
-   box on a wall of fixed boxes: something has to say when it
-   is full, and a number you can see the end of is kinder than
-   a scrollbar appearing inside a block.
-
-   The spare row goes when the list is full — an "add" that
-   cannot add is a control lying about itself. */
-const MAX = 5;
+export interface ChecklistProps extends Omit<HTMLAttributes<HTMLDivElement>, "title" | "onChange"> {
+  /** The starting tasks (uncontrolled; the list resets to these). */
+  tasks?: string[];
+  /** Shown in the progress pill. */
+  title?: ReactNode;
+  /** What finishing the list does: squash + confetti, Bencho's heap, or nothing. */
+  finish?: ChecklistFinish;
+  /** The liquid colour; "mix" deals the accents out row by row. */
+  tone?: ChecklistTone;
+  /** Plain: fills and crosses out in place, no roll, no splash, no finish. */
+  calm?: boolean;
+  /** How far the box swells past full, 0..100 (0 arrives dead). */
+  bounce?: number;
+  /** The round box, px. */
+  box?: number;
+  /** The card corner, px. */
+  corner?: number;
+  /** Back to the starting list this long after finishing; `false` stays done. */
+  resetAfter?: number | false;
+  /** Most tasks the card holds (the add row goes when full). */
+  max?: number;
+  onComplete?: () => void;
+}
 
 export function Checklist({
+  tasks = TASKS,
+  title = "Today",
+  finish = "party",
+  tone = "mix",
+  calm = false,
   corner = CORNER,
-  /* how far the box swells past full before it settles,
-     0..100 — 0 is a spring that arrives dead, which is a
-     perfectly good checkbox and is what most of them do */
   bounce = BOUNCE,
-  /* the box, px */
   box = BOX,
-}: {
-  corner?: number;
-  bounce?: number;
-  box?: number;
-} = {}) {
-  /* ── one array, not two ─────────────────────────────────
-     The list used to be a constant and the ticks a parallel
-     array of booleans, which was fine while the list could not
-     change. It can now, and two arrays that have to stay the
-     same length are two arrays that will not. */
-  const [items, setItems] = useState(() =>
-    TASKS.map((text) => ({ text, done: false })));
-  /* the row being typed into, or null. The draft is separate
-     from the list so an abandoned one leaves nothing behind. */
+  resetAfter = HOLD,
+  max = MAX,
+  onComplete,
+  className,
+  style,
+  onKeyDown,
+  ...rest
+}: ChecklistProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const base = useRef(tasks);
+  const [items, setItems] = useState<Task[]>(() => tasks.map((text, id) => ({ id, text, done: false, filed: 0 })));
+  const nextId = useRef(tasks.length);
+  const seq = useRef(0);
+  const timers = useRef(new Set<number>());
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
-  /* ── how long each row actually is ───────────────────────
-     Reported UP from the rows, because only they can see it:
-     the width of a line of type is a question for the font,
-     not for the character count, and "Send the estimate" is
-     seventeen characters that set narrower than fifteen of
-     somebody else's. offsetWidth rather than a rect, since the
-     block is drawn under a scale on the wall and a rect would
-     come back already multiplied. */
-  const [runs, setRuns] = useState<number[]>([]);
-  /* and how tall a line of it sets, which is the other half of
-     how close two slips can lie */
-  const [line, setLine] = useState(20);
-  const measure = useCallback((i: number, px: number, tall: number) => {
-    setRuns((v) => (v[i] === px ? v : Object.assign([...v], { [i]: px })));
-    setLine((v) => (v === tall ? v : tall));
+  const [inner, setInner] = useState(344);
+  /* each row reports where its ink ends and how tall a line
+     sets (Bencho: the heap leans on the WORDS, not the row) */
+  const [ink, setInk] = useState<Record<number, { run: number; line: number }>>({});
+  const measure = useCallback((id: number, run: number, line: number) => {
+    setInk((v) => (v[id]?.run === run && v[id]?.line === line ? v : { ...v, [id]: { run, line } }));
   }, []);
 
-  const still = stillness();
-  /* rap/ui: opt-in sound, silent without a SoundProvider — a tick
-     for each task crossed out and a thud when the heap lands */
   const sound = useSound();
-
-  const r = clamp(corner, 0, 40);
+  const still = calm || isCalm(root.current);
   const side = clamp(Math.round(box), 14, 28);
+  const r = clamp(corner, 0, 40);
+  const cap = Math.max(max, base.current.length);
+  const spare = items.length < cap;
 
-  /* ── the whole finish, as one derived boolean ────────────
-     Not a state. Every task ticked IS the finish, so there is
-     nothing to keep in step: unticking one during the three
-     seconds makes this false on the same render and the rows
-     start climbing back without anything having to remember
-     that they had fallen. That is the entire "you can undo
-     it while it is on the floor" behaviour, and it is free. */
-  const fell = items.length > 0 && items.every((t) => t.done);
-  /* the spare row, and it holds its space even while the heap
-     is down — fading it is a paint, removing it would change
-     the card's height in the middle of a fall */
-  const spare = items.length < MAX;
+  useLayoutEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const read = () => setInner(Math.max(0, el.offsetWidth - PAD * 2));
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-  /* ── and it puts itself away ─────────────────────────────
-     Three seconds on the floor, then the list is new again.
-     Cleared if `fell` goes false first, so unticking a task
-     cancels the reset rather than having it fire later and
-     wipe the box you just reopened. */
-  /* rap/ui: the heap lands at the 0.66 keyframe of the furthest
-     fall (see `land` in Row), so the thud is timed to that */
   useEffect(() => {
-    if (!fell || still) return;
-    const id = window.setTimeout(() => sound.play("drop"), DROP_MS * 1000 * 0.66);
+    const set = timers.current;
+    return () => set.forEach((id) => window.clearTimeout(id));
+  }, []);
+
+  /* ── the finish, derived (Bencho) ────────────────────────
+     Every task filed IS the finish; untick one and it is over
+     on the same render, so the rows climb back with nothing
+     having to remember they had fallen. */
+  const complete = items.length > 0 && items.every((t) => t.done && t.filed > 0);
+  const [finale, setFinale] = useState(false);
+  useEffect(() => {
+    if (!complete) {
+      setFinale(false);
+      return;
+    }
+    const id = window.setTimeout(() => setFinale(true), still ? 0 : FINALE_MS);
     return () => window.clearTimeout(id);
-  }, [fell, still, sound]);
+  }, [complete, still]);
+  const fell = finale && finish === "heap" && !still;
+  const party = finale && finish === "party" && !still;
+  const [burst, setBurst] = useState(0);
 
+  const completeRef = useRef(onComplete);
+  completeRef.current = onComplete;
   useEffect(() => {
-    if (!fell) return;
-    /* ── ALL THE WAY BACK, tasks included ────────────────
-       It used to only take the ticks off and leave anything
-       you had added, on the reasoning that deleting your work
-       is the block presuming. Which is true of an app and not
-       of this: it is a demonstration on a wall, the three
-       tasks are part of what it demonstrates, and a visitor
-       who adds two and walks away leaves the next person a
-       block in a state its author never chose.
+    if (!finale) return;
+    completeRef.current?.();
+    if (party) {
+      setBurst((b) => b + 1);
+      sound.play("success");
+    }
+    if (fell) {
+      /* the heap lands at the 0.66 keyframe of the furthest fall */
+      const id = window.setTimeout(() => sound.play("drop"), DROP_MS * 1000 * 0.66);
+      return () => window.clearTimeout(id);
+    }
+  }, [finale]);
 
-       Going back to three also gives the card its closing
-       animation for free — the same height transition that
-       opened it runs in reverse. */
-    const id = window.setTimeout(
-      () => setItems(TASKS.map((text) => ({ text, done: false }))),
-      HOLD,
+  /* ── and it puts itself away (Bencho) ────────────────────
+     All the way back: the starting tasks, unticked, in their
+     first order — added ones go. Ids are kept, so the rows
+     drain and roll back up rather than being replaced. */
+  useEffect(() => {
+    if (!finale || resetAfter === false) return;
+    const id = window.setTimeout(() => {
+      setItems((v) =>
+        v.filter((t) => t.id < base.current.length).sort((a, b) => a.id - b.id).map((t) => ({ ...t, done: false, filed: 0 })),
+      );
+      if (!still) sound.play("whoosh");
+    }, resetAfter);
+    return () => window.clearTimeout(id);
+  }, [finale, resetAfter, still, sound]);
+
+  const toggle = (id: number) => {
+    const task = items.find((t) => t.id === id);
+    if (!task) return;
+    const on = !task.done;
+    const count = items.filter((t) => t.done).length + (on ? 1 : -1);
+    /* the pitch climbs as the list empties: the ear hears it filling */
+    sound.play(on ? "tick" : "release", on ? { pitch: 0.9 + (0.6 * count) / items.length } : undefined);
+    setItems((v) => v.map((t) => (t.id === id ? { ...t, done: on, filed: 0 } : t)));
+    if (!on) return;
+    const tm = window.setTimeout(
+      () => {
+        timers.current.delete(tm);
+        setItems((v) => v.map((t) => (t.id === id && t.done && !t.filed ? { ...t, filed: ++seq.current } : t)));
+      },
+      still ? 0 : ROLL_MS,
     );
-    return () => window.clearTimeout(id);
-  }, [fell]);
-
-  /* ── the vertical padding is DERIVED, not declared ───────
-     A row is taller than the box in it, for the same reason
-     every row on this bench is: the words beside the checkbox
-     are the part anybody actually points at, so the target is
-     the row. That slack sits between the first box and the
-     card's own edge, so a uniform `padding: 14px` reads as 14
-     at the sides and 23 at the top — the two insets are the
-     same number and visibly different amounts of air.
-
-     Taking the slack off the vertical padding makes the four
-     look equal, and doing it from the box's CURRENT size means
-     it stays equal as the Box knob moves rather than at one
-     setting of it. */
-  const slack = (ROW - side) / 2;
-  const padV = Math.max(0, PAD - slack);
-
-  /* ── where the heap goes ─────────────────────────────────
-     Worked out from the bottom up, because that is the order
-     it happens in: the last row's slip comes to rest on the
-     card's inner edge, and every row above lands on the one
-     below. `inset` is the air inside a row that the heap gives
-     up — the whole of the fall is three of those. */
-  const body = BODY(side, line);
-  const inset = (ROW - body) / 2;
-  /* every row the card holds, the spare one included */
-  const slots = items.length + (spare ? 1 : 0);
-  const floor = padV + ROW * slots;
-  /* ── and a tilted slip stands on ONE CORNER ─────────────
-     The floor is where the LOWEST point of the bottom slip
-     comes to rest, not where its middle does. Tilting it drops
-     one end below its own centre line, so seating it by the
-     centre pushes that corner through the card's edge — 2.9px
-     of it, measured. Backing the seat off by the same amount
-     puts the corner on the floor, which is what resting on
-     something means. */
-  /* ── the lean of each slip, from the floor up ───────────
-     The bottom one lies flat on the card. Everything above
-     inherits what it is lying on and adds its own overhang —
-     see LEAN. Zero until the rows have reported their widths,
-     which is one frame, and a flat heap for one frame is not
-     something anybody sees. */
-  const leans = items.map(() => 0);
-  for (let i = items.length - 2; i >= 0; i--) {
-    const over = Math.max(0, (runs[i] ?? 0) - (runs[i + 1] ?? 0));
-    leans[i] = clamp(leans[i + 1] + leanOf(over), 0, MAX_LEAN);
-  }
-  const touch = gapFor(leans, runs);
-  /* the bottom slip is flat, so its lowest point is its own
-     edge and the seat needs no correction for a tilt */
-  const seat = floor - inset - body;
-  const restTop = (i: number) => padV + i * ROW;
-  const pileTop = (i: number) => seat - (items.length - 1 - i) * (body + touch);
-  const drops = items.map((_, i) => Math.max(0, pileTop(i) - restTop(i)));
-  /* the top row travels furthest, so it sets the clock and the
-     others are shorter in proportion to it — ONE gravity, and
-     t goes as the square root of the distance. That is where
-     the cascade comes from now: nothing is delayed, the bottom
-     row simply has less far to go and arrives first. */
-  const longest = Math.max(...drops, 1);
+    timers.current.add(tm);
+  };
 
   const add = () => {
     const text = draft.trim();
     setAdding(false);
     setDraft("");
-    if (!text || items.length >= MAX) return;
-    setItems((v) => [...v, { text, done: false }]);
+    if (!text || items.length >= cap) return;
+    setItems((v) => [...v, { id: nextId.current++, text, done: false, filed: 0 }]);
   };
+
+  /* ── the layout is arithmetic ────────────────────────────
+     Open rows in the order they were written, then the add
+     row, then the caption and the pile, newest filed on top.
+     Calm keeps every row where it is. */
+  const pile = !still;
+  const open = items.filter((t) => !(pile && t.filed));
+  const filed = pile ? items.filter((t) => t.filed).sort((a, b) => b.filed - a.filed) : [];
+  const order = [...open, ...filed];
+  const ys: Record<number, number> = {};
+  let y = PAD + HEAD + GAP * 2;
+  for (const t of open) {
+    ys[t.id] = y;
+    y += ROW + GAP;
+  }
+  const spareY = y;
+  if (spare) y += ROW + GAP;
+  const divY = y;
+  if (filed.length) y += DIV;
+  for (const t of filed) {
+    ys[t.id] = y;
+    y += ROW + GAP;
+  }
+  const height = y - GAP + PAD;
+
+  /* ── where the heap goes (Bencho), from the floor up ── */
+  const heap = (() => {
+    const n = order.length;
+    const runs = order.map((t) => ink[t.id]?.run ?? inner / 2);
+    const line = Math.max(20, ...order.map((t) => ink[t.id]?.line ?? 20));
+    const leans = order.map(() => 0);
+    for (let i = n - 2; i >= 0; i--) {
+      const over = Math.max(0, runs[i] - runs[i + 1]);
+      leans[i] = clamp(leans[i + 1] + leanOf(over), 0, MAX_LEAN);
+    }
+    const touch = gapFor(leans, runs, inner / 2);
+    /* a slip lies over the one below by the air above its words */
+    const slack = Math.max(0, (ROW - line) / 2 - 2);
+    const floor = n ? ys[order[n - 1].id] : 0;
+    const drops = order.map((t, i) => Math.max(0, floor - (n - 1 - i) * (ROW - slack + touch) - ys[t.id]));
+    const longest = Math.max(...drops, 1);
+    return { leans, drops, longest };
+  })();
+
+  /* ── focus follows the task ──────────────────────────────
+     Filing moves the row in the DOM (the DOM is kept in visual
+     order, so Tab and the arrows walk the list as it looks), and
+     a focused node that is moved loses focus. Read which row had
+     it during render — before the move — and hand it back after. */
+  const focusRef = useRef<string | undefined>(undefined);
+  if (typeof document !== "undefined") {
+    const a = document.activeElement as HTMLElement | null;
+    focusRef.current = a && root.current?.contains(a) && a.dataset.slot === "checklist-row" ? a.dataset.id : undefined;
+  }
+  useLayoutEffect(() => {
+    const id = focusRef.current;
+    if (!id) return;
+    const el = root.current?.querySelector<HTMLElement>(`[data-slot="checklist-row"][data-id="${id}"]`);
+    if (el && document.activeElement !== el) el.focus({ preventScroll: true });
+  });
+
+  /* ↑ ↓ Home End walk the rows in the order they are drawn */
+  const nav = (e: KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown?.(e);
+    if (e.defaultPrevented || !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+    if ((e.target as HTMLElement).tagName === "INPUT") return;
+    const list = Array.from(
+      root.current?.querySelectorAll<HTMLElement>('[data-slot="checklist-row"], [data-slot="checklist-new"]') ?? [],
+    ).sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    const at = list.indexOf(document.activeElement as HTMLElement);
+    const next =
+      e.key === "Home" ? 0 : e.key === "End" ? list.length - 1 : clamp(at + (e.key === "ArrowDown" ? 1 : -1), 0, list.length - 1);
+    if (list[next]) {
+      e.preventDefault();
+      list[next].focus();
+    }
+  };
+
+  const done = items.filter((t) => t.done).length;
+  const label = typeof title === "string" ? title : "Checklist";
 
   return (
     <div
-      className="chk"
-      style={{
-        width: W,
-        /* ── STATED, so it can be animated ─────────────────
-           It was whatever the rows added up to. The same
-           number, written down, is a number CSS can move
-           between — see the transition on .chk. Adding a task
-           used to snap the card 40px taller in one frame. */
-        height: padV * 2 + ROW * slots,
-        padding: `${padV}px ${PAD}px`,
-        borderRadius: r,
-      }}
+      ref={root}
+      role="group"
+      aria-label={label}
+      data-slot="checklist"
+      data-finish={finish}
+      data-party={party || undefined}
+      data-rap-motion={calm ? "calm" : undefined}
+      onKeyDown={nav}
+      className={cn(
+        "relative w-full max-w-[26rem] shrink-0 bg-paper-2 font-sans text-ink",
+        /* the field must be OPAQUE (FormStack's grey): heaped slips
+           and a lifted row lie over each other */
+        "[--chk-field:color-mix(in_srgb,var(--rap-ink)_6%,var(--rap-paper-2))] [--chk-field-hover:color-mix(in_srgb,var(--rap-ink)_10%,var(--rap-paper-2))]",
+        /* light ink on a dark card needs more of it to separate a row from the card */
+        "dark:[--chk-field:color-mix(in_srgb,var(--rap-ink)_9%,var(--rap-paper-2))] dark:[--chk-field-hover:color-mix(in_srgb,var(--rap-ink)_14%,var(--rap-paper-2))]",
+        /* it opens, it does not jump (Bencho): one row taller over a third of a second */
+        "transition-[height] duration-[360ms] ease-[cubic-bezier(0.22,0.9,0.28,1)] motion-reduce:transition-none",
+        "fun:data-party:animate-[chk-squash_720ms_var(--rap-ease-out)]",
+        tone !== "mix" && TONE[tone],
+        className,
+      )}
+      style={
+        {
+          height,
+          borderRadius: r,
+          "--chk-pad": `${PAD}px`,
+          "--chk-row": `${ROW}px`,
+          "--chk-box": `${side}px`,
+          /* the box sits concentric in the pill's round end */
+          "--chk-inset": `${(ROW - side) / 2}px`,
+          ...style,
+        } as CSSProperties
+      }
+      {...rest}
     >
-      {/* ── AnimatePresence, for the two that leave ─────────
-          A reset from five back to three removes two rows, and
-          removing them is a blink at the bottom of a card that
-          is already closing. Held for a moment and faded
-          instead, so the card shuts over them rather than
-          them vanishing out from under it. */}
+      <Progress title={title} label={label} done={done} total={items.length} still={still} width={inner} />
+
       <AnimatePresence initial={false}>
-      {items.map((task, i) => (
-        <Row
-          /* the TEXT is the key, and two tasks with the same
-             words would collide — so it is the text and the
-             position it was added at, which nothing reorders */
-          key={`${i}-${task.text}`}
-          label={task.text}
-          on={task.done}
-          side={side}
-          bounce={bounce}
-          still={still}
-          fell={fell}
-          drop={drops[i]}
-          secs={DROP_MS * Math.sqrt(drops[i] / longest)}
-          /* the slip is the part of the row you can see, and
-             the part that comes to rest on the one below */
-          inset={inset}
-          drift={DRIFT[i]}
-          tilt={leans[i]}
-          index={i}
-          onRun={measure}
-          /* the last thing to land is the top of the heap, and
-             it has to be painted like it. DOM order would put
-             the bottom row over everything. */
-          layer={fell ? items.length - i : undefined}
-          onToggle={() => {
-            sound.play(task.done ? "release" : "tick");
-            setItems((v) =>
-              v.map((t, k) => (k === i ? { ...t, done: !t.done } : t)));
-          }}
-        />
-      ))}
+        {order.map((task, i) => (
+          <Row
+            key={task.id}
+            id={task.id}
+            label={task.text}
+            on={task.done}
+            filed={pile && task.filed > 0}
+            tone={tone === "mix" ? TONE[MIX[task.id % MIX.length]] : undefined}
+            y={ys[task.id]}
+            lean={filed.length > 1 ? (task.filed % 2 ? 0.6 : -0.6) : 0}
+            side={side}
+            wide={inner}
+            bounce={clamp(bounce, 0, 100)}
+            still={still}
+            fell={fell}
+            drop={heap.drops[i] ?? 0}
+            secs={DROP_MS * Math.sqrt((heap.drops[i] ?? 0) / heap.longest)}
+            drift={DRIFT[i % DRIFT.length]}
+            tilt={heap.leans[i] ?? 0}
+            layer={fell ? order.length - i + 3 : undefined}
+            onMeasure={measure}
+            onToggle={() => toggle(task.id)}
+          />
+        ))}
       </AnimatePresence>
 
-      {/* ── the spare row ─────────────────────────────────
-          Quiet on purpose: it is the only thing here that is
-          not a task, and at full strength a fourth row of ink
-          reads as a fourth task you have not ticked. It comes
-          up on hover and again while you are typing in it.
-
-          Its own click is stopped, because the card behind
-          this block opens the detail overlay on one and the
-          field is not a button for the card to recognise. */}
+      {/* ── the spare row (Bencho) ────────────────────────
+          Quiet on purpose — at full strength it reads as a task
+          you have not ticked. It keeps its space while the heap
+          is down: removing it would change the card mid-fall. */}
       {spare && (
-        <div
-          className="chk-add"
-          data-hide={fell || undefined}
-          style={{ height: ROW }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span
-            className="chk-ghost"
-            aria-hidden="true"
-            style={{ width: side, height: side, borderRadius: side * ROUND }}
-          />
-          {adding ? (
-            <input
-              className="chk-field"
-              autoFocus
-              value={draft}
-              placeholder="New task"
-              maxLength={40}
-              onChange={(e) => setDraft(e.target.value)}
-              /* Enter commits, Escape abandons — and neither is
-                 allowed past this block: Escape closes the
-                 detail overlay, which is not what somebody
-                 backing out of a text field is asking for */
-              onKeyDown={(e) => {
-                if (e.key === "Enter") { e.stopPropagation(); add(); }
-                if (e.key === "Escape") {
-                  e.stopPropagation();
-                  setAdding(false);
-                  setDraft("");
-                }
-              }}
-              onBlur={add}
-            />
-          ) : (
-            <button
-              type="button"
-              className="chk-new"
-              onClick={() => { setAdding(true); }}
-            >
-              Add new task
-            </button>
-          )}
-        </div>
+        <Slot y={spareY} still={still} hide={fell}>
+          <div
+            className="flex size-full items-center gap-3 rounded-pill pl-(--chk-inset) text-[18px] font-[450] leading-[1.2] tracking-[-0.015em]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span aria-hidden className="size-(--chk-box) flex-none rounded-full shadow-[inset_0_0_0_1.5px_var(--rap-fill-strong)]" />
+            {adding ? (
+              <input
+                data-slot="checklist-field"
+                className="min-w-0 flex-1 bg-transparent p-0 pr-5 text-ink outline-none [font:inherit] [letter-spacing:inherit] placeholder:text-mute"
+                autoFocus
+                value={draft}
+                placeholder="New task"
+                aria-label="New task"
+                maxLength={40}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation();
+                    add();
+                  }
+                  if (e.key === "Escape") {
+                    e.stopPropagation();
+                    setAdding(false);
+                    setDraft("");
+                  }
+                }}
+                onBlur={add}
+              />
+            ) : (
+              <button
+                type="button"
+                data-slot="checklist-new"
+                className="cursor-pointer rounded-pill bg-transparent p-0 text-left text-ink opacity-35 outline-none transition-opacity duration-(--rap-dur-fast) [font:inherit] [letter-spacing:inherit] hover:opacity-60 focus-visible:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+                onClick={() => setAdding(true)}
+              >
+                Add a task
+              </button>
+            )}
+          </div>
+        </Slot>
       )}
+
+      <Slot y={divY} still={still} hide={fell || !filed.length} height={DIV}>
+        <div
+          data-slot="checklist-divider"
+          aria-hidden
+          className="flex h-full items-end gap-1.5 px-5 pb-1.5 text-[0.8125rem] font-medium tracking-[-0.01em] text-mute"
+        >
+          Done <span className="tabular-nums">{filed.length}</span>
+        </div>
+      </Slot>
+
+      {party && <Confetti key={burst} seed={burst} x={PAD + inner / 2} y={PAD + HEAD / 2} spread={inner * 0.62} />}
     </div>
   );
 }
 
-function Row({
-  label,
-  on,
-  side,
-  bounce,
-  still,
-  fell,
-  drop,
-  secs,
-  inset,
-  drift,
-  tilt,
-  layer,
-  index,
-  onRun,
-  onToggle,
-}: {
+/* a part that rides its own pixel spring for `y` */
+function Slot({ y, still, hide, height = ROW, children }: { y: number; still: boolean; hide?: boolean; height?: number; children: ReactNode }) {
+  const at = useSpring(y, 25, still);
+  return (
+    <div
+      className="absolute top-0 right-(--chk-pad) left-(--chk-pad) transition-opacity duration-(--rap-dur-fast) data-hide:pointer-events-none data-hide:opacity-0"
+      data-hide={hide || undefined}
+      style={{ height, transform: `translateY(${at}px)` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ══ the progress pill ════════════════════════════════════
+   The header IS the progress: ink poured in from the left, one
+   share per task, with HoldButton's wavy edge —
+     x(y) = X + A·sin(2π·0.9·y/H + φ) + lean·(y/H − ½)·H
+   — where the level rides a spring, the wave's height and the
+   lean come from how far the level still has to go (so it
+   sloshes when a tick lands and lies flat at rest), and φ moves
+   with the level itself. The words are a copy in the ink's
+   colour, clipped by the same edge. */
+function Progress({ title, label, done, total, still, width }: { title: ReactNode; label: string; done: number; total: number; still: boolean; width: number }) {
+  const pct = total ? (done / total) * 100 : 0;
+  const L = useSpring(pct, 40, still);
+  const lag = pct - L;
+  const H = HEAD;
+  const ceil = H * 0.12;
+  const empty = L <= 0.05;
+  const full = L >= 99.95;
+  const A = empty || full || still ? 0 : ceil * (0.35 + 0.65 * Math.min(1, Math.abs(lag) / 15));
+  const X = -ceil + ((width + 2 * ceil) * L) / 100;
+  const lean = clamp(lag * 0.012, -0.25, 0.25);
+  const phase = L * 0.21;
+  let clip = "inset(0 100% 0 0)";
+  if (full) clip = "none";
+  else if (!empty) {
+    const pts: string[] = ["0px 0px"];
+    for (let k = 0; k <= 12; k++) {
+      const yy = (k / 12) * H;
+      const x = X + A * Math.sin(2 * Math.PI * 0.9 * (yy / H) + phase) + lean * (yy / H - 0.5) * H;
+      pts.push(`${x.toFixed(1)}px ${yy.toFixed(1)}px`);
+    }
+    pts.push(`0px ${H}px`);
+    clip = `polygon(${pts.join(",")})`;
+  }
+  const bar = (
+    <span className="flex h-full items-center justify-between gap-3 px-5 text-base font-medium tracking-[-0.01em]">
+      <span className="truncate">{title}</span>
+      <span className="flex-none tabular-nums">{total && done === total ? "All done" : `${done} of ${total}`}</span>
+    </span>
+  );
+  return (
+    <div
+      data-slot="checklist-progress"
+      role="progressbar"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={done}
+      aria-valuetext={`${done} of ${total} done`}
+      className="absolute top-(--chk-pad) right-(--chk-pad) left-(--chk-pad) overflow-hidden rounded-pill bg-(--chk-field) text-ink"
+      style={{ height: H }}
+    >
+      {bar}
+      <span data-slot="checklist-progress-liquid" aria-hidden className="absolute inset-0 bg-ink text-paper-2" style={{ clipPath: clip }}>
+        {bar}
+      </span>
+    </div>
+  );
+}
+
+/* the liquid's outline: a circle from the box, rim wobbling mid-pour */
+function liquidClip(held: number, cx: number, cy: number, w: number) {
+  if (held <= 0.001) return "circle(0px at 0 0)";
+  if (held >= 0.999) return "none";
+  const R = held * (Math.hypot(w - cx, cy) + 14);
+  const wob = Math.sin(Math.PI * held);
+  const phase = held * 9;
+  const pts: string[] = [];
+  for (let k = 0; k < 40; k++) {
+    const a = (k / 40) * Math.PI * 2;
+    const rr = R * (1 + wob * (0.07 * Math.sin(5 * a + phase) + 0.04 * Math.sin(3 * a - 1.7 * phase)));
+    pts.push(`${(cx + rr * Math.cos(a)).toFixed(1)}px ${(cy + rr * Math.sin(a)).toFixed(1)}px`);
+  }
+  return `polygon(${pts.join(",")})`;
+}
+
+/* one stroke across, a quicker one back — jittered per task */
+function scribbleOf(seed: number, w: number) {
+  const x = (p: number) => ((p / 100) * w).toFixed(1);
+  const y = (b: number, k: number, amp = 2) => (b + (rnd(seed, k) - 0.5) * 2 * amp).toFixed(1);
+  return (
+    `M${x(-3)} ${y(11, 1)} C${x(20)} ${y(8, 2)} ${x(42)} ${y(14, 3)} ${x(66)} ${y(10, 4)} ` +
+    `S${x(96)} ${y(9, 5)} ${x(103)} ${y(11, 6, 1)} ` +
+    `C${x(84)} ${y(15, 7)} ${x(56)} ${y(12, 8)} ${x(30)} ${y(15, 9)} S${x(6)} ${y(14, 10)} ${x(1)} ${y(15, 11, 1)}`
+  );
+}
+
+/* ── the pour's spring ─────────────────────────────────────
+   Bencho's loop (frames, decay raised to dt, parks when
+   settled) with HoldButton's heavier liquid numbers: k 0.05,
+   decay 0.8 → zeta ≈ 0.5, so the pour takes ~420ms, sloshes 15%
+   past full at the far end (invisible — the pill is already
+   covered — but it keeps the rim moving as it arrives) and
+   drains at the same weight on untick. At the tick's own spring
+   (~200ms) the liquid was across the pill before the eye found
+   it and read as a colour swap. Driven 0..100: the snap is
+   absolute, see useSpring. */
+function usePour(target: number, instant: boolean) {
+  const [at, setAt] = useState(target);
+  const cur = useRef(target);
+  const vel = useRef(0);
+  useEffect(() => {
+    if (instant || prefersReducedMotion()) {
+      cur.current = target;
+      vel.current = 0;
+      setAt(target);
+      return;
+    }
+    let prev = 0;
+    let raf = 0;
+    const tick = (now: number) => {
+      const dt = prev ? clamp((now - prev) / 16.67, 0, 2.5) : 1;
+      prev = now;
+      vel.current += (target - cur.current) * 0.05 * dt;
+      vel.current *= Math.pow(0.8, dt);
+      cur.current += vel.current * dt;
+      if (Math.abs(target - cur.current) < 0.02 && Math.abs(vel.current) < 0.02) {
+        cur.current = target;
+        vel.current = 0;
+        setAt(target);
+        return;
+      }
+      setAt(cur.current);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, instant]);
+  return at;
+}
+
+interface RowProps {
+  id: number;
   label: string;
   on: boolean;
+  filed: boolean;
+  tone?: string;
+  y: number;
+  lean: number;
   side: number;
+  wide: number;
   bounce: number;
   still: boolean;
-  /* the list is finished and the floor has gone */
   fell: boolean;
   drop: number;
   secs: number;
-  inset: number;
   drift: number;
   tilt: number;
   layer?: number;
-  index: number;
-  onRun: (i: number, px: number, tall: number) => void;
+  onMeasure: (id: number, run: number, line: number) => void;
   onToggle: () => void;
-}) {
-  /* ── the one number ──────────────────────────────────────
-     A component per row rather than a loop, because this is a
-     hook and a hook cannot be called three times from the
-     parent. It costs nothing at rest: a spring sitting on its
-     target runs no loop at all. */
-  /* ── it measures its own line and says how long it is ────
-     The span is sized to the WORDS rather than the row (see
-     .chk-say), so its right edge is where this slip actually
-     ends — box, gap and type. Layout effect rather than an
-     effect: the parent leans the heap on this number, and a
-     frame of the wrong answer is a frame of the wrong heap.
-     Re-run on the label and the box size, which are the only
-     two things that can change it. */
-  const say = useRef<HTMLSpanElement | null>(null);
+}
+
+function Row({ id, label, on, filed, tone, y, lean, side, wide, bounce, still, fell, drop, secs, drift, tilt, layer, onMeasure, onToggle }: RowProps) {
+  /* ── the one number (Bencho) — the box and its tick ── */
+  const t = useSpring(on ? 1 : 0, bounce, still);
+  const held = clamp(t, 0, 1);
+  /* ── and the liquid poured out of it, which has weight ──
+     See WHY LIQUID: the pour, the scribble and the fading words
+     read this one number; the box reads the one above. */
+  const pour = clamp(usePour(on ? 100 : 0, still) / 100, 0, 1);
+  const cut = clamp((pour - LAG) / RUN, 0, 1);
+
+  /* ── the row's place, on a heavier spring (see THE ROLL) ── */
+  const at = useSpring(y, bounce / 2, still);
+  const lag = y - at;
+  const [was, setWas] = useState(filed);
+  const [travel, setTravel] = useState(false);
+  if (was !== filed) {
+    setWas(filed);
+    setTravel(!still);
+  }
+  useEffect(() => {
+    if (travel && Math.abs(lag) < 0.5) setTravel(false);
+  }, [travel, lag]);
+  const lift = travel ? clamp(Math.abs(lag) / 60, 0, 1) : 0;
+  /* rolls by distance / radius, read off the distance LEFT, so it lands upright */
+  const roll = ((-lag / (side / 2)) * 180) / Math.PI;
+
+  /* ── a splash on the way in ── */
+  const [splash, setSplash] = useState(0);
+  const [prevOn, setPrevOn] = useState(on);
+  if (prevOn !== on) {
+    setPrevOn(on);
+    if (on && !still) setSplash((s) => s + 1);
+  }
+
+  /* ── it measures its words: the scribble is cut for them and
+     the heap leans on where they end ── */
+  const say = useRef<HTMLSpanElement>(null);
+  const [run, setRun] = useState(0);
   useLayoutEffect(() => {
     const el = say.current;
-    if (el) onRun(index, el.offsetLeft + el.offsetWidth, el.offsetHeight);
-  }, [label, side, index, onRun]);
+    if (!el) return;
+    setRun(el.offsetWidth);
+    onMeasure(id, el.offsetLeft + el.offsetWidth, el.offsetHeight);
+  }, [label, side, wide, id, onMeasure]);
+  const scribble = useMemo(() => scribbleOf(id + 1, run), [id, run]);
 
-  const t = useSpring(on ? 1 : 0, clamp(bounce, 0, 100), still);
-  const held = clamp(t, 0, 1);
-  /* the rule's own window on the same number */
-  const cut = clamp((held - LAG) / RUN, 0, 1);
+  const cx = (ROW - side) / 2 + side / 2;
+  const clip = liquidClip(pour, cx, ROW / 2, wide);
 
-  /* ── falling and climbing are not the same motion ────────
-     Down is a duration with gravity's shape in it: it starts
-     at nothing and gains, which is what `easeIn` is, and the
-     small rebound at the end is the difference between landing
-     and being placed. Up is a spring, because coming back is
-     the list reasserting itself rather than anything being
-     dropped — and a spring interrupts cleanly, so unticking a
-     task halfway through the fall picks the row up from
-     wherever it had got to.
-
-     With motion turned down there is no quieter version of a
-     thing falling over, so it does not happen — the same
-     answer the celebration this replaced gave. The three
-     second reset still runs, so the block still resets. */
-  const run = still ? 0 : secs;
-  /* a rebound in proportion to the fall — see the constant */
+  /* ── falling and climbing are not the same motion (Bencho) ──
+     Down is gravity with a small rebound; up is a spring, which
+     interrupts cleanly — untick mid-fall and the row is picked
+     up from wherever it got to. */
   const up = Math.min(REBOUND, drop * 0.22);
-  /* the fall itself, with the rebound as the third keyframe */
-  const land = {
-    duration: run,
-    times: [0, 0.66, 0.84, 1],
-    ease: [...FALL_EASE],
-  };
-  /* the tilt and the sideways drift arrive with the landing
-     and do not bounce */
-  const lean = { duration: run, ease: "easeIn" as const };
+  const land = { duration: secs, times: [0, 0.66, 0.84, 1], ease: [...FALL_EASE] };
+  const tip = { duration: secs, ease: "easeIn" as const };
 
   return (
-    <motion.button
-      type="button"
-      className="chk-row"
-      role="checkbox"
-      aria-checked={on}
-      data-fell={fell || undefined}
-      onClick={onToggle}
-      style={{ height: ROW, zIndex: layer, "--slip": `${inset}px` } as React.CSSProperties}
-      /* the row is drawn where it has always been drawn and
-         MOVED from there, so the card's layout never changes
-         and the wall's observer never hears about any of this */
-      initial={false}
-      exit={{ opacity: 0, transition: { duration: 0.18 } }}
-      animate={
-        fell
-          ? { y: [0, drop, drop - up, drop], x: drift, rotate: tilt }
-          : { y: 0, x: 0, rotate: 0 }
-      }
-      transition={
-        fell
-          ? { y: land, x: lean, rotate: lean }
-          : { type: "spring", stiffness: 420, damping: 26, mass: 0.9 }
-      }
+    <div
+      data-slot="checklist-item"
+      className={cn("absolute top-0 right-(--chk-pad) left-(--chk-pad) h-(--chk-row)", tone)}
+      style={{ transform: `translateY(${at.toFixed(2)}px)`, zIndex: layer ?? (travel ? 4 : on ? 2 : 1) }}
     >
-      {/* ── the box ───────────────────────────────────────
-          Two layers and neither is a border being recoloured:
-          the ring is always there and the FILL grows inside
-          it. A checkbox that swaps its background is a
-          different colour arriving; one whose fill opens from
-          the middle is the box being filled in, which is what
-          the word means. */}
-      <span
-        className="chk-box"
-        style={{
-          width: side,
-          height: side,
-          borderRadius: side * ROUND,
-        }}
+      <motion.div
+        className="size-full"
+        initial={false}
+        exit={{ opacity: 0, transition: { duration: 0.18 } }}
+        animate={fell ? { y: [0, drop, drop - up, drop], x: drift, rotate: tilt } : { y: 0, x: 0, rotate: 0 }}
+        transition={fell ? { y: land, x: tip, rotate: tip } : { type: "spring", stiffness: 420, damping: 26, mass: 0.9 }}
       >
-        <span
-          className="chk-fill"
-          style={{
-            borderRadius: side * ROUND,
-            /* RAW, so it goes past full and settles — this is
-               the one place the overshoot belongs */
-            transform: `scale(${t.toFixed(4)})`,
-          }}
-        />
-        {/* ── the tick DRAWS ─────────────────────────────
-            `pathLength="1"` normalises the dash to the
-            stroke's own length, so the offset is a fraction
-            rather than a number somebody measured off this
-            particular path — change the checkmark and nothing
-            here needs to know.
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={on}
+          aria-label={label}
+          data-slot="checklist-row"
+          data-id={id}
+          data-state={on ? "checked" : "unchecked"}
+          data-fell={fell || undefined}
+          onClick={onToggle}
+          className={cn(
+            "group/row relative block size-full cursor-pointer rounded-pill border-0 bg-(--chk-field) p-0 text-left font-sans text-ink select-none",
+            "hover:bg-(--chk-field-hover) outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            "[-webkit-tap-highlight-color:transparent] transition-[rotate,background-color] duration-(--rap-dur) ease-spring",
+            /* on the floor, a die-cut edge in the card's colour, so
+               slips of one colour still read as separate slips */
+            "data-fell:shadow-[0_0_0_2px_var(--rap-paper-2)]",
+          )}
+          style={{ rotate: `${filed && !fell ? lean : 0}deg`, scale: `${1 + lift * 0.03}` }}
+        >
+          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-pill shadow-pop" style={{ opacity: lift }} />
+          <Face label={label} held={held} pour={pour} t={t} cut={cut} roll={roll} run={run} scribble={scribble} sayRef={say} />
+          <span
+            data-slot="checklist-liquid"
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-pill bg-(--chk-tone) text-(--chk-tone-ink)"
+            style={{ clipPath: clip }}
+          >
+            <Face liquid label={label} held={held} pour={pour} t={t} cut={cut} roll={roll} run={run} scribble={scribble} />
+          </span>
+          {splash > 0 && <Splash key={splash} seed={id * 31 + splash} />}
+        </button>
+      </motion.div>
+    </div>
+  );
+}
 
-            Clamped, because a tick that overshoots draws
-            itself past its own end and pulls back. */}
-        <svg className="chk-tick" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            d="M6 12.4 L10.3 16.7 L18 7.6"
-            pathLength={1}
-            strokeDasharray={1}
-            strokeDashoffset={1 - held}
-          />
-        </svg>
+/* one face of a row; drawn twice — in ink, and in the liquid's ink under its clip */
+function Face({
+  liquid,
+  label,
+  held,
+  pour,
+  t,
+  cut,
+  roll,
+  run,
+  scribble,
+  sayRef,
+}: {
+  liquid?: boolean;
+  label: string;
+  held: number;
+  pour: number;
+  t: number;
+  cut: number;
+  roll: number;
+  run: number;
+  scribble: string;
+  sayRef?: Ref<HTMLSpanElement>;
+}) {
+  return (
+    <span className="absolute inset-0 flex items-center gap-3 pr-5 pl-(--chk-inset)">
+      <span data-slot="checklist-box" className="relative grid size-(--chk-box) flex-none place-items-center rounded-full" style={{ rotate: `${roll.toFixed(1)}deg` }}>
+        {liquid ? (
+          <>
+            {/* RAW, so it swells past full and settles — the one place the overshoot belongs (Bencho) */}
+            <span className="absolute inset-0 rounded-full bg-(--chk-tone-ink)" style={{ scale: `${Math.max(0, t).toFixed(4)}` }} />
+            <svg viewBox="0 0 24 24" aria-hidden className="relative size-[72%] overflow-visible" fill="none">
+              <path
+                d="M6 12.4 L10.3 16.7 L18 7.6"
+                pathLength={1}
+                strokeDasharray={1}
+                strokeDashoffset={1 - held}
+                stroke="var(--chk-tone)"
+                strokeWidth={2.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </>
+        ) : (
+          <span className="absolute inset-0 rounded-full shadow-[inset_0_0_0_1.5px_currentColor] opacity-30" />
+        )}
       </span>
-
-      <span className="chk-say" ref={say}>
-        {/* the words give up their ink as the rule crosses
-            them — read off the same number, so a half-crossed
-            line is half-faded and the two can never disagree */}
-        <span className="chk-word" style={{ opacity: mix(1, 0.42, held) }}>
+      <span ref={sayRef} className="relative inline-block max-w-full min-w-0 text-[18px] leading-[1.2] font-[450] tracking-[-0.015em]">
+        {/* the words give up some ink as they are crossed out — less in
+            the liquid, where they already sit on colour */}
+        <span data-slot="checklist-label" className="block truncate" style={{ opacity: mix(1, liquid ? 0.78 : 0.42, pour) }}>
           {label}
         </span>
-        {/* ── the rule is scaled, not grown ───────────────
-            A width in pixels would need the word measured;
-            `scaleX` from the left edge needs nothing, and a
-            1.5px line has no corner for a scale to distort.
-            The span is sized to the WORD rather than the row,
-            so the rule stops where the text does. */}
-        <span
-          className="chk-rule"
-          aria-hidden="true"
-          style={{ transform: `scaleX(${cut.toFixed(4)})` }}
-        />
+        {run > 0 && (
+          <svg
+            aria-hidden
+            data-slot="checklist-scribble"
+            className="pointer-events-none absolute top-1/2 left-0 h-6 -translate-y-1/2 overflow-visible"
+            width={run}
+            viewBox={`0 0 ${run} 24`}
+            fill="none"
+          >
+            <path d={scribble} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - cut} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
       </span>
-    </motion.button>
+    </span>
+  );
+}
+
+/* seven droplets thrown off the box, away from the pill (left half-circle) */
+function Splash({ seed }: { seed: number }) {
+  const drops = Array.from({ length: 7 }, (_, k) => ({
+    a: 110 + (k / 6) * 140 + (rnd(seed, k) - 0.5) * 16,
+    d: 22 + rnd(seed, k + 9) * 16,
+    s: 4 + rnd(seed, k + 17) * 4,
+  }));
+  return (
+    <span aria-hidden className="pointer-events-none absolute top-1/2 left-[calc(var(--chk-inset)+var(--chk-box)/2)]">
+      {drops.map((p, k) => (
+        <span
+          key={k}
+          className="absolute rounded-full bg-(--chk-tone) opacity-0 fun:animate-[chk-drop_560ms_var(--rap-ease-out)_both]"
+          style={
+            {
+              width: p.s,
+              height: p.s,
+              marginLeft: -p.s / 2,
+              marginTop: -p.s / 2,
+              "--a": `${p.a}deg`,
+              "--d": `${p.d}px`,
+              animationDelay: `${40 + k * 8}ms`,
+            } as CSSProperties
+          }
+        />
+      ))}
+    </span>
+  );
+}
+
+/* ── the party: rap/ui's shapes, thrown up and falling ── */
+const CONFETTI_COLORS = ["flame", "blue", "acid", "bubble", "sky", "plum"];
+const SHAPES: ((s: number) => ReactNode)[] = [
+  (s) => <circle cx={s / 2} cy={s / 2} r={s / 2} fill="currentColor" />,
+  (s) => <rect x={0} y={s * 0.3} width={s} height={s * 0.4} rx={s * 0.2} fill="currentColor" />,
+  (s) => <path d={`M${s / 2} 0 Q${s * 0.58} ${s * 0.42} ${s} ${s / 2} Q${s * 0.58} ${s * 0.58} ${s / 2} ${s} Q${s * 0.42} ${s * 0.58} 0 ${s / 2} Q${s * 0.42} ${s * 0.42} ${s / 2} 0Z`} fill="currentColor" />,
+  (s) => <circle cx={s / 2} cy={s / 2} r={s * 0.36} fill="none" stroke="currentColor" strokeWidth={s * 0.2} />,
+  (s) => <path d={`M1 ${s * 0.6} q${s * 0.2} ${-s * 0.5} ${s * 0.4} 0 t${s * 0.4} 0`} fill="none" stroke="currentColor" strokeWidth={s * 0.18} strokeLinecap="round" />,
+  (s) => (
+    <g fill="currentColor">
+      {[0, 72, 144, 216, 288].map((a) => (
+        <circle key={a} cx={s / 2 + Math.cos((a * Math.PI) / 180) * s * 0.26} cy={s / 2 + Math.sin((a * Math.PI) / 180) * s * 0.26} r={s * 0.24} />
+      ))}
+    </g>
+  ),
+];
+
+function Confetti({ seed, x, y, spread }: { seed: number; x: number; y: number; spread: number }) {
+  const bits = Array.from({ length: 28 }, (_, k) => ({
+    shape: k % SHAPES.length,
+    color: CONFETTI_COLORS[(k * 5 + seed) % CONFETTI_COLORS.length],
+    dx: (rnd(seed, k) - 0.5) * 2 * spread,
+    dy: -(30 + rnd(seed, k + 40) * 70),
+    fall: 220 + rnd(seed, k + 80) * 180,
+    rot: (rnd(seed, k + 120) - 0.5) * 900,
+    size: 11 + rnd(seed, k + 160) * 9,
+    delay: rnd(seed, k + 200) * 90,
+  }));
+  return (
+    <div aria-hidden data-slot="checklist-confetti" className="pointer-events-none absolute inset-0 z-10">
+      {bits.map((b, k) => (
+        <svg
+          key={k}
+          width={b.size}
+          height={b.size}
+          viewBox={`0 0 ${b.size} ${b.size}`}
+          className="absolute overflow-visible opacity-0 fun:animate-[chk-confetti_1300ms_linear_both]"
+          style={
+            {
+              left: x - b.size / 2,
+              top: y - b.size / 2,
+              color: `var(--rap-${b.color})`,
+              "--dx": `${b.dx}px`,
+              "--dy": `${b.dy}px`,
+              "--fall": `${b.fall}px`,
+              "--rot": `${b.rot}deg`,
+              animationDelay: `${b.delay}ms`,
+            } as CSSProperties
+          }
+        >
+          {SHAPES[b.shape](b.size)}
+        </svg>
+      ))}
+    </div>
   );
 }

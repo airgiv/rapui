@@ -48,6 +48,7 @@ export type { FancyIconName, FancyIconProps, FancyTone, SolarIcon } from "./comp
 export { BigLink } from "./components/BigLink";
 export { FeatureCard } from "./components/FeatureCard";
 export { Checklist } from "./components/Checklist";
+export type { ChecklistProps, ChecklistTone, ChecklistFinish } from "./components/Checklist";
 export { CanvasToolbar } from "./components/CanvasToolbar";
 
 // admin / product kit (Radix-based), grouped like the docs sidebar

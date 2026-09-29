@@ -6,7 +6,6 @@ import {
   BigLink,
   Button,
   ButtonGroup,
-  Checklist,
   CircleButton,
   ConfirmButton,
   Counter,
@@ -52,6 +51,7 @@ import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
 import { DialsDemo } from "./demos/DialsDemo";
 import { StickersDemo } from "./demos/StickersDemo";
+import { ChecklistDemo } from "./demos/ChecklistDemo";
 import gridLines from "./media/grid-lines.wav";
 import voiceNote from "./media/voice-note.wav";
 import reel from "./media/reel.webm";
@@ -63,8 +63,6 @@ const COUNT = 110;
 
 /* ───────────────────────── shared class strings ───────────────────────── */
 
-/* a centred, wrapping row of demo pieces with room to breathe */
-const ROW = "flex flex-wrap items-center justify-center gap-10";
 /* a white stage with a grey dot grid, the canvas feel of an editor */
 const DOTS = "bg-paper-2 [background-image:radial-gradient(circle,var(--rap-line)_1.3px,transparent_1.6px)] [background-size:22px_22px] [background-position:center]";
 /* body copy under a section title */
@@ -660,25 +658,23 @@ const lb = useLightbox();
 
       <Showcase
         id="lists"
-        title="Checklist"
-        sub="that falls apart"
+        title="Checklists"
+        sub="that pour"
         stageClass="bg-paper"
-        desc="From Bencho (MIT). Fill, tick, strike-through and fading ink all run on one spring per row — tick the last task and the whole list collapses into a heap."
+        desc="Tick a task and colour pours across its round row, a pen scribbles the words out, and the row rolls down onto the Done pile while the rest close up. Finish the list and the card squashes and throws confetti. The old heap-fall is still there as an option."
         code={`import { Checklist } from "rapui";
 
-<Checklist />`}
+<Checklist title="Launch day" tasks={tasks} />
+<Checklist finish="heap" tone="acid" />`}
       >
-        <div className={ROW}>
-          <Checklist />
-          <Checklist bounce={85} box={20} corner={28} />
-        </div>
+        <ChecklistDemo />
       </Showcase>
 
       <Showcase
         id="loud"
         title="The loud bits"
         sub="for landing pages"
-        desc="Headline links, a board of stickers in sixteen shapes — price tags on strings, seals with running text, tickets, stamps, labels that peel — cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
+        desc="Headline links, a board of stickers in fifteen shapes — punched price tags, seals with running text, stamps, speech bubbles, labels that peel — and cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
         code={`import { BigLink, Sticker, TiltCard, CircleButton } from "rapui";
 
 <BigLink href="/work" meta="24 projects">Work</BigLink>
