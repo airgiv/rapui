@@ -730,12 +730,12 @@ function Wall() {
               negative margin, which a margin set on it directly would undo */}
           {(
             [
-              [<BalanceChart key="b" />, "mt-10 justify-self-start"],
+              [<BalanceChart key="b" />, "mt-4 justify-self-end"],
               [<DonutChart key="d" />, "mt-0"],
-              [<SparkTable key="s" />, "mt-14 justify-self-end"],
-              [<HeatGrid key="h" className="w-[24rem]" />, "mt-0 justify-self-start"],
+              [<SparkTable key="s" />, "mt-6 justify-self-end"],
+              [<HeatGrid key="h" className="w-[24rem]" />, "mt-10 justify-self-start"],
               [<BarsChart key="bars" />, "mt-8"],
-              [<RaceBars key="r" className="w-[22rem]" />, "-mt-4 justify-self-end"],
+              [<RaceBars key="r" className="w-[22rem]" />, "mt-8 justify-self-end"],
             ] as const
           ).map(([c, offset]) => (
             <div key={c.key} className={cn("flex justify-center max-w-full max-[1180px]:mt-0 max-[1180px]:justify-self-center", offset)}>
