@@ -1,0 +1,119 @@
+/* ── RollingNumber — shared by Knob, ElasticSlider, ScrubNumber ──
+   The TimeScrubber's digit: a 1.5em cell for a 1em line, the mask
+   fading the top and bottom quarter-em, so digits leave and arrive
+   through a fade. The negative margin keeps the line box at 1em.
+   The roll uses TimeScrubber's own curve (a hair of overshoot) and
+   length (220ms = --rap-dur-fast), so every scrubber rolls alike. */
+.rap-rollnum {
+  display: inline-flex;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.rap-rollnum__col {
+  display: inline-block;
+  height: 1.5em;
+  margin: -0.25em 0;
+  overflow: hidden;
+  mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+}
+.rap-rollnum__strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--rap-dur-fast) cubic-bezier(0.3, 1.15, 0.4, 1);
+}
+.rap-rollnum__strip > span,
+.rap-rollnum__sym {
+  height: 1.5em;
+  line-height: 1.5em;
+}
+.rap-rollnum__sym { margin: -0.25em 0; }
+/* and it smears a little while it rolls — two names so it replays */
+.rap-rollnum__strip[data-flip="a"] { animation: rap-rollnum-a 260ms ease-out; }
+.rap-rollnum__strip[data-flip="b"] { animation: rap-rollnum-b 260ms ease-out; }
+@keyframes rap-rollnum-a { from { filter: blur(2px); } to { filter: blur(0); } }
+@keyframes rap-rollnum-b { from { filter: blur(2px); } to { filter: blur(0); } }
+
+[data-rap-motion="calm"] .rap-rollnum__strip { transition: none; animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-rollnum__strip { transition: none; animation: none; }
+}
+
+/* ══ ScrubNumber ═════════════════════════════════════════ */
+.rap-scrub {
+  --scrub-h: var(--rap-control-h);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 6.5rem;
+  height: var(--scrub-h);
+  padding: 0 14px 0 4px;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill);
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  user-select: none;
+  -webkit-user-select: none;
+  /* the lean is written inline every frame by the spring; nothing
+     here transitions `transform`, so the two never fight */
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), box-shadow var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-scrub--sm { --scrub-h: var(--rap-control-h-sm); font-size: 0.8125rem; padding-right: 12px; }
+.rap-scrub--lg { --scrub-h: var(--rap-control-h-lg); font-size: 1.0625rem; padding-right: 18px; }
+.rap-scrub:hover { background: var(--rap-fill-hover); }
+.rap-scrub:focus-within { background: var(--rap-surface); box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-scrub.is-disabled { opacity: 0.5; pointer-events: none; }
+
+/* the handle: a round well at the left end, as tall as the pill
+   less 4px of air (the same 2px inset NumberField's buttons use),
+   so it reads as the thing you take hold of */
+.rap-scrub__label {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: calc(var(--scrub-h) - 8px);
+  height: calc(var(--scrub-h) - 8px);
+  padding: 0 8px;
+  border-radius: var(--rap-radius-pill);
+  color: var(--rap-mute);
+  cursor: ew-resize;
+  touch-action: none;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-scrub__label svg { width: 1.1em; height: 1.1em; }
+.rap-scrub__label:hover { color: var(--rap-ink); background: var(--rap-fill); }
+/* blue while held: this is the selection you have hold of, the
+   same blue as the focus ring the pill wears at the same moment */
+.rap-scrub.is-scrubbing .rap-scrub__label { background: var(--rap-select); color: var(--rap-select-ink); }
+
+.rap-scrub__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding-left: 4px;
+  cursor: text;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+.rap-scrub__value:focus-visible { outline: none; }
+.rap-scrub__unit { color: var(--rap-mute); }
+
+.rap-scrub__input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 0 0 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.rap-scrub__input::selection { background: var(--rap-select); color: var(--rap-select-ink); }

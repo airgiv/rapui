@@ -153,3 +153,6 @@ export const Undo = make(Ph.ArrowCounterClockwise, "Undo");
 export const User = make(Ph.User, "User");
 export const Video = make(Ph.VideoCamera, "Video");
 export const Zap = make(Ph.Lightning, "Zap");
+export const Volume1 = make(Ph.SpeakerLow, "Volume1");
+export const Volume2 = make(Ph.SpeakerHigh, "Volume2");
+export const VolumeX = make(Ph.SpeakerSlash, "VolumeX");
