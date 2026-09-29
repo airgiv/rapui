@@ -1,0 +1,23 @@
+.rap-roll {
+  display: inline-flex;
+  overflow: hidden;
+  line-height: 1.15;
+  vertical-align: bottom;
+}
+.rap-roll__char {
+  position: relative;
+  display: inline-block;
+  transition: transform var(--rap-dur) var(--rap-ease-out);
+  transition-delay: calc(var(--i) * var(--stagger));
+}
+.rap-roll__char::after {
+  content: attr(data-char);
+  position: absolute;
+  left: 0;
+  top: 100%;
+}
+.rap-roll:hover .rap-roll__char,
+.rap-roll-host:hover .rap-roll__char,
+.rap-roll-host:focus-visible .rap-roll__char {
+  transform: translateY(-100%);
+}

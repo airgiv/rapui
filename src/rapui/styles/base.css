@@ -1,0 +1,31 @@
+/* Opt-in base: apply `rap-root` (or use <RapProvider>) to get paper/ink + fonts. */
+.rap-root {
+  background: var(--rap-paper);
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+  font-size: var(--rap-size-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background var(--rap-dur) var(--rap-ease-out), color var(--rap-dur) var(--rap-ease-out);
+}
+
+.rap-root ::selection {
+  background: var(--rap-acid);
+  color: #0d0d0d;
+}
+
+.rap-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.rap-focus:focus-visible,
+.rap-root :focus-visible {
+  outline: 2px solid var(--rap-accent);
+  outline-offset: 4px;
+}

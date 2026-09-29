@@ -1,0 +1,36 @@
+.rap-tabs__list {
+  position: relative;
+  display: inline-flex;
+  padding: 5px;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-paper-3);
+  isolation: isolate;
+}
+.rap-tabs__ind {
+  position: absolute;
+  z-index: -1;
+  top: 5px;
+  bottom: 5px;
+  left: 0;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-ink);
+  transition: transform var(--rap-dur) var(--rap-ease-spring), width var(--rap-dur) var(--rap-ease-spring);
+}
+.rap-tabs__tab {
+  position: relative;
+  padding: 0.8rem 1.4rem;
+  border: 0;
+  border-radius: var(--rap-radius-pill);
+  background: none;
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color var(--rap-dur) var(--rap-ease-out);
+}
+.rap-tabs__tab.is-active { color: var(--rap-paper); }
+.rap-tabs__tab:not(.is-active):hover { color: var(--rap-accent); }
+.rap-tabs__tab:focus-visible { outline: 2px solid var(--rap-accent); outline-offset: 2px; }
+.rap-tabs__panel { padding-top: 2rem; animation: rap-tab-in var(--rap-dur) var(--rap-ease-out); }
+@keyframes rap-tab-in { from { opacity: 0; transform: translateY(0.75rem); filter: blur(4px); } }

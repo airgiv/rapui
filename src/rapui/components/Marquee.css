@@ -1,0 +1,24 @@
+.rap-marquee {
+  display: flex;
+  overflow: hidden;
+  gap: var(--rap-mq-gap);
+  transform: rotate(var(--rap-mq-rot));
+  user-select: none;
+}
+.rap-marquee__track {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--rap-mq-gap);
+  min-width: 100%;
+  animation: rap-marquee var(--rap-mq-dur) linear infinite;
+}
+.rap-marquee__item { flex: none; display: flex; align-items: center; gap: var(--rap-mq-gap); }
+.rap-marquee--reverse .rap-marquee__track { animation-direction: reverse; }
+.rap-marquee--pause:hover .rap-marquee__track { animation-play-state: paused; }
+@keyframes rap-marquee {
+  to { transform: translateX(calc(-100% - var(--rap-mq-gap))); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rap-marquee__track { animation-duration: 120s; }
+}

@@ -1,0 +1,32 @@
+.rap-rbadge {
+  --rb-fg: var(--rap-ink);
+  --rb-bg: transparent;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--rb-bg);
+  color: var(--rb-fg);
+}
+.rap-rbadge--flame { --rb-bg: var(--rap-flame); --rb-fg: #fff; }
+.rap-rbadge--acid { --rb-bg: var(--rap-acid); --rb-fg: #282828; }
+.rap-rbadge--blue { --rb-bg: var(--rap-blue); --rb-fg: #fff; }
+.rap-rbadge__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: rap-spin var(--rap-rb-dur) linear infinite;
+  transition: animation-duration var(--rap-dur);
+}
+.rap-rbadge:hover .rap-rbadge__ring { animation-duration: calc(var(--rap-rb-dur) / 4); }
+.rap-rbadge__ring text {
+  font-family: var(--rap-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  fill: currentColor;
+}
+.rap-rbadge__center { position: relative; font-size: 2rem; line-height: 1; }
+.rap-rbadge__star { display: inline-block; animation: rap-spin 6s linear infinite reverse; }
+@keyframes rap-spin { to { transform: rotate(360deg); } }

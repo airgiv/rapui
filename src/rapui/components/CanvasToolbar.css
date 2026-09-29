@@ -1,0 +1,358 @@
+/* Adapted from Bencho — https://bencho.dev — MIT licence, see
+   bencho.dev/licence.
+
+   ── what came across, and what did not ──────────────────────
+   Bencho ships this block inside its shared glass stylesheet,
+   whose selector lists also style a dozen other Bencho blocks
+   (.lab, .gcard, .gnav, .gdock, .cmd, .deck-card, .nod-card,
+   .esc-btn, the .gtry test board…). None of those exist in
+   rap/ui, so only the rules that land on something this
+   component renders are kept — .gpane, .bar-* — each with its
+   original comment. That is also why --deck-r, --depth, --pull,
+   --nod-r and --try-edge are not defined below: every rule that
+   read them styled a block that is not here. --pane-thumb is
+   named only in a comment; no rule reads it.
+
+   ── Bencho's tokens, answered in rap/ui's terms ──────────────
+   Scoped to .bar-well (the component's root) so nothing leaks.
+
+     --ink        glyphs, wedge         → --rap-ink
+     --pane       the rail's glass      → --rap-paper-2 (white surface)
+                                           at 80%: see below
+     --pane-edge  the Stroke hairline   → --rap-line
+     --inlay      a tool under hover    → --rap-paper-3, the same
+                                           recessed grey rap/ui's
+                                           Tabs track uses
+     --pick       the tool in your hand → --rap-blue (#0582ff) —
+                                           literally the canvas
+                                           selection blue
+
+   No rap/ui equivalent, so defined here:
+     --ink-rgb     same colour as --rap-ink, as a comma triplet
+                   because the CSS builds rgba(var(--ink-rgb), a)
+     --shadow-rgb  rap/ui is flat and has no shadow colour; black
+     --bar-slot / --bar-pad / --bar-gap
+                   38 / 4 / 2 px — the numbers Bencho's own
+                   comments give: "38px slots", the "4px of
+                   padding" between rail and tool corners, and
+                   the flyout's 2px gap
+     --g-blur / --g-sat / --g-bright
+                   2px / 150% / 100%, the "2px frost" recipe the
+                   comment below describes (also the var()
+                   fallbacks, stated so the mapping is explicit)
+     --g-edge-* / --g-spec / --g-lift
+                   only read under [data-surface="glass"] on an
+                   ancestor. rap/ui is Readymag-flat by default
+                   and never sets it; the values here make the
+                   glass look right when you opt in.
+
+   --g-shadow is deliberately NOT defined: it is read as
+   var(--g-shadow, <the whole recipe>), so it is an override
+   hook, and setting it would throw the recipe away.
+
+   --pane at 80% rather than the 60% the comment says: on
+   rap/ui's #f5f5f5 ground a 60% white rail is barely a
+   different colour from the page. */
+.bar-well {
+  --ink: var(--rap-ink);
+  --ink-rgb: 40, 40, 40;
+  --pane: color-mix(in srgb, var(--rap-paper-2) 80%, transparent);
+  --pane-edge: var(--rap-line);
+  --inlay: var(--rap-paper-3);
+  --pick: var(--rap-blue);
+  --shadow-rgb: 0, 0, 0;
+  --bar-slot: 38px;
+  --bar-pad: 4px;
+  --bar-gap: 2px;
+  --g-blur: 2px;
+  --g-sat: 150%;
+  --g-bright: 100%;
+  --g-edge-hi: 0.9;
+  --g-edge-lo: 0.12;
+  --g-edge-far: 0.35;
+  --g-spec: 0.6;
+  --g-lift: 0.12;}
+
+[data-rap-theme="dark"] .bar-well {
+  --ink-rgb: 245, 245, 245;
+  --g-edge-hi: 0.28;
+  --g-edge-lo: 0.04;
+  --g-edge-far: 0.12;
+  --g-spec: 0.16;
+  --g-lift: 0.4;}
+
+/* ── glass navigation ──────────────────────────────────────
+   Same recipe as .gcard: 60% white, 2px frost, refraction,
+   lit inner edge. Shapes differ, the material does not. */
+
+/* The bare pane. Same recipe as .gnav and .gdock, with no
+   layout of its own — for components that are just a surface
+   and want to arrange themselves. A card with a title in one
+   corner and a chip in the other is a house style, not a
+   requirement, and most things do not need either. */
+.gpane {
+  position: relative;
+  background: var(--pane);
+  -webkit-backdrop-filter:
+    blur(var(--g-blur, 2px)) saturate(var(--g-sat, 150%)) brightness(var(--g-bright, 100%));
+  backdrop-filter:
+    blur(var(--g-blur, 2px)) saturate(var(--g-sat, 150%)) brightness(var(--g-bright, 100%));
+  isolation: isolate;
+  color: var(--ink);}
+
+.gpane::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* transparent unless Stroke says otherwise — see the
+     stroke block below */
+  border: 1px solid transparent;
+  pointer-events: none;
+  z-index: 3;}
+
+/* ══ stroke ═════════════════════════════════════════════════
+   Whether a component draws a hairline round itself. OFF by
+   default, which is the change: every glass surface carried
+   one unconditionally, and a grey line round everything makes
+   a wall of components look like a wall of boxes rather than
+   a wall of things.
+
+   The line is not load-bearing. A flat pane is a fill against
+   a different fill and reads on its own; the ring was there
+   to sharpen an edge that was already there.
+
+   Placed ABOVE the glass rules on purpose. Glass draws its
+   own lit rim, and that rim is the material rather than a
+   stroke — it is what gives a pane thickness. So glass wins
+   the border wherever the two meet, and Stroke governs the
+   drawn line that flat surfaces would otherwise have. */
+[data-stroke="on"] .gpane::before {
+  border-color: var(--pane-edge);}
+
+/* ── the rest of them ────────────────────────────────────────
+   Not every block has a ::before to hang a border on, and
+   giving each one a pseudo-element it does not otherwise need
+   is a lot of stylesheet for a hairline. A 1px spread shadow
+   is the same mark by another means — the create menu has
+   used exactly this since it was written, for exactly this
+   reason — and it composites without touching layout.
+
+   This is what makes Stroke honest on every entry rather than
+   on the dozen that happened to be built on a glass pane. */
+/* rap/ui: in Bencho this selector list ran on, through two
+   comment blocks, into the `.nod-card` rule — so with Stroke on
+   the rail ALSO picked up `border-radius: var(--nod-r, 20px)`,
+   overriding the corner knob. Only the hairline is kept. */
+[data-stroke="on"] .bar-rail {
+  box-shadow: 0 0 0 1px var(--pane-edge);}
+
+/* ── the rim ─────────────────────────────────────────────────
+   Every glass surface already drew a 1px ring in one flat
+   colour. A flat rim is the single clearest tell that a thing
+   is a rectangle with a border rather than a pane with
+   thickness: real edges are lit unevenly, and evenly lit ones
+   read as ink.
+
+   So the ring becomes a gradient — bright at the corner
+   facing the light, almost nothing along the sides that run
+   edge-on to it, and a second weaker catch at the far corner
+   where the light has come through the pane and out again.
+
+   Painting a gradient in a border needs the border box filled
+   and the padding box punched out of it, which is what the
+   two masks do: one covers the whole element, one covers only
+   the inside, and compositing them apart leaves the rim. It
+   is the only way to get a gradient into a border without a
+   second element to draw it on.
+
+   Only under glass. Flat keeps its honest hairline, which is
+   what a solid pane should have. */
+[data-surface="glass"] .gpane::before {
+  border-color: transparent;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(255, 255, 255, var(--g-edge-hi, 0)) 0%,
+      rgba(255, 255, 255, var(--g-edge-lo, 0)) 26%,
+      rgba(255, 255, 255, var(--g-edge-lo, 0)) 62%,
+      rgba(255, 255, 255, var(--g-edge-far, 0)) 100%
+    ) border-box;
+  -webkit-mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;}
+
+/* ── thickness ───────────────────────────────────────────────
+   Three marks, and between them they are the difference
+   between a pane and a wash.
+
+   The lit line along the top is where light enters the edge of
+   a real sheet. The ring is the sheet's own thickness seen
+   from straight on. The shadow underneath says the pane is
+   ABOVE the page rather than painted onto it — which is the
+   one thing a backdrop-filter alone can never say, because a
+   filter has no depth.
+
+   All three ride on --glass and are gone at zero, where the
+   fallbacks take over and the surface is flat. */
+[data-surface="glass"] .gpane {
+  box-shadow: var(--g-shadow,
+    /* the top face, catching light through the thickness of
+       the pane — inside the rim, not on it */
+    inset 0 1px 0 rgba(255, 255, 255, var(--g-spec, 0)),
+    /* And what it casts on the page below — wide and soft
+       rather than tight and close. It is a different claim
+       about how far the pane floats, and the softer one is
+       what reads as a sheet resting above the page instead of
+       a card stuck to it. */
+    0 10px 40px rgba(var(--shadow-rgb), var(--g-lift, 0)));}
+
+/* ── 1 · canvas toolbar ──────────────────────────────────── */
+/* One stage for every horizontal bar. The wall scales a
+   component by its longest side, so a bar that reserves room
+   for a flyout measures larger than a bare one and gets shrunk
+   further — which is why the toolbar's glyphs came out smaller
+   than the icon bar's despite both being 38px slots.
+
+   Same stage, same measurement, same glyph size on the page.
+   150 is the floor: the bar sits centred, and the palette
+   needs 74px above that centre line to clear the top. */
+.bar-well {
+  position: relative;
+  width: 264px; height: 150px;
+  display: flex; align-items: center; justify-content: center;}
+
+.bar-rail {
+  display: inline-flex; align-items: center; gap: var(--bar-gap);
+  padding: var(--bar-pad);
+  border-radius: var(--bar-r, 14px);}
+
+.bar-tool {
+  position: relative;
+  width: var(--bar-slot); height: var(--bar-slot);
+  display: grid; place-items: center;
+  border: 0; /* the rail's corner less the 4px between them */
+  border-radius: var(--bar-tool-r, 10px);
+  background: transparent;
+  /* ── full ink, every tool ────────────────────────────────
+     They sat at 45% and the whole rail read as disabled — a
+     toolbar where every tool looks unavailable is one nobody
+     trusts to do anything. The tools are all live, so they
+     are all ink, and the selected one is told apart by its
+     pad rather than by the others being dimmed. */
+  color: var(--ink);
+  cursor: pointer;
+  transition: color 200ms ease, background 200ms ease;}
+
+.bar-tool:hover { background: var(--inlay); }
+
+/* ── THE SELECTED PAD ARRIVES ───────────────────────────────
+   It was `background: var(--pane-thumb)` on the button, which
+   can only cross-fade — the slot was lit or it was not, and
+   picking a tool read as a value being set rather than as
+   anything happening.
+
+   A pseudo-element can be scaled where the button cannot: the
+   button holds the glyph, and scaling it would take the icon
+   with it. So the pad is its own layer, opening from 0.72 on a
+   curve that goes just past 1. The glyph lifts a hair with it,
+   which is what ties the two together — 1.05, small enough to
+   be felt rather than watched. */
+.bar-tool::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  /* the canvas's selection blue — the colour every design tool
+     uses for "this is the tool in your hand" */
+  background: var(--pick);
+  opacity: 0;
+  scale: 0.72;
+  transition: opacity 140ms ease, scale 300ms cubic-bezier(0.3, 1.42, 0.4, 1);
+  pointer-events: none;}
+
+/* the mark rides over its own pad */
+.bar-tool > svg {
+  position: relative;
+  z-index: 1;
+  transition: scale 300ms cubic-bezier(0.3, 1.42, 0.4, 1);}
+
+.bar-tool[data-on="true"] { color: #ffffff; }
+
+.bar-tool[data-on="true"]:hover { background: transparent; }
+
+.bar-tool[data-on="true"]::before { opacity: 1; scale: 1; }
+
+.bar-tool[data-on="true"] > svg { scale: 1.05; }
+
+/* pressed, it yields before it lights */
+.bar-tool:active > svg { scale: 0.92; transition-duration: 90ms; }
+
+/* the shortcut letter, only while hovering */
+/* the shape slot carries its own notch */
+.bar-slot { position: relative; display: inline-flex; }
+
+.bar-notch {
+  position: absolute;
+  right: 3px; bottom: 3px;
+  width: 9px; height: 9px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;}
+
+/* a corner wedge, the universal "there is more here" */
+.bar-notch::after {
+  content: "";
+  position: absolute;
+  right: 0; bottom: 0;
+  border-left: 5px solid transparent;
+  border-bottom: 5px solid var(--ink);
+  opacity: 0.4;
+  transition: opacity 160ms ease, transform 200ms cubic-bezier(0.28, 1.3, 0.36, 1);}
+
+.bar-notch:hover::after, .bar-notch[data-open="true"]::after { opacity: 0.9; }
+
+/* on the blue pad the wedge goes white with the glyph */
+.bar-slot[data-on="true"] .bar-notch::after { border-bottom-color: #ffffff; opacity: 0.85; }
+
+.bar-notch[data-open="true"]::after { transform: scale(1.3); }
+
+.bar-split {
+  width: 1px; height: 20px;
+  margin: 0 5px;
+  background: rgba(var(--ink-rgb), 0.12);}
+
+/* the palette opens as a row above the bar, matching its
+   shape — a column read as a dropdown from a toolbar that has
+   no dropdowns anywhere else in it */
+.bar-flyout {
+  position: absolute;
+  left: 50%;
+  bottom: calc(50% + 33px);
+  display: flex; gap: 2px;
+  padding: 6px;
+  /* the flyout is the rail's own shape, opened */
+  border-radius: var(--bar-r, 14px);
+  /* A rise you can follow. 240ms on a curve overshooting to
+     1.34 is a pop — the panel was at full size before the eye
+     had found it, which is why it read as simply being there.
+     Longer, gentler, and the opacity given its own slower
+     ramp so the fade is the part you notice and the movement
+     is what carries it. */
+  animation: bar-rise 300ms cubic-bezier(0.22, 1.14, 0.36, 1) both;}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-flyout { animation-duration: 1ms; }
+}
+
+@keyframes bar-rise {
+  from { opacity: 0; transform: translateX(-50%) translateY(9px) scale(0.965); }
+  55%  { opacity: 1; }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }}

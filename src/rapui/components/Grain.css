@@ -1,0 +1,18 @@
+.rap-grain {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: 9998;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  animation: rap-grain 0.9s steps(4) infinite;
+}
+[data-rap-theme="dark"] .rap-grain { mix-blend-mode: screen; }
+@keyframes rap-grain {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3%, 2%); }
+  50% { transform: translate(2%, -3%); }
+  75% { transform: translate(-1%, 3%); }
+}
+@media (prefers-reduced-motion: reduce) { .rap-grain { animation: none; } }

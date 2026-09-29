@@ -1,0 +1,38 @@
+.rap-tilt-wrap { perspective: 1000px; }
+.rap-tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  --tc-bg: var(--rap-paper-2);
+  --tc-fg: var(--rap-ink);
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-radius: var(--rap-radius-lg);
+  background: var(--tc-bg);
+  color: var(--tc-fg);
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition: transform var(--rap-dur) var(--rap-ease-rm);
+  will-change: transform;
+}
+.rap-tilt:hover { transition-duration: 150ms; }
+.rap-tilt--spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--mx) var(--my), rgb(255 255 255 / 0.45), transparent 45%);
+  opacity: 0;
+  mix-blend-mode: soft-light;
+  transition: opacity var(--rap-dur) var(--rap-ease-out);
+}
+.rap-tilt--spot:hover::after { opacity: 1; }
+.rap-tilt--ink { --tc-bg: var(--rap-ink); --tc-fg: var(--rap-paper); }
+.rap-tilt--flame { --tc-bg: var(--rap-flame); --tc-fg: #fff; }
+.rap-tilt--plum { --tc-bg: var(--rap-plum); --tc-fg: #fff; }
+.rap-tilt--acid { --tc-bg: var(--rap-acid); --tc-fg: #282828; }
+.rap-tilt--blue { --tc-bg: var(--rap-blue); --tc-fg: #fff; }
+.rap-tilt--bubble { --tc-bg: var(--rap-bubble); --tc-fg: #282828; }
+.rap-tilt--sky { --tc-bg: var(--rap-sky); --tc-fg: #282828; }

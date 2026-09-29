@@ -1,0 +1,70 @@
+.rap-field {
+  --f-fs: clamp(1.5rem, 3vw, 2.5rem);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-top: 1.6em;
+  font-size: 1rem;
+}
+.rap-field--md { --f-fs: 1.25rem; }
+.rap-field--xl { --f-fs: clamp(2rem, 5vw, 4.5rem); }
+
+.rap-field__input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1.5px solid var(--rap-line);
+  background: transparent;
+  color: var(--rap-ink);
+  font-family: var(--rap-font-display);
+  font-weight: 400;
+  font-size: var(--f-fs);
+  letter-spacing: -0.04em;
+  padding: 0.15em 0 0.25em;
+  outline: none;
+  caret-color: var(--rap-accent);
+}
+.rap-field__input::placeholder { color: transparent; }
+
+.rap-field__label {
+  position: absolute;
+  left: 0;
+  top: calc(1.6em + var(--f-fs) * 0.2);
+  font-family: var(--rap-font-serif);
+  font-style: italic;
+  font-size: var(--f-fs);
+  color: var(--rap-mute);
+  pointer-events: none;
+  transform-origin: 0 0;
+  transition: transform var(--rap-dur) var(--rap-ease-out), color var(--rap-dur) var(--rap-ease-out),
+    font-size var(--rap-dur) var(--rap-ease-out), top var(--rap-dur) var(--rap-ease-out);
+}
+.rap-field__input:focus + .rap-field__label,
+.rap-field__input:not(:placeholder-shown) + .rap-field__label {
+  top: 0;
+  font-family: var(--rap-font-mono);
+  font-style: normal;
+  font-size: var(--rap-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rap-ink);
+}
+
+.rap-field__line {
+  position: relative;
+  height: 3px;
+  margin-top: -2px;
+  background: var(--rap-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--rap-dur-slow) var(--rap-ease-out);
+}
+.rap-field__input:focus ~ .rap-field__line { transform: scaleX(1); }
+
+.rap-field__msg {
+  margin-top: 0.6rem;
+  font-family: var(--rap-font-mono);
+  font-size: var(--rap-size-small);
+  color: var(--rap-mute);
+}
+.rap-field--error .rap-field__line { transform: scaleX(1); background: var(--rap-flame); }
+.rap-field--error .rap-field__msg { color: var(--rap-flame); }
