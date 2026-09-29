@@ -26,6 +26,48 @@
 .rap-select-trigger[data-placeholder] .rap-select-trigger__value { color: var(--rap-mute); }
 .rap-select-trigger:disabled { opacity: 0.5; pointer-events: none; }
 .rap-select-trigger__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── the slot window: the value rolls in from below, the old one rolls up and away ── */
+.rap-select-trigger__window {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  /* a little headroom so the reel is clipped by a window, not by the glyphs */
+  padding-block: 0.3em;
+  margin-block: -0.3em;
+}
+.rap-select-trigger__window > * { grid-area: 1 / 1; }
+.rap-select-trigger__value.is-roll-a { animation: rap-roll-in-a 420ms var(--rap-ease-spring); }
+.rap-select-trigger__value.is-roll-b { animation: rap-roll-in-b 420ms var(--rap-ease-spring); }
+.rap-select-trigger__ghost {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: rap-roll-out 300ms var(--rap-ease-rm) forwards;
+}
+.rap-select-trigger__ghost.is-muted { color: var(--rap-mute); }
+@keyframes rap-roll-in-a { from { translate: 0 115%; opacity: 0.2; } }
+@keyframes rap-roll-in-b { from { translate: 0 115%; opacity: 0.2; } }
+@keyframes rap-roll-out { to { translate: 0 -115%; opacity: 0; } }
+
+/* ── the deal: rows of a freshly opened list drop in one after another (--i set in JS) ── */
+.rap-select-content :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) {
+  animation: rap-deal-in 260ms var(--rap-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 22ms);
+}
+
+[data-rap-motion="calm"] :is(.rap-select-trigger__value, .rap-select-trigger__ghost),
+[data-rap-motion="calm"] .rap-select-content :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) { animation: none; }
+[data-rap-motion="calm"] .rap-select-trigger__ghost { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.rap-select-trigger__value, .rap-select-trigger__ghost),
+  .rap-select-content :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) { animation: none !important; }
+  .rap-select-trigger__ghost { display: none; }
+}
 .rap-select-trigger__icon { width: 18px; height: 18px; flex: none; opacity: 0.6; transition: transform var(--rap-dur-fast) var(--rap-ease-rm); }
 .rap-select-trigger[data-state="open"] .rap-select-trigger__icon { transform: rotate(180deg); }
 

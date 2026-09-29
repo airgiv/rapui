@@ -1,3 +1,27 @@
+/* ══ FormField ════════════════════════════════════════════
+   Label, control, hint and error in one stack.
+
+   DELIGHT — THE FIELD SAYS "NO". When an error turns on, the
+   control shakes its head once (motion.css `rap-shake`: seven
+   pixels, dying out over 420ms — long enough to read as a
+   gesture, short enough that you are already looking at the
+   message by the time it stops) and the message slides down
+   out of the gap under it instead of popping in, so the eye is
+   carried from the control to the reason. It happens on the
+   RISING edge only — a field that stays wrong does not keep
+   shaking while you type into it — and again whenever a string
+   error changes to a different one (a second, different "no").
+
+   The control gets a wrapper so the shake moves the control and
+   not the label: the label is the question, the control is the
+   answer being refused. The wrapper is a column flexbox, so
+   controls that stretch in the field still stretch.
+
+   Also home to `useMotionCalm` / `isMotionCalm`, the one check
+   every form control makes before running a JS-driven flourish
+   (reduced motion, or an ancestor with data-rap-motion="calm").
+   It belongs in hooks/ — kept here so the forms group owns it
+   until it moves. */
 import {
   Children,
   cloneElement,
@@ -5,15 +29,38 @@ import {
   forwardRef,
   isValidElement,
   useContext,
+  useEffect,
   useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type RefObject,
   type FieldsetHTMLAttributes,
   type HTMLAttributes,
   type ReactElement,
   type ReactNode,
 } from "react";
-import { cx } from "../utils";
+import { cx, prefersReducedMotion } from "../utils";
 import { Label } from "./Label";
 import "./FormField.css";
+
+/** True when playful motion should be skipped for this element: reduced motion, or a calm ancestor. */
+export function isMotionCalm(el: Element | null | undefined): boolean {
+  return prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+}
+
+/**
+ * `isMotionCalm` as render state, re-read after every render (a `closest()` is cheap).
+ * Feed it to `useSpring(…, instant)`: the spring snaps instead of settling.
+ */
+export function useMotionCalm(ref: RefObject<Element | null>): boolean {
+  const [calm, setCalm] = useState(false);
+  useLayoutEffect(() => {
+    const next = isMotionCalm(ref.current);
+    if (next !== calm) setCalm(next);
+  });
+  return calm;
+}
 
 interface FormFieldContextValue {
   id: string;
@@ -62,6 +109,16 @@ export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(function For
   const invalid = errorId != null;
   const describedBy = [childProps["aria-describedby"] as string | undefined, hintId, errorId].filter(Boolean).join(" ") || undefined;
 
+  // the "no": replay the shake on the rising edge of the error (and when a string error changes)
+  const [shake, setShake] = useState(0);
+  const last = useRef<{ invalid: boolean; text: unknown }>({ invalid, text: error });
+  useEffect(() => {
+    const prev = last.current;
+    last.current = { invalid, text: error };
+    const changed = typeof error === "string" && typeof prev.text === "string" && error !== prev.text;
+    if (invalid && (!prev.invalid || changed)) setShake((n) => n + 1);
+  }, [invalid, error]);
+
   const control = cloneElement(child, {
     id,
     "aria-describedby": describedBy,
@@ -84,16 +141,25 @@ export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(function For
             {aside != null && <span className="rap-form-field__aside">{aside}</span>}
           </div>
         )}
-        {control}
+        <div
+          className={cx("rap-form-field__control", shake > 0 && (shake % 2 ? "is-shaking-a" : "is-shaking-b"))}
+          onAnimationEnd={(e) => {
+            if (e.target === e.currentTarget) setShake(0);
+          }}
+        >
+          {control}
+        </div>
         {hint != null && (
           <p id={hintId} className="rap-form-field__hint">
             {hint}
           </p>
         )}
         {errorId && (
-          <p id={errorId} className="rap-form-field__error" role="alert">
-            {error}
-          </p>
+          <div className="rap-form-field__error-slot">
+            <p id={errorId} className="rap-form-field__error" role="alert">
+              {error}
+            </p>
+          </div>
         )}
       </div>
     </FormFieldContext.Provider>

@@ -22,7 +22,49 @@
 }
 .rap-form-field__hint { color: var(--rap-mute); }
 .rap-form-field__error { color: var(--rap-danger); font-weight: 500; }
-.rap-form-field__hint + .rap-form-field__error { margin-top: calc(var(--rap-gap-tight) - var(--ff-gap)); }
+.rap-form-field__hint + .rap-form-field__error-slot { margin-top: calc(var(--rap-gap-tight) - var(--ff-gap)); }
+
+/* the control, in its own box so the shake moves the answer and not the question */
+.rap-form-field__control { display: flex; flex-direction: column; min-width: 0; }
+/* two names for one shake so a second "no" mid-shake restarts it */
+.rap-form-field__control.is-shaking-a { animation: rap-shake 420ms var(--rap-ease-rm); }
+.rap-form-field__control.is-shaking-b { animation: rap-ff-shake 420ms var(--rap-ease-rm); }
+@keyframes rap-ff-shake {
+  0%, 100% { translate: 0; }
+  15% { translate: -7px; }
+  30% { translate: 6px; }
+  45% { translate: -4px; }
+  60% { translate: 3px; }
+  75% { translate: -1px; }
+}
+
+/* the message slides down out of the gap: its row opens from 0 while the text
+   drops in from above, so nothing below jumps */
+.rap-form-field__error-slot {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: rap-ff-open 320ms var(--rap-ease-out);
+}
+.rap-form-field__error-slot > .rap-form-field__error {
+  min-height: 0;
+  overflow: hidden;
+  animation: rap-ff-drop 380ms var(--rap-ease-spring);
+}
+@keyframes rap-ff-open {
+  from { grid-template-rows: 0fr; margin-top: calc(var(--ff-gap) * -1); }
+}
+@keyframes rap-ff-drop {
+  from { translate: 0 -0.9em; opacity: 0; }
+}
+.rap-form-field__hint + .rap-form-field__error-slot { animation-name: rap-ff-open-tight; }
+@keyframes rap-ff-open-tight {
+  from { grid-template-rows: 0fr; margin-top: calc(var(--ff-gap) * -2 + var(--rap-gap-tight)); }
+}
+
+[data-rap-motion="calm"] :is(.rap-form-field__control, .rap-form-field__error-slot, .rap-form-field__error) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.rap-form-field__control, .rap-form-field__error-slot, .rap-form-field__error) { animation: none !important; }
+}
 
 /* the field's error state paints known rap/ui controls red */
 .rap-form-field.is-invalid .rap-input,

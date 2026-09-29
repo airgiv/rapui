@@ -1,5 +1,6 @@
 .rap-cal {
-  --cal-cell: 40px;
+  --cal-cell: var(--rap-control-h);
+  --cal-pen: var(--rap-flame);
   position: relative;
   display: inline-block;
   color: var(--rap-ink);
@@ -9,7 +10,7 @@
 }
 .rap-cal--sm { --cal-cell: 36px; font-size: 0.875rem; }
 
-.rap-cal__months { position: relative; display: flex; flex-wrap: wrap; gap: 24px; }
+.rap-cal__months { position: relative; display: flex; flex-wrap: wrap; gap: 28px; }
 .rap-cal__month { display: flex; flex-direction: column; gap: 6px; }
 
 /* caption on the left, round nav buttons pinned top-right */
@@ -22,13 +23,38 @@
 .rap-cal__caption-label {
   position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  align-items: baseline;
+  gap: 0.4rem;
   font-size: 1rem;
   font-weight: 500;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
+/* the month, large, on a hand-laid acid highlighter stroke */
+.rap-cal__caption-month {
+  position: relative;
+  z-index: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.rap-cal__caption-month::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -4px;
+  right: -6px;
+  bottom: -0.08em;
+  height: 0.42em;
+  border-radius: 3px 8px 5px 10px;
+  background: var(--rap-acid);
+  rotate: -1.5deg;
+  transform-origin: left center;
+}
+[data-rap-theme="dark"] .rap-cal__caption-month::after { opacity: 0.55; }
+.rap-cal--sm .rap-cal__caption-month { font-size: 1.1875rem; }
+.rap-cal__caption-year { font-size: 1rem; font-weight: 400; color: var(--rap-mute); letter-spacing: -0.01em; }
 .rap-cal__caption-label .rap-cal__chevron { width: 16px; height: 16px; opacity: 0.6; }
 
 .rap-cal__nav {
@@ -107,6 +133,7 @@
   text-align: center;
 }
 .rap-cal__day-btn {
+  position: relative;
   display: grid;
   place-items: center;
   width: var(--cal-cell);
@@ -127,7 +154,24 @@
 .rap-cal__day-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
 
 .rap-cal__day.is-outside { color: var(--rap-mute); }
-.rap-cal__day.is-today .rap-cal__day-btn { box-shadow: inset 0 0 0 1.5px var(--rap-ink); font-weight: 500; }
+.rap-cal__num { position: relative; z-index: 1; }
+
+/* today: circled by hand in the flame pen, not a machine ring */
+.rap-cal__day.is-today .rap-cal__day-btn { font-weight: 600; }
+.rap-cal__today-ring {
+  position: absolute;
+  inset: -3px;
+  z-index: 2;
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  fill: none;
+  stroke: var(--cal-pen);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  rotate: -8deg;
+  pointer-events: none;
+}
 .rap-cal__day.is-disabled .rap-cal__day-btn { opacity: 0.35; cursor: not-allowed; background: none; }
 .rap-cal__day.is-hidden { visibility: hidden; }
 
@@ -135,15 +179,12 @@
   background: var(--rap-select);
   color: var(--rap-select-ink);
   font-weight: 500;
-  animation: rap-cal-pop 300ms var(--rap-ease-spring);
 }
-.rap-cal__day.is-selected.is-today .rap-cal__day-btn { box-shadow: inset 0 0 0 2px var(--rap-select), inset 0 0 0 3.5px var(--rap-surface); }
 .rap-cal__day.is-selected .rap-cal__day-btn:focus-visible { box-shadow: 0 0 0 2px var(--rap-surface), 0 0 0 4px var(--rap-ring); }
-@keyframes rap-cal-pop { from { transform: scale(0.82); } }
 
 /* range: a fill band behind the middle, the ends are blue circles sitting on the band */
 .rap-cal__day.is-range-middle { background: var(--rap-fill); }
-.rap-cal__day.is-range-middle .rap-cal__day-btn { background: transparent; color: var(--rap-ink); font-weight: 400; animation: none; }
+.rap-cal__day.is-range-middle .rap-cal__day-btn { background: transparent; color: var(--rap-ink); font-weight: 400; }
 .rap-cal__day.is-range-middle .rap-cal__day-btn:hover { background: var(--rap-fill-hover); }
 .rap-cal__day.is-range-start { background: linear-gradient(to right, transparent 50%, var(--rap-fill) 50%); }
 .rap-cal__day.is-range-end { background: linear-gradient(to left, transparent 50%, var(--rap-fill) 50%); }
@@ -159,3 +200,39 @@
 /* days from the neighbouring month keep their state but step back */
 .rap-cal__day.is-outside.is-selected,
 .rap-cal__day.is-outside.is-range-middle { opacity: 0.45; }
+
+/* ── the drop: the picked day splats, the days around it ripple outward ──
+   (data attributes set from the click; --rip-x/-y point away from the drop,
+   --rip-a is the strength left at that distance, --rip-delay the travel time) */
+.rap-cal__day-btn[data-splat] { animation: rap-splat 480ms var(--rap-ease-out); }
+.rap-cal__day-btn[data-ripple] { animation: rap-cal-ripple 520ms var(--rap-ease-out) var(--rip-delay, 0ms) both; }
+@keyframes rap-cal-ripple {
+  0%, 100% { translate: 0 0; scale: 1; }
+  30% {
+    translate: calc(var(--rip-x) * 4px * var(--rip-a)) calc(var(--rip-y) * 4px * var(--rip-a));
+    scale: calc(1 - 0.1 * var(--rip-a));
+    background-color: color-mix(in srgb, var(--rap-select) calc(22% * var(--rip-a)), transparent);
+  }
+  65% {
+    translate: calc(var(--rip-x) * -1.5px * var(--rip-a)) calc(var(--rip-y) * -1.5px * var(--rip-a));
+    scale: calc(1 + 0.03 * var(--rip-a));
+  }
+}
+/* the selected disc keeps its own colour while it ripples */
+.rap-cal__day.is-selected .rap-cal__day-btn[data-ripple] { animation-name: rap-cal-ripple-still; }
+@keyframes rap-cal-ripple-still {
+  30% { translate: calc(var(--rip-x) * 4px * var(--rip-a)) calc(var(--rip-y) * 4px * var(--rip-a)); scale: calc(1 - 0.1 * var(--rip-a)); }
+  65% { translate: calc(var(--rip-x) * -1.5px * var(--rip-a)) calc(var(--rip-y) * -1.5px * var(--rip-a)); }
+}
+
+/* ── the page turn: the new month slides in from where you are heading, with a 3° turn ── */
+.rap-cal.is-turn-a :is(.rap-cal__grid, .rap-cal__caption-label) { animation: rap-cal-turn-a 460ms var(--rap-ease-spring); }
+.rap-cal.is-turn-b :is(.rap-cal__grid, .rap-cal__caption-label) { animation: rap-cal-turn-b 460ms var(--rap-ease-spring); }
+.rap-cal__grid { transform-origin: 50% 130%; }
+@keyframes rap-cal-turn-a { from { translate: calc(var(--turn, 1) * 36px) 0; rotate: calc(var(--turn, 1) * 3deg); opacity: 0; } }
+@keyframes rap-cal-turn-b { from { translate: calc(var(--turn, 1) * 36px) 0; rotate: calc(var(--turn, 1) * 3deg); opacity: 0; } }
+
+[data-rap-motion="calm"] .rap-cal :is(.rap-cal__day-btn, .rap-cal__grid, .rap-cal__caption-label) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-cal :is(.rap-cal__day-btn, .rap-cal__grid, .rap-cal__caption-label) { animation: none !important; }
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { addDays, startOfDay } from "date-fns";
 import { AtSign, Bold, Grid3x3, Link2, Search, Strikethrough, Underline } from "../../rapui/icons";
 import {
@@ -66,6 +66,7 @@ const checkboxControls: Control[] = [
 const sliderControls: Control[] = [
   { type: "select", prop: "mode", options: ["single", "range"], default: "single" },
   { type: "number", prop: "step", min: 1, max: 25, step: 1, default: 1 },
+  { type: "boolean", prop: "bubble", label: "value bubble", default: true },
   { type: "boolean", prop: "disabled", default: false },
 ];
 
@@ -88,6 +89,7 @@ const textareaControls: Control[] = [
   { type: "text", prop: "placeholder", default: "What is this project about?", codeDefault: null },
   { type: "number", prop: "rows", min: 2, max: 8, step: 1, default: 3 },
   { type: "boolean", prop: "autoGrow", default: true, codeDefault: false },
+  { type: "number", prop: "limit", min: 20, max: 400, step: 10, default: 80, codeDefault: null },
   { type: "boolean", prop: "invalid", default: false },
   { type: "boolean", prop: "disabled", default: false },
 ];
@@ -254,7 +256,8 @@ export const entries: DocEntry[] = [
     slug: "input",
     name: "Input",
     group: "Forms",
-    description: "Filled pill text field for everyday forms. Takes an icon or text before and after the value.",
+    description:
+      "Filled pill text field for everyday forms. Takes an icon or text before and after the value. Delight: click in and the focus ring draws itself around the pill from the caret's end; turn invalid on and the field shakes its head.",
     controls: inputControls,
     Demo: ({ p }) => (
       <div className="doc-stack" style={{ width: "min(100%, 22rem)" }}>
@@ -276,6 +279,39 @@ export const entries: DocEntry[] = [
 <Input id="email"${attrs(p, inputControls, ["icon"])}${p.icon ? " prefix={<AtSign />}" : ""} />`,
     examples: [
       {
+        title: "Shake on error",
+        Demo: function ShakeOnError() {
+          const [email, setEmail] = useState("anna@northstudio");
+          const [invalid, setInvalid] = useState(false);
+          const check = () => {
+            // drop the flag for a frame so a second wrong try is a new "no"
+            setInvalid(false);
+            requestAnimationFrame(() => setInvalid(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)));
+          };
+          return (
+            <div className="doc-row" style={{ width: "min(100%, 26rem)", gap: 4 }}>
+              <Input
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setInvalid(false);
+                }}
+                invalid={invalid}
+                prefix={<AtSign />}
+                aria-label="Email"
+              />
+              <Button variant="soft" onClick={check}>
+                Trigger error
+              </Button>
+            </div>
+          );
+        },
+        code: `const [invalid, setInvalid] = useState(false);
+
+<Input value={email} onChange={…} invalid={invalid} />
+<Button onClick={() => setInvalid(!isEmail(email))}>Check</Button>`,
+      },
+      {
         title: "Search",
         Demo: () => <Input placeholder="Search projects" prefix={<Search />} suffix={<kbd className="doc-kbd">⌘K</kbd>} />,
         code: `<Input placeholder="Search projects" prefix={<Search />} suffix={<kbd>⌘K</kbd>} />`,
@@ -287,7 +323,8 @@ export const entries: DocEntry[] = [
     name: "Select",
     group: "Forms",
     basedOn: "Radix Select",
-    description: "A list of options in a floating panel. Keyboard, typeahead and screen readers work out of the box.",
+    description:
+      "A list of options in a floating panel. Keyboard, typeahead and screen readers work out of the box. Delight: open it and the options are dealt in one after another; pick one and it rolls into the trigger like a slot-machine reel.",
     controls: selectControls,
     Demo: ({ p }) => (
       <div style={{ width: "min(100%, 18rem)" }}>
@@ -330,7 +367,8 @@ export const entries: DocEntry[] = [
     name: "Checkbox",
     group: "Forms",
     basedOn: "Radix Checkbox",
-    description: "Soft-cornered checkbox that fills with the selection blue. Supports an indeterminate state for “select all”.",
+    description:
+      "Soft-cornered checkbox that fills with the selection blue. Supports an indeterminate state for “select all”. Delight: press and hold to feel it squash, release and the blue swells past the box while the tick draws itself — untick and it rubs out.",
     controls: checkboxControls,
     Demo: ({ p }) => {
       const initial = p.state === "indeterminate" ? "indeterminate" : p.state === "true";
@@ -396,7 +434,8 @@ export const entries: DocEntry[] = [
     name: "Slider",
     group: "Forms",
     basedOn: "Radix Slider",
-    description: "Pick a number or a range by dragging. Arrow keys move it one step.",
+    description:
+      "Pick a number or a range by dragging. Arrow keys move it one step. Delight: fling the thumb — it stretches with speed and squashes when it stops, and the value bubble above it leans back and swings like a balloon on a string.",
     controls: sliderControls,
     Demo: ({ p }) => {
       const range = p.mode === "range";
@@ -412,7 +451,15 @@ export const entries: DocEntry[] = [
             <Label>Opacity</Label>
             <span className="doc-value">{v.join(" – ")}%</span>
           </div>
-          <Slider value={v} onValueChange={setV} max={100} step={Number(p.step)} disabled={Boolean(p.disabled)} />
+          <Slider
+            value={v}
+            onValueChange={setV}
+            max={100}
+            step={Number(p.step)}
+            bubble={Boolean(p.bubble)}
+            formatValue={(n) => `${n}%`}
+            disabled={Boolean(p.disabled)}
+          />
         </div>
       );
     },
@@ -420,15 +467,15 @@ export const entries: DocEntry[] = [
       `import { Slider } from "rapui";
 
 <Slider defaultValue={${p.mode === "range" ? "[20, 70]" : "[40]"}} max={100}${p.step !== 1 ? ` step={${p.step}}` : ""}${
-        p.disabled ? " disabled" : ""
-      } />`,
+        p.bubble ? " formatValue={(v) => `${v}%`}" : " bubble={false}"
+      }${p.disabled ? " disabled" : ""} />`,
   },
   {
     slug: "toggle-group",
     name: "Toggle group",
     group: "Forms",
     basedOn: "Radix ToggleGroup",
-    description: "Segmented control: a row of options on one track, 2px apart. Single choice or a set of toggles.",
+    description: "Segmented control: a row of options on one track, 2px apart. Single choice or a set of toggles. Delight: in single mode one ink pill crawls to the new option like a caterpillar, front edge first, tail catching up.",
     controls: toggleControls,
     Demo: ({ p }) => {
       const common = { size: p.size as "sm" | "md" | "lg", disabled: Boolean(p.disabled) };
@@ -460,23 +507,19 @@ export const entries: DocEntry[] = [
     slug: "textarea",
     name: "Textarea",
     group: "Forms",
-    description: "Filled multi-line field with 20px corners. With autoGrow it grows with the text instead of scrolling.",
+    description:
+      "Filled multi-line field with 20px corners. With autoGrow it grows with the text instead of scrolling; limit adds a soft character counter. Delight: type a few lines and the field eases taller on a spring; go past the limit and the counter turns flame and hops at every extra character.",
     controls: textareaControls,
     Demo: ({ p }) => {
       const [v, setV] = useState("");
       return (
         <div className="doc-stack" style={{ width: "min(100%, 26rem)", gap: 6 }}>
-          <div className="doc-row doc-between">
-            <Label htmlFor="doc-ta">Project description</Label>
-            <span className="doc-muted" style={{ fontSize: "0.8125rem" }}>
-              {v.length}/400
-            </span>
-          </div>
+          <Label htmlFor="doc-ta">Project description</Label>
           <Textarea
             id="doc-ta"
             size={p.size as Size}
             rows={Number(p.rows)}
-            maxLength={400}
+            limit={Number(p.limit)}
             value={v}
             onChange={(e) => setV(e.target.value)}
             placeholder={String(p.placeholder)}
@@ -513,7 +556,8 @@ export const entries: DocEntry[] = [
     name: "Radio group",
     group: "Forms",
     basedOn: "Radix RadioGroup",
-    description: "Pick exactly one option. Round dots that fill blue, or filled cards with a title and a line of detail.",
+    description:
+      "Pick exactly one option. Round dots that fill blue, or filled cards with a title and a line of detail. Delight: there is only one marble — pick another option and it leaves the old socket and hops over in an arc into the new one.",
     controls: radioControls,
     Demo: ({ p }) => {
       const common = {
@@ -587,7 +631,8 @@ export const entries: DocEntry[] = [
     name: "Toggle",
     group: "Forms",
     basedOn: "Radix Toggle",
-    description: "A single on/off pill button. Turns ink when it is on. For a set of options on one track, use Toggle group.",
+    description:
+      "A single on/off pill button. Turns ink when it is on. For a set of options on one track, use Toggle group. Delight: it is a latching key — it stands on a 2px lip, sinks when pressed and stays down while it is on; turn it off and it springs back up.",
     controls: toggleSingleControls,
     Demo: ({ p }) => {
       const icon = p.content !== "text";
@@ -641,12 +686,20 @@ export const entries: DocEntry[] = [
     name: "Input OTP",
     group: "Forms",
     basedOn: "input-otp",
-    description: "One-time code entry in separate cells. It is a single real input underneath, so paste and SMS autofill work.",
+    description:
+      "One-time code entry in separate cells. It is a single real input underneath, so paste and SMS autofill work. Delight: each tile hops as a digit lands, the row waves when the code is complete, and a wrong code shakes it — try any code but 240916.",
     controls: otpControls,
     Demo: ({ p }) => {
       const len = Number(p.length);
       const half = len / 2;
       const [v, setV] = useState("");
+      // pretend to check the code: anything but the right one comes back wrong
+      const [wrong, setWrong] = useState(false);
+      useEffect(() => {
+        if (v.length < len) return;
+        const id = window.setTimeout(() => setWrong(v !== "240916".slice(0, len)), 500);
+        return () => window.clearTimeout(id);
+      }, [v, len]);
       const slots = (from: number, to: number) =>
         Array.from({ length: to - from }, (_, i) => <InputOTPSlot key={from + i} index={from + i} />);
       return (
@@ -657,10 +710,13 @@ export const entries: DocEntry[] = [
             id="doc-otp"
             maxLength={len}
             value={v}
-            onChange={setV}
+            onChange={(next: string) => {
+              setV(next);
+              setWrong(false);
+            }}
             pattern={REGEXP_ONLY_DIGITS}
             size={p.size as Size}
-            invalid={Boolean(p.invalid)}
+            invalid={Boolean(p.invalid) || wrong}
             disabled={Boolean(p.disabled)}
           >
             {p.separator ? (
@@ -674,7 +730,7 @@ export const entries: DocEntry[] = [
             )}
           </InputOTP>
           <span className="doc-muted" style={{ fontSize: "0.8125rem" }}>
-            {v.length === len ? "Checking…" : "Didn’t get it? Resend in 0:42"}
+            {wrong ? "That code didn’t work. Try again." : v.length === len ? "Checking…" : "Didn’t get it? Resend in 0:42"}
           </span>
         </div>
       );
@@ -697,7 +753,8 @@ ${p.separator ? `${group(0, half)}\n  <InputOTPSeparator />\n${group(half, len)}
     name: "Combobox",
     group: "Forms",
     basedOn: "Radix Popover + cmdk",
-    description: "A select you can type into. Use it when the list is long enough that scrolling gets tedious — fonts, clients, countries.",
+    description:
+      "A select you can type into. Use it when the list is long enough that scrolling gets tedious — fonts, clients, countries. Delight: the list is dealt in like Select's, and as you type the matching letters are swiped with the acid highlighter — try “mono” or “nmtl”.",
     controls: comboControls,
     Demo: ({ p }) => {
       const [v, setV] = useState("neue-montreal");
@@ -741,7 +798,8 @@ const fonts = [
     name: "Calendar",
     group: "Forms",
     basedOn: "react-day-picker",
-    description: "Month grid with round day cells. Select one day, a range or several days; every DayPicker prop is passed through.",
+    description:
+      "Month grid with big round days, today circled by hand and the month set large on a highlighter stroke. Select one day, a range or several days; every DayPicker prop is passed through. Delight: pick a day and it splats while a ripple runs out through the days around it; change month and the page slides in with a slight turn.",
     controls: calendarControls,
     Demo: ({ p }) => {
       const t = today();
@@ -786,7 +844,8 @@ const fonts = [
     name: "Date picker",
     group: "Forms",
     basedOn: "Radix Popover + react-day-picker",
-    description: "A pill that opens a Calendar. Shows the chosen date with date-fns formatting; the range mode shows two months.",
+    description:
+      "A pill that opens a Calendar. Shows the chosen date with date-fns formatting; the range mode shows two months. Delight: the calendar is slapped on like a sticky note — it arrives tilted and swings on its sticky edge until it hangs level.",
     controls: datePickerControls,
     Demo: ({ p }) => {
       const common = {
@@ -856,7 +915,7 @@ ${
     name: "Form field",
     group: "Forms",
     description:
-      "Label, control, hint and error in one stack, 6px apart. Wires id, aria-describedby and aria-invalid onto the control. FieldGroup stacks fields under a legend.",
+      "Label, control, hint and error in one stack, 6px apart. Wires id, aria-describedby and aria-invalid onto the control. FieldGroup stacks fields under a legend. Delight: when an error appears the control shakes its head and the message slides down out of the gap — type an error in the panel, or press Create project below with an empty name.",
     controls: formFieldControls,
     Demo: ({ p }) => {
       const err = String(p.error) || undefined;
@@ -952,7 +1011,7 @@ ${
     name: "Number field",
     group: "Forms",
     description:
-      "Number stepper: a pill with round − and + buttons 2px inside the ends. Arrow keys step, Shift steps by ten, Home and End jump to the limits.",
+      "Number stepper: a pill with round − and + buttons 2px inside the ends. Arrow keys step, Shift steps by ten, Home and End jump to the limits. Delight: the digits roll like an odometer, carrying from right to left, and pushing past min or max makes the number bonk against the end.",
     controls: numberControls,
     Demo: ({ p }) => {
       const [v, setV] = useState<number | null>(24);

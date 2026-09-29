@@ -14,3 +14,13 @@
   padding-top: 10px;
   border-top: 1px solid var(--rap-line);
 }
+
+/* ── the sticky note: it pivots on the edge nearest the trigger (rotate/scale inline, from the spring);
+   the stock pop-in is replaced by a plain fade so the swing is the entrance ── */
+.rap-pop.rap-datepicker__content { transform-origin: 50% 0; animation: rap-dp-in 160ms var(--rap-ease-out); }
+.rap-pop.rap-datepicker__content[data-side="top"] { transform-origin: 50% 100%; }
+.rap-pop.rap-datepicker__content[data-side="left"] { transform-origin: 100% 50%; }
+.rap-pop.rap-datepicker__content[data-side="right"] { transform-origin: 0 50%; }
+.rap-pop.rap-datepicker__content[data-state="closed"] { animation: rap-dp-out 140ms var(--rap-ease-rm) forwards; }
+@keyframes rap-dp-in { from { opacity: 0; } }
+@keyframes rap-dp-out { to { opacity: 0; translate: 0 6px; } }

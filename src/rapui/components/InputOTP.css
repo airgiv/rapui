@@ -47,3 +47,30 @@
 .rap-otp__sep { display: grid; place-items: center; width: 14px; }
 .rap-otp__sep span { width: 10px; height: 2px; border-radius: 2px; background: var(--rap-fill-strong); }
 .rap-otp__input:focus-visible { outline: none; }
+
+/* ── tiles that answer back ── */
+/* a character lands: the slot hops (two names so fast typing into one slot restarts it) */
+.rap-otp__slot.is-hop-a { animation: rap-otp-hop-a 360ms var(--rap-ease-out); }
+.rap-otp__slot.is-hop-b { animation: rap-otp-hop-b 360ms var(--rap-ease-out); }
+@keyframes rap-otp-hop-a { 0%, 100% { translate: 0 0; } 40% { translate: 0 -5px; } 70% { translate: 0 1px; } }
+@keyframes rap-otp-hop-b { 0%, 100% { translate: 0 0; } 40% { translate: 0 -5px; } 70% { translate: 0 1px; } }
+/* the code is complete: a wave from left to right, a bit higher than a hop */
+.rap-otp__slot.is-complete { animation: rap-otp-wave 460ms var(--rap-ease-out) both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes rap-otp-wave {
+  0%, 100% { translate: 0 0; scale: 1; }
+  35% { translate: 0 -9px; scale: 1.04; }
+  65% { translate: 0 2px; scale: 0.99; }
+}
+/* wrong code: the row shakes "no" (two names so a second "no" restarts it) */
+.rap-otp.is-shaking-a { animation: rap-shake 420ms var(--rap-ease-rm); }
+.rap-otp.is-shaking-b { animation: rap-otp-shake 420ms var(--rap-ease-rm); }
+@keyframes rap-otp-shake {
+  0%, 100% { translate: 0; }
+  15% { translate: -7px; }
+  30% { translate: 6px; }
+  45% { translate: -4px; }
+  60% { translate: 3px; }
+  75% { translate: -1px; }
+}
+[data-rap-motion="calm"] :is(.rap-otp, .rap-otp__slot, .rap-otp__char) { animation: none; }
+@media (prefers-reduced-motion: reduce) { :is(.rap-otp, .rap-otp__slot, .rap-otp__char) { animation: none !important; } }

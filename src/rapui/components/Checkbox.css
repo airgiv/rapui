@@ -1,5 +1,6 @@
 .rap-checkbox {
   --cb: 22px;
+  position: relative;
   display: inline-grid;
   place-items: center;
   flex: none;
@@ -13,17 +14,41 @@
   box-shadow: inset 0 0 0 1.5px var(--rap-fill-strong);
   color: var(--rap-select-ink);
   cursor: pointer;
-  transition: background var(--rap-dur-fast) var(--rap-ease-rm), box-shadow var(--rap-dur-fast) var(--rap-ease-rm),
-    transform var(--rap-dur-fast) var(--rap-ease-rm);
+  /* the release springs back past round */
+  transition: box-shadow var(--rap-dur-fast) var(--rap-ease-rm), scale 380ms var(--rap-ease-back);
 }
 .rap-checkbox--sm { --cb: 18px; }
 .rap-checkbox--lg { --cb: 28px; }
 .rap-checkbox:hover { box-shadow: inset 0 0 0 1.5px var(--rap-mute); }
-.rap-checkbox:active { transform: scale(0.92); }
-.rap-checkbox[data-state="checked"],
-.rap-checkbox[data-state="indeterminate"] { background: var(--rap-select); box-shadow: none; }
+/* the press: a thumb flattens it */
+.rap-checkbox:active { scale: 1.12 0.84; transition: scale 90ms var(--rap-ease-rm); }
 .rap-checkbox:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
 .rap-checkbox:disabled { opacity: 0.45; pointer-events: none; }
-.rap-checkbox__mark { display: grid; place-items: center; animation: rap-cb-pop 320ms var(--rap-ease-spring); }
-.rap-checkbox__mark svg { width: calc(var(--cb) * 0.64); height: calc(var(--cb) * 0.64); }
-@keyframes rap-cb-pop { from { transform: scale(0.3); opacity: 0; } }
+
+/* the fill: scaled from the centre by the spring (inline `scale`), swells past the box */
+.rap-checkbox__fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rap-select);
+  pointer-events: none;
+}
+/* the tick: a stroked path drawn by the same spring (inline dash offset) */
+.rap-checkbox__mark {
+  position: relative;
+  width: calc(var(--cb) * 0.72);
+  height: calc(var(--cb) * 0.72);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+  pointer-events: none;
+}
+
+[data-rap-motion="calm"] .rap-checkbox,
+[data-rap-motion="calm"] .rap-checkbox:active { scale: none; transition: box-shadow var(--rap-dur-fast) var(--rap-ease-rm); }
+@media (prefers-reduced-motion: reduce) {
+  .rap-checkbox, .rap-checkbox:active { scale: none; }
+}

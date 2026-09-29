@@ -15,6 +15,7 @@ export {
 export { Checkbox } from "../components/Checkbox";
 export type { CheckboxProps } from "../components/Checkbox";
 export { Slider } from "../components/Slider";
+export type { SliderProps } from "../components/Slider";
 export { ToggleGroup, ToggleGroupItem } from "../components/ToggleGroup";
 export { Textarea } from "../components/Textarea";
 export type { TextareaProps } from "../components/Textarea";

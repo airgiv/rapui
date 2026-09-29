@@ -26,3 +26,34 @@
 .rap-textarea.is-invalid { box-shadow: inset 0 0 0 2px var(--rap-danger); }
 .rap-textarea:disabled { opacity: 0.5; pointer-events: none; }
 .rap-textarea:focus-visible { outline: none; }
+
+/* ── the soft-limit counter, in the bottom-right corner ── */
+.rap-textarea-wrap { position: relative; display: block; width: 100%; }
+.rap-textarea--counted { padding-bottom: calc(var(--ta-pad-y) + 1.4em); }
+.rap-textarea__count {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: var(--rap-radius-pill);
+  font-family: var(--rap-font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--rap-mute);
+  pointer-events: none;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-textarea-wrap--sm .rap-textarea__count { right: 8px; bottom: 6px; }
+.rap-textarea__count.is-over { background: var(--rap-flame); color: #fff; }
+/* two names for one hop so every character past the limit restarts it */
+.rap-textarea__count.is-hop-a.is-over { animation: rap-hop 360ms var(--rap-ease-out); }
+.rap-textarea__count.is-hop-b.is-over { animation: rap-textarea-hop 360ms var(--rap-ease-out); }
+@keyframes rap-textarea-hop {
+  0%, 100% { translate: 0 0; }
+  40% { translate: 0 -5px; }
+  70% { translate: 0 1px; }
+}
+[data-rap-motion="calm"] .rap-textarea__count { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .rap-textarea__count { animation: none !important; } }

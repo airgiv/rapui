@@ -71,3 +71,45 @@
 .rap-radio-card__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .rap-radio-card__label { font-size: 0.9375rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.35; }
 .rap-radio-card__desc { font-size: 0.8125rem; letter-spacing: -0.01em; line-height: 1.4; color: var(--rap-mute); }
+
+/* ── the marble ──────────────────────────────────────────
+   One blue ball with a white pip, positioned by JS over the chosen socket.
+   While it is there the sockets stay empty rings. */
+.rap-radio-group { position: relative; }
+.rap-radio-marble {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  border-radius: 50%;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  transition: opacity var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-radio-marble__ball {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--rap-select);
+}
+.rap-radio-marble__pip {
+  width: 38%;
+  height: 38%;
+  border-radius: 50%;
+  background: var(--rap-select-ink);
+}
+/* the landing squash; two names so a quick second landing restarts it */
+.rap-radio-marble__ball.is-land-a { animation: rap-radio-land-a 300ms var(--rap-ease-out); }
+.rap-radio-marble__ball.is-land-b { animation: rap-radio-land-b 300ms var(--rap-ease-out); }
+@keyframes rap-radio-land-a { 35% { scale: 1.16 0.84; } 70% { scale: 0.96 1.04; } }
+@keyframes rap-radio-land-b { 35% { scale: 1.16 0.84; } 70% { scale: 0.96 1.04; } }
+.rap-radio-group[data-disabled] .rap-radio-marble { opacity: 0.45; }
+
+.rap-radio-group.is-marbled .rap-radio-item[data-state="checked"] { background: transparent; box-shadow: inset 0 0 0 1.5px var(--rap-fill-strong); }
+.rap-radio-group.is-marbled :is(.rap-radio-item__dot, .rap-radio__dot) { visibility: hidden; }
+.rap-radio-group.is-marbled .rap-radio-card[data-state="checked"] .rap-radio { background: transparent; box-shadow: inset 0 0 0 1.5px var(--rap-fill-strong); }
+
+[data-rap-motion="calm"] .rap-radio-marble__ball { animation: none; }
+@media (prefers-reduced-motion: reduce) { .rap-radio-marble__ball { animation: none !important; } }

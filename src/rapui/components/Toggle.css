@@ -1,5 +1,7 @@
 .rap-toggle {
   --tg-h: var(--rap-control-h);
+  /* the keycap's travel: it stands this far proud of the surface when up */
+  --tg-lip: 2px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -17,16 +19,36 @@
   letter-spacing: -0.01em;
   white-space: nowrap;
   cursor: pointer;
+  /* up: lifted by the lip, standing on it */
+  translate: 0 calc(var(--tg-lip) * -1);
+  box-shadow: 0 var(--tg-lip) 0 var(--rap-fill-strong);
   transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm),
-    transform var(--rap-dur-fast) var(--rap-ease-rm);
+    translate 380ms var(--rap-ease-back), box-shadow 380ms var(--rap-ease-back);
 }
 .rap-toggle--sm { --tg-h: var(--rap-control-h-sm); font-size: 0.875rem; }
 .rap-toggle--lg { --tg-h: var(--rap-control-h-lg); font-size: 1rem; }
-.rap-toggle--ghost { background: transparent; }
+.rap-toggle--ghost { background: transparent; translate: none; box-shadow: none; }
 .rap-toggle:hover { background: var(--rap-fill-hover); }
-.rap-toggle:active { transform: scale(0.96); }
+
+/* down: on the surface, lip gone, the surround's shadow along the top edge */
+.rap-toggle:active,
+.rap-toggle[data-state="on"] {
+  translate: 0 0;
+  box-shadow: 0 0 0 transparent, inset 0 2px 3px rgb(0 0 0 / 0.28), inset 0 -1px 0 rgb(255 255 255 / 0.06);
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm),
+    translate 90ms var(--rap-ease-rm), box-shadow 90ms var(--rap-ease-rm);
+}
+.rap-toggle--ghost:active,
+.rap-toggle--ghost[data-state="on"] { translate: 0 1px; }
+/* a held press on an engaged key goes the last pixel further */
+.rap-toggle[data-state="on"]:active { translate: 0 1px; }
 .rap-toggle[data-state="on"] { background: var(--rap-ink); color: var(--rap-paper); }
+.rap-toggle:active:not([data-state="on"]) { box-shadow: 0 0 0 transparent, inset 0 2px 3px rgb(0 0 0 / 0.12); }
+
 .rap-toggle:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
 .rap-toggle:disabled { opacity: 0.4; pointer-events: none; }
 .rap-toggle svg { width: 18px; height: 18px; flex: none; }
 .rap-toggle--sm svg { width: 16px; height: 16px; }
+
+[data-rap-motion="calm"] .rap-toggle { transition-timing-function: var(--rap-ease-rm); }
+@media (prefers-reduced-motion: reduce) { .rap-toggle { transition-timing-function: var(--rap-ease-rm); } }

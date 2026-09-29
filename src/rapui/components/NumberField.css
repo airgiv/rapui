@@ -42,6 +42,10 @@
 .rap-numberfield__btn:hover { background: var(--rap-ink); color: var(--rap-paper); }
 .rap-numberfield__btn:active { transform: scale(0.9); }
 .rap-numberfield__btn:disabled { opacity: 0.35; pointer-events: none; }
+/* at a limit the button looks spent but still answers — with a bonk */
+.rap-numberfield__btn[aria-disabled="true"] { opacity: 0.35; }
+.rap-numberfield .rap-numberfield__btn[aria-disabled="true"]:hover { background: var(--rap-surface); color: var(--rap-ink); }
+.rap-numberfield:focus-within .rap-numberfield__btn[aria-disabled="true"]:hover { background: var(--rap-fill); }
 .rap-numberfield__btn svg { width: 16px; height: 16px; }
 .rap-numberfield--sm .rap-numberfield__btn svg { width: 14px; height: 14px; }
 
@@ -77,3 +81,49 @@
 .rap-numberfield:focus-within .rap-numberfield__btn { background: var(--rap-fill); }
 .rap-numberfield:focus-within .rap-numberfield__btn:hover { background: var(--rap-ink); }
 .rap-numberfield__input:focus-visible { outline: none; }
+
+/* ── the odometer: reels laid exactly over the input while they turn ── */
+.rap-numberfield__slot { position: relative; display: inline-flex; align-items: center; height: 100%; max-width: 100%; }
+.rap-numberfield__input.is-rolling { color: transparent; caret-color: var(--rap-ink); }
+.rap-numberfield__odo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: pre;
+  pointer-events: none;
+}
+.rap-numberfield__reel { display: inline-block; line-height: 1.3; }
+.rap-numberfield__reel.is-turning { height: 1.3em; overflow: hidden; vertical-align: middle; }
+.rap-numberfield__strip { display: flex; flex-direction: column; }
+.rap-numberfield__strip > span { height: 1.3em; line-height: 1.3; text-align: center; }
+/* up: the old digit leaves upward and the new one comes up from below; down: the reverse.
+   Each reel to the left waits 30ms more — the carry. */
+.rap-numberfield__reel.is-up .rap-numberfield__strip { animation: rap-nf-reel-up 460ms var(--rap-ease-spring) both; animation-delay: calc(var(--carry, 0) * 30ms); }
+.rap-numberfield__reel.is-down .rap-numberfield__strip { animation: rap-nf-reel-down 460ms var(--rap-ease-spring) both; animation-delay: calc(var(--carry, 0) * 30ms); }
+@keyframes rap-nf-reel-up { from { translate: 0 0; } to { translate: 0 -1.3em; } }
+@keyframes rap-nf-reel-down { from { translate: 0 -1.3em; } to { translate: 0 0; } }
+/* a digit that disappears (100 → 99) folds its width away as it turns */
+.rap-numberfield__reel.is-vanishing { animation: rap-nf-fold 460ms var(--rap-ease-rm) both; }
+@keyframes rap-nf-fold { to { width: 0; } }
+
+/* ── the bonk: the number knocks against the end it hit (--bonk: 1 right, -1 left) ── */
+.rap-numberfield__value.is-bonk-a { animation: rap-nf-bonk-a 320ms var(--rap-ease-out); }
+.rap-numberfield__value.is-bonk-b { animation: rap-nf-bonk-b 320ms var(--rap-ease-out); }
+@keyframes rap-nf-bonk-a {
+  30% { translate: calc(var(--bonk, 1) * 5px) 0; scale: 0.9 1.06; }
+  60% { translate: calc(var(--bonk, 1) * -2px) 0; scale: 1.03 0.98; }
+}
+@keyframes rap-nf-bonk-b {
+  30% { translate: calc(var(--bonk, 1) * 5px) 0; scale: 0.9 1.06; }
+  60% { translate: calc(var(--bonk, 1) * -2px) 0; scale: 1.03 0.98; }
+}
+
+[data-rap-motion="calm"] :is(.rap-numberfield__value, .rap-numberfield__strip, .rap-numberfield__reel) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.rap-numberfield__value, .rap-numberfield__strip, .rap-numberfield__reel) { animation: none !important; }
+}
