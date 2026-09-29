@@ -23,7 +23,7 @@ function highlight(src: string) {
   return out + esc(src.slice(last));
 }
 
-export function Code({ children }: { children: string }) {
+export function Code({ children, className }: { children: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -36,7 +36,7 @@ export function Code({ children }: { children: string }) {
   };
   return (
     // a dark slab in both themes (a touch lighter on the dark page so it still reads as a slab)
-    <div className="relative rounded-card bg-[#111110] text-[#e9e6de] overflow-hidden dark:bg-[#1d1d1b]">
+    <div className={cn("relative rounded-card bg-[#111110] text-[#e9e6de] overflow-hidden dark:bg-[#1d1d1b]", className)}>
       <button
         className={cn(
           "absolute top-[0.9rem] right-[0.9rem] py-[0.45rem] px-[0.9rem] border border-solid border-white/20 rounded-pill bg-transparent",
