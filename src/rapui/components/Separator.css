@@ -12,3 +12,20 @@
   letter-spacing: -0.01em;
   color: var(--rap-mute);
 }
+
+/* ── delight: drawn from the centre out ─────────────────── */
+.rap-separator[data-draw],
+.rap-separator-labelled[data-draw] > .rap-separator {
+  transition: scale 700ms var(--rap-ease-out);
+}
+.rap-separator--horizontal[data-draw="wait"] { scale: 0 1; }
+.rap-separator--vertical[data-draw="wait"] { scale: 1 0; }
+/* labelled: each half grows away from the label; the label fades up as they part */
+.rap-separator-labelled[data-draw] > .rap-separator:first-child { transform-origin: 100% 50%; }
+.rap-separator-labelled[data-draw] > .rap-separator:last-child { transform-origin: 0% 50%; }
+.rap-separator-labelled[data-draw="wait"] > .rap-separator { scale: 0 1; }
+.rap-separator-labelled[data-draw] > .rap-separator__label { transition: opacity 400ms var(--rap-ease-out), scale 500ms var(--rap-ease-spring); }
+.rap-separator-labelled[data-draw="wait"] > .rap-separator__label { opacity: 0; scale: 0.8; }
+
+[data-rap-motion="calm"] .rap-separator[data-draw="wait"],
+[data-rap-motion="calm"] .rap-separator-labelled[data-draw="wait"] > * { scale: none; opacity: 1; }

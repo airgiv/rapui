@@ -2,6 +2,19 @@ import { forwardRef, type CSSProperties, type HTMLAttributes } from "react";
 import { cx } from "../utils";
 import "./Skeleton.css";
 
+/* ── Skeleton ──────────────────────────────────────────────
+   Delight: one light, not a hundred shimmers. The glint is a
+   soft diagonal band (115°, wide feathered edges — window light
+   across a table, not a scanner bar) whose background is
+   attached to the VIEWPORT, so every placeholder on the page
+   shows its own slice of the same band at the same moment. A
+   whole loading layout is swept by a single light passing over
+   it, left to right: a near-linear 2.2s pass, then a pause, every
+   2.8s — slow enough to read as light moving, and the pause makes
+   it breathe rather than strobe.
+
+   Calm / reduced motion: the placeholders stay still. */
+
 export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   width?: CSSProperties["width"];
   height?: CSSProperties["height"];
@@ -9,7 +22,7 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   shape?: "round" | "pill" | "circle";
 }
 
-/** Shimmering placeholder block. Size it with width/height or CSS. */
+/** Placeholder block, swept by a soft diagonal light. Size it with width/height or CSS. */
 export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(function Skeleton(
   { width, height, shape = "round", className, style, ...rest },
   ref,

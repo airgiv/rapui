@@ -43,3 +43,70 @@
 
 .rap-chart-legend { display: flex; flex-wrap: wrap; gap: 1rem; font-family: var(--rap-font-sans); font-size: 0.8125rem; font-weight: 500; color: var(--rap-ink-2); letter-spacing: -0.01em; }
 .rap-chart-legend__item { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+/* ── delight: drawn in front of you ─────────────────────── */
+/* the pen: curves carry pathLength=1 + data-pen during the intro (set in Chart.tsx) */
+.rap-chart[data-intro] :is(.recharts-area-curve, .recharts-line-curve)[data-pen] {
+  stroke-dasharray: 1 1;
+  animation: rap-chart-draw 1300ms cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.rap-chart[data-intro] .recharts-area-area { animation: rap-chart-fill 900ms 400ms var(--rap-ease-out) both; }
+.rap-chart[data-intro] :is(.recharts-area-dots, .recharts-line-dots, .recharts-label-list) { animation: rap-chart-fill 400ms 900ms both; }
+@keyframes rap-chart-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes rap-chart-fill { from { opacity: 0; translate: 0 6px; } }
+
+/* the springs: each bar grows from its baseline, left to right, and overshoots */
+.rap-chart[data-intro] .recharts-bar-rectangle path {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rap-chart-grow 720ms var(--rap-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 35ms + var(--series, 0) * 70ms);
+}
+.rap-chart .recharts-bar ~ .recharts-bar { --series: 1; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(2) { --i: 1; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(3) { --i: 2; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(4) { --i: 3; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(5) { --i: 4; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(6) { --i: 5; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(7) { --i: 6; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(8) { --i: 7; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(9) { --i: 8; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(10) { --i: 9; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(11) { --i: 10; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(12) { --i: 11; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(13) { --i: 12; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(14) { --i: 13; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(15) { --i: 14; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(16) { --i: 15; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(17) { --i: 16; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(18) { --i: 17; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(19) { --i: 18; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(20) { --i: 19; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(21) { --i: 20; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(22) { --i: 21; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(23) { --i: 22; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(24) { --i: 23; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(25) { --i: 24; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(26) { --i: 25; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(27) { --i: 26; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(28) { --i: 27; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(29) { --i: 28; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(30) { --i: 29; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(31) { --i: 30; }
+.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(32) { --i: 31; }
+@keyframes rap-chart-grow {
+  0% { scale: 1 0; }
+  55% { scale: 1 1.1; }
+  78% { scale: 1 0.96; }
+  100% { scale: 1 1; }
+}
+
+/* the tooltip follows on a spring instead of a plain slide */
+.rap-chart .recharts-tooltip-wrapper { transition: transform 420ms var(--rap-ease-spring) !important; }
+
+[data-rap-motion="calm"] .rap-chart[data-intro] * { animation: none !important; stroke-dasharray: none; }
+[data-rap-motion="calm"] .rap-chart .recharts-tooltip-wrapper { transition: transform var(--rap-dur-fast) var(--rap-ease-rm) !important; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-chart[data-intro] * { animation: none !important; stroke-dasharray: none; }
+  .rap-chart .recharts-tooltip-wrapper { transition: none !important; }
+}

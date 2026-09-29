@@ -4,6 +4,7 @@ export type { BadgeProps, BadgeVariant } from "../components/Badge";
 export { Avatar, AvatarImage, AvatarFallback, AvatarGroup, avatarTone, initials } from "../components/Avatar";
 export type { AvatarProps, AvatarGroupProps, AvatarSize, AvatarTone } from "../components/Avatar";
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/Card";
+export type { CardProps } from "../components/Card";
 export {
   Table,
   TableHeader,
@@ -27,6 +28,7 @@ export type { SeparatorProps } from "../components/Separator";
 export { AspectRatio } from "../components/AspectRatio";
 export type { AspectRatioProps } from "../components/AspectRatio";
 export { Kbd, KbdGroup } from "../components/Kbd";
+export type { KbdProps } from "../components/Kbd";
 export { Toaster, toast } from "../components/Toast";
 export type { ToasterProps } from "../components/Toast";
 export {

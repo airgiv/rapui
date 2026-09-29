@@ -33,6 +33,43 @@
   to { transform: translateX(250%); }
 }
 
+/* ── delight: a liquid fill with a blob for a head ──────── */
+/* the spring drives width every frame, so no CSS transition on top of it */
+.rap-progress.is-liquid { overflow: visible; }
+.rap-progress.is-liquid .rap-progress__bar { transition: none; }
+.rap-progress__head {
+  position: absolute;
+  top: 0;
+  left: var(--pg-at);
+  width: var(--pg-h);
+  height: var(--pg-h);
+  margin-left: calc(var(--pg-h) * -1);
+  border-radius: 50%;
+  background: var(--pg-color);
+  /* stretch from the back edge, so the nose leads in the direction of travel */
+  transform-origin: calc(50% - var(--pg-dir) * 50%) 50%;
+  scale: var(--pg-sx) var(--pg-sy);
+  pointer-events: none;
+}
+.rap-progress__head[data-hidden] { opacity: 0; }
+/* the splat: the whole bar hits the wall and bulges */
+.rap-progress.is-splat-a { animation: rap-progress-splat-a 560ms var(--rap-ease-out); }
+.rap-progress.is-splat-b { animation: rap-progress-splat-b 560ms var(--rap-ease-out); }
+@keyframes rap-progress-splat-a {
+  0% { scale: 1 1; }
+  22% { scale: 1.012 1.6; }
+  48% { scale: 0.998 0.8; }
+  70% { scale: 1 1.12; }
+  100% { scale: 1 1; }
+}
+@keyframes rap-progress-splat-b {
+  0% { scale: 1 1; }
+  22% { scale: 1.012 1.6; }
+  48% { scale: 0.998 0.8; }
+  70% { scale: 1 1.12; }
+  100% { scale: 1 1; }
+}
+
 .rap-cprogress {
   position: relative;
   display: inline-grid;
@@ -48,10 +85,17 @@
   stroke-linecap: round;
   transition: stroke-dashoffset var(--rap-dur) var(--rap-ease-out);
 }
+.rap-cprogress.is-liquid .rap-cprogress__bar { transition: none; }
+.rap-cprogress svg.is-splat { animation: rap-splat 520ms var(--rap-ease-out); }
 .rap-cprogress__label {
   position: relative;
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--rap-ink);
   font-variant-numeric: tabular-nums;
+}
+
+[data-rap-motion="calm"] :is(.rap-progress, .rap-cprogress svg) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.rap-progress, .rap-cprogress svg) { animation: none; }
 }

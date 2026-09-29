@@ -1,4 +1,9 @@
-.rap-table-wrap { width: 100%; overflow-x: auto; }
+.rap-table-wrap {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  overflow-x: auto;
+}
 .rap-table {
   width: 100%;
   /* separate + 0 spacing so rows can have rounded ends on hover */
@@ -27,7 +32,7 @@
   padding: 0.5rem 0.875rem;
   vertical-align: middle;
   border-top: 1px solid var(--rap-line);
-  transition: background var(--rap-dur-fast) var(--rap-ease-rm);
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), border-color var(--rap-dur-fast) var(--rap-ease-rm);
 }
 .rap-table__th:first-child,
 .rap-table__td:first-child { padding-left: 1rem; }
@@ -53,3 +58,28 @@
   text-align: left;
 }
 .rap-table [data-align="end"] { text-align: right; }
+
+/* ── delight: ONE highlight glides between rows ─────────── */
+.rap-table__glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: 14px;
+  background: var(--rap-fill);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-table__glider[data-on] { opacity: 1; }
+/* the glider draws the hover, so a hovered row's own cells stay clear (selected rows keep their tint) */
+.rap-table-wrap:has(> .rap-table__glider) .rap-table__body .rap-table__row:hover:not([data-state="selected"]) > .rap-table__td { background: transparent; }
+/* a row in flight sits above its neighbours */
+.rap-table__row[data-moving] { position: relative; z-index: 1; }
+
+[data-rap-motion="calm"] .rap-table__glider { display: none; }
+[data-rap-motion="calm"] .rap-table-wrap .rap-table__body .rap-table__row:hover:not([data-state="selected"]) > .rap-table__td { background: var(--rap-fill); }
+@media (prefers-reduced-motion: reduce) {
+  .rap-table__glider { display: none; }
+  .rap-table-wrap:has(> .rap-table__glider) .rap-table__body .rap-table__row:hover:not([data-state="selected"]) > .rap-table__td { background: var(--rap-fill); }
+}

@@ -22,3 +22,20 @@
 .rap-kbd--sm { --kbd-h: 20px; font-size: 0.6875rem; border-radius: 6px; }
 .rap-kbd svg { width: 1.1em; height: 1.1em; }
 .rap-kbd-group { display: inline-flex; align-items: center; gap: var(--rap-gap-tight); }
+
+/* ── delight: it goes down when you press the real key ──── */
+.rap-kbd {
+  transition: translate 380ms var(--rap-ease-back, var(--rap-ease-spring)), box-shadow 380ms var(--rap-ease-out),
+    background var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-kbd[data-pressed] {
+  translate: 0 2px;
+  background: var(--rap-fill-hover);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--rap-ink) 14%, transparent);
+  transition-duration: 60ms;
+  transition-timing-function: var(--rap-ease-out);
+}
+[data-rap-motion="calm"] .rap-kbd[data-pressed] { translate: none; background: var(--rap-fill); box-shadow: inset 0 -1px 0 var(--rap-fill-strong); }
+@media (prefers-reduced-motion: reduce) {
+  .rap-kbd[data-pressed] { translate: none; }
+}

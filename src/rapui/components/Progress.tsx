@@ -1,9 +1,86 @@
-import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentPropsWithoutRef,
+  type CSSProperties,
+  type ElementRef,
+  type ForwardedRef,
+  type HTMLAttributes,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { Progress as ProgressPrimitive } from "radix-ui";
-import { cx } from "../utils";
+import { useSpring } from "../hooks/useSpring";
+import { useSound } from "../sound";
+import { cx, prefersReducedMotion } from "../utils";
 import "./Progress.css";
 
+/* ── Progress ──────────────────────────────────────────────
+   Delight: the fill is a liquid with a soft blob for a head.
+
+   ONE SPRING (0..100, tune 45: a single small overshoot) carries
+   the fill, and the head is read off the same number. The lag —
+   how far the spring still is from the value — is the blob's
+   speed: while the fill runs, the head stretches forward into a
+   nose up to 1.8× long and thins to 0.7× (volume kept, roughly),
+   and when it arrives it rounds up again. It stretches from its
+   back edge, so the nose leads; the overshoot on arrival pulls
+   it back through round, which reads as the liquid sloshing.
+
+   At 100 it SPLATS: when the fill actually reaches the end (not
+   when the value is set — it has to hit the wall), the bar
+   bulges 1.6× tall, squashes to 0.8× and settles, once per trip
+   to 100. The value itself is announced immediately through
+   Radix / aria; only the picture catches up.
+
+   CircularProgress runs the ring on the same spring and gives
+   the same splat at 100.
+
+   Calm / reduced motion: no spring, no blob, no splat — the fill
+   eases to each value with a plain transition, as before. With a
+   SoundProvider on, reaching 100 plays "success". */
+
 export type ProgressTone = "blue" | "flame" | "ink" | "success";
+
+/** true under prefers-reduced-motion or inside data-rap-motion="calm" (kept live). */
+function useCalm(ref: RefObject<Element | null>) {
+  const [calm, setCalm] = useState(false);
+  useLayoutEffect(() => {
+    const check = () => setCalm(prefersReducedMotion() || !!ref.current?.closest('[data-rap-motion="calm"]'));
+    check();
+    const mo = new MutationObserver(check);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-rap-motion"], subtree: true });
+    return () => mo.disconnect();
+  }, [ref]);
+  return calm;
+}
+
+/** Plays `splat` once each time `at` reaches 100 while the value is 100; `success` sound with it. */
+function useSplat(pct: number | null, at: number) {
+  const [splat, setSplat] = useState(0);
+  const armed = useRef(true);
+  const sound = useSound();
+  useEffect(() => {
+    if (pct == null || pct < 100) {
+      armed.current = true;
+      return;
+    }
+    if (armed.current && at >= 99.5) {
+      armed.current = false;
+      setSplat((n) => n + 1);
+      sound.play("success");
+    }
+  }, [pct, at, sound]);
+  return splat;
+}
+
+function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
+  if (typeof ref === "function") ref(value);
+  else if (ref) ref.current = value;
+}
 
 export interface ProgressProps extends ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
   size?: "sm" | "md" | "lg";
@@ -12,19 +89,52 @@ export interface ProgressProps extends ComponentPropsWithoutRef<typeof ProgressP
 
 /** Pill progress bar (Radix Progress). Pass `value={null}` for an indeterminate sweep. */
 export const Progress = forwardRef<ElementRef<typeof ProgressPrimitive.Root>, ProgressProps>(function Progress(
-  { value, max = 100, size = "md", tone = "blue", className, ...rest },
+  { value, max = 100, size = "md", tone = "blue", className, style, ...rest },
   ref,
 ) {
+  const node = useRef<HTMLDivElement | null>(null);
+  const calm = useCalm(node);
   const pct = value == null ? null : Math.max(0, Math.min(100, (value / max) * 100));
+  const at = useSpring(pct ?? 0, 45, calm || pct == null);
+  const shown = calm ? (pct ?? 0) : Math.max(0, Math.min(101, at));
+  const lag = (pct ?? 0) - at;
+  // speed → stretch: 12 points of lag is full stretch
+  const stretch = calm ? 0 : Math.min(1, Math.abs(lag) / 12);
+  const splat = useSplat(pct, at);
+
   return (
     <ProgressPrimitive.Root
-      ref={ref}
+      ref={(el: HTMLDivElement | null) => {
+        node.current = el;
+        setRef(ref, el);
+      }}
       value={value}
       max={max}
-      className={cx("rap-progress", `rap-progress--${size}`, `rap-progress--${tone}`, pct == null && "is-indeterminate", className)}
+      className={cx(
+        "rap-progress",
+        `rap-progress--${size}`,
+        `rap-progress--${tone}`,
+        pct == null && "is-indeterminate",
+        !calm && pct != null && "is-liquid",
+        // two identical keyframes, alternated, so each trip to 100 replays the splat
+        splat > 0 && (splat % 2 ? "is-splat-a" : "is-splat-b"),
+        className,
+      )}
+      style={
+        {
+          ...style,
+          "--pg-at": `${Math.min(100, shown)}%`,
+          "--pg-sx": 1 + stretch * 0.8,
+          "--pg-sy": 1 - stretch * 0.3,
+          "--pg-dir": lag < 0 ? -1 : 1,
+        } as CSSProperties
+      }
       {...rest}
     >
-      <ProgressPrimitive.Indicator className="rap-progress__bar" style={pct == null ? undefined : { width: `${pct}%` }} />
+      <ProgressPrimitive.Indicator className="rap-progress__bar" style={pct == null ? undefined : { width: `${Math.min(100, shown)}%` }} />
+      {pct != null && !calm && (
+        <span className="rap-progress__head" data-hidden={shown < 0.5 ? "" : undefined} aria-hidden />
+      )}
     </ProgressPrimitive.Root>
   );
 });
@@ -46,21 +156,29 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
   { value, max = 100, size = 88, thickness = 8, tone = "blue", label, className, style, ...rest },
   ref,
 ) {
+  const node = useRef<HTMLDivElement | null>(null);
+  const calm = useCalm(node);
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  const at = useSpring(pct, 45, calm);
+  const shown = calm ? pct : Math.max(0, Math.min(100, at));
+  const splat = useSplat(pct, at);
   const r = (size - thickness) / 2;
   const c = 2 * Math.PI * r;
   return (
     <div
-      ref={ref}
+      ref={(el) => {
+        node.current = el;
+        setRef(ref, el);
+      }}
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={value}
-      className={cx("rap-cprogress", `rap-progress--${tone}`, className)}
+      className={cx("rap-cprogress", `rap-progress--${tone}`, !calm && "is-liquid", className)}
       style={{ width: size, height: size, fontSize: Math.max(12, size * 0.22), ...style }}
       {...rest}
     >
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+      <svg key={splat} className={splat > 0 ? "is-splat" : undefined} width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
         <circle className="rap-cprogress__track" cx={size / 2} cy={size / 2} r={r} strokeWidth={thickness} />
         <circle
           className="rap-cprogress__bar"
@@ -69,8 +187,8 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
           r={r}
           strokeWidth={thickness}
           strokeDasharray={c}
-          strokeDashoffset={c * (1 - pct / 100)}
-          opacity={pct === 0 ? 0 : 1}
+          strokeDashoffset={c * (1 - shown / 100)}
+          opacity={shown <= 0.2 ? 0 : 1}
         />
       </svg>
       {label !== null && <span className="rap-cprogress__label">{label ?? `${Math.round(pct)}%`}</span>}

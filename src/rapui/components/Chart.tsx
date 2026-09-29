@@ -1,7 +1,63 @@
-import { createContext, forwardRef, useContext, type CSSProperties, type HTMLAttributes, type ReactElement, type ReactNode } from "react";
-import { ResponsiveContainer, Tooltip, type TooltipContentProps } from "recharts";
-import { cx } from "../utils";
+import {
+  Children,
+  cloneElement,
+  createContext,
+  forwardRef,
+  isValidElement,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ForwardedRef,
+  type HTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+} from "react";
+import { Area, Bar, Line, ResponsiveContainer, Tooltip, type TooltipContentProps } from "recharts";
+import { cx, prefersReducedMotion } from "../utils";
 import "./Chart.css";
+
+/* ── Chart ─────────────────────────────────────────────────
+   Delight: the chart is drawn in front of you, once.
+
+   Lines are drawn by a pen: each curve gets pathLength=1 and
+   its dash offset runs 1 → 0 over 1.3s (eased in and out, like a
+   hand), so the line leaves the y-axis and travels right, the fill
+   rising in behind it. Bars grow out of the baseline one after
+   another (35ms apart, left to right) and overshoot by 10%
+   before settling — a row of springs let go, not a progress
+   bar. The tooltip follows the pointer on an overshooting ease
+   instead of Recharts' plain slide.
+
+   Recharts' own tween is switched off for Bar / Area / Line
+   (unless you set `isAnimationActive` yourself) because both
+   running at once reads as a stutter. The intro plays on mount
+   and again whenever the set of series changes (a type switch,
+   a series toggled on), then gets out of the way: data updates
+   after that just redraw. `data-intro` on the container is the
+   window during which CSS may animate; Recharts may rebuild bar
+   nodes when it measures, and inside the window they simply
+   start their grow again.
+
+   Calm / reduced motion: no intro, the chart is just there. */
+
+const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+const TWEENED = new Set<unknown>([Area, Bar, Line]);
+/** how long the intro window stays open: the longest bar stagger + its grow */
+const INTRO_MS = 1500;
+
+function typeName(t: unknown): string {
+  if (typeof t === "string") return t;
+  const f = t as { displayName?: string; name?: string; render?: { name?: string } } | null;
+  return f?.displayName ?? f?.name ?? f?.render?.name ?? "";
+}
+
+function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
+  if (typeof ref === "function") ref(value);
+  else if (ref) ref.current = value;
+}
 
 /** Series settings keyed by dataKey. `color` is any CSS colour, ideally a token: "var(--rap-blue)". */
 export type ChartConfig = Record<string, { label?: ReactNode; color?: string }>;
@@ -27,11 +83,68 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(fu
 ) {
   const vars: Record<string, string> = {};
   for (const [key, v] of Object.entries(config)) if (v.color) vars[`--color-${key}`] = v.color;
+
+  const box = useRef<HTMLDivElement | null>(null);
+  const [intro, setIntro] = useState(false);
+
+  // our own intro replaces Recharts' tween on the series it draws
+  const series = Children.toArray((children.props as { children?: ReactNode }).children).filter(isValidElement);
+  const signature = [
+    typeName(children.type),
+    ...series.map((c) => `${typeName(c.type)}:${String((c.props as { dataKey?: unknown }).dataKey ?? "")}`),
+  ].join("|");
+  const chart = cloneElement(children as ReactElement<{ children?: ReactNode }>, {
+    children: Children.map((children.props as { children?: ReactNode }).children, (c) =>
+      isValidElement(c) && TWEENED.has(c.type) && (c.props as { isAnimationActive?: unknown }).isAnimationActive === undefined
+        ? cloneElement(c as ReactElement<{ isAnimationActive?: boolean }>, { isAnimationActive: false })
+        : c,
+    ),
+  });
+
+  useLayoutEffect(() => {
+    if (isCalm(box.current)) return;
+    setIntro(true);
+    const t = window.setTimeout(() => setIntro(false), INTRO_MS);
+    return () => window.clearTimeout(t);
+  }, [signature]);
+
+  // while the window is open, give every curve a unit length so CSS can draw it
+  useEffect(() => {
+    const el = box.current;
+    if (!intro || !el) return;
+    const mark = () =>
+      el.querySelectorAll<SVGPathElement>(".recharts-area-curve, .recharts-line-curve").forEach((p) => {
+        if (p.getAttribute("pathLength") !== "1") {
+          p.setAttribute("pathLength", "1");
+          p.setAttribute("data-pen", "");
+        }
+      });
+    mark();
+    const mo = new MutationObserver(mark);
+    mo.observe(el, { subtree: true, childList: true });
+    return () => {
+      mo.disconnect();
+      el.querySelectorAll(".recharts-area-curve, .recharts-line-curve").forEach((p) => {
+        p.removeAttribute("pathLength");
+        p.removeAttribute("data-pen");
+      });
+    };
+  }, [intro]);
+
   return (
     <ChartContext.Provider value={config}>
-      <div ref={ref} className={cx("rap-chart", className)} style={{ height, ...vars, ...style } as CSSProperties} {...rest}>
+      <div
+        ref={(el) => {
+          box.current = el;
+          setRef(ref, el);
+        }}
+        className={cx("rap-chart", className)}
+        style={{ height, ...vars, ...style } as CSSProperties}
+        data-intro={intro ? "" : undefined}
+        {...rest}
+      >
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 480, height: 260 }}>
-          {children}
+          {chart}
         </ResponsiveContainer>
       </div>
     </ChartContext.Provider>

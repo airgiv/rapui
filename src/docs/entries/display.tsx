@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ArrowUpRight, Command, FolderOpen, Inbox, Plus, Search, Upload } from "../../rapui/icons";
+import { ArrowUpRight, Command, Plus, RefreshCw, Search, Upload } from "../../rapui/icons";
 import {
   Alert,
   AspectRatio,
@@ -25,6 +25,7 @@ import {
   createDataTableColumns,
   DataTable,
   EmptyState,
+  FancyIcon,
   Input,
   Kbd,
   KbdGroup,
@@ -159,6 +160,7 @@ const badgeControls: Control[] = [
   },
   { type: "select", prop: "size", options: ["sm", "md"], default: "md" },
   { type: "boolean", prop: "dot", default: true, codeDefault: false },
+  { type: "boolean", prop: "live", default: true, codeDefault: false },
   { type: "text", prop: "label", default: "Published" },
 ];
 
@@ -171,6 +173,7 @@ const avatarControls: Control[] = [
 
 const cardControls: Control[] = [
   { type: "select", prop: "size", options: ["sm", "md", "lg"], default: "md" },
+  { type: "boolean", prop: "pressable", default: true, codeDefault: false },
   { type: "boolean", prop: "footer", default: true },
   { type: "text", prop: "title", default: "Spring lookbook" },
 ];
@@ -204,7 +207,7 @@ const alertControls: Control[] = [
   { type: "text", prop: "title", default: "Custom domain is almost ready" },
   { type: "text", prop: "description", default: "DNS changes can take up to an hour. We’ll email you when studio.ooo goes live." },
   { type: "boolean", prop: "action", default: true },
-  { type: "boolean", prop: "dismissible", default: false },
+  { type: "boolean", prop: "dismissible", default: true, codeDefault: false },
 ];
 
 const separatorControls: Control[] = [
@@ -291,13 +294,28 @@ export const entries: DocEntry[] = [
     slug: "badge",
     name: "Badge",
     group: "Data display",
-    description: "Small pill for a status, a count or a tag. The label is centred on its cap height, so it sits dead centre in the pill.",
+    description:
+      "Small pill for a status, a count or a tag. The label is centred on its cap height, so it sits dead centre in the pill. Delight: change what a badge says and it hops — press “+1 comment” — and a live dot breathes.",
     controls: badgeControls,
-    Demo: ({ p }) => (
-      <Badge variant={p.variant as BadgeVariant} size={p.size as "sm" | "md"} dot={Boolean(p.dot)}>
-        {String(p.label)}
-      </Badge>
-    ),
+    Demo: function BadgeDemo({ p }) {
+      const [n, setN] = useState(3);
+      return (
+        <div className="doc-stack" style={{ alignItems: "center", gap: "1.5rem" }}>
+          <Badge variant={p.variant as BadgeVariant} size={p.size as "sm" | "md"} dot={Boolean(p.dot)} live={Boolean(p.live)}>
+            {String(p.label)}
+          </Badge>
+          <div className="doc-row" style={{ justifyContent: "center" }}>
+            <span style={{ fontSize: "0.9375rem", fontWeight: 500 }}>Comments</span>
+            <Badge variant="flame" size="sm">
+              {n}
+            </Badge>
+            <Button size="sm" variant="soft" icon={<Plus />} onClick={() => setN((x) => x + 1)}>
+              1 comment
+            </Button>
+          </div>
+        </div>
+      );
+    },
     code: (p) => `import { Badge } from "rapui";
 
 <Badge${attrs(p, badgeControls, ["label"])}>${p.label}</Badge>`,
@@ -329,14 +347,14 @@ export const entries: DocEntry[] = [
         title: "Status with dot",
         Demo: () => (
           <div className="doc-row" style={{ justifyContent: "center" }}>
-            <Badge variant="success" dot>Live</Badge>
+            <Badge variant="success" live>Live</Badge>
             <Badge variant="warning" dot>Syncing</Badge>
             <Badge variant="danger" dot>Build failed</Badge>
             <Badge dot>Offline</Badge>
             <Badge variant="outline" dot size="sm">12 pages</Badge>
           </div>
         ),
-        code: `<Badge variant="success" dot>Live</Badge>
+        code: `<Badge variant="success" live>Live</Badge>
 <Badge variant="danger" dot>Build failed</Badge>
 <Badge variant="outline" dot size="sm">12 pages</Badge>`,
       },
@@ -350,7 +368,7 @@ export const entries: DocEntry[] = [
     group: "Data display",
     basedOn: "Radix Avatar",
     description:
-      "Round picture of a person or team. Without an image it shows initials on a colour chosen from the name, so the same person always gets the same colour.",
+      "Round picture of a person or team. Without an image it shows initials on a colour chosen from the name, so the same person always gets the same colour. Delight: point at a group and the stack fans out like a hand of cards; the face under the pointer lifts.",
     controls: avatarControls,
     Demo: ({ p }) => {
       const size = p.size as AvatarSize;
@@ -406,11 +424,12 @@ export const entries: DocEntry[] = [
     slug: "card",
     name: "Card",
     group: "Data display",
-    description: "A white surface with the big 28px radius for grouping related content. No border and no shadow: it sits on the grey paper.",
+    description:
+      "A white surface with the big 28px radius for grouping related content. No border and no shadow: it sits on the grey paper. Delight: a pressable card (or one with onClick) gives under your finger like card stock — press near a corner and that corner dips, then it springs back.",
     controls: cardControls,
     Demo: ({ p }) => (
       <Paper>
-        <Card size={p.size as "sm" | "md" | "lg"} style={{ width: "min(100%, 24rem)" }}>
+        <Card size={p.size as "sm" | "md" | "lg"} pressable={Boolean(p.pressable)} style={{ width: "min(100%, 24rem)" }}>
           <AspectRatio ratio={16 / 9} radius="sm">
             <div style={gradient("var(--rap-bubble)", "var(--rap-flame)")} />
           </AspectRatio>
@@ -438,7 +457,7 @@ export const entries: DocEntry[] = [
     ),
     code: (p) => `import { Card, CardHeader, CardTitle, CardDescription, CardFooter, Button, ButtonGroup } from "rapui";
 
-<Card${attrs(p, cardControls, ["footer", "title"])}>
+<Card${attrs(p, cardControls, ["footer", "title", "pressable"])}${p.pressable ? " onClick={openProject}" : ""}>
   <CardHeader>
     <CardTitle>${p.title}</CardTitle>
     <CardDescription>Norrøna Knit · 14 pages · edited by Mira 2 hours ago</CardDescription>
@@ -505,45 +524,55 @@ export const entries: DocEntry[] = [
     name: "Table",
     group: "Data display",
     description:
-      "Plain semantic table with hairline rows, a soft rounded hover and tabular figures. For sorting, filtering and paging use Data table.",
+      "Plain semantic table with hairline rows, a soft rounded hover and tabular figures. For sorting, filtering and paging use Data table. Delight: one highlight glides from row to row as you move down the table, and when rows change order (press “Sort by amount”) each one travels to its new place on a spring.",
     controls: tableControls,
-    Demo: ({ p }) => (
-      <div style={{ width: "100%" }}>
-        <Table>
-          {p.caption && <TableCaption>Invoices sent in September 2026.</TableCaption>}
-          <TableHeader>
-            <TableRow>
-              <TableHead>Client</TableHead>
-              <TableHead>Lead</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead data-align="end">Amount</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {PROJECTS.slice(0, 5).map((r) => (
-              <TableRow key={r.id}>
-                <TableCell>
-                  <div style={{ fontWeight: 500 }}>{r.client}</div>
-                  <div className="doc-muted" style={{ fontSize: "0.8125rem" }}>{r.name}</div>
-                </TableCell>
-                <TableCell>
-                  <div className="doc-row" style={{ gap: "0.6rem", flexWrap: "nowrap" }}>
-                    {p.avatars && <Avatar size="sm" name={r.lead} />}
-                    {r.lead}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_BADGE[r.status]} dot>
-                    {r.status}
-                  </Badge>
-                </TableCell>
-                <TableCell data-align="end">{money(r.budget)}</TableCell>
+    Demo: function TableDemo({ p }) {
+      const [byAmount, setByAmount] = useState(false);
+      const rows = PROJECTS.slice(0, 5);
+      const shown = byAmount ? [...rows].sort((a, b) => b.budget - a.budget) : rows;
+      return (
+        <div className="doc-stack" style={{ width: "100%", gap: "1rem" }}>
+          <div className="doc-row">
+            <Button size="sm" variant="soft" onClick={() => setByAmount((x) => !x)}>
+              {byAmount ? "Original order" : "Sort by amount"}
+            </Button>
+          </div>
+          <Table>
+            {p.caption && <TableCaption>Invoices sent in September 2026.</TableCaption>}
+            <TableHeader>
+              <TableRow>
+                <TableHead>Client</TableHead>
+                <TableHead>Lead</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead data-align="end">Amount</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    ),
+            </TableHeader>
+            <TableBody>
+              {shown.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell>
+                    <div style={{ fontWeight: 500 }}>{r.client}</div>
+                    <div className="doc-muted" style={{ fontSize: "0.8125rem" }}>{r.name}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="doc-row" style={{ gap: "0.6rem", flexWrap: "nowrap" }}>
+                      {p.avatars && <Avatar size="sm" name={r.lead} />}
+                      {r.lead}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_BADGE[r.status]} dot>
+                      {r.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell data-align="end">{money(r.budget)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      );
+    },
     code: (p) => `import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption, Badge${
       p.avatars ? ", Avatar" : ""
     } } from "rapui";
@@ -575,7 +604,7 @@ export const entries: DocEntry[] = [
     group: "Data display",
     basedOn: "TanStack Table v9",
     description:
-      "Table with sorting, a quick filter, row selection and paging. Click a column header to sort; the arrow shows the direction.",
+      "Table with sorting, a quick filter, row selection and paging. Click a column header to sort; the arrow shows the direction. Delight: sort by Budget and watch every row travel to its new place; type in the filter and the survivors slide up to close the gaps; one highlight glides between rows under the pointer.",
     controls: dataTableControls,
     Demo: ({ p }) => (
       <div style={{ width: "100%", alignSelf: "start" }}>
@@ -668,7 +697,8 @@ const columns = col.columns([
     slug: "kbd",
     name: "Kbd",
     group: "Data display",
-    description: "A keyboard key for shortcuts in menus, tooltips and help text. Group keys to show a chord.",
+    description:
+      "A keyboard key for shortcuts in menus, tooltips and help text. Group keys to show a chord. Delight: press the real key on your keyboard — try ⌘, Shift or K — and every cap showing it goes down with you.",
     controls: kbdControls,
     Demo: ({ p }) => {
       const keys = String(p.keys).split(/\s+/).filter(Boolean);
@@ -712,7 +742,7 @@ ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
               prefix={<Search />}
               suffix={
                 <KbdGroup>
-                  <Kbd size="sm">
+                  <Kbd size="sm" keyName="Meta">
                     <Command />
                   </Kbd>
                   <Kbd size="sm">K</Kbd>
@@ -726,7 +756,7 @@ ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
   prefix={<Search />}
   suffix={
     <KbdGroup>
-      <Kbd size="sm"><Command /></Kbd>
+      <Kbd size="sm" keyName="Meta"><Command /></Kbd>
       <Kbd size="sm">K</Kbd>
     </KbdGroup>
   }
@@ -742,9 +772,10 @@ ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
     group: "Data display",
     basedOn: "Recharts 3",
     description:
-      "A themed wrapper for Recharts. Series colours come from CSS variables, so charts follow the theme; grid, ticks and tooltip use rap/ui tokens.",
+      "A themed wrapper for Recharts. Series colours come from CSS variables, so charts follow the theme; grid, ticks and tooltip use rap/ui tokens. Delight: lines are drawn in by a pen and bars grow out of the baseline one after another with a springy overshoot — press “Replay”, switch the type or toggle a series.",
     controls: chartControls,
-    Demo: ({ p }) => {
+    Demo: function ChartDemo({ p }) {
+      const [take, setTake] = useState(0);
       const config: ChartConfig = p.drafts ? chartConfig : { published: chartConfig.published };
       const tooltip = <ChartTooltip content={<ChartTooltipContent valueFormatter={(v) => `${v} pages`} />} />;
       return (
@@ -754,8 +785,11 @@ ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
               <span style={{ fontWeight: 500 }}>Weekly published pages</span>
               <span className="doc-muted" style={{ fontSize: "0.875rem" }}>Jul 6 – Sep 27, all workspaces</span>
             </div>
+            <Button size="sm" variant="soft" icon={<RefreshCw />} onClick={() => setTake((t) => t + 1)}>
+              Replay
+            </Button>
           </div>
-          <ChartContainer config={config} height={260}>
+          <ChartContainer key={take} config={config} height={260}>
             {p.type === "bar" ? (
               <BarChart data={WEEKS} margin={{ top: 8, right: 4, left: -16, bottom: 0 }} barGap={2}>
                 {p.grid && <CartesianGrid {...chartGridProps} />}
@@ -830,28 +864,40 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
     name: "Separator",
     group: "Data display",
     basedOn: "Radix Separator",
-    description: "A hairline between groups of content, horizontal or vertical. A horizontal one can carry a short label in the middle.",
+    description:
+      "A hairline between groups of content, horizontal or vertical. A horizontal one can carry a short label in the middle. Delight: the first time it scrolls into view the rule draws itself from the centre out to both ends — press “Replay”.",
     controls: separatorControls,
-    Demo: ({ p }) =>
-      p.orientation === "vertical" ? (
-        <div className="doc-row" style={{ height: 24, gap: "1rem", fontSize: "0.9375rem" }}>
-          <span>Pages</span>
-          <Separator orientation="vertical" />
-          <span>Assets</span>
-          <Separator orientation="vertical" />
-          <span>Settings</span>
+    Demo: function SeparatorDemo({ p }) {
+      const [take, setTake] = useState(0);
+      const replay = (
+        <Button size="sm" variant="ghost" icon={<RefreshCw />} onClick={() => setTake((t) => t + 1)}>
+          Replay
+        </Button>
+      );
+      return p.orientation === "vertical" ? (
+        <div className="doc-stack" style={{ alignItems: "center", gap: "1.5rem" }}>
+          <div className="doc-row" style={{ height: 24, gap: "1rem", fontSize: "0.9375rem" }}>
+            <span>Pages</span>
+            <Separator key={`a${take}`} orientation="vertical" />
+            <span>Assets</span>
+            <Separator key={`b${take}`} orientation="vertical" />
+            <span>Settings</span>
+          </div>
+          {replay}
         </div>
       ) : (
         <div className="doc-stack" style={{ width: "min(100%, 22rem)", gap: "1.25rem" }}>
           <Button variant="solid" style={{ width: "100%" }}>
             Continue with email
           </Button>
-          <Separator label={String(p.label) || undefined} />
+          <Separator key={take} label={String(p.label) || undefined} />
           <Button variant="soft" style={{ width: "100%" }}>
             Continue with SSO
           </Button>
+          <div style={{ display: "grid", placeItems: "center" }}>{replay}</div>
         </div>
-      ),
+      );
+    },
     code: (p) =>
       p.orientation === "vertical"
         ? `import { Separator } from "rapui";
@@ -869,32 +915,42 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
     slug: "empty-state",
     name: "Empty state",
     group: "Data display",
-    description: "What a list or page shows before it has anything in it: an icon, one line on why it’s empty, and a way forward.",
+    description:
+      "What a list or page shows before it has anything in it: an icon, one line on why it’s empty, and a way forward. Delight: the illustration floats over its own shadow, and after a pause the first action wiggles once to point the way.",
     controls: emptyControls,
-    Demo: ({ p }) => (
-      <EmptyState
-        size={p.size as "sm" | "md"}
-        icon={<FolderOpen />}
-        title={String(p.title)}
-        description={String(p.description)}
-        action={
-          p.action ? (
-            <ButtonGroup>
-              <Button size="sm" icon={<Plus />}>
-                New project
-              </Button>
-              <Button size="sm" variant="soft">
-                Browse templates
-              </Button>
-            </ButtonGroup>
-          ) : undefined
-        }
-      />
-    ),
-    code: (p) => `import { EmptyState, Button } from "rapui";
+    Demo: function EmptyDemo({ p }) {
+      const [take, setTake] = useState(0);
+      return (
+        <div className="doc-stack" style={{ alignItems: "center", width: "100%" }}>
+          <EmptyState
+            key={take}
+            size={p.size as "sm" | "md"}
+            icon={<FancyIcon icon="folder" tone="blue" size={p.size === "sm" ? 28 : 38} />}
+            title={String(p.title)}
+            description={String(p.description)}
+            action={
+              p.action ? (
+                <ButtonGroup>
+                  <Button size="sm" icon={<Plus />}>
+                    New project
+                  </Button>
+                  <Button size="sm" variant="soft">
+                    Browse templates
+                  </Button>
+                </ButtonGroup>
+              ) : undefined
+            }
+          />
+          <Button size="sm" variant="ghost" icon={<RefreshCw />} onClick={() => setTake((t) => t + 1)}>
+            Replay
+          </Button>
+        </div>
+      );
+    },
+    code: (p) => `import { EmptyState, FancyIcon, Button } from "rapui";
 
 <EmptyState${attrs(p, emptyControls, ["title", "description", "action"])}
-  icon={<FolderOpen />}
+  icon={<FancyIcon icon="folder" tone="blue" size={38} />}
   title="${p.title}"
   description="${p.description}"${
       p.action
@@ -919,7 +975,12 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
               <TableBody>
                 <TableRow>
                   <TableCell colSpan={3}>
-                    <EmptyState size="sm" icon={<Inbox />} title="No submissions" description="Share the page to start collecting replies." />
+                    <EmptyState
+                      size="sm"
+                      icon={<FancyIcon icon="inbox" tone="flame" size={28} />}
+                      title="No submissions"
+                      description="Share the page to start collecting replies."
+                    />
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -927,7 +988,7 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
           </div>
         ),
         code: `<TableCell colSpan={3}>
-  <EmptyState size="sm" icon={<Inbox />} title="No submissions" description="Share the page to start collecting replies." />
+  <EmptyState size="sm" icon={<FancyIcon icon="inbox" tone="flame" size={28} />} title="No submissions" description="Share the page to start collecting replies." />
 </TableCell>`,
       },
     ],
@@ -940,7 +1001,8 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
     slug: "alert",
     name: "Alert",
     group: "Feedback",
-    description: "An inline message on a tinted fill: info, success, warning, danger or neutral. Use it for things the reader should notice without being interrupted.",
+    description:
+      "An inline message on a tinted fill: info, success, warning, danger or neutral. Use it for things the reader should notice without being interrupted. Delight: dismiss it with the × and it comes unpinned at one corner, swings, and falls off the page while the layout closes up at once.",
     controls: alertControls,
     Demo: ({ p }) => {
       const [open, setOpen] = useState(true);
@@ -1000,7 +1062,7 @@ ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
     group: "Feedback",
     basedOn: "Sonner",
     description:
-      "Short-lived notifications that stack in a corner. Mount one Toaster, then call toast() from anywhere — success, error, promise and action toasts included.",
+      "Short-lived notifications that stack in a corner. Mount one Toaster, then call toast() from anywhere — success, error, promise and action toasts included. Delight: each toast is slapped down like a sticker with its own small tilt, so a few quick ones make a pile; swipe one away and it flings off spinning.",
     controls: toastControls,
     Demo: ({ p }) => (
       <>
@@ -1069,14 +1131,35 @@ toast("Project moved to trash", { action: { label: "Undo", onClick: restore } })
     name: "Progress",
     group: "Feedback",
     basedOn: "Radix Progress",
-    description: "Shows how far along a task is: an 8px pill bar that eases to each new value, or a ring with the number in the middle.",
+    description:
+      "Shows how far along a task is: an 8px pill bar that eases to each new value, or a ring with the number in the middle. Delight: the fill runs like liquid — its head stretches into a nose while it moves and rounds up when it stops — and when it hits 100 it splats against the end. Try “Jump” and “Finish”.",
     controls: progressControls,
-    Demo: ({ p }) => {
-      const v = Number(p.value);
+    Demo: function ProgressDemo({ p }) {
+      const [own, setOwn] = useState<number | null>(null);
+      useEffect(() => setOwn(null), [p.value]);
+      const v = own ?? Number(p.value);
+      const buttons = (
+        <div className="doc-row" style={{ justifyContent: "center" }}>
+          <Button size="sm" variant="soft" onClick={() => setOwn(v >= 90 ? 12 : Math.min(100, v + 35))}>
+            Jump
+          </Button>
+          <Button size="sm" variant="soft" onClick={() => setOwn(100)}>
+            Finish
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setOwn(0)}>
+            Reset
+          </Button>
+        </div>
+      );
       const tone = p.tone as ProgressTone;
       if (p.variant === "circular") {
         const d = p.size === "sm" ? 64 : p.size === "lg" ? 120 : 88;
-        return <CircularProgress value={v} tone={tone} size={d} thickness={p.size === "lg" ? 10 : 8} aria-label="Upload" />;
+        return (
+          <div className="doc-stack" style={{ alignItems: "center", gap: "1.5rem" }}>
+            <CircularProgress value={v} tone={tone} size={d} thickness={p.size === "lg" ? 10 : 8} aria-label="Upload" />
+            {buttons}
+          </div>
+        );
       }
       return (
         <div className="doc-stack" style={{ width: "min(100%, 24rem)", gap: "0.6rem" }}>
@@ -1085,6 +1168,7 @@ toast("Project moved to trash", { action: { label: "Undo", onClick: restore } })
             <span className="doc-muted" style={{ fontVariantNumeric: "tabular-nums" }}>{v}%</span>
           </div>
           <Progress value={v} tone={tone} size={p.size as "sm" | "md" | "lg"} aria-label="Upload" />
+          <div style={{ marginTop: "1rem" }}>{buttons}</div>
         </div>
       );
     },
@@ -1143,7 +1227,8 @@ toast("Project moved to trash", { action: { label: "Undo", onClick: restore } })
     slug: "skeleton",
     name: "Skeleton",
     group: "Feedback",
-    description: "Shimmering placeholders in the shape of what’s loading. Rounded blocks, pill text lines and circles for avatars.",
+    description:
+      "Placeholders in the shape of what’s loading: rounded blocks, pill text lines and circles for avatars. Delight: one soft diagonal light sweeps the whole layout — every block shows its slice of the same beam, like window light passing over a table.",
     controls: skeletonControls,
     Demo: ({ p }) => {
       const lines = Number(p.lines);
@@ -1189,7 +1274,8 @@ ${
     slug: "spinner",
     name: "Spinner",
     group: "Feedback",
-    description: "A small rotating arc for short waits. It takes the current text colour, so it fits inside buttons and badges.",
+    description:
+      "A small spinner for short waits. It takes the current text colour, so it fits inside buttons and badges. Delight: a squishy ball runs laps — it speeds up and slows down, and stretches along its path when it’s fast.",
     controls: spinnerControls,
     Demo: ({ p }) => {
       const color = { ink: "var(--rap-ink)", blue: "var(--rap-blue)", flame: "var(--rap-flame)", mute: "var(--rap-mute)" }[String(p.color)];

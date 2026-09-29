@@ -12,3 +12,4 @@
   50% { transform: translateY(-6px) rotate(3deg); }
 }
 @media (prefers-reduced-motion: reduce) { .rap-ficon--float { animation: none; } }
+[data-rap-motion="calm"] .rap-ficon--float { animation: none; }

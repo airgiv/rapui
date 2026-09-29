@@ -51,3 +51,19 @@
   .rap-alert { flex-wrap: wrap; }
   .rap-alert__action { order: 3; width: 100%; padding-left: calc(20px + 0.75rem); }
 }
+
+/* ── delight: unpinned, it swings on one corner and falls ── */
+.rap-alert--ghost {
+  z-index: 2147483000;
+  pointer-events: none;
+  transform-origin: 14px 14px;
+  animation: rap-alert-fall 640ms linear forwards;
+}
+@keyframes rap-alert-fall {
+  0% { rotate: 0deg; translate: 0 0; opacity: 1; animation-timing-function: var(--rap-ease-out); }
+  25% { rotate: 6deg; translate: 0 2px; opacity: 1; animation-timing-function: var(--rap-ease-gravity, cubic-bezier(0.55, 0, 1, 0.45)); }
+  60% { opacity: 1; }
+  100% { rotate: 16deg; translate: 0 150px; opacity: 0; }
+}
+[data-rap-motion="calm"] .rap-alert--ghost { display: none; }
+@media (prefers-reduced-motion: reduce) { .rap-alert--ghost { display: none; } }

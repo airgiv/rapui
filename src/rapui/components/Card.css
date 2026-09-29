@@ -29,3 +29,15 @@
 }
 .rap-card__content { font-size: 0.9375rem; line-height: 1.5; }
 .rap-card__footer { display: flex; align-items: center; gap: var(--rap-gap-tight); margin-top: auto; }
+
+/* ── delight: card stock gives under the finger ─────────── */
+.rap-card--pressable {
+  cursor: pointer;
+  transform-origin: var(--card-ox, 50%) var(--card-oy, 50%);
+  transition: scale 450ms var(--rap-ease-back, var(--rap-ease-spring));
+  -webkit-tap-highlight-color: transparent;
+}
+.rap-card--pressable:active { scale: 0.985; transition-duration: 90ms; transition-timing-function: var(--rap-ease-out); }
+.rap-card--pressable:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
+[data-rap-motion="calm"] .rap-card--pressable:active { scale: none; }
+@media (prefers-reduced-motion: reduce) { .rap-card--pressable:active { scale: none; } }

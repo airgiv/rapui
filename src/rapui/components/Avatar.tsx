@@ -1,7 +1,52 @@
-import { Children, cloneElement, forwardRef, isValidElement, type ReactElement, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes } from "react";
+import {
+  Children,
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactElement,
+  type ComponentPropsWithoutRef,
+  type ElementRef,
+  type HTMLAttributes,
+  type RefObject,
+} from "react";
 import { Avatar as AvatarPrimitive } from "radix-ui";
-import { cx } from "../utils";
+import { useSpring } from "../hooks/useSpring";
+import { useSound } from "../sound";
+import { cx, prefersReducedMotion } from "../utils";
 import "./Avatar.css";
+
+/* ── Avatar ────────────────────────────────────────────────
+   Delight lives in AvatarGroup: the overlapping stack is a hand
+   of cards, and pointing at it FANS it out. One spring (0→100,
+   tune 55: one friendly overshoot) drives a single `--fan`
+   variable; every face reads it as `translate: i × 22% of its
+   own size`, so the first face stays put and the last travels
+   furthest — the spread is a hand opening, not a slide. 22%
+   turns the -18% overlap into a 4% gap, just enough to see each
+   face whole. Translate, not margin: nothing around the group
+   reflows while it breathes.
+
+   The face under the pointer lifts (4px, 1.08×) on the
+   overshooting ease so you can tell whom you are about to click.
+   Calm / reduced motion: the stack stays stacked. With a
+   SoundProvider on, each lift is a very soft detent (0.25). */
+
+/** true under prefers-reduced-motion or inside data-rap-motion="calm" (kept live). */
+function useCalm(ref: RefObject<Element | null>) {
+  const [calm, setCalm] = useState(false);
+  useLayoutEffect(() => {
+    const check = () => setCalm(prefersReducedMotion() || !!ref.current?.closest('[data-rap-motion="calm"]'));
+    check();
+    const mo = new MutationObserver(check);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-rap-motion"], subtree: true });
+    return () => mo.disconnect();
+  }, [ref]);
+  return calm;
+}
 
 export type AvatarSize = "sm" | "md" | "lg" | "xl";
 
@@ -84,16 +129,64 @@ export interface AvatarGroupProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /** Overlapping stack of avatars, each ringed in the page colour. */
-export function AvatarGroup({ max, size = "md", ring = "paper", className, children, ...rest }: AvatarGroupProps) {
+export function AvatarGroup({
+  max,
+  size = "md",
+  ring = "paper",
+  className,
+  style,
+  children,
+  onPointerEnter,
+  onPointerLeave,
+  onPointerOver,
+  ...rest
+}: AvatarGroupProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const face = useRef<Element | null>(null);
+  const sound = useSound();
+  const calm = useCalm(root);
+  const [open, setOpen] = useState(false);
+  const fan = useSpring(open && !calm ? 100 : 0, 55, calm);
+
   const items = Children.toArray(children).filter(isValidElement);
-  const sized = items.map((el) => cloneElement(el as ReactElement<{ size?: AvatarSize }>, { size }));
-  const shown = max != null ? sized.slice(0, max) : sized;
+  const limit = max != null ? Math.min(max, items.length) : items.length;
+  const shown = items.slice(0, limit).map((el, i) => {
+    const e = el as ReactElement<{ size?: AvatarSize; style?: CSSProperties }>;
+    return cloneElement(e, { size, style: { ...e.props.style, "--i": i } as CSSProperties });
+  });
   const extra = items.length - shown.length;
   return (
-    <div className={cx("rap-avatar-group", ring === "surface" && "rap-avatar-group--on-surface", className)} {...rest}>
+    <div
+      ref={root}
+      className={cx("rap-avatar-group", ring === "surface" && "rap-avatar-group--on-surface", className)}
+      style={{ ...style, "--fan": fan / 100 } as CSSProperties}
+      data-fanned={open && !calm ? "" : undefined}
+      onPointerEnter={(e) => {
+        setOpen(true);
+        onPointerEnter?.(e);
+      }}
+      onPointerLeave={(e) => {
+        setOpen(false);
+        face.current = null;
+        onPointerLeave?.(e);
+      }}
+      onPointerOver={(e) => {
+        const a = (e.target as Element).closest(".rap-avatar");
+        if (a && a !== face.current && a.parentElement === root.current) {
+          face.current = a;
+          if (!calm) sound.detent(0.25);
+        }
+        onPointerOver?.(e);
+      }}
+      {...rest}
+    >
       {shown}
       {extra > 0 && (
-        <span className={cx("rap-avatar", `rap-avatar--${size}`, "rap-avatar--more")} aria-label={`${extra} more`}>
+        <span
+          className={cx("rap-avatar", `rap-avatar--${size}`, "rap-avatar--more")}
+          style={{ "--i": shown.length } as CSSProperties}
+          aria-label={`${extra} more`}
+        >
           +{extra}
         </span>
       )}

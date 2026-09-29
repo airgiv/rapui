@@ -52,3 +52,15 @@
   font-size: calc(var(--av) * 0.32);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── delight: the hand of faces fans out ────────────────── */
+.rap-avatar-group { --fan: 0; }
+.rap-avatar-group > .rap-avatar {
+  --rap-av-lift: 0px;
+  translate: calc(var(--i, 0) * var(--av) * 0.22 * var(--fan)) var(--rap-av-lift);
+  transition: scale var(--rap-dur-fast) var(--rap-ease-back, var(--rap-ease-spring)),
+    --rap-av-lift var(--rap-dur-fast) var(--rap-ease-back, var(--rap-ease-spring));
+}
+@property --rap-av-lift { syntax: "<length>"; inherits: false; initial-value: 0px; }
+.rap-avatar-group[data-fanned] > .rap-avatar:hover { --rap-av-lift: -4px; scale: 1.08; z-index: 1; }
+[data-rap-motion="calm"] .rap-avatar-group > .rap-avatar { translate: none; scale: none; }

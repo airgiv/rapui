@@ -22,6 +22,7 @@ import {
 } from "@tanstack/react-table";
 import { DropdownMenu as MenuPrimitive } from "radix-ui";
 import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronLeft, ChevronRight, Columns3, Search } from "../icons";
+import { useSound } from "../sound";
 import { cx } from "../utils";
 import { Checkbox } from "./Checkbox";
 import { Input } from "./Input";
@@ -79,6 +80,14 @@ export interface DataTableProps<TData extends RowData> {
 /**
  * Sortable, filterable, paginated table with row selection (TanStack Table v9).
  * Rendered with rap/ui's `Table` parts, so it looks exactly like a static table.
+ *
+ * Delight comes from those parts (see Table.tsx): one row highlight glides
+ * between rows under the pointer, and when you sort — or a filter closes a gap —
+ * every row that survives FLIPs to its new place on the shared spring, so you can
+ * watch "Brand book" travel to the top instead of the list just being different.
+ * Rows are keyed by `getRowId` (or TanStack's index id), which is what lets a row
+ * keep its DOM node and fly. With a SoundProvider on, sorting taps and selecting a
+ * row ticks.
  */
 export function DataTable<TData extends RowData>({
   data,
@@ -93,6 +102,7 @@ export function DataTable<TData extends RowData>({
   className,
 }: DataTableProps<TData>) {
   const [globalFilter, setGlobalFilter] = useState("");
+  const sound = useSound();
 
   const allColumns: DataTableColumn<TData>[] = selectable
     ? [
@@ -108,7 +118,10 @@ export function DataTable<TData extends RowData>({
               checked={
                 table.getIsAllPageRowsSelected() ? true : table.getIsSomePageRowsSelected() ? "indeterminate" : false
               }
-              onCheckedChange={(v) => table.toggleAllPageRowsSelected(v === true)}
+              onCheckedChange={(v) => {
+                sound.play("tick");
+                table.toggleAllPageRowsSelected(v === true);
+              }}
             />
           ),
           cell: ({ row }) => (
@@ -116,7 +129,10 @@ export function DataTable<TData extends RowData>({
               size="sm"
               aria-label="Select row"
               checked={row.getIsSelected()}
-              onCheckedChange={(v) => row.toggleSelected(v === true)}
+              onCheckedChange={(v) => {
+                sound.play("tick", { pitch: v === true ? 1 : 0.9 });
+                row.toggleSelected(v === true);
+              }}
             />
           ),
         },
@@ -210,7 +226,10 @@ export function DataTable<TData extends RowData>({
                       <button
                         type="button"
                         className={cx("rap-dtable__sort", sorted && "is-sorted")}
-                        onClick={col.getToggleSortingHandler()}
+                        onClick={(e) => {
+                          sound.play("tap");
+                          col.getToggleSortingHandler()?.(e);
+                        }}
                       >
                         <table.FlexRender header={header} />
                         {sorted === "asc" ? (
