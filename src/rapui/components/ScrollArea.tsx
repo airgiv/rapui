@@ -1,8 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, type ComponentPropsWithoutRef, type ElementRef } from "react";
 import { ScrollArea as ScrollAreaPrimitive } from "radix-ui";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { createSpring, isCalm } from "./ProductTabs";
-import "./ScrollArea.css";
 
 export interface ScrollAreaProps extends ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {
   /** Which scrollbars to render. Default "vertical". */
@@ -117,13 +116,30 @@ export const ScrollArea = forwardRef<ElementRef<typeof ScrollAreaPrimitive.Root>
   }, [orientation]);
 
   return (
-    <ScrollAreaPrimitive.Root ref={root} type={type} className={cx("rap-scroll", className)} {...rest}>
-      <ScrollAreaPrimitive.Viewport ref={viewport} className={cx("rap-scroll__viewport", viewportClassName)}>
+    <ScrollAreaPrimitive.Root
+      ref={root}
+      type={type}
+      data-slot="scroll-area"
+      className={cn(
+        // --sc-inset keeps the thumb clear of rounded corners
+        "group/scroll relative overflow-hidden [--sc-size:6px] [--sc-pad:3px] [--sc-inset:10px]",
+        className,
+      )}
+      {...rest}
+    >
+      <ScrollAreaPrimitive.Viewport
+        ref={viewport}
+        data-slot="scroll-area-viewport"
+        className={cn(
+          "size-full rounded-[inherit] focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+          viewportClassName,
+        )}
+      >
         {children}
       </ScrollAreaPrimitive.Viewport>
       {orientation !== "horizontal" && <ScrollBar orientation="vertical" />}
       {orientation !== "vertical" && <ScrollBar orientation="horizontal" />}
-      <ScrollAreaPrimitive.Corner className="rap-scroll__corner" />
+      <ScrollAreaPrimitive.Corner data-slot="scroll-area-corner" className="bg-transparent" />
     </ScrollAreaPrimitive.Root>
   );
 });
@@ -132,9 +148,38 @@ export const ScrollBar = forwardRef<
   ElementRef<typeof ScrollAreaPrimitive.Scrollbar>,
   ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Scrollbar>
 >(function ScrollBar({ className, orientation = "vertical", ...rest }, ref) {
+  const vertical = orientation === "vertical";
   return (
-    <ScrollAreaPrimitive.Scrollbar ref={ref} orientation={orientation} className={cx("rap-scroll__bar", className)} {...rest}>
-      <ScrollAreaPrimitive.Thumb className="rap-scroll__thumb" />
+    <ScrollAreaPrimitive.Scrollbar
+      ref={ref}
+      orientation={orientation}
+      data-slot="scroll-area-scrollbar"
+      className={cn(
+        "group/bar flex p-(--sc-pad) touch-none select-none transition-opacity duration-(--rap-dur-fast) ease-rm data-[state=hidden]:opacity-0",
+        vertical
+          ? "w-[calc(var(--sc-size)+var(--sc-pad)*2)] h-full py-(--sc-inset)"
+          : "flex-col h-[calc(var(--sc-size)+var(--sc-pad)*2)] px-(--sc-inset)",
+        className,
+      )}
+      {...rest}
+    >
+      <ScrollAreaPrimitive.Thumb
+        data-slot="scroll-area-thumb"
+        className={cn(
+          "relative flex-1 rounded-pill",
+          // the bead you see: the ::after, so it can squash against the end it is pushed into
+          // (pivoting on that end) without fighting Radix's own translate on the thumb
+          "after:absolute after:inset-0 after:rounded-[inherit] after:bg-fill-strong",
+          "after:transition-[background-color] after:duration-(--rap-dur-fast) after:ease-rm",
+          // darker on hover; pressed-dark only once the pointer has left the bar (hover wins over it)
+          "group-hover/bar:after:bg-mute group-[:not(:hover)]/bar:active:after:bg-ink-2",
+          vertical
+            ? "after:[scale:calc(1+var(--sc-sq-y,0)*0.6)_calc(1-var(--sc-sq-y,0))] after:origin-top group-data-[squash-y=end]/scroll:after:origin-bottom"
+            : "after:[scale:calc(1-var(--sc-sq-x,0))_calc(1+var(--sc-sq-x,0)*0.6)] after:origin-left group-data-[squash-x=end]/scroll:after:origin-right",
+          // bigger hit area than the visible thumb
+          "before:absolute before:top-1/2 before:left-1/2 before:size-full before:min-w-6 before:min-h-6 before:[transform:translate(-50%,-50%)]",
+        )}
+      />
     </ScrollAreaPrimitive.Scrollbar>
   );
 });

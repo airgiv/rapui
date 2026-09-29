@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, type Ref } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, type Ref } from "react";
 import { Group, Panel, Separator, type GroupProps, type PanelProps, type SeparatorProps } from "react-resizable-panels";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { createSpring, isCalm } from "./ProductTabs";
-import "./Resizable.css";
 
 /*
  * Built on react-resizable-panels v4 (Group / Panel / Separator).
@@ -24,18 +23,31 @@ export interface ResizablePanelGroupProps extends GroupProps {
   variant?: "tiles" | "plain";
 }
 
+/* the group's orientation, so each handle knows which way its gap and grip run */
+const OrientationCtx = createContext<"horizontal" | "vertical">("horizontal");
+
 export function ResizablePanelGroup({ className, variant = "tiles", orientation = "horizontal", ...rest }: ResizablePanelGroupProps) {
   return (
-    <Group
-      orientation={orientation}
-      className={cx("rap-resizable", `rap-resizable--${orientation}`, `rap-resizable--${variant}`, className)}
-      {...rest}
-    />
+    <OrientationCtx.Provider value={orientation}>
+      <Group
+        orientation={orientation}
+        data-slot="resizable-panel-group"
+        data-variant={variant}
+        className={cn(
+          "size-full font-sans",
+          // tiles: each panel's own box (the library's inner div) is a filled, rounded surface
+          variant === "tiles" && "[&>[data-panel]>*]:rounded-pop [&>[data-panel]>*]:bg-fill",
+          className,
+        )}
+        {...rest}
+      />
+    </OrientationCtx.Provider>
   );
 }
 
+/** `className` styles the panel's content box; the outer flex item carries data-slot. */
 export function ResizablePanel({ className, ...rest }: PanelProps) {
-  return <Panel className={cx("rap-resizable__panel", className)} {...rest} />;
+  return <Panel data-slot="resizable-panel" className={className} {...rest} />;
 }
 
 export interface ResizableHandleProps extends SeparatorProps {
@@ -44,6 +56,7 @@ export interface ResizableHandleProps extends SeparatorProps {
 }
 
 export function ResizableHandle({ className, withHandle, children, elementRef, ...rest }: ResizableHandleProps) {
+  const horizontal = useContext(OrientationCtx) === "horizontal";
   const el = useRef<HTMLDivElement | null>(null);
   const sound = useSound();
   const soundRef = useRef(sound);
@@ -115,8 +128,37 @@ export function ResizableHandle({ className, withHandle, children, elementRef, .
   }, []);
 
   return (
-    <Separator elementRef={setRef} className={cx("rap-resizable__handle", className)} {...rest}>
-      {withHandle && <span className="rap-resizable__grip" aria-hidden />}
+    <Separator
+      elementRef={setRef}
+      data-slot="resizable-handle"
+      className={cn(
+        // the handle is the 4px gap between tiles; it lights up on hover and while dragging
+        "group/handle relative flex items-center justify-center flex-none outline-none",
+        "after:absolute after:rounded-pill after:bg-transparent after:transition-[background-color] after:duration-(--rap-dur-fast) after:ease-rm",
+        horizontal ? "w-tile after:inset-y-3 after:inset-x-px" : "h-tile after:inset-x-3 after:inset-y-px",
+        "data-[separator=hover]:after:bg-fill-strong data-[separator=active]:after:bg-select data-[separator=focus]:after:bg-select",
+        "data-[separator=disabled]:pointer-events-none",
+        className,
+      )}
+      {...rest}
+    >
+      {withHandle && (
+        <span
+          data-slot="resizable-grip"
+          aria-hidden
+          className={cn(
+            "relative z-1 flex-none rounded-pill bg-mute",
+            "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+            "group-data-[separator=hover]/handle:bg-ink-2 group-data-[separator=active]/handle:bg-select group-data-[separator=focus]/handle:bg-select",
+            // rubber: --grip-s (0 rest … ~1 at a hard stop) is sprung from the effect above.
+            // Calm / reduced motion: the old fixed stretch while dragging, no rubber.
+            horizontal
+              ? "w-1 h-8 [scale:calc(1-var(--grip-s,0)*0.3)_calc(1+var(--grip-s,0))] calm:group-data-[separator=active]/handle:[transform:scaleY(1.25)]"
+              : "w-8 h-1 [scale:calc(1+var(--grip-s,0))_calc(1-var(--grip-s,0)*0.3)] calm:group-data-[separator=active]/handle:[transform:scaleX(1.25)]",
+            "calm:[scale:none]",
+          )}
+        />
+      )}
       {children}
     </Separator>
   );

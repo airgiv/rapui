@@ -1,8 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef, type ComponentPropsWithoutRef, type HTMLAttributes } from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "../icons";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { Glider, useActiveElement, useActiveTap } from "./ProductTabs";
-import "./Pagination.css";
 
 type Size = "sm" | "md" | "lg";
 
@@ -21,7 +20,24 @@ export const Pagination = forwardRef<HTMLElement, ComponentPropsWithoutRef<"nav"
   { className, size = "md", ...rest },
   ref,
 ) {
-  return <nav ref={ref} role="navigation" aria-label="Pagination" className={cx("rap-pager", `rap-pager--${size}`, className)} {...rest} />;
+  return (
+    <nav
+      ref={ref}
+      role="navigation"
+      aria-label="Pagination"
+      data-slot="pagination"
+      data-size={size}
+      className={cn(
+        // --pg-h: every page number is a circle of this size (a pill once it holds more)
+        "group/pager font-sans",
+        size === "sm" && "[--pg-h:var(--rap-control-h-sm)]",
+        size === "md" && "[--pg-h:40px]",
+        size === "lg" && "[--pg-h:var(--rap-control-h)]",
+        className,
+      )}
+      {...rest}
+    />
+  );
 });
 
 export const PaginationContent = forwardRef<HTMLUListElement, ComponentPropsWithoutRef<"ul">>(function PaginationContent(
@@ -30,11 +46,19 @@ export const PaginationContent = forwardRef<HTMLUListElement, ComponentPropsWith
 ) {
   const list = useRef<HTMLUListElement>(null);
   useImperativeHandle(ref, () => list.current as HTMLUListElement);
-  const active = useActiveElement(list, ".rap-pager__link[data-active]", ["data-active"]);
-  useActiveTap(list, active, ".rap-pager__link:not(.rap-pager__step)");
+  // prev/next carry their own data-slot, so "pagination-link" is the page numbers only
+  const active = useActiveElement(list, '[data-slot="pagination-link"][data-active]', ["data-active"]);
+  useActiveTap(list, active, '[data-slot="pagination-link"]');
   return (
-    <ul ref={list} className={cx("rap-pager__list", className)} data-glide={active ? "" : undefined} {...rest}>
-      <Glider as="li" container={list} target={active} className="rap-pager__glider" />
+    <ul
+      ref={list}
+      data-slot="pagination-content"
+      className={cn("group/pglist relative isolate flex flex-wrap items-center gap-tight m-0 p-0 list-none", className)}
+      data-glide={active ? "" : undefined}
+      {...rest}
+    >
+      {/* the travelling ink pill; the active link goes clear and lets it show through */}
+      <Glider as="li" container={list} target={active} className="-z-1 rounded-pill bg-ink" />
       {children}
     </ul>
   );
@@ -44,7 +68,7 @@ export const PaginationItem = forwardRef<HTMLLIElement, ComponentPropsWithoutRef
   { className, ...rest },
   ref,
 ) {
-  return <li ref={ref} className={cx("rap-pager__item", className)} {...rest} />;
+  return <li ref={ref} data-slot="pagination-item" className={cn("inline-flex", className)} {...rest} />;
 });
 
 export interface PaginationLinkProps extends ComponentPropsWithoutRef<"a"> {
@@ -75,7 +99,16 @@ export const PaginationLink = forwardRef<HTMLAnchorElement, PaginationLinkProps>
           e.currentTarget.click();
         }
       }}
-      className={cx("rap-pager__link", className)}
+      data-slot="pagination-link"
+      className={cn(
+        "inline-flex items-center justify-center gap-[0.3rem] min-w-(--pg-h) h-(--pg-h) px-2 rounded-pill bg-fill text-ink",
+        "text-[0.9375rem] group-data-[size=sm]/pager:text-[0.875rem] font-medium tabular-nums tracking-[-0.01em] no-underline",
+        "cursor-pointer select-none transition-[background-color,color] duration-(--rap-dur-fast) ease-rm",
+        "hover:not-data-active:bg-fill-hover focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+        "data-active:bg-ink data-active:text-paper group-data-glide/pglist:data-active:bg-transparent",
+        "aria-disabled:opacity-40 aria-disabled:pointer-events-none [&_svg]:size-[18px] [&_svg]:flex-none",
+        className,
+      )}
       {...rest}
     />
   );
@@ -84,7 +117,13 @@ export const PaginationLink = forwardRef<HTMLAnchorElement, PaginationLinkProps>
 export const PaginationPrevious = forwardRef<HTMLAnchorElement, PaginationLinkProps & { label?: string }>(
   function PaginationPrevious({ className, label = "Previous", children, ...rest }, ref) {
     return (
-      <PaginationLink ref={ref} aria-label="Go to previous page" className={cx("rap-pager__step", "rap-pager__step--prev", className)} {...rest}>
+      <PaginationLink
+        ref={ref}
+        aria-label="Go to previous page"
+        data-slot="pagination-previous"
+        className={cn("pr-4 pl-[0.7rem]", className)}
+        {...rest}
+      >
         <ChevronLeft aria-hidden />
         {children ?? (label ? <span>{label}</span> : null)}
       </PaginationLink>
@@ -97,7 +136,13 @@ export const PaginationNext = forwardRef<HTMLAnchorElement, PaginationLinkProps 
   ref,
 ) {
   return (
-    <PaginationLink ref={ref} aria-label="Go to next page" className={cx("rap-pager__step", "rap-pager__step--next", className)} {...rest}>
+    <PaginationLink
+      ref={ref}
+      aria-label="Go to next page"
+      data-slot="pagination-next"
+      className={cn("pr-[0.7rem] pl-4", className)}
+      {...rest}
+    >
       {children ?? (label ? <span>{label}</span> : null)}
       <ChevronRight aria-hidden />
     </PaginationLink>
@@ -106,7 +151,12 @@ export const PaginationNext = forwardRef<HTMLAnchorElement, PaginationLinkProps 
 
 export function PaginationEllipsis({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span aria-hidden className={cx("rap-pager__ellipsis", className)} {...rest}>
+    <span
+      aria-hidden
+      data-slot="pagination-ellipsis"
+      className={cn("inline-grid place-items-center size-(--pg-h) text-mute [&_svg]:size-[18px]", className)}
+      {...rest}
+    >
       <MoreHorizontal />
     </span>
   );
@@ -150,7 +200,7 @@ export function Paginator({ page, total, onPageChange, siblings = 1, size = "md"
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious onClick={go(page - 1)} disabled={page <= 1} label={labels ? undefined : ""}
-            className={labels ? undefined : "rap-pager__step--bare"}
+            className={labels ? undefined : "p-0"}
           />
         </PaginationItem>
         {paginationRange(page, total, siblings).map((n, i) => (
@@ -166,7 +216,7 @@ export function Paginator({ page, total, onPageChange, siblings = 1, size = "md"
         ))}
         <PaginationItem>
           <PaginationNext onClick={go(page + 1)} disabled={page >= total} label={labels ? undefined : ""}
-            className={labels ? undefined : "rap-pager__step--bare"}
+            className={labels ? undefined : "p-0"}
           />
         </PaginationItem>
       </PaginationContent>

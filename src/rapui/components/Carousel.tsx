@@ -14,9 +14,8 @@ import {
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "../icons";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { Glider, createSpring, isCalm, useActiveElement } from "./ProductTabs";
-import "./Carousel.css";
 
 /*
  * Delight, one idea: the slides have weight.
@@ -194,7 +193,17 @@ export const Carousel = forwardRef<HTMLDivElement, CarouselProps>(function Carou
         role="region"
         aria-roledescription="carousel"
         onKeyDownCapture={onKey}
-        className={cx("rap-carousel", `rap-carousel--${orientation}`, className)}
+        data-slot="carousel"
+        data-orientation={orientation}
+        className={cn(
+          "relative flex flex-col gap-[0.9rem] font-sans outline-none [--car-gap:var(--rap-gap-tile)]",
+          orientation === "vertical" && "flex-row items-stretch [&>:not([data-slot=carousel-viewport])]:self-center",
+          // the lean: only while the strip moves (data-leaning), on each slide's child
+          orientation === "horizontal"
+            ? "data-leaning:[&_[data-slot=carousel-item]>*]:[transform:skewX(var(--car-lean,0deg))]"
+            : "data-leaning:[&_[data-slot=carousel-item]>*]:[transform:skewY(calc(var(--car-lean,0deg)*-1))]",
+          className,
+        )}
         {...rest}
       >
         {children}
@@ -207,10 +216,19 @@ export const CarouselContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDiv
   { className, ...rest },
   ref,
 ) {
-  const { viewportRef } = useCarousel();
+  const { viewportRef, orientation } = useCarousel();
   return (
-    <div ref={viewportRef} className="rap-carousel__viewport">
-      <div ref={ref} className={cx("rap-carousel__track", className)} {...rest} />
+    <div ref={viewportRef} data-slot="carousel-viewport" className="overflow-hidden rounded-card min-w-0 flex-1">
+      <div
+        ref={ref}
+        data-slot="carousel-content"
+        className={cn(
+          "flex",
+          orientation === "horizontal" ? "-ml-(--car-gap)" : "flex-col h-full -mt-(--car-gap)",
+          className,
+        )}
+        {...rest}
+      />
     </div>
   );
 });
@@ -220,12 +238,20 @@ export const CarouselItem = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
   { className, basis, style, ...rest },
   ref,
 ) {
+  const vertical = useContext(CarouselCtx)?.orientation === "vertical";
   return (
     <div
       ref={ref}
       role="group"
       aria-roledescription="slide"
-      className={cx("rap-carousel__item", className)}
+      data-slot="carousel-item"
+      className={cn(
+        "flex-[0_0_100%] min-w-0 min-h-0",
+        vertical ? "pt-(--car-gap)" : "pl-(--car-gap)",
+        // slide children get the round corners; calm never leans
+        "*:rounded-card calm:*:transform-none!",
+        className,
+      )}
       style={basis ? { flexBasis: basis, ...style } : style}
       {...rest}
     />
@@ -233,6 +259,13 @@ export const CarouselItem = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
 });
 
 type NavProps = ButtonHTMLAttributes<HTMLButtonElement>;
+
+const carouselNavClass = cn(
+  "inline-grid place-items-center flex-none size-control p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
+  "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),opacity_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+  "hover:bg-fill-hover active:[transform:scale(0.92)] focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+  "disabled:opacity-35 disabled:pointer-events-none [&_svg]:size-5",
+);
 
 export const CarouselPrevious = forwardRef<HTMLButtonElement, NavProps>(function CarouselPrevious({ className, children, ...rest }, ref) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel();
@@ -247,7 +280,8 @@ export const CarouselPrevious = forwardRef<HTMLButtonElement, NavProps>(function
         sound.play("tap");
         scrollPrev();
       }}
-      className={cx("rap-carousel__nav", "rap-carousel__nav--prev", className)}
+      data-slot="carousel-previous"
+      className={cn(carouselNavClass, className)}
       {...rest}
     >
       {children ?? (orientation === "horizontal" ? <ArrowLeft /> : <ArrowUp />)}
@@ -268,7 +302,8 @@ export const CarouselNext = forwardRef<HTMLButtonElement, NavProps>(function Car
         sound.play("tap");
         scrollNext();
       }}
-      className={cx("rap-carousel__nav", "rap-carousel__nav--next", className)}
+      data-slot="carousel-next"
+      className={cn(carouselNavClass, className)}
       {...rest}
     >
       {children ?? (orientation === "horizontal" ? <ArrowRight /> : <ArrowDown />)}
@@ -281,17 +316,20 @@ export const CarouselDots = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
   const { snaps, selected, scrollTo, orientation } = useCarousel();
   const box = useRef<HTMLDivElement>(null);
   useImperativeHandle(ref, () => box.current as HTMLDivElement);
-  const active = useActiveElement(box, ".rap-carousel__dot[data-active]", ["data-active"]);
+  const active = useActiveElement(box, '[data-slot="carousel-dot"][data-active]', ["data-active"]);
+  const vertical = orientation === "vertical";
   return (
     <div
       ref={box}
       role="tablist"
       aria-label="Slides"
-      className={cx("rap-carousel__dots", `rap-carousel__dots--${orientation}`, className)}
+      data-slot="carousel-dots"
+      className={cn("relative isolate flex items-center justify-center gap-1.5", vertical && "flex-col", className)}
       data-glide={active ? "" : undefined}
       {...rest}
     >
-      <Glider container={box} target={active} axis={orientation === "vertical" ? "y" : "x"} className="rap-carousel__glider" />
+      {/* the travelling ink pill; the active dot goes clear under it */}
+      <Glider container={box} target={active} axis={vertical ? "y" : "x"} className="z-1 rounded-pill bg-ink" />
       {snaps.map((_, i) => (
         <button
           key={i}
@@ -300,7 +338,19 @@ export const CarouselDots = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
           aria-selected={i === selected}
           aria-label={`Go to slide ${i + 1}`}
           data-active={i === selected || undefined}
-          className="rap-carousel__dot"
+          data-slot="carousel-dot"
+          className={cn(
+            "size-2 p-0 border-0 rounded-pill bg-fill-strong cursor-pointer hover:not-data-active:bg-mute",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            "data-active:bg-ink",
+            vertical ? "data-active:h-6" : "data-active:w-6",
+            // with the glider the dots re-lay out at once (the pill does the moving); a dot that
+            // eased its width would drag the target along mid-flight and pinch the caterpillar
+            active
+              ? "transition-[background-color] data-active:bg-transparent"
+              : "transition-[width,height,background-color]",
+            "duration-(--rap-dur-fast) ease-rm",
+          )}
           onClick={() => scrollTo(i)}
         />
       ))}

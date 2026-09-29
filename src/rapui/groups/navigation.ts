@@ -1,4 +1,4 @@
-// Navigation & layout components. Each lives in ../components/<Name>.tsx with its own CSS.
+// Navigation & layout components. Each lives in ../components/<Name>.tsx, styled with Tailwind classes.
 export {
   Breadcrumb,
   BreadcrumbEllipsis,

@@ -1079,7 +1079,7 @@ const steps = [
                     Homepage
                   </span>
                   <CollapsibleTrigger asChild>
-                    <Button size="sm" variant="soft" icon={<ChevronDown className="rap-collapsible__chevron" />}>
+                    <Button size="sm" variant="soft" icon={<ChevronDown data-slot="collapsible-chevron" />}>
                       3 hidden
                     </Button>
                   </CollapsibleTrigger>
@@ -1097,7 +1097,7 @@ const steps = [
         },
         code: `<Collapsible>
   <CollapsibleTrigger asChild>
-    <Button size="sm" variant="soft" icon={<ChevronDown className="rap-collapsible__chevron" />}>3 hidden</Button>
+    <Button size="sm" variant="soft" icon={<ChevronDown data-slot="collapsible-chevron" />}>3 hidden</Button>
   </CollapsibleTrigger>
   <CollapsibleContent>…</CollapsibleContent>
 </Collapsible>`,
