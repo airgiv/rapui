@@ -4,5 +4,7 @@ import react from "@vitejs/plugin-react";
 // Preview site
 export default defineConfig({
   plugins: [react()],
+  // relative asset paths, so the built site works from any folder or host
+  base: "./",
   build: { outDir: "dist-site" },
 });
