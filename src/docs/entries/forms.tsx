@@ -18,6 +18,7 @@ import {
   NumberField,
   RadioGroup,
   RadioGroupItem,
+  Rating,
   REGEXP_ONLY_DIGITS,
   Textarea,
   Toggle,
@@ -252,7 +253,48 @@ function CreateProjectForm() {
   );
 }
 
+/* ── Rating ──────────────────────────────────────────── */
+const ratingControls: Control[] = [
+  { type: "number", prop: "max", min: 3, max: 10, default: 5 },
+  { type: "number", prop: "size", min: 16, max: 64, step: 4, default: 40, codeDefault: 32 },
+  { type: "select", prop: "color", options: ["ink", "flame", "blue", "acid"], default: "flame", codeDefault: "ink" },
+  { type: "boolean", prop: "allowClear", label: "click again to clear", default: true },
+  { type: "boolean", prop: "readOnly", default: false },
+  { type: "boolean", prop: "disabled", default: false },
+];
+const RATING_TONE: Record<string, string> = { ink: "text-ink", flame: "text-flame", blue: "text-blue", acid: "text-acid" };
+
 export const entries: DocEntry[] = [
+  {
+    slug: "rating",
+    name: "Rating",
+    group: "Forms",
+    description:
+      "A row of big soft stars for a score. Hover previews it: stars you would add fill faintly, stars you would take away fade. Arrow keys move it, Home clears, End fills. Delight: raising the score stamps each new star in turn with a squash and a little twist, the clicked one throws sparks; lowering it drops the stars that go out.",
+    controls: ratingControls,
+    Demo: ({ p }) => {
+      const [v, setV] = useState(3);
+      return (
+        <div className="doc-stack" style={{ gap: 10, alignItems: "center" }}>
+          <Rating
+            value={v}
+            onValueChange={setV}
+            max={Number(p.max)}
+            size={Number(p.size)}
+            allowClear={Boolean(p.allowClear)}
+            readOnly={Boolean(p.readOnly)}
+            disabled={Boolean(p.disabled)}
+            className={RATING_TONE[String(p.color)]}
+          />
+          <span style={{ opacity: 0.6 }}>{v} of {p.max}</span>
+        </div>
+      );
+    },
+    code: (p) =>
+      `import { Rating } from "rapui";
+
+<Rating defaultValue={3}${attrs(p, ratingControls, ["color"])}${p.color !== "ink" ? ` className="${RATING_TONE[String(p.color)]}"` : ""} />`,
+  },
   {
     slug: "input",
     name: "Input",
