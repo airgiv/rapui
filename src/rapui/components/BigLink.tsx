@@ -21,7 +21,7 @@ const sizes = {
 const ink = "text-ink transition-[color] duration-(--rap-dur) ease-rm group-hover/biglink:text-flame";
 
 /**
- * Giant text link — the Readymag move: a headline-sized word that turns
+ * Giant text link: a headline-sized word that turns
  * orange on hover while an arrow slides in and the row shifts.
  */
 export function BigLink({ children, meta, size = "xl", className, ...rest }: BigLinkProps) {

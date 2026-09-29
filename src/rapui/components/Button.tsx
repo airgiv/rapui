@@ -93,7 +93,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   roll?: boolean;
   /** Stretch to the full width of the container. */
   block?: boolean;
-  /** `start` puts the label at the left edge (Readymag form rows). */
+  /** `start` puts the label at the left edge (big form rows). */
   align?: "center" | "start";
   /**
    * loading — stripes run across the pill and three dots hop where the label was;
@@ -369,8 +369,8 @@ export interface ButtonGroupProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Buttons packed edge to edge with a 2px seam, the way Readymag lays out
- * its actions: a group reads as one object rather than a row of loose pills.
+ * Buttons packed edge to edge with a 2px seam: a group of actions reads as
+ * one object rather than a row of loose pills.
  */
 export function ButtonGroup({ vertical = false, fill = false, className, ...rest }: ButtonGroupProps) {
   return (

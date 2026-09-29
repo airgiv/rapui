@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Accent, Accordion, BigLink, Button, ButtonGroup, CircleButton, Display, Field, FormStack, Input, Switch } from "../../rapui";
+import { Accordion, BigLink, Button, ButtonGroup, CircleButton, Field, FormStack, Input, Switch } from "../../rapui";
 import type { StackState } from "../../rapui";
 import type { ButtonSize, ButtonVariant } from "../../rapui";
 import { FormDemo } from "../../site/demos/FormDemo";
@@ -24,7 +24,7 @@ const stackControls: Control[] = [
   { type: "boolean", prop: "liquid", default: true },
 ];
 
-/* The Readymag login, made liquid: submit sucks the fields into the button. */
+/* A login, made liquid: submit sucks the fields into the button. */
 function LoginDemo({ p }: { p: Record<string, string | number | boolean> }) {
   const [state, setState] = useState<StackState>("idle");
   const [email, setEmail] = useState("");
@@ -40,9 +40,6 @@ function LoginDemo({ p }: { p: Record<string, string | number | boolean> }) {
   };
   return (
     <div className="flex flex-col gap-6 w-[min(100%,34rem)] [contain:inline-size]">
-      <Display size="xl">
-        Log in <Accent className="text-[0.5em] tracking-[-0.02em] align-[0.35em]">or join</Accent>
-      </Display>
       <FormStack state={state} errorIndex={1} liquid={Boolean(p.liquid)} onSubmit={submit}>
         <Input
           size="hero"
@@ -116,7 +113,7 @@ export const entries: DocEntry[] = [
     name: "Form stack",
     group: "Actions",
     description:
-      "Readymag's big form: 88px pills set edge to edge, fields then the button, reading as one object — stacked or in a row. Delight: the pills are one liquid shape (a goo filter pools the notches into necks, which stay the field's colour right up to a crisp edge on the button), focus swells a field, submitting sucks the fields into the button, and an error spits them back out with the wrong one shaking.",
+      "A big form: 88px pills set edge to edge, fields then the button, reading as one object — stacked or in a row. Delight: the pills are one liquid shape (a goo filter pools the notches into necks, which stay the field's colour right up to a crisp edge on the button), focus swells a field, submitting sucks the fields into the button, and an error spits them back out with the wrong one shaking.",
     controls: stackControls,
     Demo: LoginDemo,
     examples: [
@@ -262,7 +259,7 @@ export const entries: DocEntry[] = [
     slug: "button-group",
     name: "Button group",
     group: "Actions",
-    description: "Buttons packed edge to edge with a 2px seam, so a set of actions reads as one object, the way Readymag lays them out.",
+    description: "Buttons packed edge to edge with a 2px seam, so a set of actions reads as one object.",
     controls: groupControls,
     Demo: ({ p }) => {
       const size = p.size as ButtonSize;

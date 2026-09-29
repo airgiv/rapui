@@ -35,7 +35,7 @@ const cardVariants = cva(
 
 /**
  * Airy white card with a big media slot, a short bold title and a tiny
- * caption — the Readymag feature-grid tile. Media gently zooms on hover.
+ * caption — a feature-grid tile. Media gently zooms on hover.
  */
 export function FeatureCard({ title, children, media, tone = "white", className, ...rest }: FeatureCardProps) {
   return (
