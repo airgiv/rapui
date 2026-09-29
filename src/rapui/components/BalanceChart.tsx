@@ -1,14 +1,15 @@
 /* Adapted from Bencho — https://bencho.dev — MIT licence, see
    bencho.dev/licence. Source kept as published apart from: the
-   component is renamed Balance → PullToRefresh, the stylesheet
+   component is renamed Balance → BalanceChart (it is a chart
+   card first; pull-to-refresh is one of its gestures), the stylesheet
    and sound imports below, and three notes that were silent in
    the original and now sound through rap/ui's opt-in sound
    (the scrub's `heard` block, the moment the pull arms, and the
    new reading landing) — each marked "rap/ui". The tokens its
-   CSS reads are mapped onto rap/ui's in PullToRefresh.css. */
+   CSS reads are mapped onto rap/ui's in BalanceChart.css. */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSound } from "../sound";
-import "./PullToRefresh.css";
+import "./BalanceChart.css";
 
 /* ══ elastic blocks ═══════════════════════════════════════
    Two of them here; Palette and Drop each outgrew two hundred
@@ -464,7 +465,7 @@ const SQUASH = 8;
    200px heave against a ceiling of 110. */
 const GROW = 110;
 
-export function PullToRefresh({
+export function BalanceChart({
   /* how much the pull fights back, 0..100 */
   resistance = 50,
   /* px before it commits. It was 80, which is a long way to

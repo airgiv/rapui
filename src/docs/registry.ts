@@ -7,8 +7,11 @@ import { entries as display } from "./entries/display";
 import { entries as navigation } from "./entries/navigation";
 import { entries as expressive } from "./entries/expressive";
 import { entries as scrubbers } from "./entries/scrubbers";
+import { entries as charts } from "./entries/charts";
+import { entries as chartsA } from "./entries/charts-a";
+import { entries as chartsB } from "./entries/charts-b";
 
 /** Every documented component, sorted by sidebar group then name. */
-export const ENTRIES: DocEntry[] = [...actions, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...navigation, ...expressive].sort(
+export const ENTRIES: DocEntry[] = [...actions, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...charts, ...chartsA, ...chartsB, ...navigation, ...expressive].sort(
   (a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || a.name.localeCompare(b.name),
 );

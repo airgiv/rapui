@@ -59,6 +59,8 @@
   --color-ring: var(--rap-ring);
   --color-danger: var(--rap-danger);
   --color-success: var(--rap-success);
+  --color-chart-up: var(--rap-chart-up);
+  --color-chart-down: var(--rap-chart-down);
   --color-warning: var(--rap-warning);
   --color-scrim: var(--rap-scrim);
 
