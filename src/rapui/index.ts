@@ -25,7 +25,7 @@ export type { StackState } from "./components/stackContext";
 export { Marquee } from "./components/Marquee";
 export { SplitReveal } from "./components/SplitReveal";
 export { Sticker } from "./components/Sticker";
-export type { StickerProps, StickerColor, StickerShape } from "./components/Sticker";
+export type { StickerProps, StickerColor, StickerShape, StickerHover } from "./components/Sticker";
 export { RotatingBadge } from "./components/RotatingBadge";
 export { TiltCard } from "./components/TiltCard";
 export { Field } from "./components/Field";

@@ -26,9 +26,11 @@ import {
 } from "../../rapui";
 import type { SoundName } from "../../rapui";
 import type { AccentTone, FancyIconName, FancyTone, IconComponent, StickerColor, StickerShape } from "../../rapui";
+import type { StickerHover } from "../../rapui";
+import { StickersDemo } from "../../site/demos/StickersDemo";
 import { cn } from "../../rapui/utils";
 import { attrs } from "../codegen";
-import type { Control, DocEntry } from "../types";
+import type { Control, DocEntry, Props } from "../types";
 
 /* a paper ground inside the white stage, for demos drawn on the page colour */
 const GROUND = "grid place-items-center w-full min-h-80 p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
@@ -41,7 +43,26 @@ const ICON_CELL =
   "flex flex-col items-center justify-center gap-2 h-[92px] rounded-[18px] bg-paper text-ink [&>span]:max-w-[88px] [&>span]:text-[0.6875rem] [&>span]:text-mute [&>span]:truncate";
 
 const COLORS = ["acid", "flame", "blue", "plum", "bubble", "sky", "ink", "paper"] as const;
-const SHAPES = ["pill", "circle", "tag", "burst", "star", "flower", "clover", "blob", "heart", "squircle"] as const;
+const SHAPES = [
+  "pill",
+  "label",
+  "tag",
+  "ticket",
+  "stamp",
+  "bubble",
+  "arch",
+  "burst",
+  "seal",
+  "circle",
+  "star",
+  "heart",
+  "flower",
+  "clover",
+  "blob",
+  "squircle",
+] as const satisfies readonly StickerShape[];
+/* shapes cut from a square (they want a width); the rest size to their words */
+const ROUND_SHAPES: readonly string[] = ["circle", "burst", "flower", "clover", "blob", "heart", "squircle", "star", "seal"];
 
 const typeControls: Control[] = [
   { type: "select", prop: "size", options: ["md", "lg", "xl", "xxl", "mega"], default: "xxl" },
@@ -55,7 +76,44 @@ const stickerControls: Control[] = [
   { type: "select", prop: "color", options: COLORS, default: "flame", codeDefault: "acid" },
   { type: "text", prop: "label", default: "hot drop" },
   { type: "number", prop: "rotate", min: -30, max: 30, default: -6 },
+  { type: "select", prop: "hover", label: "under the hand", options: ["auto", "wobble", "peel", "none"], default: "auto" },
+  { type: "boolean", prop: "diecut", label: "die-cut border", default: false },
+  { type: "boolean", prop: "grain", default: false },
+  { type: "boolean", prop: "flat", default: false },
+  { type: "text", prop: "ring", label: "ring text (round shapes)", default: "" },
+  { type: "select", prop: "spin", options: ["auto", "on", "ring", "off"], default: "auto" },
+  { type: "boolean", prop: "slap", label: "slap on mount", default: false },
+  { type: "boolean", prop: "dot", default: false },
 ];
+const SPIN = { auto: undefined, on: true, ring: "ring", off: false } as const;
+const spinAttr = (v: unknown) => (v === "on" ? " spin" : v === "ring" ? ' spin="ring"' : v === "off" ? " spin={false}" : "");
+
+/* one sticker from the playground's settings */
+function StickerFromProps({ p }: { p: Props }) {
+  const round = ROUND_SHAPES.includes(String(p.shape));
+  const ring = round && String(p.ring) ? String(p.ring) : undefined;
+  return (
+    <Sticker
+      /* remount on slap so flipping it on replays the landing */
+      key={p.slap ? `slap-${p.shape}-${p.color}` : "still"}
+      shape={p.shape as StickerShape}
+      color={p.color as StickerColor}
+      rotate={Number(p.rotate)}
+      hover={p.hover === "auto" ? undefined : (p.hover as StickerHover)}
+      diecut={Boolean(p.diecut)}
+      grain={Boolean(p.grain)}
+      flat={Boolean(p.flat)}
+      ring={ring}
+      spin={SPIN[p.spin as keyof typeof SPIN]}
+      slap={Boolean(p.slap)}
+      dot={Boolean(p.dot)}
+      size={round ? (ring ? "1.25rem" : "1.4rem") : "2rem"}
+      style={round ? { width: ring ? "13rem" : "11rem" } : undefined}
+    >
+      {String(p.label)}
+    </Sticker>
+  );
+}
 
 const marqueeControls: Control[] = [
   { type: "number", prop: "duration", label: "seconds per loop", min: 6, max: 60, default: 20, codeDefault: 22 },
@@ -288,40 +346,43 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     slug: "sticker",
     name: "Sticker",
     group: "Expressive",
-    description: "A rotated label that wobbles when touched. Ten soft shapes with no sharp corners, in every accent colour.",
+    description:
+      "A printed vinyl sticker in sixteen crisp cut shapes — pill, label, price tag with its string, ticket, perforated stamp, speech bubble, arch, the hot-drop burst, a scalloped seal with running text — in every accent colour plus ink and paper, with a paper finish and an optional white die-cut border. Delight: hover one and its outline morphs as the tilt flips (the circle ruffles into a scallop, the burst puffs its lobes); a label peels its corner back; slap lands it with a thump.",
     controls: stickerControls,
-    Demo: ({ p }) => {
-      const svg = !["pill", "tag"].includes(String(p.shape));
-      return (
-        <Sticker
-          shape={p.shape as StickerShape}
-          color={p.color as StickerColor}
-          rotate={Number(p.rotate)}
-          size={svg ? "1.3rem" : "2rem"}
-          style={svg ? { width: "11rem" } : undefined}
-        >
-          {String(p.label)}
-        </Sticker>
-      );
-    },
-    code: (p) => `import { Sticker } from "rapui";
+    Demo: StickerFromProps,
+    code: (p) => {
+      const round = ROUND_SHAPES.includes(String(p.shape));
+      const skip = ["label", "spin", ...(round && p.ring ? [] : ["ring"]), ...(p.hover === "auto" ? ["hover"] : [])];
+      return `import { Sticker } from "rapui";
 
-<Sticker${attrs(p, stickerControls, ["label"])}>${p.label}</Sticker>`,
+<Sticker${attrs(p, stickerControls, skip)}${spinAttr(p.spin)}>${p.label}</Sticker>`;
+    },
     examples: [
       {
-        title: "All shapes",
+        title: "Sticker board — drag them about, slap on another",
         Demo: () => (
-          <div className="doc-row" style={{ gap: "1.5rem", justifyContent: "center" }}>
+          <div className="w-full">
+            <StickersDemo />
+          </div>
+        ),
+        code: `<Sticker shape="tag" color="acid" slap>€24</Sticker>
+<Sticker shape="burst" color="flame" className="w-32">hot drop</Sticker>
+<Sticker shape="seal" color="blue" ring="limited run ✳ limited run ✳ " className="w-40">no. 7</Sticker>`,
+      },
+      {
+        title: "All shapes (hover them)",
+        Demo: () => (
+          <div className="doc-row" style={{ gap: "2rem 1.75rem", justifyContent: "center", alignItems: "center" }}>
             {SHAPES.map((s, i) => {
-              const svg = !["pill", "tag"].includes(s);
+              const round = ROUND_SHAPES.includes(s);
               return (
                 <Sticker
                   key={s}
                   shape={s}
                   color={COLORS[i % 6]}
                   rotate={i % 2 ? 6 : -6}
-                  size="1rem"
-                  style={svg ? { width: "7.5rem" } : undefined}
+                  size={round ? "1rem" : "1.15rem"}
+                  style={round ? { width: "7.5rem" } : undefined}
                 >
                   {s}
                 </Sticker>
@@ -330,6 +391,63 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
           </div>
         ),
         code: SHAPES.map((s) => `<Sticker shape="${s}">${s}</Sticker>`).join("\n"),
+      },
+      {
+        title: "Price tag, hot drop, seal",
+        Demo: () => (
+          <div className={cn(GROUND, "flex flex-wrap items-center justify-center gap-x-14 gap-y-10")}>
+            <Sticker shape="tag" color="acid" size="1.6rem" rotate={-8}>
+              €24
+            </Sticker>
+            <Sticker shape="burst" color="flame" size="1.2rem" rotate={10} className="w-36">
+              hot
+              <br />
+              drop
+            </Sticker>
+            <Sticker shape="seal" color="blue" size="1.3rem" rotate={-4} ring="limited run ✳ limited run ✳ " className="w-44">
+              no. 7
+            </Sticker>
+            <Sticker shape="circle" color="ink" size="1.8rem" rotate={0} ring="open for projects • open for projects • " spin="ring" className="w-40">
+              ✳
+            </Sticker>
+          </div>
+        ),
+        code: `<Sticker shape="tag" color="acid">€24</Sticker>
+<Sticker shape="burst" color="flame" className="w-36">hot<br />drop</Sticker>
+<Sticker shape="seal" color="blue" ring="limited run ✳ limited run ✳ " className="w-44">no. 7</Sticker>
+<Sticker shape="circle" color="ink" ring="open for projects • " spin="ring" className="w-40">✳</Sticker>`,
+      },
+      {
+        title: "Finishes: die-cut vinyl, grain, flat print, peel",
+        Demo: () => (
+          <div className={cn(GROUND, "flex flex-wrap items-center justify-center gap-x-12 gap-y-10")}>
+            <Sticker shape="star" color="bubble" diecut size="1.1rem" rotate={-10} className="w-32">
+              fave
+            </Sticker>
+            <Sticker shape="bubble" color="sky" diecut size="1.5rem" rotate={5}>
+              say hi!
+            </Sticker>
+            <Sticker shape="stamp" color="plum" grain size="1.4rem" rotate={-5}>
+              air mail
+            </Sticker>
+            <Sticker shape="ticket" color="acid" grain size="1.4rem" rotate={4}>
+              admit one
+            </Sticker>
+            <Sticker shape="label" color="paper" size="1.4rem" rotate={-3}>
+              peel me
+            </Sticker>
+            <Sticker shape="pill" color="ink" dot flat size="1.4rem" rotate={3}>
+              live
+            </Sticker>
+            <Sticker shape="heart" color="flame" diecut size="1rem" rotate={8} className="w-28">
+              ♥ it
+            </Sticker>
+          </div>
+        ),
+        code: `<Sticker shape="star" color="bubble" diecut>fave</Sticker>
+<Sticker shape="stamp" color="plum" grain>air mail</Sticker>
+<Sticker shape="label" color="paper">peel me</Sticker>  {/* hover="peel" by default */}
+<Sticker color="ink" dot flat>live</Sticker>`,
       },
     ],
   },

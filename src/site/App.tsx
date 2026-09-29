@@ -50,6 +50,7 @@ import { Floaty, HeroScene } from "./HeroScene";
 import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
 import { DialsDemo } from "./demos/DialsDemo";
+import { StickersDemo } from "./demos/StickersDemo";
 import gridLines from "./media/grid-lines.wav";
 import voiceNote from "./media/voice-note.wav";
 import reel from "./media/reel.webm";
@@ -144,7 +145,7 @@ function Hero() {
             drop into a row under the headline instead of floating over it. */}
         <div className="pointer-events-none absolute inset-0 max-[1100px]:static max-[1100px]:mt-12 max-[1100px]:flex max-[1100px]:flex-wrap max-[1100px]:gap-6 max-[1100px]:items-center">
           <Floaty depth={40} rotate={12} className="pointer-events-auto absolute right-[4%] top-[-2%] max-[1100px]:static">
-            <Sticker shape="burst" color="acid" size="clamp(0.9rem,1.3vw,1.15rem)" rotate={0} className="w-[clamp(6.5rem,10vw,9.5rem)]">
+            <Sticker shape="burst" color="acid" spin={false} size="clamp(0.9rem,1.3vw,1.15rem)" rotate={0} className="w-[clamp(6.5rem,10vw,9.5rem)]">
               {COUNT}+
               <br />
               inside
@@ -653,7 +654,7 @@ const lb = useLightbox();
         id="loud"
         title="The loud bits"
         sub="for landing pages"
-        desc="Headline links, stickers in ten soft shapes, tickers, cards that lean toward the cursor. The editorial half of the kit, for the pages people remember."
+        desc="Headline links, a board of stickers in sixteen shapes — price tags on strings, seals with running text, tickets, stamps, labels that peel — cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
         code={`import { BigLink, Sticker, TiltCard, CircleButton } from "rapui";
 
 <BigLink href="/work" meta="24 projects">Work</BigLink>
@@ -666,26 +667,7 @@ const lb = useLightbox();
             <BigLink href="#loud" meta="24 projects">Work</BigLink>
             <BigLink href="#loud" meta="→ mail">Say hello</BigLink>
           </div>
-          <div className={cn(ROW, "gap-x-12 gap-y-8")}>
-            <Sticker color="acid" size="1.5rem">fresh</Sticker>
-            <Sticker color="flame" shape="burst" className="w-32" size="1.05rem" rotate={10}>
-              hot
-              <br />
-              drop!
-            </Sticker>
-            <Sticker color="bubble" shape="circle" className="w-28" size="1.15rem" rotate={9}>
-              say
-              <br />
-              hi
-            </Sticker>
-            <Sticker color="plum" shape="flower" className="w-28" size="1.05rem" rotate={-8}>
-              new
-            </Sticker>
-            <Sticker color="sky" shape="tag" size="1.3rem" rotate={4}>
-              sale −30%
-            </Sticker>
-            <CircleButton size={150} />
-          </div>
+          <StickersDemo />
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-tile">
             {(
               [
