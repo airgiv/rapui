@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
-import { X } from "lucide-react";
+import { X } from "../icons";
 import { cx } from "../utils";
 import "./Dialog.css";
 

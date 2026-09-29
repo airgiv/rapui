@@ -1,5 +1,5 @@
 import { DayPicker, type ChevronProps, type ClassNames, type DayPickerProps } from "react-day-picker";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "../icons";
 import { cx } from "../utils";
 import "./Calendar.css";
 

@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type HTMLAttributes, type ReactNode } from "react";
 import { Slot } from "radix-ui";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronRight, MoreHorizontal } from "../icons";
 import { cx } from "../utils";
 import "./Breadcrumb.css";
 

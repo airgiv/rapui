@@ -1,7 +1,7 @@
 import { forwardRef, useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { Command } from "cmdk";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown, Search } from "../icons";
 import { cx } from "../utils";
 import "./Select.css";
 import "./Combobox.css";

@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ArrowUpRight, Command, FolderOpen, Inbox, Plus, Search, Upload } from "lucide-react";
+import { ArrowUpRight, Command, FolderOpen, Inbox, Plus, Search, Upload } from "../../rapui/icons";
 import {
   Alert,
   AspectRatio,

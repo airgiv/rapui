@@ -14,7 +14,7 @@ import {
   type ReactNode,
 } from "react";
 import { Slot } from "radix-ui";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft } from "../icons";
 import { cx } from "../utils";
 import "./Sidebar.css";
 

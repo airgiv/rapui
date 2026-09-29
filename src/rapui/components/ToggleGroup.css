@@ -5,6 +5,18 @@
   padding: 3px;
   border-radius: var(--rap-radius-pill);
   background: var(--rap-fill);
+  position: relative;
+  isolation: isolate;
+}
+/* the travelling pill (single mode) */
+.rap-tgroup__glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-ink);
+  pointer-events: none;
 }
 .rap-tgroup--sm { --tg-h: var(--rap-control-h-sm); }
 .rap-tgroup--lg { --tg-h: var(--rap-control-h-lg); }
@@ -30,6 +42,9 @@
 }
 .rap-tgroup__item:hover { background: var(--rap-fill); }
 .rap-tgroup__item[data-state="on"] { background: var(--rap-ink); color: var(--rap-paper); }
+/* with the glider, the pill is drawn by it, not by the item */
+.rap-tgroup--glide .rap-tgroup__item[data-state="on"] { background: transparent; }
+.rap-tgroup--glide .rap-tgroup__item:hover:not([data-state="on"]) { background: var(--rap-fill); }
 .rap-tgroup__item:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 1px; }
 .rap-tgroup__item:disabled { opacity: 0.4; pointer-events: none; }
 .rap-tgroup__item svg { width: 18px; height: 18px; }

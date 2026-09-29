@@ -10,7 +10,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "../icons";
 import { cx } from "../utils";
 import "./Carousel.css";
 

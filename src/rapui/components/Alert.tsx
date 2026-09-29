@@ -1,5 +1,5 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from "react";
-import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "lucide-react";
+import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "../icons";
 import { cx } from "../utils";
 import "./Alert.css";
 

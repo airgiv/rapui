@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { addDays, startOfDay } from "date-fns";
-import { AtSign, Bold, Grid3x3, Link2, Search, Strikethrough, Underline } from "lucide-react";
+import { AtSign, Bold, Grid3x3, Link2, Search, Strikethrough, Underline } from "../../rapui/icons";
 import {
   Button,
   ButtonGroup,

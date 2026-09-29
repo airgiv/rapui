@@ -21,7 +21,7 @@ import {
   type RowData,
 } from "@tanstack/react-table";
 import { DropdownMenu as MenuPrimitive } from "radix-ui";
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronLeft, ChevronRight, Columns3, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronLeft, ChevronRight, Columns3, Search } from "../icons";
 import { cx } from "../utils";
 import { Checkbox } from "./Checkbox";
 import { Input } from "./Input";

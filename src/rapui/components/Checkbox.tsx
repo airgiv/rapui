@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from "react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
-import { Check, Minus } from "lucide-react";
+import { Check, Minus } from "../icons";
 import { cx } from "../utils";
 import "./Checkbox.css";
 

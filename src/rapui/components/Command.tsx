@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes, type ReactNode } from "react";
 import { Command as CommandPrimitive } from "cmdk";
-import { Search } from "lucide-react";
+import { Search } from "../icons";
 import { cx } from "../utils";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./Dialog";
 import "./Command.css";

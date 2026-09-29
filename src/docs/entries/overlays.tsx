@@ -24,7 +24,7 @@ import {
   Trash2,
   Type,
   Users,
-} from "lucide-react";
+} from "../../rapui/icons";
 import {
   AlertDialog,
   AlertDialogAction,

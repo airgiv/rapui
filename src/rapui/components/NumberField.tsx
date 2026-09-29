@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useState, type InputHTMLAttributes, type KeyboardEvent, type ReactNode } from "react";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "../icons";
 import { clamp, cx } from "../utils";
 import "./NumberField.css";
 

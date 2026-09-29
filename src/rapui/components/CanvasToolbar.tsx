@@ -5,7 +5,7 @@
    tokens its CSS reads are mapped onto rap/ui's in
    CanvasToolbar.css. */
 import { useState } from "react";
-import { Circle, Code, Frame, MousePointer2, Slash, Spline, Square, Star, Type } from "lucide-react";
+import { Circle, Code, Frame, MousePointer2, Slash, Spline, Square, Star, Type } from "../icons";
 import "./CanvasToolbar.css";
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));

@@ -1,5 +1,5 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from "react";
-import { Check } from "lucide-react";
+import { Check } from "../icons";
 import { cx } from "../utils";
 import "./Stepper.css";
 

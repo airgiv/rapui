@@ -71,11 +71,15 @@
   stroke-width: 12;
   stroke-linejoin: round;
 }
-.rap-sticker--burst .rap-sticker__shape,
-.rap-sticker--flower .rap-sticker__shape { animation: rap-spin 24s linear infinite; }
+/* Spinning shapes turn as one piece, words included. Uses the separate
+   `rotate` property so it stacks with the tilt and hover wobble, which
+   live on `transform`. */
+.rap-sticker--burst,
+.rap-sticker--flower { animation: rap-sticker-turn 24s linear infinite; }
+@keyframes rap-sticker-turn { to { rotate: 360deg; } }
 .rap-sticker--heart .rap-sticker__label { transform: translateY(-0.2em); }
 .rap-sticker__label { position: relative; }
 @keyframes rap-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
-  .rap-sticker__shape { animation: none !important; }
+  .rap-sticker { animation: none !important; }
 }

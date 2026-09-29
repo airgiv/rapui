@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type ReactNode } from "react";
 import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "../icons";
 import { cx } from "../utils";
 import "./NavigationMenu.css";
 

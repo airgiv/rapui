@@ -1,5 +1,5 @@
 import { forwardRef, type ComponentPropsWithoutRef, type HTMLAttributes } from "react";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "../icons";
 import { cx } from "../utils";
 import "./Pagination.css";
 

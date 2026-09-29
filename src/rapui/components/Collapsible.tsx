@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from "react";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "../icons";
 import { cx } from "../utils";
 import "./Collapsible.css";
 

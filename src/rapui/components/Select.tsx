@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from "react";
 import { Select as SelectPrimitive } from "radix-ui";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "../icons";
 import { cx } from "../utils";
 import "./Select.css";
 

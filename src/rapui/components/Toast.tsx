@@ -1,5 +1,5 @@
 import { Toaster as Sonner, toast, type ToasterProps as SonnerProps } from "sonner";
-import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "lucide-react";
+import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "../icons";
 import { cx } from "../utils";
 import { Spinner } from "./Spinner";
 import "./Toast.css";

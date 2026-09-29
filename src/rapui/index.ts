@@ -1,10 +1,14 @@
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/surfaces.css";
+import "./styles/motion.css";
 
 export { cx } from "./utils";
 export { useInView } from "./hooks/useInView";
 export { useMagnetic } from "./hooks/useMagnetic";
+export { useSpring, useSpringLag } from "./hooks/useSpring";
+export { useGlide } from "./hooks/useGlide";
+export { useReplay } from "./hooks/useReplay";
 
 export { Display, Accent, Eyebrow, Lead, Highlight } from "./components/Typography";
 export type { DisplayProps, AccentTone } from "./components/Typography";
@@ -27,6 +31,12 @@ export type { TabItem } from "./components/Tabs";
 export { Counter } from "./components/Counter";
 export { Cursor } from "./components/Cursor";
 export { Grain } from "./components/Grain";
+
+// icons: thin technical set (Phosphor Light) as a namespace, fancy Solar duotone
+export * as icons from "./icons";
+export type { IconComponent, IconProps } from "./icons";
+export { FancyIcon, FANCY_ICONS } from "./components/FancyIcon";
+export type { FancyIconName, FancyIconProps, FancyTone, SolarIcon } from "./components/FancyIcon";
 export { BigLink } from "./components/BigLink";
 export { FeatureCard } from "./components/FeatureCard";
 export { Checklist } from "./components/Checklist";

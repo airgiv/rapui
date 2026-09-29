@@ -2,7 +2,7 @@ import { forwardRef, useState, type ComponentPropsWithoutRef, type ReactNode } f
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { format as formatDate } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays } from "../icons";
 import { cx } from "../utils";
 import { Calendar, type CalendarProps } from "./Calendar";
 import "./Select.css";

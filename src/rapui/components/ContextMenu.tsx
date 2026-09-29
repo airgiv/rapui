@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes } from "react";
 import { ContextMenu as ContextMenuPrimitive } from "radix-ui";
-import { Check, ChevronRight } from "lucide-react";
+import { Check, ChevronRight } from "../icons";
 import { cx } from "../utils";
 import type { MenuItemExtras } from "./DropdownMenu";
 import "./DropdownMenu.css";

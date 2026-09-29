@@ -22,7 +22,7 @@ import {
   Sparkles,
   Type,
   Users,
-} from "lucide-react";
+} from "../../rapui/icons";
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
