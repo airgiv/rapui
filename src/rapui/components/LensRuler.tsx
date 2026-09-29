@@ -232,13 +232,18 @@ export const LensRuler = forwardRef<HTMLDivElement, LensRulerProps>(function Len
       style={{ ...style, ["--lens-h" as string]: `${height}px` } as CSSProperties}
       {...rest}
     >
-      <div data-slot="lens-ruler-read" className="flex flex-col justify-center gap-1.5 min-w-0">
+      {/* the reading absorbs any width the ruler is given beyond its
+          own, so a ruler given a width (w-full, w-72…) keeps its scale
+          in one place while the figure and a hint of changing length
+          update beside it — the hint wraps instead of pushing. Left to
+          size itself (inline-flex) it stays as wide as its content. */}
+      <div data-slot="lens-ruler-read" className="flex flex-1 flex-col justify-center gap-1.5 min-w-0">
         {label && <span className="text-[0.8125rem] font-medium tracking-[-0.01em] text-mute">{label}</span>}
         <span data-slot="lens-ruler-figure" className="flex items-start text-[44px] font-medium leading-none tracking-[-0.045em] tabular-nums">
           <RollingNumber text={text} />
           {unit && <span className="text-[0.55em] mt-[0.1em] ml-0.5 text-mute tracking-[-0.02em]">{unit}</span>}
         </span>
-        {hint && <span data-slot="lens-ruler-hint" className="text-[0.8125rem] font-medium tracking-[-0.01em] text-ink-2">{hint}</span>}
+        {hint && <span data-slot="lens-ruler-hint" className="text-[0.8125rem] font-medium tracking-[-0.01em] text-ink-2 text-pretty">{hint}</span>}
       </div>
       <div
         ref={rulerRef}

@@ -22,12 +22,27 @@ import { RollingNumber, isCalm } from "./ScrubNumber";
 
    ── A COMB THROUGH GRASS ────────────────────────────────
    The handle does not slide over the ticks, it parts them. The
-   ticks beside it lean away from where it is going, by how far
-   the handle's spring trails the hand — which is its speed, near
-   enough — on a falloff of about four ticks. Drag briskly and a
-   bow wave runs ahead of it; stop, and the spring catches up, the
-   lag goes to zero and the ticks stand up again on their own.
-   That is the one spring here (Bencho's, tune 50, in px).
+   ticks beside it lean away from where it is going, and step
+   aside to let it through, both by how far the handle's spring
+   trails the hand — which is its speed, near enough — on a
+   falloff of about four ticks. Drag briskly and a bow wave runs
+   ahead of it; stop, and the spring catches up, the lag goes to
+   exactly zero and every tick is back upright on its own even
+   slot. That is the one spring here (Bencho's, tune 50, in px).
+
+   ── AT REST THE COMB IS EVEN, WHATEVER THE VALUE ────────
+   Nothing about the resting row depends on where the handle
+   sits between two ticks: the parting is scaled by the lag, so it
+   is zero at rest, and its shape is a smooth odd curve (d·e^−d²),
+   so a tick passing under the handle glides across instead of
+   jumping 14px from one side to the other. (It used to be a
+   fixed push, sign(d)·7px, that stayed on at rest: every small
+   drag left the neighbours squeezed into a different uneven
+   pattern.) The one tick the handle covers simply steps out —
+   hidden while it is within 5px (half the handle, half a tick,
+   1px of air) — and the spacing, positions and heights land on
+   whole device pixels so every 2px tick renders equally crisp and
+   every gap is the same.
 
    ── A CENTRE NOTCH, LIKE A PAN POT ──────────────────────
    Even is the one split people aim for, so it is sticky: within
@@ -54,7 +69,7 @@ export interface SplitSliderProps extends Omit<HTMLAttributes<HTMLDivElement>, "
   step?: number;
   /** Names of the two sides. */
   labels?: [ReactNode, ReactNode];
-  /** Ticks in the row. */
+  /** Ticks in the row (fewer on a narrow row: they stay at least 10px apart). */
   ticks?: number;
   /** Stick at 50/50. */
   centerDetent?: boolean;
@@ -164,23 +179,38 @@ export const SplitSlider = forwardRef<HTMLDivElement, SplitSliderProps>(function
   };
 
   /* ── the drawing ───────────────────────────────────────── */
-  const gap = w / ticks;
+  const dpr = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
+  const px = (v: number) => Math.round(v * dpr) / dpr;
+  /* a whole number of device pixels between ticks, the comb centred
+     in the row: rounding each tick instead would alternate 17/18px */
+  /* and never closer than 10px: the 6px handle needs one clear slot,
+     so a narrow row drops ticks rather than turning into a barcode */
+  const n = clamp(Math.floor(w / 10), 2, ticks);
+  const gap = Math.max(1, Math.floor((w / n) * dpr)) / dpr;
+  const inset = px((w - gap * n) / 2);
   const lean = clamp(lag * 0.9, -16, 16);
-  const lines = Array.from({ length: ticks }, (_, i) => {
-    const x = (i + 0.5) * gap;
-    const left = x < at;
+  /* 0 at rest, 1 once the handle trails the hand by 6px or more */
+  const part = clamp(Math.abs(lag) / 6, 0, 1);
+  const lines = Array.from({ length: n }, (_, i) => {
+    const slot = inset + (i + 0.5) * gap;
+    const left = slot < at;
     /* the ramp: 0 at its own end, 1 against the handle */
-    const f = left ? x / Math.max(1, at) : (w - x) / Math.max(1, w - at);
-    const d = (x - at) / gap;
+    const f = left ? slot / Math.max(1, at) : (w - slot) / Math.max(1, w - at);
+    const d = (slot - at) / gap;
     const near = Math.exp(-Math.pow(d / 4, 2));
-    /* the handle needs room: the two ticks either side step back */
-    const push = Math.sign(d || 1) * 7 * Math.exp(-Math.pow(d / 1.2, 2));
+    /* stepping aside while it moves: a smooth odd bump that peaks at
+       ±6px a tick and a bit from the handle, and is 0 at rest */
+    const u = d / 1.2;
+    const x = px(slot + part * 6 * u * Math.exp((1 - u * u) / 2));
+    const r = lean * near;
     return {
       i,
-      x: x + push,
+      x,
       left,
-      h: 0.3 + 0.7 * clamp(f, 0, 1),
-      r: lean * near,
+      /* under the handle: out of the way */
+      hidden: Math.abs(x - at) < 5,
+      h: px(40 * (0.3 + 0.7 * clamp(f, 0, 1))),
+      r: Math.abs(r) < 0.05 ? 0 : r,
     };
   });
   const right = 100 - current;
@@ -237,8 +267,9 @@ export const SplitSlider = forwardRef<HTMLDivElement, SplitSliderProps>(function
             data-slot="split-slider-tick"
             data-side={t.left ? "left" : "right"}
             /* grows up from the baseline, leans from its foot */
-            className="absolute bottom-[6px] -ml-px w-[2px] h-[40px] rounded-full origin-bottom bg-ink data-[side=left]:opacity-90 data-[side=right]:bg-flame"
-            style={{ left: t.x, transform: `rotate(${t.r.toFixed(2)}deg) scaleY(${t.h.toFixed(3)})` }}
+            data-hidden={t.hidden || undefined}
+            className="absolute bottom-[6px] -ml-px w-[2px] rounded-full origin-bottom bg-ink data-[side=left]:opacity-90 data-[side=right]:bg-flame data-[hidden]:opacity-0"
+            style={{ left: t.x, height: t.h, transform: t.r ? `rotate(${t.r.toFixed(2)}deg)` : undefined }}
             aria-hidden="true"
           />
         ))}

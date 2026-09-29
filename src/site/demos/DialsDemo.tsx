@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { RangeDial, TimeScrubber } from "../../rapui";
-import { DateScrubber, ElasticSlider, HueRing, Knob, LensRuler, SplitSlider, TempoDial, hueName } from "../../rapui/groups/scrubbers";
-import { Volume1, Volume2 } from "../../rapui/icons";
+import { DateScrubber, HueRing, LensRuler, SplitSlider, TempoDial, hueName } from "../../rapui/groups/scrubbers";
 import { cn } from "../../rapui/utils";
 
 /* ══ Dials demo — "Plan the night" ════════════════════════
@@ -9,7 +8,7 @@ import { cn } from "../../rapui/utils";
    same night: which night (the date ruler), lights out (the time
    ruler), how long to sleep (the range dial), the room (the lens
    ruler, as a thermostat), the lamp (the hue ring), the lullaby
-   (the tempo dial) and the noise (the split, the volume, the fade).
+   (the tempo dial) and the noise (the split: rain against brown).
 
    ── A BENTO, NOT A ROW ──────────────────────────────────
    White cards of different sizes on the paper ground, 4px apart
@@ -24,7 +23,14 @@ import { cn } from "../../rapui/utils";
    The last card is the only dark one: it reads the whole desk back
    as one sentence, and its lamp takes the ring's hue and flashes
    on every beat of the tempo dial. The thermostat names its zone
-   as it moves. Nothing else is linked — the story is the link. */
+   as it moves. Nothing else is linked — the story is the link.
+
+   ── THE THERMOSTAT HOLDS STILL ──────────────────────────
+   Its zone caption changes length as you drag ("Cosy" → "Cool,
+   best for deep sleep"). The ruler is given a fixed width (18rem,
+   or the card's, whichever is less), and LensRuler lets its
+   reading column take the slack, so the caption only ever changes
+   the text column — the scale never slides sideways. */
 
 const CARD = "relative flex flex-col gap-4 min-w-0 p-3 @min-[26rem]/card:p-5 rounded-card bg-surface text-ink";
 
@@ -64,8 +70,6 @@ export function DialsDemo() {
   const [hue, setHue] = useState(62);
   const [bpm, setBpm] = useState(68);
   const [mix, setMix] = useState(60);
-  const [vol, setVol] = useState(35);
-  const [fade, setFade] = useState(30);
   const [beat, setBeat] = useState(0);
 
   const lamp = `oklch(0.72 0.15 ${hue})`;
@@ -92,7 +96,18 @@ export function DialsDemo() {
           className="@min-[44rem]:col-[2] @min-[44rem]:row-[2] @min-[62rem]:col-[3] @min-[62rem]:row-[1/3]"
         >
           <div className="grid place-items-center flex-1">
-            <LensRuler label="Room" unit="°" min={15} max={25} step={0.5} value={temp} onValueChange={setTemp} height={300} hint={zone(temp)} />
+            <LensRuler
+              label="Room"
+              unit="°"
+              min={15}
+              max={25}
+              step={0.5}
+              value={temp}
+              onValueChange={setTemp}
+              height={300}
+              hint={zone(temp)}
+              className="w-full max-w-[18rem]"
+            />
           </div>
         </Card>
 
@@ -131,17 +146,9 @@ export function DialsDemo() {
           </div>
         </Card>
 
-        <Card title="Noise" aside="Mix, level, fade" className="@min-[44rem]:col-[1/3] @min-[44rem]:row-[5] @min-[62rem]:col-[1/3] @min-[62rem]:row-[4]">
-          <div className="@container/mix">
-            <div className="grid gap-6 @min-[34rem]/mix:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] @min-[34rem]/mix:gap-8 items-center px-1 pb-1">
-              <SplitSlider aria-label="Noise mix" labels={["Rain", "Brown noise"]} value={mix} onValueChange={setMix} />
-              <div className="flex items-center gap-5 min-w-0">
-                <div className="flex-1 min-w-0 pt-7">
-                  <ElasticSlider aria-label="Noise volume" value={vol} onValueChange={setVol} icons={[<Volume1 />, <Volume2 />]} bubble="active" />
-                </div>
-                <Knob size="sm" label="Fade" min={0} max={60} step={5} value={fade} onValueChange={setFade} format={(v) => `${v}m`} />
-              </div>
-            </div>
+        <Card title="Noise" aside="Rain against brown" className="@min-[44rem]:col-[1/3] @min-[44rem]:row-[5] @min-[62rem]:col-[1/3] @min-[62rem]:row-[4]">
+          <div className="flex flex-col justify-center flex-1 px-1 pb-1">
+            <SplitSlider aria-label="Noise mix" labels={["Rain", "Brown noise"]} value={mix} onValueChange={setMix} ticks={52} />
           </div>
         </Card>
 
@@ -166,14 +173,8 @@ export function DialsDemo() {
             <p className="text-[1.25rem] leading-[1.3] font-medium tracking-[-0.025em] text-paper/60 text-pretty">
               Lamp <span className="text-paper">{hueName(hue).toLowerCase()}</span>, room at{" "}
               <span className="text-paper tabular-nums">{temp.toFixed(1)}°</span>,{" "}
-              <span className="text-paper tabular-nums">{mix}%</span> rain over brown noise at{" "}
-              <span className="text-paper tabular-nums">{vol}%</span>, a <span className="text-paper tabular-nums">{bpm} bpm</span> lullaby{" "}
-              {fade === 0 ? (
-                <>playing <span className="text-paper">all night</span></>
-              ) : (
-                <>fading out over <span className="text-paper tabular-nums">{fade} min</span></>
-              )}
-              .
+              <span className="text-paper tabular-nums">{mix}%</span> rain over brown noise and a{" "}
+              <span className="text-paper tabular-nums">{bpm} bpm</span> lullaby.
             </p>
           </div>
         </section>
