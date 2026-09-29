@@ -71,11 +71,10 @@ import {
   CatIcon,
   GamepadIcon,
 } from "@solar-icons/react/bold-duotone";
-import { cx } from "../utils";
+import { cn } from "../utils";
 
 /** Any Solar icon component, e.g. from "@solar-icons/react/bold-duotone". */
 export type SolarIcon = typeof RocketIcon;
-import "./FancyIcon.css";
 
 export const FANCY_ICONS = {
   "rocket": RocketIcon,
@@ -187,7 +186,14 @@ export function FancyIcon({ icon, tone = "blue", variant = "tint", size = 32, ba
   );
   return (
     <span
-      className={cx("rap-ficon", badge && "rap-ficon--badge", float && "rap-ficon--float", className)}
+      data-slot="fancy-icon"
+      className={cn(
+        "inline-grid place-items-center flex-none leading-[0]",
+        badge && "size-(--fi-size) rounded-full bg-[color-mix(in_srgb,var(--fi-tone)_14%,var(--rap-surface))] [&_svg]:size-[58%]",
+        // the idle float: same drift as the shared rap-float (6px, ±3deg over 3.2s)
+        float && "fun:animate-float",
+        className,
+      )}
       style={{ "--fi-tone": c, "--fi-size": typeof size === "number" ? `${size}px` : size, ...style } as CSSProperties}
       role={label ? "img" : undefined}
       aria-label={label}

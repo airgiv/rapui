@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Toaster as Sonner, toast, type ToasterProps as SonnerProps } from "sonner";
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "../icons";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { Spinner } from "./Spinner";
 import "./Toast.css";
 
@@ -34,12 +34,40 @@ export type ToasterProps = SonnerProps;
 
 let tiltCounter = 0;
 
+/* Toasts are rounded ink slabs (they invert in dark mode). Sonner's own stylesheet is
+   unlayered, so whatever it sets on the <li> (transition, the swipe-out animation)
+   is overridden in Toast.css; everything it leaves alone is utilities here. */
+const TOAST_CLASSES = [
+  "flex items-center gap-3 w-(--width) min-h-13 py-3 pr-3 pl-[18px] rounded-[22px] bg-ink text-paper font-sans tracking-[-0.01em]",
+  // faint ring keeps the edge visible on dark backgrounds
+  "shadow-[var(--rap-shadow-pop),0_0_0_1px_color-mix(in_srgb,var(--rap-paper)_10%,transparent)]",
+  // stacked toasts behind the front one show only their edge
+  "data-[expanded=false]:data-[front=false]:*:opacity-0",
+  "data-[type=success]:[&_[data-icon]]:text-success data-[type=error]:[&_[data-icon]]:text-danger",
+  "data-[type=warning]:[&_[data-icon]]:text-warning data-[type=info]:[&_[data-icon]]:text-sky dark:data-[type=info]:[&_[data-icon]]:text-blue",
+  // delight: a pile of stickers. Each toast keeps the tilt it was given (--rap-tilt, set once
+  // by the observer) plus the lean of the drag (--rap-lean); it lands a touch big and tilted
+  // three times as far, then settles on the overshoot (the transition lives in Toast.css).
+  // Only rotate / scale, so they stack on Sonner's transform instead of fighting it.
+  "[--rap-tilt:0deg] [--rap-lean:0deg] [rotate:calc(var(--rap-tilt)+var(--rap-lean))]",
+  "data-[mounted=false]:scale-106 data-[mounted=false]:[rotate:calc(var(--rap-tilt)*3)]",
+  "calm:rotate-none calm:scale-none motion-reduce:rotate-none motion-reduce:scale-none",
+];
+
+const BUTTON = cn(
+  "flex-none h-8 px-[0.9rem] border-0 rounded-pill [font-family:inherit] text-[0.8125rem] leading-[inherit] font-medium tracking-[-0.01em]",
+  "cursor-pointer transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm active:scale-96",
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+  // two buttons sit 2px apart, not a full toast gap
+  "[[data-button]+&]:ml-[calc(var(--rap-gap-tight)-0.75rem)]",
+);
+
 /**
  * Mount once near the root, then call `toast()` from anywhere.
  * Toasts are rounded ink slabs (they invert in dark mode) with a pill action.
  */
 export function Toaster({ className, toastOptions, icons, position = "bottom-right", gap = 8, ...rest }: ToasterProps) {
-  const cn = toastOptions?.classNames ?? {};
+  const own = toastOptions?.classNames ?? {};
   const sound = useSound();
   const soundRef = useRef(sound);
   soundRef.current = sound;
@@ -63,16 +91,18 @@ export function Toaster({ className, toastOptions, icons, position = "bottom-rig
       const type = li.getAttribute("data-type");
       soundRef.current.play(type === "success" ? "success" : type === "error" ? "error" : "pop");
     };
-    const scan = () => root.querySelectorAll<HTMLElement>(".rap-toast").forEach(adopt);
+    // Sonner owns the toast <li>s, so they carry its attribute rather than a data-slot of ours
+    const TOAST = "[data-sonner-toast]";
+    const scan = () => root.querySelectorAll<HTMLElement>(TOAST).forEach(adopt);
 
     const mo = new MutationObserver((records) => {
       for (const r of records) {
         if (r.type === "childList") {
           r.addedNodes.forEach((n) => {
-            if (n instanceof HTMLElement && n.classList.contains("rap-toast")) adopt(n);
-            else if (n instanceof HTMLElement) n.querySelectorAll<HTMLElement>(".rap-toast").forEach(adopt);
+            if (n instanceof HTMLElement && n.matches(TOAST)) adopt(n);
+            else if (n instanceof HTMLElement) n.querySelectorAll<HTMLElement>(TOAST).forEach(adopt);
           });
-        } else if (r.target instanceof HTMLElement && r.target.classList.contains("rap-toast")) {
+        } else if (r.target instanceof HTMLElement && r.target.matches(TOAST)) {
           const li = r.target;
           if (r.attributeName === "style") setLean(li);
           if (r.attributeName === "data-removed" && li.getAttribute("data-removed") === "true" && !gone.has(li)) {
@@ -94,9 +124,9 @@ export function Toaster({ className, toastOptions, icons, position = "bottom-rig
 
   return (
     // display: contents — a handle on Sonner's list for the observer, no box of its own
-    <div ref={host} className="rap-toaster-host">
+    <div ref={host} data-slot="toaster" className="contents">
       <Sonner
-        className={cx("rap-toaster", className)}
+        className={cn("[--width:372px] font-sans", className)}
         position={position}
         gap={gap}
         icons={{
@@ -112,15 +142,19 @@ export function Toaster({ className, toastOptions, icons, position = "bottom-rig
           ...toastOptions,
           unstyled: true,
           classNames: {
-            ...cn,
-            toast: cx("rap-toast", cn.toast),
-            title: cx("rap-toast__title", cn.title),
-            description: cx("rap-toast__desc", cn.description),
-            content: cx("rap-toast__content", cn.content),
-            icon: cx("rap-toast__icon", cn.icon),
-            actionButton: cx("rap-toast__btn", "rap-toast__btn--action", cn.actionButton),
-            cancelButton: cx("rap-toast__btn", "rap-toast__btn--cancel", cn.cancelButton),
-            closeButton: cx("rap-toast__close", cn.closeButton),
+            ...own,
+            toast: cn(TOAST_CLASSES, own.toast),
+            title: cn("text-[0.9375rem] font-medium leading-[1.3]", own.title),
+            description: cn("text-[0.8125rem] leading-[1.4] text-[color-mix(in_srgb,var(--rap-paper)_62%,var(--rap-ink))]", own.description),
+            content: cn("flex flex-col gap-0.5 flex-1 min-w-0", own.content),
+            icon: cn("relative grid place-items-center flex-none size-5 [&_svg]:size-5", own.icon),
+            actionButton: cn(BUTTON, "bg-paper text-ink hover:bg-paper-3", own.actionButton),
+            cancelButton: cn(BUTTON, "bg-[color-mix(in_srgb,var(--rap-paper)_14%,transparent)] text-paper", own.cancelButton),
+            closeButton: cn(
+              "absolute -top-1.5 -left-1.5 grid place-items-center size-[22px] p-0 border-0 rounded-full",
+              "bg-surface text-ink shadow-[0_0_0_1px_var(--rap-line)] cursor-pointer [&_svg]:size-3",
+              own.closeButton,
+            ),
           },
         }}
         {...rest}

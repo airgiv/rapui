@@ -23,11 +23,22 @@ import {
 import { DropdownMenu as MenuPrimitive } from "radix-ui";
 import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronLeft, ChevronRight, Columns3, Search } from "../icons";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { Checkbox } from "./Checkbox";
 import { Input } from "./Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./Table";
-import "./DataTable.css";
+
+const FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]";
+const META_TEXT = "text-[0.8125rem] font-medium tracking-[-0.01em] tabular-nums";
+/** the checkbox column hugs its content */
+const SELECT_CELL = "w-[1%] pr-1 last:pr-1 [&>*]:align-middle";
+
+const NAV = cn(
+  "inline-grid place-items-center size-control-sm p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
+  "transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-94",
+  FOCUS_RING,
+  "disabled:opacity-35 disabled:pointer-events-none [&_svg]:size-[18px]",
+);
 
 /** Per-column hints: right-align numbers, a readable name for the column menu. */
 export interface DataTableColumnMeta {
@@ -159,13 +170,14 @@ export function DataTable<TData extends RowData>({
   const total = table.getFilteredRowModel().rows.length;
 
   return (
-    <div className={cx("rap-dtable", className)}>
+    <div data-slot="data-table" className={cn("flex flex-col gap-3 w-full font-sans", className)}>
       {(filterPlaceholder !== false || columnToggle || actions) && (
-        <div className="rap-dtable__bar">
+        <div data-slot="data-table-toolbar" className="flex items-center gap-2 flex-wrap">
           {filterPlaceholder !== false && (
             <Input
               size="sm"
-              className="rap-dtable__filter"
+              data-slot="data-table-filter"
+              className="w-[min(100%,18rem)]"
               placeholder={filterPlaceholder}
               prefix={<Search />}
               value={globalFilter}
@@ -173,27 +185,38 @@ export function DataTable<TData extends RowData>({
               aria-label={filterPlaceholder}
             />
           )}
-          <div className="rap-dtable__bar-end">
+          <div className="flex items-center gap-tight ml-auto">
             {actions}
             {columnToggle && (
               <MenuPrimitive.Root>
-                <MenuPrimitive.Trigger className="rap-dtable__pill">
+                <MenuPrimitive.Trigger
+                  data-slot="data-table-columns"
+                  className={cn(
+                    "inline-flex items-center gap-[0.45rem] h-control-sm pr-4 pl-[0.85rem] border-0 rounded-pill bg-fill text-ink",
+                    "[font-family:inherit] text-[0.875rem] leading-[inherit] font-medium tracking-[-0.01em] cursor-pointer",
+                    "transition-[background-color] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover data-[state=open]:bg-fill-hover",
+                    FOCUS_RING,
+                    "[&_svg]:size-4",
+                  )}
+                >
                   <Columns3 aria-hidden /> Columns
                 </MenuPrimitive.Trigger>
                 <MenuPrimitive.Portal>
-                  <MenuPrimitive.Content align="end" sideOffset={6} className="rap-pop rap-dtable__menu">
+                  <MenuPrimitive.Content align="end" sideOffset={6} data-slot="data-table-columns-menu"
+                    className="pop min-w-48 p-1">
                     {table
                       .getAllLeafColumns()
                       .filter((c) => c.getCanHide())
                       .map((c) => (
                         <MenuPrimitive.CheckboxItem
                           key={c.id}
-                          className="rap-menu-item rap-dtable__menu-item"
+                          data-slot="data-table-columns-item"
+                          className="menu-item pl-9"
                           checked={c.getIsVisible()}
                           onCheckedChange={(v) => c.toggleVisibility(v === true)}
                           onSelect={(e) => e.preventDefault()}
                         >
-                          <MenuPrimitive.ItemIndicator className="rap-dtable__menu-check">
+                          <MenuPrimitive.ItemIndicator className="absolute left-3 inline-flex text-select">
                             <Check size={16} strokeWidth={2.5} />
                           </MenuPrimitive.ItemIndicator>
                           {c.columnDef.meta?.label ?? (typeof c.columnDef.header === "string" ? c.columnDef.header : c.id)}
@@ -219,13 +242,23 @@ export function DataTable<TData extends RowData>({
                   <TableHead
                     key={header.id}
                     data-align={align}
-                    className={cx(header.id === "select" && "rap-dtable__select")}
+                    className={cn(header.id === "select" && SELECT_CELL)}
                     aria-sort={sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : undefined}
                   >
                     {header.isPlaceholder ? null : col.getCanSort() ? (
                       <button
                         type="button"
-                        className={cx("rap-dtable__sort", sorted && "is-sorted")}
+                        data-slot="data-table-sort"
+                        data-sorted={sorted || undefined}
+                        // sortable header: the whole label is a quiet button
+                        className={cn(
+                          "inline-flex items-center gap-[0.35rem] h-7 -mx-2 px-2 border-0 rounded-pill bg-transparent",
+                          "text-inherit [font:inherit] tracking-[inherit] cursor-pointer",
+                          "transition-[background-color,color] duration-(--rap-dur-fast) ease-rm hover:bg-fill hover:text-ink",
+                          FOCUS_RING,
+                          "[&_svg]:size-3.5 [&_svg]:flex-none [[data-align=end]>&]:flex-row-reverse",
+                          sorted && "text-ink",
+                        )}
                         onClick={(e) => {
                           sound.play("tap");
                           col.getToggleSortingHandler()?.(e);
@@ -237,7 +270,7 @@ export function DataTable<TData extends RowData>({
                         ) : sorted === "desc" ? (
                           <ArrowDown aria-hidden />
                         ) : (
-                          <ArrowUpDown aria-hidden className="rap-dtable__sort-idle" />
+                          <ArrowUpDown aria-hidden className="opacity-45" />
                         )}
                       </button>
                     ) : (
@@ -257,7 +290,7 @@ export function DataTable<TData extends RowData>({
                   <TableCell
                     key={cell.id}
                     data-align={cell.column.columnDef.meta?.align}
-                    className={cx(cell.column.id === "select" && "rap-dtable__select")}
+                    className={cn(cell.column.id === "select" && SELECT_CELL)}
                   >
                     <table.FlexRender cell={cell} />
                   </TableCell>
@@ -266,7 +299,7 @@ export function DataTable<TData extends RowData>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={table.getVisibleLeafColumns().length} className="rap-dtable__empty">
+              <TableCell colSpan={table.getVisibleLeafColumns().length} className="h-[120px] text-center text-mute">
                 {empty}
               </TableCell>
             </TableRow>
@@ -274,17 +307,18 @@ export function DataTable<TData extends RowData>({
         </TableBody>
       </Table>
 
-      <div className="rap-dtable__foot">
-        <span className="rap-dtable__count">
+      <div data-slot="data-table-footer" className="flex items-center justify-between gap-4 pl-4">
+        <span data-slot="data-table-count" className={cn(META_TEXT, "text-mute")}>
           {selectable && selected > 0 ? `${selected} of ${total} selected` : `${total} ${total === 1 ? "row" : "rows"}`}
         </span>
-        <div className="rap-dtable__pager">
-          <span className="rap-dtable__page">
+        <div data-slot="data-table-pager" className="flex items-center gap-tight">
+          <span data-slot="data-table-page" className={cn(META_TEXT, "mr-3 text-ink-2")}>
             Page {Math.min(pageIndex + 1, pageCount)} of {pageCount}
           </span>
           <button
             type="button"
-            className="rap-dtable__nav"
+            data-slot="data-table-nav"
+            className={NAV}
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
             aria-label="Previous page"
@@ -293,7 +327,8 @@ export function DataTable<TData extends RowData>({
           </button>
           <button
             type="button"
-            className="rap-dtable__nav"
+            data-slot="data-table-nav"
+            className={NAV}
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
             aria-label="Next page"

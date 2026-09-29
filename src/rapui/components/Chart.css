@@ -1,112 +1,81 @@
-.rap-chart {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  font-family: var(--rap-font-sans);
-  font-variant-numeric: tabular-nums;
-}
-.rap-chart .recharts-surface { overflow: visible; }
-.rap-chart .recharts-wrapper:focus,
-.rap-chart .recharts-surface:focus { outline: none; }
+/* Chart — only the intro, which has to reach into Recharts' own SVG: component
+   keyframes, a per-bar stagger index Recharts gives us no hook for, and the
+   tooltip wrapper whose inline transition only !important can beat.
+   Layout, chrome colours, tooltip and legend are utilities in Chart.tsx.
 
-/* token-driven chrome: CSS beats the SVG presentation attributes recharts writes */
-.rap-chart .recharts-cartesian-grid line { stroke: var(--rap-line); }
-.rap-chart .recharts-cartesian-axis-tick-value,
-.rap-chart .recharts-cartesian-axis-tick-value tspan {
-  fill: var(--rap-mute);
-  font-family: var(--rap-font-sans);
-  font-size: 12px;
-  letter-spacing: -0.01em;
-}
-.rap-chart .recharts-cartesian-axis-line,
-.rap-chart .recharts-cartesian-axis-tick-line { stroke: var(--rap-line); }
-.rap-chart .recharts-tooltip-cursor { stroke: var(--rap-fill-strong); }
-.rap-chart .recharts-rectangle.recharts-tooltip-cursor { fill: var(--rap-fill); stroke: none; }
-.rap-chart .recharts-active-dot circle { stroke: var(--rap-surface); }
-.rap-chart .recharts-reference-line line { stroke: var(--rap-fill-strong); }
+   The intro plays only while the container has data-intro (set from Chart.tsx,
+   never under calm or reduced motion); the calm / reduced-motion rules below
+   also stop it if the mode changes mid-intro. */
+@layer theme, base, components, utilities;
 
-.rap-chart-tip {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 9rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 16px;
-  font-size: 0.8125rem;
-  letter-spacing: -0.01em;
-  animation: none;
-}
-.rap-chart-tip__label { font-weight: 500; color: var(--rap-ink); margin-bottom: 2px; }
-.rap-chart-tip__row { display: flex; align-items: center; gap: 0.5rem; color: var(--rap-ink-2); }
-.rap-chart-tip__swatch { flex: none; width: 8px; height: 8px; border-radius: 50%; }
-.rap-chart-tip__value { margin-left: auto; padding-left: 1rem; font-weight: 500; color: var(--rap-ink); font-variant-numeric: tabular-nums; }
+@layer components {
+  /* the pen: curves carry pathLength=1 + data-pen during the intro (set in Chart.tsx);
+     the dash offset runs 1 → 0 over 1.3s, eased in and out like a hand, the fill
+     rising in behind it */
+  [data-slot="chart"][data-intro] :is(.recharts-area-curve, .recharts-line-curve)[data-pen] {
+    stroke-dasharray: 1 1;
+    animation: rap-chart-draw 1300ms cubic-bezier(0.45, 0, 0.2, 1) both;
+  }
+  [data-slot="chart"][data-intro] .recharts-area-area { animation: rap-chart-fill 900ms 400ms var(--rap-ease-out) both; }
+  [data-slot="chart"][data-intro] :is(.recharts-area-dots, .recharts-line-dots, .recharts-label-list) { animation: rap-chart-fill 400ms 900ms both; }
 
-.rap-chart-legend { display: flex; flex-wrap: wrap; gap: 1rem; font-family: var(--rap-font-sans); font-size: 0.8125rem; font-weight: 500; color: var(--rap-ink-2); letter-spacing: -0.01em; }
-.rap-chart-legend__item { display: inline-flex; align-items: center; gap: 0.45rem; }
+  /* the springs: each bar grows from its baseline, left to right (35ms apart,
+     a second series 70ms behind), and overshoots by 10% before settling */
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle path {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: rap-chart-grow 720ms var(--rap-ease-out) both;
+    animation-delay: calc(var(--i, 0) * 35ms + var(--series, 0) * 70ms);
+  }
+  [data-slot="chart"] .recharts-bar ~ .recharts-bar { --series: 1; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(2) { --i: 1; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(3) { --i: 2; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(4) { --i: 3; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(5) { --i: 4; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(6) { --i: 5; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(7) { --i: 6; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(8) { --i: 7; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(9) { --i: 8; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(10) { --i: 9; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(11) { --i: 10; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(12) { --i: 11; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(13) { --i: 12; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(14) { --i: 13; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(15) { --i: 14; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(16) { --i: 15; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(17) { --i: 16; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(18) { --i: 17; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(19) { --i: 18; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(20) { --i: 19; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(21) { --i: 20; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(22) { --i: 21; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(23) { --i: 22; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(24) { --i: 23; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(25) { --i: 24; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(26) { --i: 25; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(27) { --i: 26; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(28) { --i: 27; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(29) { --i: 28; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(30) { --i: 29; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(31) { --i: 30; }
+  [data-slot="chart"][data-intro] .recharts-bar-rectangle:nth-child(32) { --i: 31; }
 
-/* ── delight: drawn in front of you ─────────────────────── */
-/* the pen: curves carry pathLength=1 + data-pen during the intro (set in Chart.tsx) */
-.rap-chart[data-intro] :is(.recharts-area-curve, .recharts-line-curve)[data-pen] {
-  stroke-dasharray: 1 1;
-  animation: rap-chart-draw 1300ms cubic-bezier(0.45, 0, 0.2, 1) both;
+  /* the tooltip follows on a spring instead of a plain slide */
+  [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform 420ms var(--rap-ease-spring) !important; }
+
+  [data-rap-motion="calm"] [data-slot="chart"][data-intro] * { animation: none !important; stroke-dasharray: none; }
+  [data-rap-motion="calm"] [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform var(--rap-dur-fast) var(--rap-ease-rm) !important; }
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot="chart"][data-intro] * { animation: none !important; stroke-dasharray: none; }
+    [data-slot="chart"] .recharts-tooltip-wrapper { transition: none !important; }
+  }
 }
-.rap-chart[data-intro] .recharts-area-area { animation: rap-chart-fill 900ms 400ms var(--rap-ease-out) both; }
-.rap-chart[data-intro] :is(.recharts-area-dots, .recharts-line-dots, .recharts-label-list) { animation: rap-chart-fill 400ms 900ms both; }
+
 @keyframes rap-chart-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes rap-chart-fill { from { opacity: 0; translate: 0 6px; } }
-
-/* the springs: each bar grows from its baseline, left to right, and overshoots */
-.rap-chart[data-intro] .recharts-bar-rectangle path {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: rap-chart-grow 720ms var(--rap-ease-out) both;
-  animation-delay: calc(var(--i, 0) * 35ms + var(--series, 0) * 70ms);
-}
-.rap-chart .recharts-bar ~ .recharts-bar { --series: 1; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(2) { --i: 1; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(3) { --i: 2; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(4) { --i: 3; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(5) { --i: 4; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(6) { --i: 5; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(7) { --i: 6; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(8) { --i: 7; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(9) { --i: 8; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(10) { --i: 9; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(11) { --i: 10; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(12) { --i: 11; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(13) { --i: 12; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(14) { --i: 13; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(15) { --i: 14; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(16) { --i: 15; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(17) { --i: 16; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(18) { --i: 17; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(19) { --i: 18; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(20) { --i: 19; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(21) { --i: 20; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(22) { --i: 21; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(23) { --i: 22; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(24) { --i: 23; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(25) { --i: 24; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(26) { --i: 25; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(27) { --i: 26; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(28) { --i: 27; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(29) { --i: 28; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(30) { --i: 29; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(31) { --i: 30; }
-.rap-chart[data-intro] .recharts-bar-rectangle:nth-child(32) { --i: 31; }
 @keyframes rap-chart-grow {
   0% { scale: 1 0; }
   55% { scale: 1 1.1; }
   78% { scale: 1 0.96; }
   100% { scale: 1 1; }
-}
-
-/* the tooltip follows on a spring instead of a plain slide */
-.rap-chart .recharts-tooltip-wrapper { transition: transform 420ms var(--rap-ease-spring) !important; }
-
-[data-rap-motion="calm"] .rap-chart[data-intro] * { animation: none !important; stroke-dasharray: none; }
-[data-rap-motion="calm"] .rap-chart .recharts-tooltip-wrapper { transition: transform var(--rap-dur-fast) var(--rap-ease-rm) !important; }
-@media (prefers-reduced-motion: reduce) {
-  .rap-chart[data-intro] * { animation: none !important; stroke-dasharray: none; }
-  .rap-chart .recharts-tooltip-wrapper { transition: none !important; }
 }

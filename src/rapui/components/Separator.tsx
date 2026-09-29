@@ -1,7 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef, type ComponentPropsWithoutRef, type ElementRef, type ForwardedRef, type ReactNode } from "react";
 import { Separator as SeparatorPrimitive } from "radix-ui";
-import { cx, prefersReducedMotion } from "../utils";
-import "./Separator.css";
+import { cn, prefersReducedMotion } from "../utils";
 
 /* ── Separator ─────────────────────────────────────────────
    Delight: the rule is drawn, like a pen stroke from the middle
@@ -47,6 +46,8 @@ function useDrawIn(node: { current: HTMLElement | null }) {
   }, [node]);
 }
 
+const LINE = "flex-none bg-line";
+
 export interface SeparatorProps extends ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
   /** Text in the middle of a horizontal rule, e.g. "or". */
   label?: ReactNode;
@@ -62,11 +63,34 @@ export const Separator = forwardRef<ElementRef<typeof SeparatorPrimitive.Root>, 
   const labelled = label != null && orientation === "horizontal";
 
   if (labelled) {
+    // labelled: each half grows away from the label (origin at the label side),
+    // and the label fades up as they part — the word pushes them apart
+    const half = cn(
+      LINE,
+      "flex-1 w-auto h-px",
+      "group-data-draw/sep:transition-[scale] group-data-draw/sep:duration-700 group-data-draw/sep:ease-soft",
+      "group-data-[draw=wait]/sep:scale-x-0 calm:group-data-[draw=wait]/sep:scale-none",
+    );
     return (
-      <div ref={node} className={cx("rap-separator-labelled", className)} role={decorative ? "none" : "separator"}>
-        <SeparatorPrimitive.Root ref={ref} decorative className="rap-separator rap-separator--horizontal" {...rest} />
-        <span className="rap-separator__label">{label}</span>
-        <SeparatorPrimitive.Root decorative className="rap-separator rap-separator--horizontal" />
+      <div
+        ref={node}
+        data-slot="separator-labelled"
+        className={cn("group/sep flex items-center gap-3.5 w-full", className)}
+        role={decorative ? "none" : "separator"}
+      >
+        <SeparatorPrimitive.Root ref={ref} decorative data-slot="separator" className={cn(half, "group-data-draw/sep:origin-right")} {...rest} />
+        <span
+          data-slot="separator-label"
+          className={cn(
+            "flex-none font-sans text-[0.8125rem] font-medium tracking-[-0.01em] text-mute",
+            "group-data-draw/sep:[transition:opacity_400ms_var(--rap-ease-out),scale_500ms_var(--rap-ease-spring)]",
+            "group-data-[draw=wait]/sep:opacity-0 group-data-[draw=wait]/sep:scale-80",
+            "calm:group-data-[draw=wait]/sep:opacity-100 calm:group-data-[draw=wait]/sep:scale-none",
+          )}
+        >
+          {label}
+        </span>
+        <SeparatorPrimitive.Root decorative data-slot="separator" className={cn(half, "group-data-draw/sep:origin-left")} />
       </div>
     );
   }
@@ -78,7 +102,15 @@ export const Separator = forwardRef<ElementRef<typeof SeparatorPrimitive.Root>, 
       }}
       orientation={orientation}
       decorative={decorative}
-      className={cx("rap-separator", `rap-separator--${orientation}`, className)}
+      data-slot="separator"
+      className={cn(
+        LINE,
+        orientation === "horizontal" ? "w-full h-px" : "w-px h-auto self-stretch min-h-[1em]",
+        // delight: drawn from the centre out, 700ms on the out-ease
+        "data-draw:transition-[scale] data-draw:duration-700 data-draw:ease-soft calm:data-[draw=wait]:scale-none",
+        orientation === "horizontal" ? "data-[draw=wait]:scale-x-0" : "data-[draw=wait]:scale-y-0",
+        className,
+      )}
       {...rest}
     />
   );

@@ -1,4 +1,4 @@
-// Data display & feedback. Each component lives in ../components/<Name>.tsx with its own CSS.
+// Data display & feedback. Each component lives in ../components/<Name>.tsx, styled with Tailwind utilities.
 export { Badge } from "../components/Badge";
 export type { BadgeProps, BadgeVariant } from "../components/Badge";
 export { Avatar, AvatarImage, AvatarFallback, AvatarGroup, avatarTone, initials } from "../components/Avatar";

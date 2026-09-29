@@ -1,5 +1,5 @@
 import { forwardRef, type SVGAttributes } from "react";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import "./Spinner.css";
 
 /* ── Spinner ───────────────────────────────────────────────
@@ -26,6 +26,17 @@ export interface SpinnerProps extends SVGAttributes<SVGSVGElement> {
 
 const PX = { sm: 16, md: 20, lg: 28 } as const;
 
+/* one 1s cycle for both the lap and the squish, on the same easing, so the
+   stretch always peaks exactly where the speed does (keyframes: Spinner.css).
+   Calm and reduced motion: a steady arc, turning slowly — spinning is
+   information, so it never stops. */
+const LAP = "animate-[rap-spinner-lap_1s_cubic-bezier(0.55,0.1,0.45,0.9)_infinite]";
+const SQUISH = "animate-[rap-spinner-squish_1s_cubic-bezier(0.55,0.1,0.45,0.9)_infinite]";
+const STEADY_ARC = [
+  "motion-reduce:animate-none motion-reduce:[stroke-dasharray:25_100] motion-reduce:[stroke-width:2.5px]",
+  "calm:animate-none calm:[stroke-dasharray:25_100] calm:[stroke-width:2.5px]",
+];
+
 /** A squishy dot orbiting in the current text colour. */
 export const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(function Spinner(
   { size = "md", label = "Loading", className, ...rest },
@@ -41,12 +52,20 @@ export const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(function Spinner(
       height={px}
       viewBox="0 0 24 24"
       fill="none"
-      className={cx("rap-spinner", className)}
+      data-slot="spinner"
+      className={cn(
+        "flex-none align-middle",
+        LAP,
+        "motion-reduce:animate-[rap-spinner-lap_2s_linear_infinite] calm:animate-[rap-spinner-lap_1.2s_linear_infinite]",
+        className,
+      )}
       {...rest}
     >
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.16" />
       <circle
-        className="rap-spinner__ball"
+        data-slot="spinner-ball"
+        // the ball: a dash on the orbit that stretches with speed, recentred as it grows
+        className={cn("[stroke-dasharray:0.01_100]", SQUISH, STEADY_ARC)}
         cx="12"
         cy="12"
         r="9"

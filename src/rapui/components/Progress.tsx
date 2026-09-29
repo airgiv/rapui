@@ -15,7 +15,8 @@ import {
 import { Progress as ProgressPrimitive } from "radix-ui";
 import { useSpring } from "../hooks/useSpring";
 import { useSound } from "../sound";
-import { cx, prefersReducedMotion } from "../utils";
+import { cva } from "class-variance-authority";
+import { cn, prefersReducedMotion } from "../utils";
 import "./Progress.css";
 
 /* ── Progress ──────────────────────────────────────────────
@@ -44,6 +45,24 @@ import "./Progress.css";
    SoundProvider on, reaching 100 plays "success". */
 
 export type ProgressTone = "blue" | "flame" | "ink" | "success";
+
+const TONE: Record<ProgressTone, string> = {
+  blue: "[--pg-color:var(--rap-blue)]",
+  flame: "[--pg-color:var(--rap-flame)]",
+  ink: "[--pg-color:var(--rap-ink)]",
+  success: "[--pg-color:var(--rap-success)]",
+};
+
+const progressVariants = cva(
+  // Safari clips rounded overflow correctly only on its own layer (isolate)
+  "relative w-full h-(--pg-h) overflow-hidden rounded-pill bg-fill-strong isolate",
+  {
+    variants: {
+      size: { sm: "[--pg-h:4px]", md: "[--pg-h:8px]", lg: "[--pg-h:12px]" },
+    },
+    defaultVariants: { size: "md" },
+  },
+);
 
 /** true under prefers-reduced-motion or inside data-rap-motion="calm" (kept live). */
 function useCalm(ref: RefObject<Element | null>) {
@@ -110,14 +129,19 @@ export const Progress = forwardRef<ElementRef<typeof ProgressPrimitive.Root>, Pr
       }}
       value={value}
       max={max}
-      className={cx(
-        "rap-progress",
-        `rap-progress--${size}`,
-        `rap-progress--${tone}`,
-        pct == null && "is-indeterminate",
-        !calm && pct != null && "is-liquid",
-        // two identical keyframes, alternated, so each trip to 100 replays the splat
-        splat > 0 && (splat % 2 ? "is-splat-a" : "is-splat-b"),
+      data-slot="progress"
+      data-size={size}
+      className={cn(
+        progressVariants({ size }),
+        TONE[tone],
+        // the head pokes out past the rounded end while the liquid runs
+        !calm && pct != null && "overflow-visible",
+        // the splat: the whole bar hits the wall and bulges. Two identical keyframes
+        // (Progress.css), alternated, so each trip to 100 replays it
+        splat > 0 &&
+          (splat % 2
+            ? "fun:animate-[rap-progress-splat-a_560ms_var(--rap-ease-out)]"
+            : "fun:animate-[rap-progress-splat-b_560ms_var(--rap-ease-out)]"),
         className,
       )}
       style={
@@ -131,9 +155,28 @@ export const Progress = forwardRef<ElementRef<typeof ProgressPrimitive.Root>, Pr
       }
       {...rest}
     >
-      <ProgressPrimitive.Indicator className="rap-progress__bar" style={pct == null ? undefined : { width: `${Math.min(100, shown)}%` }} />
+      <ProgressPrimitive.Indicator
+        data-slot="progress-indicator"
+        className={cn(
+          "h-full w-0 rounded-[inherit] bg-(--pg-color) transition-[width] duration-(--rap-dur) ease-soft",
+          pct == null && "w-[40%] animate-[rap-progress-sweep_1.4s_var(--rap-ease-in-out)_infinite]",
+          // the spring drives width every frame, so no CSS transition on top of it
+          !calm && pct != null && "transition-none",
+        )}
+        style={pct == null ? undefined : { width: `${Math.min(100, shown)}%` }}
+      />
       {pct != null && !calm && (
-        <span className="rap-progress__head" data-hidden={shown < 0.5 ? "" : undefined} aria-hidden />
+        <span
+          data-slot="progress-head"
+          className={cn(
+            "absolute top-0 left-(--pg-at) size-(--pg-h) ml-[calc(var(--pg-h)*-1)] rounded-full bg-(--pg-color) pointer-events-none",
+            // stretch from the back edge, so the nose leads in the direction of travel
+            "origin-[calc(50%-var(--pg-dir)*50%)_50%] [scale:var(--pg-sx)_var(--pg-sy)]",
+            "data-hidden:opacity-0",
+          )}
+          data-hidden={shown < 0.5 ? "" : undefined}
+          aria-hidden
+        />
       )}
     </ProgressPrimitive.Root>
   );
@@ -174,14 +217,22 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={value}
-      className={cx("rap-cprogress", `rap-progress--${tone}`, !calm && "is-liquid", className)}
+      data-slot="circular-progress"
+      className={cn("relative inline-grid place-items-center flex-none font-sans", TONE[tone], className)}
       style={{ width: size, height: size, fontSize: Math.max(12, size * 0.22), ...style }}
       {...rest}
     >
-      <svg key={splat} className={splat > 0 ? "is-splat" : undefined} width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-        <circle className="rap-cprogress__track" cx={size / 2} cy={size / 2} r={r} strokeWidth={thickness} />
+      <svg
+        key={splat}
+        className={cn("absolute inset-0 -rotate-90", splat > 0 && "fun:animate-[rap-splat_520ms_var(--rap-ease-out)]")}
+        width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+        <circle className="fill-none stroke-fill-strong" cx={size / 2} cy={size / 2} r={r} strokeWidth={thickness} />
         <circle
-          className="rap-cprogress__bar"
+          data-slot="circular-progress-indicator"
+          className={cn(
+            "fill-none stroke-(--pg-color) [stroke-linecap:round] transition-[stroke-dashoffset] duration-(--rap-dur) ease-soft",
+            !calm && "transition-none",
+          )}
           cx={size / 2}
           cy={size / 2}
           r={r}
@@ -191,7 +242,7 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
           opacity={shown <= 0.2 ? 0 : 1}
         />
       </svg>
-      {label !== null && <span className="rap-cprogress__label">{label ?? `${Math.round(pct)}%`}</span>}
+      {label !== null && <span data-slot="circular-progress-label" className="relative font-medium tracking-[-0.02em] text-ink tabular-nums">{label ?? `${Math.round(pct)}%`}</span>}
     </div>
   );
 });

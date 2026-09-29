@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from "react";
 import { Area, Bar, Line, ResponsiveContainer, Tooltip, type TooltipContentProps } from "recharts";
-import { cx, prefersReducedMotion } from "../utils";
+import { cn, prefersReducedMotion } from "../utils";
 import "./Chart.css";
 
 /* ── Chart ─────────────────────────────────────────────────
@@ -138,7 +138,21 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(fu
           box.current = el;
           setRef(ref, el);
         }}
-        className={cx("rap-chart", className)}
+        data-slot="chart"
+        className={cn(
+          "relative w-full min-w-0 font-sans tabular-nums",
+          "[&_.recharts-surface]:overflow-visible [&_.recharts-wrapper:focus]:outline-none [&_.recharts-surface:focus]:outline-none",
+          // token-driven chrome: CSS beats the SVG presentation attributes recharts writes
+          "[&_.recharts-cartesian-grid_line]:stroke-line",
+          "[&_.recharts-cartesian-axis-tick-value]:fill-mute [&_.recharts-cartesian-axis-tick-value]:font-sans",
+          "[&_.recharts-cartesian-axis-tick-value]:text-[12px] [&_.recharts-cartesian-axis-tick-value]:tracking-[-0.01em]",
+          "[&_.recharts-cartesian-axis-tick-value_tspan]:fill-mute [&_.recharts-cartesian-axis-tick-value_tspan]:font-sans",
+          "[&_.recharts-cartesian-axis-tick-value_tspan]:text-[12px] [&_.recharts-cartesian-axis-tick-value_tspan]:tracking-[-0.01em]",
+          "[&_:is(.recharts-cartesian-axis-line,.recharts-cartesian-axis-tick-line)]:stroke-line",
+          "[&_.recharts-tooltip-cursor]:stroke-fill-strong [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-fill [&_.recharts-rectangle.recharts-tooltip-cursor]:stroke-none",
+          "[&_.recharts-active-dot_circle]:stroke-surface [&_.recharts-reference-line_line]:stroke-fill-strong",
+          className,
+        )}
         style={{ height, ...vars, ...style } as CSSProperties}
         data-intro={intro ? "" : undefined}
         {...rest}
@@ -153,6 +167,8 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(fu
 
 export const ChartTooltip = Tooltip;
 
+const SWATCH = "flex-none size-2 rounded-full";
+
 export interface ChartTooltipContentProps extends Partial<TooltipContentProps> {
   /** Format each value, e.g. (v) => `${v} pages`. */
   valueFormatter?: (value: number | string) => ReactNode;
@@ -166,18 +182,26 @@ export function ChartTooltipContent({ active, payload, label, valueFormatter, la
   const config = useChartConfig();
   if (!active || !payload?.length) return null;
   return (
-    <div className="rap-pop rap-chart-tip">
-      {!hideLabel && label != null && <div className="rap-chart-tip__label">{labelFormatter ? labelFormatter(label) : label}</div>}
+    // the floating surface, minus its entrance: the tooltip is always there, it only moves
+    <div
+      data-slot="chart-tooltip"
+      className="pop flex flex-col gap-1 min-w-36 py-[0.6rem] px-[0.8rem] rounded-[16px] text-[0.8125rem] tracking-[-0.01em] animate-none"
+    >
+      {!hideLabel && label != null && (
+        <div data-slot="chart-tooltip-label" className="font-medium text-ink mb-0.5">
+          {labelFormatter ? labelFormatter(label) : label}
+        </div>
+      )}
       {payload.map((item) => {
         const key = String(item.dataKey ?? item.name ?? "");
         const c = config[key];
         const color = c?.color ?? item.color ?? item.stroke ?? item.fill;
         const v = item.value as number | string | undefined;
         return (
-          <div className="rap-chart-tip__row" key={key}>
-            <span className="rap-chart-tip__swatch" style={{ background: color }} />
-            <span className="rap-chart-tip__name">{c?.label ?? item.name}</span>
-            <span className="rap-chart-tip__value">{v == null ? "—" : valueFormatter ? valueFormatter(v) : v}</span>
+          <div data-slot="chart-tooltip-row" className="flex items-center gap-2 text-ink-2" key={key}>
+            <span data-slot="chart-swatch" className={SWATCH} style={{ background: color }} />
+            <span data-slot="chart-tooltip-name">{c?.label ?? item.name}</span>
+            <span data-slot="chart-tooltip-value" className="ml-auto pl-4 font-medium text-ink tabular-nums">{v == null ? "—" : valueFormatter ? valueFormatter(v) : v}</span>
           </div>
         );
       })}
@@ -193,10 +217,14 @@ export function ChartLegend({ config: own, className, ...rest }: HTMLAttributes<
   const ctx = useChartConfig();
   const config = own ?? ctx;
   return (
-    <div className={cx("rap-chart-legend", className)} {...rest}>
+    <div
+      data-slot="chart-legend"
+      className={cn("flex flex-wrap gap-4 font-sans text-[0.8125rem] font-medium text-ink-2 tracking-[-0.01em]", className)}
+      {...rest}
+    >
       {Object.entries(config).map(([key, v]) => (
-        <span className="rap-chart-legend__item" key={key}>
-          <span className="rap-chart-tip__swatch" style={{ background: v.color }} />
+        <span data-slot="chart-legend-item" className="inline-flex items-center gap-[0.45rem]" key={key}>
+          <span data-slot="chart-swatch" className={SWATCH} style={{ background: v.color }} />
           {v.label ?? key}
         </span>
       ))}

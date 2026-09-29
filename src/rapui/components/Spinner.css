@@ -1,23 +1,10 @@
-.rap-spinner {
-  flex: none;
-  vertical-align: middle;
-  animation: rap-spinner-lap 1s cubic-bezier(0.55, 0.1, 0.45, 0.9) infinite;
-}
-/* the ball: a dash on the orbit that stretches with speed, recentred as it grows */
-.rap-spinner__ball {
-  stroke-dasharray: 0.01 100;
-  animation: rap-spinner-squish 1s cubic-bezier(0.55, 0.1, 0.45, 0.9) infinite;
-}
+/* Spinner — only its own keyframes; everything else is utilities in Spinner.tsx.
+   The ball is a dash on the orbit that stretches with speed and is recentred
+   as it grows (offset = −half its length), thinning 3.2 → 2.2 to keep volume. */
+@layer theme, base, components, utilities;
+
 @keyframes rap-spinner-lap { to { rotate: 360deg; } }
 @keyframes rap-spinner-squish {
   0%, 100% { stroke-dasharray: 0.01 100; stroke-dashoffset: 0; stroke-width: 3.2px; }
   50% { stroke-dasharray: 26 100; stroke-dashoffset: 13; stroke-width: 2.2px; }
-}
-
-/* calm and reduced motion: a steady arc, turning slowly (spinning is information) */
-[data-rap-motion="calm"] .rap-spinner { animation: rap-spinner-lap 1.2s linear infinite; }
-[data-rap-motion="calm"] .rap-spinner__ball { animation: none; stroke-dasharray: 25 100; stroke-width: 2.5px; }
-@media (prefers-reduced-motion: reduce) {
-  .rap-spinner { animation: rap-spinner-lap 2s linear infinite; }
-  .rap-spinner__ball { animation: none; stroke-dasharray: 25 100; stroke-width: 2.5px; }
 }

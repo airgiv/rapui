@@ -1,92 +1,24 @@
-.rap-toaster { --width: 372px; font-family: var(--rap-font-sans); }
+/* Toast — only what must beat Sonner's own stylesheet; the look is utilities in
+   Toast.tsx (via toastOptions.classNames).
 
-.rap-toast {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: var(--width);
-  min-height: 52px;
-  padding: 12px 12px 12px 18px;
-  border-radius: 22px;
-  background: var(--rap-ink);
-  color: var(--rap-paper);
-  /* faint ring keeps the edge visible on dark backgrounds */
-  box-shadow: var(--rap-shadow-pop), 0 0 0 1px color-mix(in srgb, var(--rap-paper) 10%, transparent);
-  font-family: var(--rap-font-sans);
-  letter-spacing: -0.01em;
-}
-/* stacked toasts behind the front one show only their edge */
-.rap-toast[data-expanded="false"][data-front="false"] > * { opacity: 0; }
-.rap-toast > * { transition: opacity 400ms; }
+   Why unlayered: Sonner injects its CSS at runtime WITHOUT a layer, and unlayered
+   rules beat every @layer rule whatever their specificity. It sets `transition`
+   and the swipe-out `animation-name` on each toast, so ours must be unlayered too
+   (and specific enough — [data-slot=toaster] is our display:contents host). */
 
-.rap-toast__icon { position: relative; display: grid; place-items: center; flex: none; width: 20px; height: 20px; }
-.rap-toast__icon svg { width: 20px; height: 20px; }
-.rap-toast[data-type="success"] .rap-toast__icon { color: var(--rap-success); }
-.rap-toast[data-type="error"] .rap-toast__icon { color: var(--rap-danger); }
-.rap-toast[data-type="warning"] .rap-toast__icon { color: var(--rap-warning); }
-.rap-toast[data-type="info"] .rap-toast__icon { color: var(--rap-sky); }
-[data-rap-theme="dark"] .rap-toast[data-type="info"] .rap-toast__icon { color: var(--rap-blue); }
-
-.rap-toast__content { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-.rap-toast__title { font-size: 0.9375rem; font-weight: 500; line-height: 1.3; }
-.rap-toast__desc { font-size: 0.8125rem; line-height: 1.4; color: color-mix(in srgb, var(--rap-paper) 62%, var(--rap-ink)); }
-
-.rap-toast__btn {
-  flex: none;
-  height: 32px;
-  padding: 0 0.9rem;
-  border: 0;
-  border-radius: var(--rap-radius-pill);
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  transition: background var(--rap-dur-fast) var(--rap-ease-rm), transform var(--rap-dur-fast) var(--rap-ease-rm);
-}
-.rap-toast__btn:active { transform: scale(0.96); }
-.rap-toast__btn:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
-.rap-toast__btn--action { background: var(--rap-paper); color: var(--rap-ink); }
-.rap-toast__btn--action:hover { background: var(--rap-paper-3); }
-.rap-toast__btn--cancel { background: color-mix(in srgb, var(--rap-paper) 14%, transparent); color: var(--rap-paper); }
-.rap-toast__btn + .rap-toast__btn { margin-left: calc(var(--rap-gap-tight) - 0.75rem); }
-
-.rap-toast__close {
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--rap-surface);
-  color: var(--rap-ink);
-  box-shadow: 0 0 0 1px var(--rap-line);
-  cursor: pointer;
-}
-.rap-toast__close svg { width: 12px; height: 12px; }
-
-/* ── delight: a pile of stickers ────────────────────────── */
-.rap-toaster .rap-toast[data-sonner-toast] {
-  --rap-tilt: 0deg;
-  --rap-lean: 0deg;
-  rotate: calc(var(--rap-tilt) + var(--rap-lean));
-  /* Sonner's own transitions, plus ours */
+/* Sonner's own transitions, plus ours: rotate / scale settle on the overshoot */
+[data-slot="toaster"] [data-sonner-toaster] [data-sonner-toast] {
   transition: transform 400ms, opacity 400ms, height 400ms, box-shadow 200ms,
-    rotate 520ms var(--rap-ease-back, var(--rap-ease-spring)), scale 520ms var(--rap-ease-back, var(--rap-ease-spring));
+    rotate 520ms var(--rap-ease-back), scale 520ms var(--rap-ease-back);
 }
-/* slapped down: arrives a touch big and tilted further, settles flat on the overshoot */
-.rap-toaster .rap-toast[data-sonner-toast][data-mounted="false"] { scale: 1.06; rotate: calc(var(--rap-tilt) * 3); }
 /* while dragged it leans with the finger, no lag */
-.rap-toaster .rap-toast[data-sonner-toast][data-swiping="true"] { transition: none; }
+[data-slot="toaster"] [data-sonner-toaster] [data-sonner-toast][data-swiping="true"] { transition: none; }
+
 /* flung: flies off spinning instead of sliding */
-.rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] { animation-name: rap-toast-fling-right; animation-duration: 380ms; }
-.rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] { animation-name: rap-toast-fling-left; animation-duration: 380ms; }
-.rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] { animation-name: rap-toast-fling-down; animation-duration: 380ms; }
-.rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] { animation-name: rap-toast-fling-up; animation-duration: 380ms; }
+[data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] { animation-name: rap-toast-fling-right; animation-duration: 380ms; }
+[data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] { animation-name: rap-toast-fling-left; animation-duration: 380ms; }
+[data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] { animation-name: rap-toast-fling-down; animation-duration: 380ms; }
+[data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] { animation-name: rap-toast-fling-up; animation-duration: 380ms; }
 @keyframes rap-toast-fling-right {
   from { transform: var(--y) translateX(var(--swipe-amount-x)); opacity: 1; }
   to { transform: var(--y) translateX(calc(var(--swipe-amount-x) + 130%)) translateY(24px); rotate: 24deg; opacity: 0; }
@@ -104,12 +36,8 @@
   to { transform: var(--y) translateY(calc(var(--swipe-amount-y) - 140%)); rotate: calc(var(--rap-tilt) * -8); opacity: 0; }
 }
 
-[data-rap-motion="calm"] .rap-toaster .rap-toast[data-sonner-toast] { rotate: none; scale: none; }
-[data-rap-motion="calm"] .rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] { animation-name: swipe-out-right; animation-duration: 200ms; }
-[data-rap-motion="calm"] .rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] { animation-name: swipe-out-left; animation-duration: 200ms; }
-[data-rap-motion="calm"] .rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] { animation-name: swipe-out-down; animation-duration: 200ms; }
-[data-rap-motion="calm"] .rap-toaster .rap-toast[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] { animation-name: swipe-out-up; animation-duration: 200ms; }
-@media (prefers-reduced-motion: reduce) {
-  .rap-toaster .rap-toast[data-sonner-toast] { rotate: none; scale: none; }
-}
-.rap-toaster-host { display: contents; }
+/* calm: Sonner's plain slide back */
+[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] { animation-name: swipe-out-right; animation-duration: 200ms; }
+[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] { animation-name: swipe-out-left; animation-duration: 200ms; }
+[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] { animation-name: swipe-out-down; animation-duration: 200ms; }
+[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] { animation-name: swipe-out-up; animation-duration: 200ms; }

@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useRef, type ForwardedRef, type HTMLAttributes } from "react";
 import { useSound } from "../sound";
-import { cx } from "../utils";
-import "./Kbd.css";
+import { cva } from "class-variance-authority";
+import { cn } from "../utils";
 
 /* ── Kbd ───────────────────────────────────────────────────
    Delight: it is a real key. Press that key on your keyboard
@@ -115,6 +115,32 @@ export interface KbdProps extends HTMLAttributes<HTMLElement> {
   keyName?: string | false;
 }
 
+const kbdVariants = cva(
+  [
+    "inline-flex items-center justify-center min-w-(--kbd-h) h-(--kbd-h) px-[0.45em] rounded-[8px]",
+    "bg-fill shadow-[inset_0_-1px_0_var(--rap-fill-strong)] text-ink-2",
+    "font-sans text-[0.8125rem] font-medium leading-none tracking-[0.01em] whitespace-nowrap align-middle tabular-nums",
+    "[&_svg]:size-[1.1em]",
+    // delight: it goes down when you press the real key — lands in 60ms like contact,
+    // springs back up over 380ms; the bottom lip flattens into a shade on the top edge
+    "[transition:translate_380ms_var(--rap-ease-back),box-shadow_380ms_var(--rap-ease-out),background_var(--rap-dur-fast)_var(--rap-ease-rm)]",
+    "data-pressed:translate-y-0.5 data-pressed:bg-fill-hover data-pressed:shadow-[inset_0_1px_2px_color-mix(in_srgb,var(--rap-ink)_14%,transparent)]",
+    "data-pressed:duration-60 data-pressed:ease-soft",
+    // calm: no sink at all; reduced motion: it still darkens, but does not move
+    "calm:data-pressed:translate-none calm:data-pressed:bg-fill calm:data-pressed:shadow-[inset_0_-1px_0_var(--rap-fill-strong)]",
+    "motion-reduce:data-pressed:translate-none",
+  ],
+  {
+    variants: {
+      size: {
+        sm: "[--kbd-h:20px] text-[0.6875rem]/none rounded-[6px]",
+        md: "[--kbd-h:26px]",
+      },
+    },
+    defaultVariants: { size: "md" },
+  },
+);
+
 /** A keyboard key. Put several side by side for a chord, or use `KbdGroup`. */
 export const Kbd = forwardRef<HTMLElement, KbdProps>(function Kbd({ size = "md", keyName, className, ...rest }, ref) {
   const node = useRef<HTMLElement | null>(null);
@@ -140,7 +166,9 @@ export const Kbd = forwardRef<HTMLElement, KbdProps>(function Kbd({ size = "md",
         node.current = el;
         setRef(ref, el);
       }}
-      className={cx("rap-kbd", `rap-kbd--${size}`, className)}
+      data-slot="kbd"
+      data-size={size}
+      className={cn(kbdVariants({ size }), className)}
       {...rest}
     />
   );
@@ -148,5 +176,5 @@ export const Kbd = forwardRef<HTMLElement, KbdProps>(function Kbd({ size = "md",
 
 /** Keys of one shortcut, packed 2px apart. */
 export function KbdGroup({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cx("rap-kbd-group", className)} {...rest} />;
+  return <span data-slot="kbd-group" className={cn("inline-flex items-center gap-tight", className)} {...rest} />;
 }

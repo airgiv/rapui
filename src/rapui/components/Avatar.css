@@ -1,66 +1,7 @@
-.rap-avatar {
-  --av: 40px;
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: var(--av);
-  height: var(--av);
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--rap-fill);
-  color: var(--rap-ink);
-  font-family: var(--rap-font-sans);
-  font-size: calc(var(--av) * 0.38);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  user-select: none;
-  vertical-align: middle;
-}
-.rap-avatar--sm { --av: 28px; }
-.rap-avatar--lg { --av: 56px; }
-.rap-avatar--xl { --av: 80px; }
+/* Avatar — only the registered lift; everything else is utilities in Avatar.tsx.
+   A face's `translate` carries both the group's fan (x) and its own hover lift (y).
+   Registering --rap-av-lift as a <length> is what lets the lift transition on the
+   spring ease while the fan keeps following the JS spring frame by frame. */
+@layer theme, base, components, utilities;
 
-.rap-avatar__img { width: 100%; height: 100%; object-fit: cover; }
-.rap-avatar__fallback {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  background: var(--rap-fill-strong);
-  color: var(--rap-ink);
-}
-.rap-avatar__fallback--flame { background: var(--rap-flame); color: #ffffff; }
-.rap-avatar__fallback--blue { background: var(--rap-blue); color: #ffffff; }
-.rap-avatar__fallback--plum { background: var(--rap-plum); color: #ffffff; }
-.rap-avatar__fallback--acid { background: var(--rap-acid); color: #282828; }
-.rap-avatar__fallback--bubble { background: var(--rap-bubble); color: #282828; }
-.rap-avatar__fallback--sky { background: var(--rap-sky); color: #282828; }
-
-.rap-avatar-group { --av-ring: var(--rap-paper); display: inline-flex; align-items: center; }
-.rap-avatar-group--on-surface { --av-ring: var(--rap-surface); }
-.rap-avatar-group > .rap-avatar {
-  box-shadow: 0 0 0 2px var(--av-ring);
-  margin-left: calc(var(--av) * -0.18);
-  font-size: calc(var(--av) * 0.34);
-}
-.rap-avatar-group > .rap-avatar:first-child { margin-left: 0; }
-.rap-avatar--more {
-  background: var(--rap-paper-3);
-  color: var(--rap-ink-2);
-  font-size: calc(var(--av) * 0.32);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── delight: the hand of faces fans out ────────────────── */
-.rap-avatar-group { --fan: 0; }
-.rap-avatar-group > .rap-avatar {
-  --rap-av-lift: 0px;
-  translate: calc(var(--i, 0) * var(--av) * 0.22 * var(--fan)) var(--rap-av-lift);
-  transition: scale var(--rap-dur-fast) var(--rap-ease-back, var(--rap-ease-spring)),
-    --rap-av-lift var(--rap-dur-fast) var(--rap-ease-back, var(--rap-ease-spring));
-}
 @property --rap-av-lift { syntax: "<length>"; inherits: false; initial-value: 0px; }
-.rap-avatar-group[data-fanned] > .rap-avatar:hover { --rap-av-lift: -4px; scale: 1.08; z-index: 1; }
-[data-rap-motion="calm"] .rap-avatar-group > .rap-avatar { translate: none; scale: none; }

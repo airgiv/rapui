@@ -12,8 +12,7 @@ import {
 import { useGlide } from "../hooks/useGlide";
 import { springOf } from "../hooks/useSpring";
 import { useSound } from "../sound";
-import { cx, prefersReducedMotion } from "../utils";
-import "./Table.css";
+import { cn, prefersReducedMotion } from "../utils";
 
 /* ── Table ─────────────────────────────────────────────────
    Two physical ideas, one per verb:
@@ -79,17 +78,36 @@ export const Table = forwardRef<HTMLTableElement, HTMLAttributes<HTMLTableElemen
   return (
     <div
       ref={wrap}
-      className="rap-table-wrap"
+      data-slot="table-container"
+      className="relative isolate w-full overflow-x-auto"
       onPointerMove={(e) => track(e.target)}
       onPointerLeave={() => setOn(false)}
     >
-      <span className="rap-table__glider" style={glide.style} data-on={on && glide.ready ? "" : undefined} aria-hidden />
+      {/* delight: ONE highlight glides between rows. Calm / reduced motion: no glider,
+          rows light up on their own (see TableBody) */}
+      <span
+        data-slot="table-glider"
+        className={cn(
+          "absolute top-0 left-0 -z-1 rounded-row bg-fill pointer-events-none",
+          "opacity-0 transition-opacity duration-(--rap-dur-fast) ease-rm data-on:opacity-100",
+          "calm:hidden motion-reduce:hidden",
+        )}
+        style={glide.style}
+        data-on={on && glide.ready ? "" : undefined}
+        aria-hidden
+      />
       <table
         ref={(el) => {
           table.current = el;
           setRef(ref, el);
         }}
-        className={cx("rap-table", className)}
+        data-slot="table"
+        className={cn(
+          // separate + 0 spacing so rows can have rounded ends on hover
+          "w-full border-separate border-spacing-0 font-sans text-[0.9375rem] tracking-[-0.01em] text-ink tabular-nums",
+          "[&_[data-align=end]]:text-right",
+          className,
+        )}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
         {...rest}
@@ -102,7 +120,7 @@ export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HT
   { className, ...rest },
   ref,
 ) {
-  return <thead ref={ref} className={cx("rap-table__head", className)} {...rest} />;
+  return <thead ref={ref} data-slot="table-header" className={className} {...rest} />;
 });
 
 /* FLIP bookkeeping, per row node: where it was laid out, and the spring carrying it */
@@ -182,37 +200,87 @@ export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTML
     }
   });
 
-  return <tbody ref={assign} className={cx("rap-table__body", className)} {...rest} />;
+  return (
+    <tbody
+      ref={assign}
+      data-slot="table-body"
+      className={cn(
+        // a hovered or selected row: round its two ends and hide the hairlines around it.
+        // The glider draws the hover fill, so a hovered row's own cells stay clear —
+        // except in calm / reduced motion, where there is no glider and the row fills itself
+        "[&>tr:is(:hover,[data-state=selected])>td]:border-t-transparent [&>tr:is(:hover,[data-state=selected])+tr>td]:border-t-transparent",
+        "[&>tr:is(:hover,[data-state=selected])>td:first-child]:rounded-l-row [&>tr:is(:hover,[data-state=selected])>td:last-child]:rounded-r-row",
+        "calm:[&>tr:hover:not([data-state=selected])>td]:bg-fill motion-reduce:[&>tr:hover:not([data-state=selected])>td]:bg-fill",
+        "[&>tr[data-state=selected]>td]:bg-[color-mix(in_srgb,var(--rap-select)_9%,transparent)]",
+        className,
+      )}
+      {...rest}
+    />
+  );
 });
 
 export const TableFooter = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(function TableFooter(
   { className, ...rest },
   ref,
 ) {
-  return <tfoot ref={ref} className={cx("rap-table__foot", className)} {...rest} />;
+  return <tfoot
+      ref={ref}
+      data-slot="table-footer"
+      className={cn("[&_td]:border-t-fill-strong [&_td]:font-medium", className)}
+      {...rest}
+    />;
 });
 
 export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElement>>(function TableRow({ className, ...rest }, ref) {
-  return <tr ref={ref} className={cx("rap-table__row", className)} {...rest} />;
+  return <tr
+      ref={ref}
+      data-slot="table-row"
+      // a row in flight (FLIP) sits above its neighbours
+      className={cn("data-moving:relative data-moving:z-1", className)}
+      {...rest}
+    />;
 });
 
 export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLTableCellElement>>(function TableHead(
   { className, scope = "col", ...rest },
   ref,
 ) {
-  return <th ref={ref} scope={scope} className={cx("rap-table__th", className)} {...rest} />;
+  return <th
+      ref={ref}
+      scope={scope}
+      data-slot="table-head"
+      className={cn(
+        "h-10 px-3.5 first:pl-4 last:pr-4 text-[0.8125rem] font-medium text-mute text-left whitespace-nowrap align-middle",
+        className,
+      )}
+      {...rest}
+    />;
 });
 
 export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLTableCellElement>>(function TableCell(
   { className, ...rest },
   ref,
 ) {
-  return <td ref={ref} className={cx("rap-table__td", className)} {...rest} />;
+  return <td
+      ref={ref}
+      data-slot="table-cell"
+      className={cn(
+        "h-13 py-2 px-3.5 first:pl-4 last:pr-4 align-middle border-t border-line",
+        "transition-[background-color,border-color] duration-(--rap-dur-fast) ease-rm",
+        className,
+      )}
+      {...rest}
+    />;
 });
 
 export const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<HTMLTableCaptionElement>>(function TableCaption(
   { className, ...rest },
   ref,
 ) {
-  return <caption ref={ref} className={cx("rap-table__caption", className)} {...rest} />;
+  return <caption
+      ref={ref}
+      data-slot="table-caption"
+      className={cn("caption-bottom pt-4 px-4 pb-0 text-[0.8125rem] text-mute text-left", className)}
+      {...rest}
+    />;
 });

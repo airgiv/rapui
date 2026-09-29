@@ -16,7 +16,8 @@ import {
 import { Avatar as AvatarPrimitive } from "radix-ui";
 import { useSpring } from "../hooks/useSpring";
 import { useSound } from "../sound";
-import { cx, prefersReducedMotion } from "../utils";
+import { cva } from "class-variance-authority";
+import { cn, prefersReducedMotion } from "../utils";
 import "./Avatar.css";
 
 /* ── Avatar ────────────────────────────────────────────────
@@ -76,6 +77,50 @@ export interface AvatarProps extends ComponentPropsWithoutRef<typeof AvatarPrimi
   alt?: string;
 }
 
+const avatarVariants = cva(
+  [
+    "relative inline-grid place-items-center flex-none size-(--av) overflow-hidden rounded-full bg-fill text-ink",
+    "font-sans text-[length:calc(var(--av)*0.38)] font-medium tracking-[-0.02em] leading-none select-none align-middle",
+  ],
+  {
+    variants: {
+      size: { sm: "[--av:28px]", md: "[--av:40px]", lg: "[--av:56px]", xl: "[--av:80px]" },
+    },
+    defaultVariants: { size: "md" },
+  },
+);
+
+const fallbackVariants = cva("grid place-items-center size-full bg-fill-strong text-ink", {
+  variants: {
+    tone: {
+      none: "",
+      flame: "bg-flame text-white",
+      blue: "bg-blue text-white",
+      plum: "bg-plum text-white",
+      acid: "bg-acid text-[#282828]",
+      bubble: "bg-bubble text-[#282828]",
+      sky: "bg-sky text-[#282828]",
+    },
+  },
+  defaultVariants: { tone: "none" },
+});
+
+/* Faces inside a group (direct children only): ringed in the page colour,
+   overlapping by 18% of their size.
+   Delight: the hand of faces fans out — each face is translated i × 22% of its own
+   size × --fan (0→1 on the group's spring), so the -18% overlap opens to a 4% gap.
+   The face under the pointer lifts 4px and swells 1.08× on the spring ease; the
+   lift is a registered property (Avatar.css) so it can transition inside the
+   same `translate` that carries the fan. Calm: the stack stays stacked. */
+const GROUP_FACES = [
+  "[&>[data-slot=avatar]]:shadow-[0_0_0_2px_var(--av-ring)] [&>[data-slot=avatar]]:ml-[calc(var(--av)*-0.18)]",
+  "[&>[data-slot=avatar]]:text-[length:calc(var(--av)*0.34)] [&>[data-slot=avatar]:first-child]:ml-0",
+  "[&>[data-slot=avatar]]:[translate:calc(var(--i,0)*var(--av)*0.22*var(--fan))_var(--rap-av-lift)]",
+  "[&>[data-slot=avatar]]:[transition:scale_var(--rap-dur-fast)_var(--rap-ease-back),--rap-av-lift_var(--rap-dur-fast)_var(--rap-ease-back)]",
+  "data-fanned:[&>[data-slot=avatar]:hover]:[--rap-av-lift:-4px] data-fanned:[&>[data-slot=avatar]:hover]:scale-108 data-fanned:[&>[data-slot=avatar]:hover]:z-1",
+  "calm:[&>[data-slot=avatar]]:translate-none calm:[&>[data-slot=avatar]]:scale-none",
+];
+
 /**
  * Round avatar (Radix Avatar). Pass `name` and optionally `src`; while the image loads
  * or if it fails, the initials show on a colour picked from the name.
@@ -86,7 +131,13 @@ export const Avatar = forwardRef<ElementRef<typeof AvatarPrimitive.Root>, Avatar
   ref,
 ) {
   return (
-    <AvatarPrimitive.Root ref={ref} className={cx("rap-avatar", `rap-avatar--${size}`, className)} {...rest}>
+    <AvatarPrimitive.Root
+      ref={ref}
+      data-slot="avatar"
+      data-size={size}
+      className={cn(avatarVariants({ size }), className)}
+      {...rest}
+    >
       {children ?? (
         <>
           {src && <AvatarImage src={src} alt={alt ?? name ?? ""} />}
@@ -99,7 +150,12 @@ export const Avatar = forwardRef<ElementRef<typeof AvatarPrimitive.Root>, Avatar
 
 export const AvatarImage = forwardRef<ElementRef<typeof AvatarPrimitive.Image>, ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>>(
   function AvatarImage({ className, ...rest }, ref) {
-    return <AvatarPrimitive.Image ref={ref} className={cx("rap-avatar__img", className)} {...rest} />;
+    return <AvatarPrimitive.Image
+        ref={ref}
+        data-slot="avatar-image"
+        className={cn("size-full object-cover", className)}
+        {...rest}
+      />;
   },
 );
 
@@ -111,7 +167,8 @@ export const AvatarFallback = forwardRef<
   return (
     <AvatarPrimitive.Fallback
       ref={ref}
-      className={cx("rap-avatar__fallback", t && `rap-avatar__fallback--${t}`, className)}
+      data-slot="avatar-fallback"
+      className={cn(fallbackVariants({ tone: t ?? "none" }), className)}
       aria-label={name}
       {...rest}
     >
@@ -158,7 +215,13 @@ export function AvatarGroup({
   return (
     <div
       ref={root}
-      className={cx("rap-avatar-group", ring === "surface" && "rap-avatar-group--on-surface", className)}
+      data-slot="avatar-group"
+      className={cn(
+        "inline-flex items-center [--fan:0]",
+        ring === "surface" ? "[--av-ring:var(--rap-surface)]" : "[--av-ring:var(--rap-paper)]",
+        GROUP_FACES,
+        className,
+      )}
       style={{ ...style, "--fan": fan / 100 } as CSSProperties}
       data-fanned={open && !calm ? "" : undefined}
       onPointerEnter={(e) => {
@@ -171,7 +234,7 @@ export function AvatarGroup({
         onPointerLeave?.(e);
       }}
       onPointerOver={(e) => {
-        const a = (e.target as Element).closest(".rap-avatar");
+        const a = (e.target as Element).closest('[data-slot="avatar"]');
         if (a && a !== face.current && a.parentElement === root.current) {
           face.current = a;
           if (!calm) sound.detent(0.25);
@@ -183,7 +246,10 @@ export function AvatarGroup({
       {shown}
       {extra > 0 && (
         <span
-          className={cx("rap-avatar", `rap-avatar--${size}`, "rap-avatar--more")}
+          data-slot="avatar"
+          data-size={size}
+          data-more=""
+          className={cn(avatarVariants({ size }), "bg-paper-3 text-ink-2 text-[length:calc(var(--av)*0.32)]/none tabular-nums")}
           style={{ "--i": shown.length } as CSSProperties}
           aria-label={`${extra} more`}
         >
