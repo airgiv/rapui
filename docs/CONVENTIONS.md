@@ -12,7 +12,7 @@ Read this before adding a component. The reference implementations are
 - **Specialised pieces:** `react-day-picker` (calendar), `cmdk` (command / combobox),
   `sonner` (toasts), `vaul` (drawer), `input-otp`, `embla-carousel-react`,
   `react-resizable-panels`, `@tanstack/react-table`, `recharts`, `date-fns`.
-- **Icons:** interface glyphs come ONLY from `src/rapui/icons.tsx` (Phosphor Light underneath, lucide-style
+- **Icons:** interface glyphs come ONLY from `src/rapui/icons.tsx` (Hugeicons Stroke Rounded underneath at a medium 2px stroke — minimal but round; lucide-style
   names: `import { Check, ChevronDown, X } from "../icons"`). Never import an icon package directly.
   Illustrative spots (empty states, feature tiles, milestones, toasts, marketing) use
   `<FancyIcon icon="rocket" tone="flame" />` (Solar Bold Duotone, `components/FancyIcon.tsx`).

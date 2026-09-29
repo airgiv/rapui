@@ -223,7 +223,7 @@ export const entries: DocEntry[] = [
     name: "Button",
     group: "Actions",
     description:
-      "Pill button. On hover a colour blob swells from below, the letters roll and the arrow bubble turns. Seven variants, four sizes.",
+      "Pill button. On hover the other colour floods in as a pill inside the pill, the letters roll and the arrow bubble turns. Seven variants, four sizes.",
     controls: buttonControls,
     Demo: ({ p }) => (
       <Button

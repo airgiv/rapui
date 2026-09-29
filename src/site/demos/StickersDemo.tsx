@@ -51,7 +51,7 @@ const KINDS: Kind[] = [
     }),
   },
   { key: "label", make: (s) => ({ shape: "label", color: "paper", size: s(0.95, 2.3, 1.4), children: "peel me" }) },
-  { key: "stamp", make: (s) => ({ shape: "stamp", color: "sky", grain: true, size: s(0.9, 2.2, 1.35), children: "air mail" }) },
+  { key: "stamp", make: (s) => ({ shape: "stamp", color: "sky", grain: true, size: s(0.9, 2.2, 1.35), airmail: true, children: "air mail" }) },
   { key: "bubble", make: (s) => ({ shape: "bubble", color: "bubble", diecut: true, size: s(0.95, 2.3, 1.45), children: "hey!" }) },
   { key: "live", make: (s) => ({ shape: "pill", color: "ink", dot: true, size: s(0.9, 2.0, 1.3), children: "live" }) },
   {

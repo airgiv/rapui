@@ -453,7 +453,8 @@ export const SlideButton = forwardRef<HTMLDivElement, SlideButtonProps>(function
               "group-data-landed/slide:opacity-0 group-data-landed/slide:scale-50 group-data-landed/slide:rotate-90",
             )}
           >
-            <ArrowRight />
+            {/* a firmer stroke than the kit default: the thumb is a big round button and a 2px line in it read as a hairline */}
+            <ArrowRight strokeWidth={2.75} />
           </span>
           <svg viewBox="0 0 24 24" fill="none" className="absolute size-[1.1em]">
             {/* the check draws itself 100ms after the thumb lands, over 550ms */}

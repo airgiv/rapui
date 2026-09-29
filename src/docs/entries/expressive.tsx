@@ -192,7 +192,7 @@ const soundControls: Control[] = [
 const TECH = Object.entries(icons).filter(([, v]) => typeof v === "object") as [string, IconComponent][];
 
 const iconControls: Control[] = [
-  { type: "select", prop: "weight", options: ["thin", "light", "regular", "bold"], default: "light", codeDefault: "light" },
+  { type: "select", prop: "weight", options: ["thin", "light", "regular", "bold"], default: "regular", codeDefault: "regular" },
   { type: "number", prop: "size", min: 16, max: 40, default: 24, codeDefault: 24 },
 ];
 
@@ -267,15 +267,15 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     slug: "icons",
     name: "Icons",
     group: "Expressive",
-    basedOn: "Phosphor, Light",
+    basedOn: "Hugeicons, Stroke Rounded",
     description:
-      "Interface glyphs: thin and technical, one import path for the whole library, so the set can be swapped in one file. Names follow the familiar lucide/shadcn vocabulary.",
+      "Interface glyphs: minimal and rounded (round caps, soft corners, a medium 2px stroke), one import path for the whole library, so the set can be swapped in one file. Names follow the familiar lucide/shadcn vocabulary.",
     controls: iconControls,
     Demo: ({ p }) => (
       <div className={`${ICON_GRID} max-h-[32rem]`}>
         {TECH.map(([name, I]) => (
           <div className={ICON_CELL} key={name} title={name}>
-            <I size={Number(p.size)} weight={p.weight as "light"} />
+            <I size={Number(p.size)} weight={p.weight as "regular"} />
             <span>{name}</span>
           </div>
         ))}
@@ -432,7 +432,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
             <Sticker shape="bubble" color="sky" diecut size="1.5rem" rotate={5}>
               say hi!
             </Sticker>
-            <Sticker shape="stamp" color="plum" grain size="1.4rem" rotate={-5}>
+            <Sticker shape="stamp" color="plum" grain airmail size="1.4rem" rotate={-5}>
               air mail
             </Sticker>
             <Sticker shape="pill" color="acid" paper size="1.4rem" rotate={4}>
@@ -450,7 +450,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
           </div>
         ),
         code: `<Sticker shape="star" color="bubble" diecut>fave</Sticker>
-<Sticker shape="stamp" color="plum" grain>air mail</Sticker>
+<Sticker shape="stamp" color="plum" grain airmail>air mail</Sticker>
 <Sticker color="acid" paper>on paper</Sticker>  {/* shadow + rim light */}
 <Sticker shape="label" color="paper">peel me</Sticker>  {/* hover="peel" by default */}
 <Sticker color="ink" dot>live</Sticker>`,

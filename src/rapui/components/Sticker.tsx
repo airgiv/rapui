@@ -43,6 +43,22 @@ import "./Sticker.css";
    of x-height letters is lifted to the middle, descenders only
    count a third. Shapes whose mass is not in their box's middle
    carry their own offset (the star's body sits 9% low).
+   A lone asterisk (✳ ✱ * …) is not set as text at all: it is
+   DRAWN (Asterisk below), spokes about its own centre, in a box
+   that is exactly its ink. A text asterisk comes from whatever
+   fallback font has one, with that font's sidebearings and
+   baseline, so no amount of measuring put it dead centre in the
+   "open for projects" badge; a drawing is centred by geometry —
+   on the sticker's own box, since a ring badge's 2.6em padding
+   can be wider than the badge, and overflowing grid content runs
+   off to the right.
+
+   ── AIR MAIL ────────────────────────────────────────────
+   `airmail` gives a stamp the edging of an air-mail envelope: a
+   band of 45° white bars, 0.3em in from the cut (clear of the
+   0.19em perforation) and 0.34em wide, the bars as wide as the
+   gaps. It replaces the stamp's printed hairline frame, and the
+   words get a little more room so the band does not crowd them.
 
    ── MOTION (all behind `fun:`) ─────────────────────────
    Hover: the tilt flips and it swells 8% on the library's spring
@@ -98,6 +114,8 @@ export interface StickerProps extends HTMLAttributes<HTMLSpanElement> {
   slap?: boolean | number;
   /** A small green "live" dot in a ring before the words. */
   dot?: boolean;
+  /** Stamp only: frame it with the diagonal white stripes of an air-mail edging, just inside the perforation. */
+  airmail?: boolean;
 }
 
 const ROUND = new Set<StickerShape>(["circle", "burst", "flower", "clover", "blob", "heart", "squircle", "star", "seal"]);
@@ -136,6 +154,35 @@ const RING: Partial<Record<StickerShape, number>> = {
 };
 
 const EASE = springEasing(55);
+
+/* a lone asterisk as the whole content → drawn instead of set */
+const ASTERISK = /^\s*([✳✱✲✶✷✸✹✺*＊])\uFE0F?\s*$/u;
+
+/* spokes through the centre, round-capped, in a 1em box that is all ink:
+   ✳ (eight spoked) gets 4 bars, every other asterisk 3 (six spokes, one upright) */
+function Asterisk({ spokes }: { spokes: 3 | 4 }) {
+  return (
+    <svg data-slot="sticker-glyph" viewBox="-12 -12 24 24" aria-hidden className="block size-[0.9em] overflow-visible">
+      {Array.from({ length: spokes }, (_, i) => {
+        const a = (i * Math.PI) / spokes + (spokes === 3 ? Math.PI / 2 : 0);
+        const x = Math.round(Math.cos(a) * 10.2 * 1000) / 1000;
+        const y = Math.round(Math.sin(a) * 10.2 * 1000) / 1000;
+        return (
+          <line
+            key={i}
+            x1={-x}
+            y1={-y}
+            x2={x}
+            y2={y}
+            stroke="currentColor"
+            strokeWidth="3.4"
+            strokeLinecap="round"
+          />
+        );
+      })}
+    </svg>
+  );
+}
 
 const stickerVariants = cva(
   [
@@ -306,6 +353,7 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
     spin,
     slap = false,
     dot = false,
+    airmail = false,
     className,
     style,
     children,
@@ -333,6 +381,8 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
     });
 
   const pad = hasRing ? "ring" : round ? "round" : shape;
+  const glyph = typeof children === "string" ? ASTERISK.exec(children) : null;
+  const stripes = airmail && shape === "stamp";
   /* the words' nudge: their ink back to the middle, then onto the shape's mass */
   const m = box ? Math.min(box.w, box.h) / 2 : 0;
   const nx = box ? -box.ix * box.em : 0;
@@ -373,6 +423,7 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
       className={cn(
         stickerVariants({ color, pad: pad as "pill", hover: how, slap: slap !== false, paper }),
         shape === "heart" && "pt-[1.3em] pb-[1.9em]",
+        stripes && "pt-[1.2em] px-[1.4em] pb-[1.32em] supports-[text-box:trim-both_cap_alphabetic]:py-[1.25em]",
         className,
       )}
       style={{ ...vars, ...style }}
@@ -445,7 +496,32 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
             )}
 
             {/* printed details */}
-            {shape === "stamp" && (
+            {stripes && (
+              <g data-slot="sticker-airmail">
+                <defs>
+                  <pattern
+                    id={id("air")}
+                    patternUnits="userSpaceOnUse"
+                    width={0.5 * box.em}
+                    height={0.5 * box.em}
+                    patternTransform="rotate(45)"
+                  >
+                    <rect width={0.25 * box.em} height={0.5 * box.em} className={color === "paper" ? "fill-blue" : "fill-white"} />
+                  </pattern>
+                </defs>
+                <path
+                  fillRule="evenodd"
+                  fill={`url(#${id("air")})`}
+                  d={(() => {
+                    const o = 0.3 * box.em;
+                    const t = 0.34 * box.em;
+                    const rect = (i: number) => `M${i} ${i}H${box.w - i}V${box.h - i}H${i}Z`;
+                    return rect(o) + rect(o + t);
+                  })()}
+                />
+              </g>
+            )}
+            {shape === "stamp" && !stripes && (
               <rect
                 x={0.45 * box.em}
                 y={0.45 * box.em}
@@ -480,7 +556,9 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
         ref={labelRef}
         data-slot="sticker-label"
         className={cn(
-          "relative supports-[text-box:trim-both_cap_alphabetic]:[text-box:trim-both_cap_alphabetic]",
+          "relative",
+          /* a drawn glyph is its own box; words are trimmed to cap height and baseline */
+          glyph ? "grid place-items-center" : "supports-[text-box:trim-both_cap_alphabetic]:[text-box:trim-both_cap_alphabetic]",
           turn === true && TURN,
           geo?.fold0 !== undefined && FOLD,
         )}
@@ -497,8 +575,24 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
             <span className="size-[0.34em] rounded-full bg-success fun:animate-[rap-sticker-dot_1.6s_ease-in-out_infinite]" />
           </span>
         )}
-        {children}
+        {/* a drawn glyph only holds its place here (so a pill still fits it);
+            it is drawn below, centred on the sticker itself */}
+        {glyph ? <span className="block size-[0.9em]" /> : children}
       </span>
+      {glyph && (
+        /* centred on the host box, not in the padded content box: a ring
+           sticker's padding (2.6em a side) is often wider than the sticker
+           leaves room for, and grid content that overflows runs off to the
+           right — which is what kept the old text ✳ off centre */
+        <span
+          aria-hidden
+          data-slot="sticker-glyph-box"
+          className={cn("absolute inset-0 grid place-items-center pointer-events-none", turn === true && TURN)}
+          style={box ? { translate: `${nx.toFixed(2)}px ${ny.toFixed(2)}px` } : undefined}
+        >
+          <Asterisk spokes={glyph[1] === "✳" ? 4 : 3} />
+        </span>
+      )}
       {/* the folded-back corner shows the sticker's pale back — above the words, opaque */}
       {geo?.flap0 && box && (
         <span aria-hidden data-slot="sticker-fold" className="absolute inset-0 pointer-events-none">

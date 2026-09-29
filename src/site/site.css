@@ -29,3 +29,18 @@ html.rap-has-cursor, html.rap-has-cursor * { cursor: none !important; }
   --animate-bob: site-bob 1.8s var(--rap-ease-in-out) infinite;
   @keyframes site-bob { 50% { transform: translateY(8px); } }
 }
+
+/* the hero's changing word rolls up into place, overshooting a touch; the live
+   component beside it pops in on the same curve, tilted and straightening */
+@theme {
+  --animate-hero-roll: site-hero-roll 620ms var(--rap-ease-back) both;
+  --animate-hero-pop: site-hero-pop 700ms var(--rap-ease-back) both;
+  @keyframes site-hero-roll { from { transform: translateY(0.55em) rotate(4deg); opacity: 0; } }
+  @keyframes site-hero-pop { from { transform: translateY(40px) rotate(-8deg) scale(0.8); opacity: 0; } }
+}
+
+/* a chat bubble arriving: up from below, tilted toward its sender, landing straight */
+@theme {
+  --animate-chat-pop: site-chat-pop 620ms var(--rap-ease-back) both;
+  @keyframes site-chat-pop { from { transform: translateY(56px) rotate(var(--tilt, -6deg)) scale(0.8); opacity: 0; } }
+}

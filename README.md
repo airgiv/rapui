@@ -42,7 +42,7 @@ Then `bg-surface`, `text-ink`, `rounded-pill`, `h-control`, `ease-rm`, `animate-
 
 ## What's inside
 
-110+ components, browsable with live settings at **`#docs`** on the preview site (sidebar on the left, component with its settings panel on the right, generated code below).
+108 components, browsable with live settings at **`#docs`** on the preview site (sidebar on the left, component with its settings panel on the right, generated code below).
 
 | Group | Components |
 | --- | --- |
@@ -61,7 +61,7 @@ Then `bg-surface`, `text-ink`, `rounded-pill`, `h-control`, `ease-rm`, `animate-
 
 ### Stack
 
-The same technical base as shadcn/ui: **Radix UI** primitives, **Tailwind CSS v4** with `cn()` (clsx + tailwind-merge) and `cva` variants, `data-slot` on every part, plus `react-day-picker`, `cmdk`, `sonner`, `vaul`, `input-otp`, `embla-carousel-react`, `react-resizable-panels`, `@tanstack/react-table` and `recharts`. Icons: Phosphor (Light) for interface glyphs, Solar Bold Duotone for illustrative spots. Motion runs on one shared spring; optional interface sound is synthesised with Web Audio. See [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) before adding a component.
+The same technical base as shadcn/ui: **Radix UI** primitives, **Tailwind CSS v4** with `cn()` (clsx + tailwind-merge) and `cva` variants, `data-slot` on every part, plus `react-day-picker`, `cmdk`, `sonner`, `vaul`, `input-otp`, `embla-carousel-react`, `react-resizable-panels`, `@tanstack/react-table` and `recharts`. Icons: Hugeicons (Stroke Rounded, medium stroke) for interface glyphs, Solar Bold Duotone for illustrative spots. Motion runs on one shared spring; optional interface sound is synthesised with Web Audio. See [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) before adding a component.
 
 Tokens live in `src/rapui/styles/tokens.css`. That file holds the colours (`--rap-paper`, `--rap-ink`, `--rap-flame #EC520B`, `--rap-blue #0582FF`, `--rap-plum`, `--rap-acid`…), control heights and fills, fluid type sizes, radii, the 2px / 4px gaps between controls and tiles, and Readymag's `cubic-bezier(.4,.24,.4,1)` easing. For dark mode, set `data-rap-theme="dark"` on `<html>`.
 

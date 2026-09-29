@@ -19,7 +19,9 @@ import { useStack, type StackState } from "./stackContext";
 const buttonVariants = cva(
   [
     "group/btn rap-roll-host relative isolate inline-flex items-center justify-center",
-    "h-(--btn-h) px-(--btn-px) gap-3 whitespace-nowrap cursor-pointer overflow-hidden",
+    /* no overflow clip: the hover fill is a pill of its own (below) and
+       inside a FormStack it has to swell past the box with the blob */
+    "h-(--btn-h) px-(--btn-px) gap-3 whitespace-nowrap cursor-pointer",
     "rounded-pill border-[1.5px] border-(--btn-border) bg-(--btn-bg) text-(--btn-fg)",
     "font-sans text-(length:--btn-fs) font-medium tracking-[-0.01em]",
     "transition-[color,border-color,transform] duration-(--rap-dur) ease-soft",
@@ -150,7 +152,7 @@ export const Arrow = () => (
 );
 
 /**
- * Pill button. On hover a colour blob swells from the bottom, letters roll,
+ * Pill button. On hover the other colour floods in as a concentric pill, letters roll,
  * the icon bubble spins. Optional magnetic pull.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -233,13 +235,30 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         sound.play("tap");
       }}
     >
-      {/* the colour blob: a circle parked below the button that swells over it */}
+      {/* the hover fill: a concentric pill. It opens out from the pill's
+          own centre line with ONE inset on every side — clip-path
+          inset(t round 9999px) with t from half the height to 0 — so at
+          every frame it is the pill again, one step smaller, and at rest
+          on hover its edge sits the 1.5px border in all round. (It was a
+          circle 1.5× the width rising from below: mid-flood it showed as
+          a lens, far from the round ends and close to the top and bottom.)
+          Inside a FormStack the pill we see is the stack's paint blob, and
+          hovering or focusing it swells that blob by 1.012 × 1.02 (focus
+          1.035 × 1.08 — keep in step with FormStack's blobStyle); the fill
+          swells with it on the same spring, or the rim would come out
+          ~3px at the round ends and ~1px at the top and bottom. And the
+          goo's threshold (blur 9, alpha × 22 − 9) lays a straight edge ~2px
+          outside the geometry but a round end only ~1px, so in a stack the
+          fill is also 1px taller each way: 2.5px of rim all round. */}
       <span
         aria-hidden
+        data-slot="button-fill"
         className={cn(
-          "absolute -z-1 left-1/2 top-full w-[150%] aspect-square rounded-full bg-(--btn-blob)",
-          "-translate-x-1/2 scale-20 transition-[top,translate,scale] duration-(--rap-dur-slow) ease-soft",
-          "group-hover/btn:top-1/2 group-hover/btn:-translate-y-1/2 group-hover/btn:scale-100",
+          "absolute -z-1 inset-x-0 rounded-pill bg-(--btn-blob) pointer-events-none",
+          stack ? "-inset-y-px" : "inset-y-0",
+          "[clip-path:inset(calc(var(--btn-h)/2)_round_9999px)] group-hover/btn:[clip-path:inset(0_round_9999px)]",
+          "[transition:clip-path_var(--rap-dur-slow)_var(--rap-ease-out),scale_420ms_var(--rap-ease-spring)]",
+          stack && "group-hover/btn:[scale:1.012_1.02] group-focus/btn:[scale:1.035_1.08]",
         )}
       />
       {/* loading: diagonal stripes run across the pill, a barber pole for "working" */}
@@ -247,7 +266,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         <span
           aria-hidden
           className={cn(
-            "absolute inset-0 -z-1 pointer-events-none opacity-100",
+            "absolute inset-0 -z-1 rounded-[inherit] overflow-hidden pointer-events-none opacity-100",
             "bg-[repeating-linear-gradient(-45deg,transparent_0_14px,color-mix(in_srgb,var(--btn-fg)_16%,transparent)_14px_28px)] [background-size:40px_40px]",
             "fun:animate-stripes",
           )}
