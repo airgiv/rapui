@@ -44,6 +44,27 @@
   --rap-gap-tight: 2px;
   --rap-gap-tile: 4px;
 
+  /* controls — inputs, selects, menus. Filled, not outlined (Readymag). */
+  --rap-control-h-sm: 36px;
+  --rap-control-h: 44px;
+  --rap-control-h-lg: 52px;
+  --rap-fill: rgb(40 40 40 / 0.06);
+  --rap-fill-hover: rgb(40 40 40 / 0.1);
+  --rap-fill-strong: rgb(40 40 40 / 0.16);
+  --rap-ring: var(--rap-blue);
+  --rap-select: var(--rap-blue);
+  --rap-select-ink: #ffffff;
+
+  /* semantic */
+  --rap-danger: #e5322d;
+  --rap-success: #14a85c;
+  --rap-warning: #f5a524;
+
+  /* floating surfaces: popovers, menus, dialogs */
+  --rap-surface: var(--rap-paper-2);
+  --rap-shadow-pop: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 40px rgb(0 0 0 / 0.12);
+  --rap-scrim: rgb(20 20 20 / 0.32);
+
   /* shape */
   --rap-radius-xs: 6px;
   --rap-radius-sm: 12px;
@@ -72,6 +93,12 @@
   --rap-ink-2: #cfcfcf;
   --rap-mute: #7a7a7a;
   --rap-line: rgb(245 245 245 / 0.14);
+  --rap-fill: rgb(245 245 245 / 0.07);
+  --rap-fill-hover: rgb(245 245 245 / 0.12);
+  --rap-fill-strong: rgb(245 245 245 / 0.2);
+  --rap-surface: #242424;
+  --rap-shadow-pop: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 40px rgb(0 0 0 / 0.5);
+  --rap-scrim: rgb(0 0 0 / 0.55);
   color-scheme: dark;
 }
 

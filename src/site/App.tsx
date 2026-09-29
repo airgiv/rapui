@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Accent,
   Accordion,
@@ -40,7 +40,8 @@ function Header({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => voi
         </Sticker>
       </a>
       <nav className="site-nav">
-        <a href="#components"><RollText>Components</RollText></a>
+        <a href="#docs"><RollText>Docs</RollText></a>
+        <a href="#components"><RollText>Showcase</RollText></a>
         <a href="#tokens"><RollText>Tokens</RollText></a>
         <a href="#install"><RollText>Install</RollText></a>
       </nav>
@@ -878,12 +879,7 @@ function Footer() {
 
 /* ───────────────────────── app ───────────────────────── */
 
-export function App() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    document.documentElement.setAttribute("data-rap-theme", dark ? "dark" : "light");
-  }, [dark]);
-
+export function App({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => void }) {
   return (
     <div className="rap-root site">
       <Cursor />

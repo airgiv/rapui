@@ -1,0 +1,29 @@
+.rap-checkbox {
+  --cb: 22px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--cb);
+  height: var(--cb);
+  padding: 0;
+  border: 0;
+  /* soft square: a third of the side, so it reads as a checkbox, not a radio */
+  border-radius: calc(var(--cb) * 0.34);
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--rap-fill-strong);
+  color: var(--rap-select-ink);
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), box-shadow var(--rap-dur-fast) var(--rap-ease-rm),
+    transform var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-checkbox--sm { --cb: 18px; }
+.rap-checkbox--lg { --cb: 28px; }
+.rap-checkbox:hover { box-shadow: inset 0 0 0 1.5px var(--rap-mute); }
+.rap-checkbox:active { transform: scale(0.92); }
+.rap-checkbox[data-state="checked"],
+.rap-checkbox[data-state="indeterminate"] { background: var(--rap-select); box-shadow: none; }
+.rap-checkbox:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
+.rap-checkbox:disabled { opacity: 0.45; pointer-events: none; }
+.rap-checkbox__mark { display: grid; place-items: center; animation: rap-cb-pop 320ms var(--rap-ease-spring); }
+.rap-checkbox__mark svg { width: calc(var(--cb) * 0.64); height: calc(var(--cb) * 0.64); }
+@keyframes rap-cb-pop { from { transform: scale(0.3); opacity: 0; } }

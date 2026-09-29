@@ -1,0 +1,11 @@
+.rap-label {
+  font-family: var(--rap-font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--rap-ink);
+  cursor: default;
+}
+.rap-label:has(+ :disabled),
+.rap-label[data-disabled] { opacity: 0.5; }

@@ -1,5 +1,6 @@
 import "./styles/tokens.css";
 import "./styles/base.css";
+import "./styles/surfaces.css";
 
 export { cx } from "./utils";
 export { useInView } from "./hooks/useInView";
@@ -30,3 +31,9 @@ export { BigLink } from "./components/BigLink";
 export { FeatureCard } from "./components/FeatureCard";
 export { Checklist } from "./components/Checklist";
 export { CanvasToolbar } from "./components/CanvasToolbar";
+
+// admin / product kit (Radix-based), grouped like the docs sidebar
+export * from "./groups/forms";
+export * from "./groups/overlays";
+export * from "./groups/display";
+export * from "./groups/navigation";

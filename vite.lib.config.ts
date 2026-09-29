@@ -15,7 +15,8 @@ export default defineConfig({
       cssFileName: "rapui",
     },
     rollupOptions: {
-      external: ["react", "react-dom", "react/jsx-runtime", /^@fontsource/, /^framer-motion/, /^lucide-react/],
+      // every runtime dependency stays external: the consumer installs them
+      external: [/^react($|\/)/, /^react-dom($|\/)/, /^@fontsource/, /^framer-motion/, /^lucide-react/, /^radix-ui/, /^@radix-ui/, /^react-day-picker/, /^cmdk/, /^sonner/, /^vaul/, /^input-otp/, /^embla-carousel/, /^react-resizable-panels/, /^@tanstack/, /^recharts/, /^date-fns/],
     },
   },
 });
