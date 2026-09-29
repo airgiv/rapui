@@ -18,11 +18,9 @@ import {
   Highlight,
   HoldButton,
   Input,
-  Knob,
   Lead,
   Marquee,
   RaceBars,
-  RangeDial,
   RollText,
   SlideButton,
   Sparkline,
@@ -31,7 +29,6 @@ import {
   Switch,
   Tabs,
   TiltCard,
-  TimeScrubber,
   AudioPlayer,
   CardStack,
   FanGallery,
@@ -52,6 +49,7 @@ import { Wordmark } from "./Wordmark";
 import { Floaty, HeroScene } from "./HeroScene";
 import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
+import { DialsDemo } from "./demos/DialsDemo";
 import gridLines from "./media/grid-lines.wav";
 import voiceNote from "./media/voice-note.wav";
 import reel from "./media/reel.webm";
@@ -485,7 +483,6 @@ function MediaChat() {
 }
 
 function Wall() {
-  const [knob, setKnob] = useState(42);
   return (
     <div id="wall" className="px-(--gutter)">
       <div className="flex flex-col gap-8 pb-20">
@@ -577,21 +574,17 @@ function Wall() {
         id="dials"
         title="Dials"
         sub="& scrubbers"
-        desc="Controls for the things sliders are bad at: a range on a 24-hour clock whose handles fuse like drops, a ruler of time you can fling, a knob with magnetic detents, a slider that stretches like rubber at its ends."
-        code={`import { RangeDial, TimeScrubber, Knob, ElasticSlider } from "rapui";
+        desc="Plan a night with nothing but rulers and rings: fling a strip of days, turn a tempo wheel that flashes on the beat, pick a lamp colour off a ring of hues, set the room under a magnifying lens, split rain against brown noise. The last card reads the whole desk back to you."
+        code={`import { DateScrubber, TempoDial, HueRing, LensRuler, SplitSlider, RangeDial } from "rapui";
 
-<RangeDial snap="15" />
-<TimeScrubber step="15" />
-<Knob label="Gain" value={gain} onValueChange={setGain} />`}
-        stageClass="bg-paper"
+<DateScrubber value={night} onValueChange={setNight} />
+<TempoDial bpm={68} onBeat={pulse} />
+<HueRing value={hue} onValueChange={setHue} />
+<LensRuler min={16} max={24} step={0.5} value={temp} onValueChange={setTemp} />
+<SplitSlider value={60} labels={["Rain", "Brown noise"]} />`}
+        stageClass="bg-paper p-[clamp(0.75rem,2vw,1.5rem)] place-items-stretch"
       >
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,19rem),1fr))] gap-12 w-full justify-items-center items-center">
-          <RangeDial />
-          <div className="flex flex-col items-center gap-10">
-            <TimeScrubber />
-            <Knob size="lg" label="Gain" value={knob} onValueChange={setKnob} />
-          </div>
-        </div>
+        <DialsDemo />
       </Showcase>
 
       <Showcase
