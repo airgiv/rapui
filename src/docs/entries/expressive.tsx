@@ -26,8 +26,19 @@ import {
 } from "../../rapui";
 import type { SoundName } from "../../rapui";
 import type { AccentTone, FancyIconName, FancyTone, IconComponent, StickerColor, StickerShape } from "../../rapui";
+import { cn } from "../../rapui/utils";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
+
+/* a paper ground inside the white stage, for demos drawn on the page colour */
+const GROUND = "grid place-items-center w-full min-h-80 p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
+/* the lit backdrop the glass toolbar refracts: three accent dots on grey paper */
+const GLASS_GROUND =
+  "[background:radial-gradient(circle_at_28%_60%,var(--rap-flame)_0_14%,transparent_15%),radial-gradient(circle_at_70%_42%,var(--rap-blue)_0_18%,transparent_19%),radial-gradient(circle_at_52%_78%,var(--rap-acid)_0_10%,transparent_11%),var(--rap-paper-3)]";
+const VALUE = "text-[0.9375rem] font-medium tabular-nums";
+const ICON_GRID = "grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-tile w-full overflow-auto";
+const ICON_CELL =
+  "flex flex-col items-center justify-center gap-2 h-[92px] rounded-[18px] bg-paper text-ink [&>span]:max-w-[88px] [&>span]:text-[0.6875rem] [&>span]:text-mute [&>span]:truncate";
 
 const COLORS = ["acid", "flame", "blue", "plum", "bubble", "sky", "ink", "paper"] as const;
 const SHAPES = ["pill", "circle", "tag", "burst", "star", "flower", "clover", "blob", "heart", "squircle"] as const;
@@ -144,16 +155,19 @@ export const entries: DocEntry[] = [
       const [ratchet, setRatchet] = useState(0);
       return (
         <div className="doc-stack" style={{ width: "100%", alignItems: "center", gap: "1.5rem" }}>
-          <div className="doc-sound-grid">
+          <div className="grid grid-cols-4 gap-tile w-[min(100%,40rem)] max-[700px]:grid-cols-2">
             {SOUNDS.map((x) => (
               <button
                 key={x.name}
                 type="button"
-                className="doc-sound"
+                className={cn(
+                  "flex flex-col items-start gap-[0.2rem] py-4 px-[1.1rem] border-0 rounded-[18px] bg-paper text-ink text-left cursor-pointer",
+                  "[transition:background-color_var(--rap-dur-fast)_var(--rap-ease-rm),scale_120ms_var(--rap-ease-out)] hover:bg-fill-hover active:scale-95",
+                )}
                 onPointerDown={() => synth(x.name, Number(p.fun), Number(p.volume))}
               >
-                <span className="doc-sound__name">{x.name}</span>
-                <span className="doc-sound__hint">{x.hint}</span>
+                <span className="font-medium">{x.name}</span>
+                <span className="text-[0.8125rem] text-mute">{x.hint}</span>
               </button>
             ))}
           </div>
@@ -195,9 +209,9 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
       "Interface glyphs: thin and technical, one import path for the whole library, so the set can be swapped in one file. Names follow the familiar lucide/shadcn vocabulary.",
     controls: iconControls,
     Demo: ({ p }) => (
-      <div className="doc-icon-grid">
+      <div className={`${ICON_GRID} max-h-[32rem]`}>
         {TECH.map(([name, I]) => (
-          <div className="doc-icon-cell" key={name} title={name}>
+          <div className={ICON_CELL} key={name} title={name}>
             <I size={Number(p.size)} weight={p.weight as "light"} />
             <span>{name}</span>
           </div>
@@ -233,9 +247,9 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
       {
         title: "The curated set",
         Demo: () => (
-          <div className="doc-icon-grid doc-icon-grid--fancy">
+          <div className={ICON_GRID}>
             {(Object.keys(FANCY_ICONS) as FancyIconName[]).map((n, i) => (
-              <div className="doc-icon-cell" key={n}>
+              <div className={ICON_CELL} key={n}>
                 <FancyIcon icon={n} tone={(["flame", "blue", "plum", "acid", "bubble", "sky"] as FancyTone[])[i % 6]} size={36} />
                 <span>{n}</span>
               </div>
@@ -332,7 +346,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
           rotate={Number(p.rotate)}
           reverse={Boolean(p.reverse)}
           pauseOnHover={Boolean(p.pauseOnHover)}
-          className="doc-marquee"
+          className="py-4 border-y-[1.5px] border-ink font-display font-medium text-[clamp(1.75rem,4vw,3rem)] tracking-[-0.05em] leading-none"
         >
           <span>Available for work</span>
           <Sticker color="acid" rotate={-6}>
@@ -406,9 +420,9 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
       <div style={{ width: "min(100%, 22rem)" }}>
         <TiltCard tone={p.tone as "flame"} max={Number(p.max)} spotlight={Boolean(p.spotlight)}>
           <div className="doc-stack" style={{ minHeight: "16rem", justifyContent: "space-between" }}>
-            <span className="doc-value">Case 01</span>
+            <span className={VALUE}>Case 01</span>
             <Display size="lg">Brand for a bakery on Mars</Display>
-            <span className="doc-value">Identity, 2026</span>
+            <span className={VALUE}>Identity, 2026</span>
           </div>
         </TiltCard>
       </div>
@@ -425,7 +439,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     controls: featureControls,
     Demo: ({ p }) => (
       <div style={{ width: "min(100%, 18rem)" }}>
-        <FeatureCard tone={p.tone as "white"} title={String(p.title)} media={<span className="doc-emoji">↻</span>}>
+        <FeatureCard tone={p.tone as "white"} title={String(p.title)} media={<span className="font-display text-[4.5rem] leading-none">↻</span>}>
           {String(p.text)}
         </FeatureCard>
       </div>
@@ -503,7 +517,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
       "One spring per row drives the fill, the tick, the strike-through and the fading words. Tick the last task and the list falls into a heap, then resets.",
     controls: checklistControls,
     Demo: ({ p }) => (
-      <div className="doc-ground">
+      <div className={GROUND}>
         <Checklist bounce={Number(p.bounce)} box={Number(p.box)} corner={Number(p.corner)} />
       </div>
     ),
@@ -520,11 +534,11 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     controls: toolbarControls,
     Demo: ({ p }) =>
       p.surface === "glass" ? (
-        <div className="doc-ground doc-ground--glass" data-surface="glass">
+        <div className={`${GROUND} ${GLASS_GROUND}`} data-surface="glass">
           <CanvasToolbar corner={Number(p.corner)} />
         </div>
       ) : (
-        <div className="doc-ground">
+        <div className={GROUND}>
           <CanvasToolbar corner={Number(p.corner)} />
         </div>
       ),

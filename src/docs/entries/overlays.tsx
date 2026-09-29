@@ -1230,7 +1230,7 @@ export const entries: DocEntry[] = [
           return (
             <>
               <Button variant="soft" onClick={() => setOpen(true)} roll={false}>
-                Search commands <kbd className="doc-kbd">⌘K</kbd>
+                Search commands <kbd className="py-[0.1rem] px-[0.45rem] rounded-[8px] bg-fill font-sans text-[0.75rem] font-medium text-ink-2">⌘K</kbd>
               </Button>
               <CommandDialog open={open} onOpenChange={setOpen}>
                 <CommandInput placeholder="What do you want to do?" />

@@ -26,9 +26,18 @@ import {
   Tabs,
   TiltCard,
 } from "../rapui";
+import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import type { SoundSettings } from "../rapui";
+
+/* ───────────────────────── shared class strings ───────────────────────── */
+
+/* a centred, wrapping row of demo pieces with room to breathe */
+const ROW = "flex flex-wrap items-center justify-center gap-10";
+/* the lit backdrop the glass toolbar refracts: three accent dots on grey paper */
+const GLASS_GROUND =
+  "[background:radial-gradient(circle_at_28%_60%,var(--rap-flame)_0_14%,transparent_15%),radial-gradient(circle_at_70%_42%,var(--rap-blue)_0_18%,transparent_19%),radial-gradient(circle_at_52%_78%,var(--rap-acid)_0_10%,transparent_11%),var(--rap-paper-3)]";
 
 /* ───────────────────────── layout pieces ───────────────────────── */
 
@@ -44,21 +53,29 @@ function Header({
   setSound: (v: SoundSettings) => void;
 }) {
   return (
-    <header className="site-header">
-      <a href="#top" className="site-logo" data-rap-cursor="Home">
+    // a frosted pill floating over the page, inset by the page gutter
+    <header
+      className={cn(
+        "fixed top-3 inset-x-(--gutter) z-100 flex items-center justify-between gap-4 py-2 pr-2 pl-[1.4rem] max-[480px]:gap-2 max-[480px]:pl-4",
+        "rounded-pill border border-line bg-[color-mix(in_srgb,var(--rap-paper)_72%,transparent)] backdrop-blur-[16px] backdrop-saturate-[1.4]",
+      )}
+    >
+      <a href="#top" className="relative font-display font-semibold text-[1.35rem] tracking-[-0.06em] max-[480px]:mr-6" data-rap-cursor="Home">
         rap<Accent>/</Accent>ui
-        <Sticker color="acid" rotate={-10} size="0.55rem" className="site-logo__tag">
+        {/* the version tag hangs off the logo's top-right corner */}
+        <Sticker color="acid" rotate={-10} size="0.55rem" className="absolute -top-[0.4rem] -right-[2.4rem]">
           v0.1
         </Sticker>
       </a>
-      <nav className="site-nav">
+      <nav className="flex gap-8 font-medium max-[760px]:hidden">
         <a href="#docs"><RollText>Docs</RollText></a>
         <a href="#components"><RollText>Showcase</RollText></a>
         <a href="#tokens"><RollText>Tokens</RollText></a>
         <a href="#install"><RollText>Install</RollText></a>
       </nav>
-      <div className="site-header__right">
-        <SoundControls value={sound} onChange={setSound} />
+      {/* on a phone everything packs a little tighter so the header pill fits */}
+      <div className="flex items-center gap-3 max-[480px]:gap-2">
+        <SoundControls value={sound} onChange={setSound} tight />
         <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
         <Button size="sm" icon onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
           Get it
@@ -68,43 +85,46 @@ function Header({
   );
 }
 
+/* one line of the hero headline; the burst sticker is positioned against it */
+const HERO_LINE = "relative block whitespace-nowrap max-[900px]:whitespace-normal";
+
 function Hero() {
   return (
-    <section className="hero" id="top">
-      <div className="hero__top">
+    <section className="relative min-h-svh pt-32 px-(--gutter) pb-12 flex flex-col justify-between gap-12" id="top">
+      <div className="flex justify-between text-[0.875rem] font-medium tracking-[-0.01em]">
         <Eyebrow>Designer-grade React components</Eyebrow>
-        <span className="hero__meta">Nº 001 — 2026 edition</span>
+        <span className="text-mute">Nº 001 — 2026 edition</span>
       </div>
 
-      <Display as="h1" size="mega" className="hero__title">
-        <span className="hero__line">
+      <Display as="h1" size="mega" className="flex flex-col">
+        <span className={HERO_LINE}>
           <SplitReveal by="char" stagger={35}>Loud</SplitReveal>
-          <Sticker shape="burst" color="flame" size="clamp(0.7rem, 1.2vw, 1.1rem)" rotate={12} className="hero__burst">
+          <Sticker shape="burst" color="flame" size="clamp(0.7rem, 1.2vw, 1.1rem)" rotate={12} className="absolute -top-[0.1em] left-[3.6em] w-[clamp(5rem,11vw,10rem)] max-[900px]:left-auto max-[900px]:right-0">
             new
             <br />
             drop!
           </Sticker>
         </span>
-        <span className="hero__line hero__line--indent">
+        <span className={cn(HERO_LINE, "pl-[12vw]")}>
           <Accent>
             <SplitReveal delay={250}>interfaces,</SplitReveal>
           </Accent>
         </span>
-        <span className="hero__line">
+        <span className={HERO_LINE}>
           <SplitReveal by="char" stagger={35} delay={400}>zero</SplitReveal>{" "}
-          <Sticker color="blue" rotate={-8} size="clamp(0.9rem, 2vw, 1.8rem)" className="hero__pill">
+          <Sticker color="blue" rotate={-8} size="clamp(0.9rem, 2vw, 1.8rem)" className="align-middle origin-center -top-[0.35em]">
             boring
           </Sticker>{" "}
           <SplitReveal by="char" stagger={35} delay={600}>bits</SplitReveal>
         </span>
       </Display>
 
-      <div className="hero__bottom">
+      <div className="grid grid-cols-[1.2fr_1fr_auto] items-end gap-8 max-[900px]:grid-cols-1">
         <Lead>
           rap/ui is a <Highlight>fancy, airy, editorial</Highlight> component kit — huge type, unusual buttons and motion
           that makes people scroll back up.
         </Lead>
-        <ButtonGroup className="hero__actions">
+        <ButtonGroup>
           <Button size="lg" variant="blue" icon onClick={() => (window.location.hash = "docs")}>
             Browse components
           </Button>
@@ -112,7 +132,12 @@ function Hero() {
             npm i rapui
           </Button>
         </ButtonGroup>
-        <RotatingBadge className="hero__badge" text="scroll ✳ to ✳ explore ✳ rap/ui ✳ " size={150} center={<span className="hero__down">↓</span>} />
+        <RotatingBadge
+          className="max-[900px]:hidden"
+          text="scroll ✳ to ✳ explore ✳ rap/ui ✳ "
+          size={150}
+          center={<span className="inline-block font-display text-[2.2rem] animate-bob">↓</span>}
+        />
       </div>
     </section>
   );
@@ -120,20 +145,23 @@ function Hero() {
 
 const NAMES = ["Buttons", "Marquee", "Stickers", "Reveal", "Big links", "Feature cards", "Tilt cards", "Fields", "Switch", "Tabs", "Accordion", "Counter", "Cursor"];
 
+const BAND_WORD = "inline-flex items-center gap-10 font-display font-medium text-[clamp(2rem,5vw,4.5rem)] tracking-[-0.05em] leading-none";
+
 function Bands() {
   return (
-    <div className="bands">
-      <Marquee className="band band--acid" rotate={-2.5} duration={30} gap="2.5rem">
+    <div className="py-16 overflow-hidden">
+      {/* the bands overhang the page by 2rem each side so their tilted ends never show */}
+      <Marquee className="py-[1.1rem] -mx-8 relative z-1 bg-acid text-[#282828]" rotate={-2.5} duration={30} gap="2.5rem">
         {NAMES.map((n) => (
-          <span className="band__word" key={n}>
-            {n} <span className="band__star">✳</span>
+          <span className={BAND_WORD} key={n}>
+            {n} <span className="inline-block text-flame fun:animate-[spin_6s_linear_infinite]">✳</span>
           </span>
         ))}
       </Marquee>
-      <Marquee className="band band--ink" rotate={1.8} duration={36} reverse gap="2.5rem">
+      <Marquee className="py-[1.1rem] -mx-8 -mt-[1.2rem] bg-ink text-paper" rotate={1.8} duration={36} reverse gap="2.5rem">
         {NAMES.map((n) => (
-          <span className="band__word" key={n}>
-            {n} <span className="band__dot" />
+          <span className={BAND_WORD} key={n}>
+            {n} <span className="size-[0.4em] rounded-full bg-flame" />
           </span>
         ))}
       </Marquee>
@@ -141,18 +169,20 @@ function Bands() {
   );
 }
 
+const STAT = "flex flex-col gap-4 pt-6 border-t-[1.5px] border-ink [&>span]:max-w-[22ch] [&>span]:text-ink-2";
+
 function Stats() {
   return (
-    <section className="stats">
-      <div className="stat">
+    <section className="grid grid-cols-3 gap-8 pt-16 px-(--gutter) pb-32 max-[760px]:grid-cols-1">
+      <div className={STAT}>
         <Display size="xxl"><Counter to={22} /></Display>
         <span>components & primitives, more dropping weekly</span>
       </div>
-      <div className="stat">
+      <div className={STAT}>
         <Display size="xxl"><Counter to={0} from={99} /></Display>
         <span>boring rectangles with 4px radius</span>
       </div>
-      <div className="stat">
+      <div className={STAT}>
         <Display size="xxl"><Counter to={100} suffix="%" /></Display>
         <span>air between elements. Let it breathe.</span>
       </div>
@@ -180,18 +210,28 @@ function Showcase({
   stageClass?: string;
 }) {
   return (
-    <section className="show" id={id}>
-      <div className="show__head">
-        <span className="show__num">{String(n).padStart(2, "0")}</span>
-        <Display size="xl" className="show__title">
+    <section className="pt-20 pb-28 border-t-[1.5px] border-line" id={id}>
+      <div className="grid grid-cols-[4rem_1fr_minmax(0,26rem)] gap-x-8 gap-y-6 items-end mb-10 max-[900px]:grid-cols-1">
+        <span className="self-start pt-[0.6rem] text-[0.875rem] font-medium text-mute tabular-nums">{String(n).padStart(2, "0")}</span>
+        <Display size="xl">
           <SplitReveal>{title}</SplitReveal> {sub && <Accent tone="mute">{sub}</Accent>}
         </Display>
-        <p className="show__desc">{desc}</p>
+        <p className="m-0 text-ink-2 text-[1.05rem] leading-normal [&_code]:bg-paper-2 [&_code]:py-[0.1em] [&_code]:px-[0.35em] [&_code]:rounded-[6px]">
+          {desc}
+        </p>
       </div>
       <Tabs
-        className="show__tabs"
+        className="[&_[data-slot=animated-tabs-panel]]:pt-5"
         items={[
-          { value: "preview", label: "Preview", content: <div className={`show__stage ${stageClass ?? ""}`}>{children}</div> },
+          {
+            value: "preview",
+            label: "Preview",
+            content: (
+              <div className={cn("relative grid place-items-center min-h-[26rem] p-[clamp(2rem,5vw,5rem)] rounded-lg bg-paper-2 overflow-hidden", stageClass)}>
+                {children}
+              </div>
+            ),
+          },
           { value: "code", label: "Code", content: <Code>{code}</Code> },
         ]}
       />
@@ -205,9 +245,9 @@ function FieldDemo() {
   const [email, setEmail] = useState("");
   const bad = email.length > 0 && !email.includes("@");
   return (
-    <div className="demo-form">
-      <Field label="Your name" size="xl" />
-      <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={bad ? "That does not look like an email" : undefined} hint="We never spam. Pinky promise." />
+    <div className="flex flex-col gap-10 w-[min(100%,44rem)] items-start justify-self-center">
+      <Field label="Your name" size="xl" className="w-full" />
+      <Field className="w-full" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={bad ? "That does not look like an email" : undefined} hint="We never spam. Pinky promise." />
       <Button variant="blue" size="lg" icon>
         Send it
       </Button>
@@ -218,7 +258,7 @@ function FieldDemo() {
 function SwitchDemo() {
   const [a, setA] = useState(true);
   return (
-    <div className="demo-col">
+    <div className="flex flex-col gap-6 items-start">
       <Switch size="lg" checked={a} onCheckedChange={setA} label={a ? "Motion is on — wheee" : "Motion is off"} />
       <Switch defaultChecked={false} label="Newsletter" />
       <Switch disabled label="Disabled" />
@@ -226,15 +266,22 @@ function SwitchDemo() {
   );
 }
 
+const EMOJI = "font-display text-[4.5rem] leading-none";
+const MQ = "py-4 -mx-8 font-display font-medium text-[clamp(2rem,5vw,4rem)] tracking-[-0.05em] leading-none";
+const CARD = "flex flex-col justify-between gap-12 min-h-80";
+const CARD_META = "text-[0.875rem] font-medium opacity-75";
+const HOVER = "grid place-items-center size-56 rounded-lg bg-ink text-paper font-display font-medium text-[1.4rem] tracking-[-0.04em]";
+const TOOLBAR_GROUND = "grid place-items-center min-h-64 rounded-card overflow-hidden";
+
 function Components() {
   return (
-    <div id="components" className="components">
-      <div className="components__intro">
+    <div id="components" className="px-(--gutter)">
+      <div className="flex flex-col gap-6 pb-24">
         <Eyebrow>The kit</Eyebrow>
         <Display size="xxl">
           Every piece <Accent tone="mute">performs</Accent>
         </Display>
-        <div className="index">
+        <div className="flex flex-wrap gap-tight mt-6 max-w-[70rem]">
           {[
             ["buttons", "Buttons"],
             ["circle", "Circle CTA"],
@@ -255,7 +302,12 @@ function Components() {
             ["checklist", "Checklist"],
             ["toolbar", "Canvas toolbar"],
           ].map(([id, label]) => (
-            <a key={id} href={`#${id}`} className="index__link">
+            // rap-roll-host: hovering the whole pill rolls its letters
+            <a
+              key={id}
+              href={`#${id}`}
+              className="rap-roll-host py-[0.85rem] px-[1.3rem] rounded-pill bg-paper-2 font-medium transition-colors duration-(--rap-dur) ease-rm hover:bg-ink hover:text-paper"
+            >
               <RollText>{label}</RollText>
             </a>
           ))}
@@ -279,7 +331,7 @@ function Components() {
 </ButtonGroup>
 <Button variant="ghost" icon>Read the manifesto</Button>`}
       >
-        <div className="demo-wrap">
+        <div className="flex flex-col items-center gap-10">
           <Button size="xl" icon magnetic>
             Start a project
           </Button>
@@ -324,7 +376,7 @@ function Components() {
 <CircleButton size={200} variant="ink">Let's talk</CircleButton>
 <CircleButton size={160} variant="acid" />`}
       >
-        <div className="demo-row demo-row--center">
+        <div className={ROW}>
           <CircleButton size={200} />
           <CircleButton size={200} variant="ink">
             Let’s
@@ -348,7 +400,7 @@ function Components() {
 <BigLink href="/about" meta="since 2019">Studio</BigLink>
 <BigLink href="/contact" size="xxl">Say hello</BigLink>`}
       >
-        <div className="demo-biglinks">
+        <div className="w-full justify-self-stretch border-t border-line">
           <BigLink href="#biglink" meta="24 projects">Work</BigLink>
           <BigLink href="#biglink" meta="since 2019">Studio</BigLink>
           <BigLink href="#biglink" meta="12 posts">Journal</BigLink>
@@ -368,17 +420,18 @@ function Components() {
   Craft engaging storytelling and interactive experiences
 </FeatureCard>`}
       >
-        <div className="demo-features">
-          <FeatureCard title="Free layout" media={<span className="demo-emoji">✦</span>}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-tile w-full">
+          {/* the white card sits on the grey stage, so it swaps to paper with a grey media slot */}
+          <FeatureCard title="Free layout" className="[--fc-bg:var(--rap-paper)] [--fc-media:var(--rap-paper-2)]" media={<span className={EMOJI}>✦</span>}>
             Complete creative freedom, so you can create unique designs
           </FeatureCard>
-          <FeatureCard title="Built-in animations" tone="blue" media={<span className="demo-emoji">↻</span>}>
+          <FeatureCard title="Built-in animations" tone="blue" media={<span className={EMOJI}>↻</span>}>
             Craft engaging storytelling and interactive experiences
           </FeatureCard>
-          <FeatureCard title="Advanced typography" tone="grey" media={<span className="demo-emoji">Aa</span>}>
+          <FeatureCard title="Advanced typography" tone="grey" media={<span className={EMOJI}>Aa</span>}>
             Enhance design aesthetics and readability
           </FeatureCard>
-          <FeatureCard title="Collaboration" tone="flame" media={<span className="demo-emoji">☺</span>}>
+          <FeatureCard title="Collaboration" tone="flame" media={<span className={EMOJI}>☺</span>}>
             Work on group projects, leave comments and assign tasks
           </FeatureCard>
         </div>
@@ -401,16 +454,16 @@ function Components() {
 <Display size="xxl">Make it <Accent>unforgettable</Accent></Display>
 <Lead>Big type, lots of air, and a <Highlight>highlighter</Highlight> swipe.</Lead>`}
       >
-        <div className="demo-type">
+        <div className="flex flex-col gap-7 w-full justify-self-stretch">
           <Eyebrow>Chapter one</Eyebrow>
           <Display size="xxl">
             Make it <Accent>unforgettable</Accent>
           </Display>
-          <Lead>
+          <Lead className="max-w-[40ch]">
             Big type, lots of air, and a <Highlight>highlighter</Highlight> swipe — or a <Highlight color="bubble">pink</Highlight> one, or{" "}
             <Highlight color="blue">blue</Highlight>.
           </Lead>
-          <div className="demo-scale">
+          <div className="flex flex-col gap-3 pt-6 border-t-[1.5px] border-line">
             {(["lg", "md"] as const).map((s) => (
               <Display key={s} size={s}>
                 {s === "lg" ? "Display / lg" : "Display / md — for smaller headings"}
@@ -426,19 +479,19 @@ function Components() {
         title="Marquee"
         sub="forever"
         desc="Seamless infinite ticker. Tilt it, reverse it, stack two in opposite directions. Pauses on hover."
-        stageClass="show__stage--bleed"
+        stageClass="px-0"
         code={`import { Marquee, Accent } from "rapui";
 
 <Marquee rotate={-3} duration={20}>
   <span>Available for work</span> <Accent tone="mute">✳</Accent>
 </Marquee>`}
       >
-        <div className="demo-marquees">
-          <Marquee rotate={-3} duration={18} className="demo-mq demo-mq--flame">
+        <div className="w-full flex flex-col gap-6">
+          <Marquee rotate={-3} duration={18} className={cn(MQ, "bg-flame text-[#282828]")}>
             <span>Available for work</span>
             <span>✳</span>
           </Marquee>
-          <Marquee rotate={2} duration={24} reverse className="demo-mq demo-mq--line">
+          <Marquee rotate={2} duration={24} reverse className={cn(MQ, "border-y-[1.5px] border-ink")}>
             <Sticker color="acid" rotate={-6}>fresh</Sticker>
             <span>Motion</span>
             <Sticker color="bubble" shape="circle" rotate={8}>hi!</Sticker>
@@ -464,17 +517,18 @@ function Components() {
 <Sticker color="acid" shape="heart">love it</Sticker>
 // also: blob, clover, squircle`}
       >
-        <div className="demo-row demo-row--center demo-stickers">
+        {/* drawn shapes size by width (the SVG fills a square), so each gets its own */}
+        <div className={cn(ROW, "gap-x-12 gap-y-8")}>
           <Sticker color="acid" size="1.6rem">fresh</Sticker>
-          <Sticker color="flame" shape="burst" size="1.1rem" rotate={10}>
+          <Sticker color="flame" shape="burst" className="w-36" size="1.1rem" rotate={10}>
             hot
             <br />
             drop!
           </Sticker>
-          <Sticker color="blue" shape="star" size="1.4rem" rotate={-12}>
+          <Sticker color="blue" shape="star" className="w-32" size="1.4rem" rotate={-12}>
             A+
           </Sticker>
-          <Sticker color="bubble" shape="circle" size="1.2rem" rotate={9}>
+          <Sticker color="bubble" shape="circle" className="w-28" size="1.2rem" rotate={9}>
             say
             <br />
             hi
@@ -482,16 +536,16 @@ function Components() {
           <Sticker color="sky" shape="tag" size="1.4rem" rotate={4}>
             sale −30%
           </Sticker>
-          <Sticker color="plum" shape="flower" size="1.1rem" rotate={-8}>
+          <Sticker color="plum" shape="flower" className="w-30" size="1.1rem" rotate={-8}>
             new
           </Sticker>
-          <Sticker color="acid" shape="heart" size="1.1rem" rotate={6}>
+          <Sticker color="acid" shape="heart" className="w-30" size="1.1rem" rotate={6}>
             love it
           </Sticker>
-          <Sticker color="sky" shape="blob" size="1.1rem" rotate={-4}>
+          <Sticker color="sky" shape="blob" className="w-30" size="1.1rem" rotate={-4}>
             soft
           </Sticker>
-          <Sticker color="flame" shape="clover" size="1.1rem" rotate={10}>
+          <Sticker color="flame" shape="clover" className="w-30" size="1.1rem" rotate={10}>
             lucky
           </Sticker>
           <Sticker color="ink" size="1.2rem" rotate={-3}>
@@ -514,7 +568,7 @@ function Components() {
 <RotatingBadge text="open for projects ✳ open for projects ✳ " />
 <RotatingBadge text="made with rap/ui • made with rap/ui • " color="acid" center="☺" />`}
       >
-        <div className="demo-row demo-row--center">
+        <div className={ROW}>
           <RotatingBadge text="open for projects ✳ open for projects ✳ " size={180} />
           <RotatingBadge text="made with rap/ui • made with rap/ui • " color="acid" size={180} center="☺" />
           <RotatingBadge text="sound on ♪ sound on ♪ sound on ♪ " color="blue" size={180} center="▶" />
@@ -550,28 +604,28 @@ function Components() {
   <Display size="lg">Case study</Display>
 </TiltCard>`}
       >
-        <div className="demo-cards">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-tile w-full">
           <TiltCard tone="flame" data-rap-cursor="Open">
-            <div className="demo-card">
-              <span className="demo-card__k">Case 01</span>
+            <div className={CARD}>
+              <span className={CARD_META}>Case 01</span>
               <Display size="lg">Brand for a bakery on Mars</Display>
-              <span className="demo-card__f">Identity — 2026</span>
+              <span className={CARD_META}>Identity — 2026</span>
             </div>
           </TiltCard>
           <TiltCard tone="ink" data-rap-cursor="Play">
-            <div className="demo-card">
-              <span className="demo-card__k">Case 02</span>
+            <div className={CARD}>
+              <span className={CARD_META}>Case 02</span>
               <Display size="lg">
                 Motion system
               </Display>
-              <span className="demo-card__f">Product — 2025</span>
+              <span className={CARD_META}>Product — 2025</span>
             </div>
           </TiltCard>
           <TiltCard tone="acid" data-rap-cursor="Read">
-            <div className="demo-card">
-              <span className="demo-card__k">Case 03</span>
+            <div className={CARD}>
+              <span className={CARD_META}>Case 03</span>
               <Display size="lg">Zine for night owls</Display>
-              <span className="demo-card__f">Editorial — 2025</span>
+              <span className={CARD_META}>Editorial — 2025</span>
             </div>
           </TiltCard>
         </div>
@@ -663,7 +717,7 @@ function Components() {
 
 <Display size="mega"><Counter to={248} suffix="+" /></Display>`}
       >
-        <div className="demo-counters">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-8 w-full [&_span]:text-ink-2">
           <div>
             <Display size="xxl"><Counter to={248} suffix="+" /></Display>
             <span>projects shipped</span>
@@ -700,15 +754,15 @@ function Components() {
   <Sticker shape="circle" size="2rem">pull</Sticker>
 </Magnetic>`}
       >
-        <div className="demo-row demo-row--center">
-          <div className="demo-hover" data-rap-cursor="Hello ✳">
+        <div className={ROW}>
+          <div className={HOVER} data-rap-cursor="Hello ✳">
             Hover me
           </div>
-          <div className="demo-hover demo-hover--blue" data-rap-cursor="View">
+          <div className={cn(HOVER, "bg-blue text-white rounded-full text-[2rem]")} data-rap-cursor="View">
             and me
           </div>
           <Magnetic strength={0.6}>
-            <Sticker shape="circle" color="acid" size="1.8rem" rotate={-8}>
+            <Sticker shape="circle" color="acid" className="w-36" size="1.8rem" rotate={-8}>
               pull
               <br />
               me
@@ -720,7 +774,7 @@ function Components() {
       <Showcase
         n={17}
         id="checklist"
-        stageClass="show__stage--ground"
+        stageClass="bg-paper shadow-[inset_0_0_0_1px_var(--rap-line)]"
         title="Checklist"
         sub="one spring"
         desc={
@@ -734,7 +788,7 @@ function Components() {
 <Checklist />
 <Checklist bounce={80} box={20} corner={24} />`}
       >
-        <div className="demo-row demo-row--center">
+        <div className={ROW}>
           <Checklist />
           <Checklist bounce={85} box={20} corner={28} />
         </div>
@@ -760,11 +814,11 @@ function Components() {
   <CanvasToolbar corner={20} />
 </div>`}
       >
-        <div className="demo-toolbars">
-          <div className="demo-toolbar demo-toolbar--flat">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] gap-tile w-full">
+          <div className={cn(TOOLBAR_GROUND, "bg-paper")}>
             <CanvasToolbar />
           </div>
-          <div className="demo-toolbar demo-toolbar--glass" data-surface="glass">
+          <div className={cn(TOOLBAR_GROUND, GLASS_GROUND)} data-surface="glass">
             <CanvasToolbar corner={20} />
           </div>
         </div>
@@ -776,7 +830,7 @@ function Components() {
 function RevealDemo() {
   const [k, setK] = useState(0);
   return (
-    <div className="demo-reveal" key={k}>
+    <div className="flex flex-col gap-6 items-start w-full justify-self-stretch" key={k}>
       <Display size="xl">
         <SplitReveal>Every word earns its entrance</SplitReveal>
       </Display>
@@ -803,19 +857,24 @@ const SWATCHES = [
   { name: "Sky", v: "--rap-sky", hex: "#8FD3FF", tone: "sky" },
 ] as const;
 
+const SPECIMEN = "flex flex-col gap-4 p-8 rounded-lg bg-paper-2 overflow-hidden";
+const SPECIMEN_K = "text-[0.875rem] font-medium text-mute";
+const SPECIMEN_BIG = "text-[clamp(4rem,8vw,7rem)] leading-[0.9]";
+const SPECIMEN_ABC = "font-display text-[0.95rem] tracking-[-0.02em] break-all";
+
 function Tokens() {
   return (
-    <section className="tokens" id="tokens">
+    <section className="py-32 px-(--gutter) flex flex-col gap-6" id="tokens">
       <Eyebrow>Tokens</Eyebrow>
       <Display size="xxl">
         Grey paper, soft ink <Accent tone="mute">& six loud friends</Accent>
       </Display>
-      <div className="swatches">
+      <div className="grid grid-cols-4 gap-tile mt-10 max-[760px]:grid-cols-2">
         {SWATCHES.map((s) => (
           <TiltCard key={s.name} tone={s.tone} max={8}>
-            <div className="swatch">
+            <div className="flex flex-col justify-between min-h-56">
               <Display size="md">{s.name}</Display>
-              <span className="swatch__meta">
+              <span className="text-[0.8125rem] font-medium opacity-75 tabular-nums">
                 {s.hex}
                 <br />
                 var({s.v})
@@ -825,21 +884,21 @@ function Tokens() {
         ))}
       </div>
 
-      <div className="specimens">
-        <div className="specimen">
-          <span className="specimen__k">Onest — headlines, 450, −4.5% tracking</span>
-          <span className="specimen__big specimen__big--display">Aa Бб</span>
-          <span className="specimen__abc">ABCDEFGHIJKLMNOPQRSTUVWXYZ АБВГДЕЖЗИЙКЛМН 0123456789</span>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] gap-tile mt-12">
+        <div className={SPECIMEN}>
+          <span className={SPECIMEN_K}>Onest — headlines, 450, −4.5% tracking</span>
+          <span className={cn(SPECIMEN_BIG, "font-display font-[450] tracking-[-0.06em]")}>Aa Бб</span>
+          <span className={SPECIMEN_ABC}>ABCDEFGHIJKLMNOPQRSTUVWXYZ АБВГДЕЖЗИЙКЛМН 0123456789</span>
         </div>
-        <div className="specimen">
-          <span className="specimen__k">Onest — interface, 400–600</span>
-          <span className="specimen__big specimen__big--sans">Aa Бб</span>
-          <span className="specimen__abc specimen__abc--sans">The quick brown fox · Съешь же ещё этих мягких булок</span>
+        <div className={SPECIMEN}>
+          <span className={SPECIMEN_K}>Onest — interface, 400–600</span>
+          <span className={cn(SPECIMEN_BIG, "font-sans font-semibold tracking-[-0.05em]")}>Aa Бб</span>
+          <span className={cn(SPECIMEN_ABC, "font-sans text-[1.1rem] tracking-[-0.01em] break-normal")}>The quick brown fox · Съешь же ещё этих мягких булок</span>
         </div>
-        <div className="specimen">
-          <span className="specimen__k">Geist Mono — code only</span>
-          <span className="specimen__big specimen__big--mono">{"{}"}</span>
-          <span className="specimen__abc specimen__abc--mono">const nerve = true; // 0123</span>
+        <div className={SPECIMEN}>
+          <span className={SPECIMEN_K}>Geist Mono — code only</span>
+          <span className={cn(SPECIMEN_BIG, "font-mono font-normal tracking-[-0.04em]")}>{"{}"}</span>
+          <span className={cn(SPECIMEN_ABC, "font-mono")}>const nerve = true; // 0123</span>
         </div>
       </div>
     </section>
@@ -848,15 +907,16 @@ function Tokens() {
 
 function Install() {
   return (
-    <section className="install" id="install">
-      <div className="install__grid">
-        <div>
+    <section className="pt-24 px-(--gutter) pb-32 bg-paper-2 rounded-t-lg" id="install">
+      <div className="grid grid-cols-[1fr_1.1fr] gap-12 items-start max-[900px]:grid-cols-1">
+        {/* the heading stays in view while the snippets scroll past */}
+        <div className="flex flex-col gap-6 sticky top-28 max-[900px]:static">
           <Eyebrow>Install</Eyebrow>
           <Display size="xxl">
             Two lines <Accent tone="mute">and you’re loud</Accent>
           </Display>
         </div>
-        <div className="install__steps">
+        <div className="flex flex-col gap-4 min-w-0">
           <Code>{`npm install rapui`}</Code>
           <Code>{`// main.tsx
 import "rapui/styles.css";
@@ -880,21 +940,25 @@ export function App() {
 
 function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer__cta">
+    // an ink sheet that slides up over the install section's rounded bottom
+    <footer className="relative -mt-10 pt-24 px-(--gutter) pb-8 rounded-t-lg bg-ink text-paper overflow-hidden dark:bg-paper-2 dark:text-ink">
+      <div className="flex justify-between items-center flex-wrap gap-8">
         <Display size="xxl">
           Got an idea<Accent>?</Accent>
         </Display>
-        <CircleButton size={180} variant="accent">
+        <CircleButton size={180} variant="accent" className="[--c-fill:var(--rap-acid)] [--c-fill-fg:#282828]">
           Say
           <br />
           hello
         </CircleButton>
       </div>
-      <div className="footer__giant" aria-hidden>
+      <div
+        className="mt-20 mb-8 -ml-[0.04em] font-display font-[450] text-[clamp(6rem,27vw,30rem)] tracking-[-0.08em] leading-[0.8] whitespace-nowrap"
+        aria-hidden
+      >
         rap<Accent>/</Accent>ui
       </div>
-      <div className="footer__bottom">
+      <div className="flex flex-wrap justify-between gap-4 pt-6 border-t border-white/15 text-[0.875rem] font-medium">
         <span>© 2026 rap/ui — MIT</span>
         <span>Made with too much coffee ✳ and big type</span>
         <a href="#top">
@@ -919,7 +983,7 @@ export function App({
   setSound: (v: SoundSettings) => void;
 }) {
   return (
-    <div className="rap-root site">
+    <div className="rap-root min-h-screen overflow-x-clip [--gutter:clamp(1rem,4vw,3.5rem)]">
       <Cursor />
       <Header dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
       <main>

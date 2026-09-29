@@ -5,6 +5,9 @@ import { Eye, Moon, RefreshCw, Sun, Volume1, Volume2 } from "../../rapui/icons";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
 
+/* a paper ground inside the white stage, for demos drawn on the page colour */
+const GROUND = "grid place-items-center w-full min-h-80 p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
+
 const timeControls: Control[] = [
   { type: "select", prop: "step", options: ["1", "5", "15", "30", "60"], default: "15" },
   { type: "number", prop: "momentum", label: "fling carry", min: 0, max: 100, default: 50 },
@@ -178,7 +181,7 @@ export const entries: DocEntry[] = [
       "A time over a ruler: drag the ruler under the centre mark, fling it and it coasts, then settles on the nearest step. Delight: one spring for the throw and the snap, digits roll through a fading window, and with sound on every step ticks under your thumb, firmer on the hour.",
     controls: timeControls,
     Demo: ({ p }) => (
-      <div className="doc-ground">
+      <div className={GROUND}>
         <TimeScrubber
           key={`${p.step}-${p.format}`}
           step={String(p.step)}
@@ -200,7 +203,7 @@ export const entries: DocEntry[] = [
       "A rotary dial for levels and amounts: drag up or right to turn it up, arrow keys step, Home/End jump to the stops. Delight: every step is a magnetic detent — turn slowly and the dial holds still in the notch, then hurries into the next with a click (firmer at the stops), while the tick ring lights up in flame and the number in the cap rolls.",
     controls: knobControls,
     Demo: ({ p }) => (
-      <div className="doc-ground">
+      <div className={GROUND}>
         <Knob
           key={`${p.min}-${p.max}-${p.step}-${p.defaultValue}`}
           size={p.size as "sm" | "md" | "lg"}
@@ -246,7 +249,7 @@ export const entries: DocEntry[] = [
       "An iOS-style drum of options: drag or fling it, scroll it, tap a row, or use ↑ ↓ and type-ahead; it settles with one option in the band. Delight: the rows curve away round a real cylinder, a flick spins it and one spring brings it to rest (with a notch per row passed), and the blue band is a lens — rows change colour exactly as they cross its edge.",
     controls: wheelControls,
     Demo: ({ p }) => (
-      <div className="doc-ground">
+      <div className={GROUND}>
         <WheelDemo p={p} />
       </div>
     ),
@@ -308,7 +311,7 @@ ${decl}
       "A slider whose track is a rubber band, with the value on the thumb and optional icons at both ends. Delight: drag past either end and the band stretches after you with growing resistance, thinning as it goes and shoving the end icon aside; let go and it snaps back with a recoil and a drop — and the thumb squashes along its path the faster it moves.",
     controls: elasticControls,
     Demo: ({ p }) => (
-      <div className="doc-ground">
+      <div className={GROUND}>
         <div style={{ width: "min(100%, 22rem)", paddingTop: "2rem" }}>
           <ElasticSlider
             key={`${p.min}-${p.max}-${p.step}-${p.defaultValue}`}
@@ -355,7 +358,7 @@ import { Moon, Sun } from "rapui/icons";
       "A design-tool number: press the label and drag sideways to scrub (Shift ×10, Alt ×0.1), click the number to type, arrows step. Delight: the pill leans into the direction you drag on a spring and rights itself when you stop, the digits roll, every step ticks, and it shakes its head at min and max.",
     controls: scrubControls,
     Demo: ({ p }) => (
-      <div className="doc-ground">
+      <div className={GROUND}>
         <ScrubNumber
           key={`${p.min}-${p.max}-${p.defaultValue}`}
           label={String(p.label)}

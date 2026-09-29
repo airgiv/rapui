@@ -313,7 +313,7 @@ export const entries: DocEntry[] = [
       },
       {
         title: "Search",
-        Demo: () => <Input placeholder="Search projects" prefix={<Search />} suffix={<kbd className="doc-kbd">⌘K</kbd>} />,
+        Demo: () => <Input placeholder="Search projects" prefix={<Search />} suffix={<kbd className="py-[0.1rem] px-[0.45rem] rounded-[8px] bg-fill font-sans text-[0.75rem] font-medium text-ink-2">⌘K</kbd>} />,
         code: `<Input placeholder="Search projects" prefix={<Search />} suffix={<kbd>⌘K</kbd>} />`,
       },
     ],
@@ -412,7 +412,7 @@ export const entries: DocEntry[] = [
                 <Label htmlFor="all">All pages</Label>
               </div>
               {names.map((n, i) => (
-                <div className="doc-row doc-indent" key={n}>
+                <div className="doc-row pl-8" key={n}>
                   <Checkbox
                     id={`pg-${i}`}
                     checked={rows[i]}
@@ -449,7 +449,7 @@ export const entries: DocEntry[] = [
         <div className="doc-stack" style={{ width: "min(100%, 24rem)" }}>
           <div className="doc-row doc-between">
             <Label>Opacity</Label>
-            <span className="doc-value">{v.join(" – ")}%</span>
+            <span className="text-[0.9375rem] font-medium tabular-nums">{v.join(" – ")}%</span>
           </div>
           <Slider
             value={v}

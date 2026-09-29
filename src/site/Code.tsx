@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { cn } from "../rapui/utils";
 
 /** Tiny single-pass highlighter for JSX / shell snippets — zero deps. */
 const TOKEN =
@@ -34,11 +35,20 @@ export function Code({ children }: { children: string }) {
     }
   };
   return (
-    <div className="site-code">
-      <button className={`site-code__copy ${copied ? "is-done" : ""}`} onClick={copy} type="button">
+    // a dark slab in both themes (a touch lighter on the dark page so it still reads as a slab)
+    <div className="relative rounded-card bg-[#111110] text-[#e9e6de] overflow-hidden dark:bg-[#1d1d1b]">
+      <button
+        className={cn(
+          "absolute top-[0.9rem] right-[0.9rem] py-[0.45rem] px-[0.9rem] border border-solid border-white/20 rounded-pill bg-transparent",
+          "text-[#e9e6de] font-mono text-[0.75rem] cursor-pointer transition-colors duration-(--rap-dur-fast) hover:bg-[#e9e6de] hover:text-[#111]",
+          copied && "bg-acid text-[#111] border-acid hover:bg-acid",
+        )}
+        onClick={copy}
+        type="button"
+      >
         {copied ? "Copied ✓" : "Copy"}
       </button>
-      <pre>
+      <pre className="m-0 py-7 px-8 overflow-x-auto font-mono text-[0.9rem] leading-[1.7]">
         <code dangerouslySetInnerHTML={{ __html: highlight(children.trim()) }} />
       </pre>
     </div>
