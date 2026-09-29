@@ -1,9 +1,8 @@
-import "./styles/tokens.css";
-import "./styles/base.css";
-import "./styles/surfaces.css";
-import "./styles/motion.css";
+/* rap/ui — components. Styles are NOT imported here: add them once in your app,
+   either `import "rapui/styles.css"` (precompiled, no preflight) or, with
+   Tailwind v4, `@import "rapui/theme.css"` + an @source for rapui. */
 
-export { cx } from "./utils";
+export { cn } from "./utils";
 export { useInView } from "./hooks/useInView";
 export { useMagnetic } from "./hooks/useMagnetic";
 export { useSpring, useSpringLag } from "./hooks/useSpring";

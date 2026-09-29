@@ -1,6 +1,6 @@
 import { useEffect, useState, type HTMLAttributes } from "react";
 import { useInView } from "../hooks/useInView";
-import { cx, prefersReducedMotion } from "../utils";
+import { cn, prefersReducedMotion } from "../utils";
 
 export interface CounterProps extends HTMLAttributes<HTMLSpanElement> {
   to: number;
@@ -36,7 +36,7 @@ export function Counter({ to, from = 0, duration = 1800, decimals = 0, prefix = 
   }, [inView, to, from, duration]);
 
   return (
-    <span ref={ref} className={cx("rap-counter", className)} style={{ fontVariantNumeric: "tabular-nums", ...style }} {...rest}>
+    <span ref={ref} className={cn("rap-counter", className)} style={{ fontVariantNumeric: "tabular-nums", ...style }} {...rest}>
       {prefix}
       {val.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}
       {suffix}

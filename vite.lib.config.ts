@@ -12,7 +12,7 @@ export default defineConfig({
         fonts: "src/rapui/fonts.ts",
         icons: "src/rapui/icons.tsx",
         // the stylesheet: Tailwind theme + utilities used by the components, no preflight
-        styles: "src/rapui/styles/index.css",
+        styles: "src/rapui/styles.ts",
       },
       formats: ["es"],
       fileName: (_format, name) => `${name}.js`,

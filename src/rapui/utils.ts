@@ -28,9 +28,6 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-/** @deprecated kept for components not yet on Tailwind — use `cn`. */
-export const cx = cn;
-
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 export function prefersReducedMotion(): boolean {

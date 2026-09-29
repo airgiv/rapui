@@ -20,7 +20,8 @@
     "./icons": {
       "types": "./dist/icons.d.ts",
       "import": "./dist/icons.js"
-    }
+    },
+    "./theme.css": "./dist/theme.css"
   },
   "files": [
     "dist"
@@ -34,7 +35,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css dist/",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
