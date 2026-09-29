@@ -7,8 +7,44 @@ import "../rapui/fonts";
 import "../rapui";
 import { App } from "./App";
 import { SoundProvider, type SoundSettings } from "../rapui";
-/* the explorer pulls in charts, tables, calendars…: load it only when opened */
-const Docs = lazy(() => import("./Docs").then((m) => ({ default: m.Docs })));
+/* The explorer pulls in charts, tables, calendars…: load it only when opened.
+   Every deploy renames that chunk, so a tab opened before a deploy asks for a file
+   that no longer exists and the import fails — the click on Docs would do nothing.
+   When that happens, reload once (the hash is kept, so the fresh page opens straight
+   in the docs); the session flag stops a real outage from looping. */
+const RELOADED = "rapui-chunk-reload";
+const flag = {
+  get: () => {
+    try {
+      return sessionStorage.getItem(RELOADED);
+    } catch {
+      return "1"; // storage blocked: never auto-reload, so never loop
+    }
+  },
+  set: (on: boolean) => {
+    try {
+      if (on) sessionStorage.setItem(RELOADED, "1");
+      else sessionStorage.removeItem(RELOADED);
+    } catch {
+      /* storage blocked */
+    }
+  },
+};
+const Docs = lazy(() =>
+  import("./Docs")
+    .then((m) => {
+      flag.set(false);
+      return { default: m.Docs };
+    })
+    .catch((err) => {
+      if (!flag.get()) {
+        flag.set(true);
+        window.location.reload();
+        return new Promise<never>(() => {}); // the page is going away
+      }
+      throw err;
+    }),
+);
 
 /* Two views on one bundle, picked by the hash:
    #docs or #docs.<slug> → the components explorer, anything else → the landing page.
