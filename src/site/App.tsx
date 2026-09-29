@@ -10,7 +10,6 @@ import {
   Cursor,
   Display,
   DonutChart,
-  ElasticSlider,
   HeatGrid,
   HoldButton,
   Input,
@@ -18,6 +17,7 @@ import {
   RaceBars,
   RollText,
   SlideButton,
+  Slider,
   Sparkline,
   SplitReveal,
   Sticker,
@@ -36,7 +36,7 @@ import {
   useSound,
   type SoundSettings,
 } from "../rapui";
-import { ArrowLeft, ArrowRight, Volume1, Volume2 } from "../rapui/icons";
+import { ArrowLeft, ArrowRight } from "../rapui/icons";
 import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
@@ -135,9 +135,29 @@ function Header({
 const HEAD = "font-display font-medium tracking-[-0.055em] text-[clamp(2.8rem,7.6vw,8.4rem)] leading-[0.9]";
 const TILE = "relative grid place-items-center min-h-[15rem] p-6 rounded-lg overflow-hidden";
 
+/* Fun mode, with a face: two dots and one line. The line is a smile when fun is on
+   and turns over into a frown when it goes serious — the mouth flips on a spring
+   (scaleY through zero, overshooting), the eyes squint for a beat. */
 function HeroSwitch() {
   const [on, setOn] = useState(true);
-  return <Switch size="lg" checked={on} onCheckedChange={setOn} label={on ? "Fun mode" : "Serious mode"} />;
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <svg viewBox="0 0 120 120" className="w-28 h-28" aria-hidden>
+        <circle cx="42" cy="46" r="7" fill="currentColor" className="origin-[42px_46px] transition-transform duration-300 ease-spring" style={{ transform: on ? "scaleY(1)" : "scaleY(0.35)" }} />
+        <circle cx="78" cy="46" r="7" fill="currentColor" className="origin-[78px_46px] transition-transform duration-300 ease-spring" style={{ transform: on ? "scaleY(1)" : "scaleY(0.35)" }} />
+        <path
+          d="M34 76 Q60 100 86 76"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="7"
+          strokeLinecap="round"
+          className="origin-[60px_84px] transition-transform duration-500 ease-back"
+          style={{ transform: on ? "scaleY(1)" : "translateY(6px) scaleY(-1)" }}
+        />
+      </svg>
+      <Switch size="lg" checked={on} onCheckedChange={setOn} label={on ? "Fun mode" : "Serious mode"} />
+    </div>
+  );
 }
 
 function Hero() {
@@ -174,7 +194,9 @@ function Hero() {
           </div>
         </div>
         <div className={cn(TILE, "[--i:1] bg-flame")}>
-          <HoldButton size="lg" variant="ink" doneLabel="Shipped">
+          {/* the liquid is acid, not the button's default flame: flame on a flame tile
+              left a seam where the pill met the ground */}
+          <HoldButton size="lg" variant="ink" doneLabel="Shipped" className="[--hb-fill:var(--rap-acid)] [--hb-fill-fg:#282828]">
             Hold to ship
           </HoldButton>
         </div>
@@ -273,7 +295,7 @@ function SameApi() {
       plain: <input type="range" className="w-44" aria-label="Volume" value={vol} onChange={(e) => setVol(Number(e.target.value))} />,
       rap: (
         <div className="w-60">
-          <ElasticSlider aria-label="Volume" value={vol} onValueChange={setVol} icons={[<Volume1 key="a" />, <Volume2 key="b" />]} />
+          <Slider aria-label="Volume" value={[vol]} min={0} max={100} onValueChange={([v]) => setVol(v)} />
         </div>
       ),
     },
@@ -294,16 +316,33 @@ function SameApi() {
         </p>
       </div>
       <div className="grid grid-cols-4 gap-tile w-full max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
+        {/* The tiles stay put — same ground, same size — and only what is inside
+            changes: the outgoing control shrinks and blurs away while the incoming one
+            grows out of it on the back curve, a little later per tile. The eye follows
+            the component turning into the other one, not the cards flickering. */}
         {tiles.map((t, i) => (
-          <div
-            key={`${i}-${fun}`}
-            className={cn(
-              "grid place-items-center min-h-[22rem] p-8 rounded-lg transition-colors duration-300",
-              fun ? "bg-paper-2 fun:animate-toss-in" : "bg-white shadow-[inset_0_0_0_1px_#e4e4e7]",
-            )}
-            style={{ animationDelay: `${i * 70}ms` }}
-          >
-            {fun ? t.rap : t.plain}
+          <div key={i} className="grid place-items-center min-h-[22rem] p-8 rounded-lg bg-paper-2 overflow-hidden">
+            {([
+              [false, t.plain],
+              [true, t.rap],
+            ] as const).map(([isRap, node]) => {
+              const shown = isRap === fun;
+              return (
+                <div
+                  key={String(isRap)}
+                  aria-hidden={!shown}
+                  className={cn("col-start-1 row-start-1 grid place-items-center", !shown && "pointer-events-none")}
+                  style={{
+                    opacity: shown ? 1 : 0,
+                    transform: shown ? "scale(1)" : `scale(${isRap ? 0.6 : 1.3})`,
+                    filter: shown ? "blur(0px)" : "blur(8px)",
+                    transition: `opacity 320ms ease ${shown ? 120 + i * 60 : i * 40}ms, transform 560ms var(--rap-ease-back) ${shown ? 120 + i * 60 : i * 40}ms, filter 360ms ease ${shown ? 120 + i * 60 : i * 40}ms`,
+                  }}
+                >
+                  {node}
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
@@ -346,8 +385,8 @@ function GiantToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => 
    its place when the card scrolls into view, the leftmost last and slowest, on a
    back-out curve, so the number seems to wind up and click into place rather than
    flicker through values. Calm shows the number at once. */
-const STAT = "flex flex-col gap-5 min-h-[24rem] justify-end p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg overflow-hidden";
-const BIG = "font-display font-medium tracking-[-0.07em] tabular-nums text-[clamp(6rem,11vw,11rem)] leading-[0.8]";
+const STAT = "flex flex-col gap-5 min-h-[24rem] justify-between p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg overflow-hidden";
+const BIG = "font-display font-medium tracking-[-0.05em] text-[clamp(6rem,11vw,11rem)] leading-[0.92]";
 const STAT_TEXT = "m-0 max-w-[24ch] text-[1.2rem] leading-[1.35] opacity-80";
 
 function Odometer({ value }: { value: number }) {
@@ -374,12 +413,18 @@ function Odometer({ value }: { value: number }) {
         // each column spins through a full turn plus its digit, the left ones further
         const turns = (digits.length - i) * 10;
         const to = go ? turns + n : 0;
+        /* Each column is sized by its FINAL digit — an invisible copy of it sits in
+           the flow — and the rolling strip is laid over it, centred. So a "1" is as
+           narrow as a 1 (no tabular gap after it), and the strip is cut with a
+           clip-path that clips only top and bottom: overflow:hidden also cut the
+           glyphs' sides, which the tight tracking pushes past their boxes. */
         return (
-          <span key={i} aria-hidden className="relative inline-block h-[0.92em] overflow-hidden">
+          <span key={i} aria-hidden className="relative inline-block h-[0.92em] [clip-path:inset(0_-0.3em)]">
+            <span className="invisible">{d}</span>
             <span
-              className="flex flex-col"
+              className="absolute left-1/2 top-0 flex flex-col items-center"
               style={{
-                transform: `translateY(${-to * 0.92}em)`,
+                transform: `translate(-50%, ${-to * 0.92}em)`,
                 transition: go ? `transform ${1400 + (digits.length - i) * 350}ms cubic-bezier(0.2, 1.15, 0.3, 1)` : "none",
               }}
             >
@@ -517,16 +562,44 @@ const BUBBLE = "max-w-[min(100%,34rem)] px-6 py-4 text-[clamp(1.1rem,1.8vw,1.5re
 const THEM = "rounded-[28px] rounded-bl-[8px] bg-paper-2 text-ink";
 const ME = "rounded-[28px] rounded-br-[8px] bg-ink text-paper";
 
-/* The conversation plays as you scroll — continuously, not in steps. A tall
-   runway holds a sticky pink window; how far you are through it is a smooth
-   number v from 0 to N (N messages), eased toward the scroll on each frame so a
-   wheel notch glides instead of jumping. Message i is "arrived" by
-   a = clamp(v − i, 0, 1): it rises 48px, straightens from its sender's tilt and
-   fades in over that range. The thread is bottom-aligned like a real chat: the
-   column is shifted so the newest message's bottom meets the window's bottom,
-   interpolated by the same fraction — so older bubbles are pushed up smoothly as
-   the new one grows in, and scroll back un-sends them. Calm shows the thread. */
+/* The conversation arrives like a real one. The pink canvas fills the screen edge
+   to edge; once it is on screen the thread plays in TIME, not in scroll steps: the
+   other side "types" (three dots) before each of their messages, yours land after
+   a short beat. Each new message opens its own room — its row grows from zero
+   height on a soft curve, so the thread above is pushed up smoothly rather than
+   jumping — and the bubble pops in, tilted toward its sender, landing straight.
+   When it ends, Replay. Calm shows the whole thread at once. */
 const DOT_GRID = "[background-image:radial-gradient(circle,rgb(255_255_255/0.55)_1.4px,transparent_1.7px)] [background-size:24px_24px]";
+
+function Typing() {
+  return (
+    <div className={cn(THEM, "flex gap-1.5 px-5 py-5")} aria-label="typing">
+      {[0, 1, 2].map((d) => (
+        <span key={d} className="size-2.5 rounded-full bg-ink/35 fun:animate-dot" style={{ animationDelay: `${d * 160}ms` }} />
+      ))}
+    </div>
+  );
+}
+
+function ChatRow({ side, children }: { side: "them" | "me"; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const r = requestAnimationFrame(() => setOpen(true));
+    return () => cancelAnimationFrame(r);
+  }, []);
+  return (
+    <div className="grid transition-[grid-template-rows] duration-500 ease-soft" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
+      <div className="min-h-0">
+        <div
+          className={cn("flex pt-3 fun:animate-chat-pop", side === "me" ? "justify-end origin-bottom-right" : "justify-start origin-bottom-left")}
+          style={{ ["--tilt" as string]: side === "me" ? "7deg" : "-7deg" }}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function MediaChat() {
   const chapters = [
@@ -535,111 +608,86 @@ function MediaChat() {
     { at: 6, title: "Type" },
     { at: 9, title: "Outro" },
   ];
-  const items: { side: "them" | "me"; className?: string; node: ReactNode }[] = [
-    { side: "them", className: cn(BUBBLE, THEM), node: "Cut the reel for Friday. Tell me what you think 👀" },
-    { side: "them", className: "w-[min(100%,36rem)]", node: <VideoPlayer src={reel} title="Studio reel" chapters={chapters} /> },
-    { side: "me", className: cn(BUBBLE, ME), node: "wait — the whole frame leans when I scrub?? 😂" },
+  const items: { side: "them" | "me"; node: ReactNode }[] = [
+    { side: "them", node: <div className={cn(BUBBLE, THEM)}>Cut the reel for Friday. Tell me what you think 👀</div> },
+    { side: "them", node: <div className="w-[min(100%,36rem)]"><VideoPlayer src={reel} title="Studio reel" chapters={chapters} /></div> },
+    { side: "me", node: <div className={cn(BUBBLE, ME)}>wait — the whole frame leans when I scrub?? 😂</div> },
     { side: "me", node: <VoiceNote src={voiceNote} from="me" sent="14:02" /> },
-    { side: "them", className: cn(BUBBLE, THEM), node: "It does. And here’s the track for it:" },
-    { side: "them", className: "w-[min(100%,30rem)]", node: <AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" /> },
-    {
-      side: "them",
-      className: cn(THEM, "flex gap-1.5 px-5 py-5"),
-      node: [0, 1, 2].map((d) => (
-        <span key={d} className="size-2.5 rounded-full bg-ink/35 fun:animate-dot" style={{ animationDelay: `${d * 160}ms` }} />
-      )),
-    },
+    { side: "them", node: <div className={cn(BUBBLE, THEM)}>It does. And here’s the track for it:</div> },
+    { side: "them", node: <div className="w-[min(100%,30rem)]"><AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" /></div> },
+    { side: "me", node: <div className={cn(BUBBLE, ME)}>ok this whole kit is ridiculous. shipping it 🚀</div> },
   ];
-  const N = items.length;
-  const runway = useRef<HTMLDivElement>(null);
-  const win = useRef<HTMLDivElement>(null);
-  const col = useRef<HTMLDivElement>(null);
-  const rows = useRef<(HTMLDivElement | null)[]>([]);
+  const box = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(0);
+  const [typing, setTyping] = useState(false);
+  const [run, setRun] = useState(0);
+  const [live, setLive] = useState(false);
   const sound = useSound();
 
+  // start when the canvas is mostly on screen
   useEffect(() => {
-    const el = runway.current;
+    const el = box.current;
     if (!el) return;
-    const calm = isCalm(el);
-    let v = calm ? N : 0.9;
-    let raf = 0;
-    let heard = Math.floor(v);
-    const target = () => {
-      const r = el.getBoundingClientRect();
-      const travel = Math.max(1, r.height - window.innerHeight);
-      const p = Math.min(1, Math.max(0, (window.innerHeight * 0.2 - r.top) / travel));
-      return 0.9 + p * (N - 0.9);
-    };
-    const paint = () => {
-      const w = win.current;
-      const c = col.current;
-      if (!w || !c) return;
-      const pad = parseFloat(getComputedStyle(c).paddingBottom) || 0;
-      // where the column's bottom should be: the bottom of message floor(v)-1, plus the
-      // current message's height scaled by its fraction
-      const k = Math.min(N - 1, Math.floor(v));
-      const f = Math.min(1, v - k);
-      const prev = k > 0 ? rows.current[k - 1] : null;
-      const cur = rows.current[k];
-      const prevBottom = prev ? prev.offsetTop + prev.offsetHeight : 0;
-      const curBottom = cur ? cur.offsetTop + cur.offsetHeight : prevBottom;
-      const bottom = prevBottom + (curBottom - prevBottom) * f;
-      c.style.transform = `translateY(${(w.clientHeight - pad - bottom).toFixed(1)}px)`;
-      rows.current.forEach((row, i) => {
-        if (!row) return;
-        const a = Math.min(1, Math.max(0, v - i));
-        const e = 1 - Math.pow(1 - a, 3);
-        const tilt = items[i].side === "me" ? 7 : -7;
-        row.style.opacity = String(Math.min(1, a * 1.6));
-        row.style.transform = `translateY(${((1 - e) * 48).toFixed(1)}px) rotate(${((1 - e) * tilt).toFixed(2)}deg) scale(${(0.86 + 0.14 * e).toFixed(3)})`;
-      });
-    };
-    const tick = () => {
-      const t = target();
-      v += (t - v) * 0.14;
-      if (Math.abs(t - v) < 0.002) v = t;
-      const whole = Math.floor(v + 0.15);
-      if (whole > heard) sound.play("pop", { strength: 0.35, pitch: 0.9 + whole * 0.05 });
-      heard = whole;
-      paint();
-      raf = Math.abs(t - v) > 0.002 ? requestAnimationFrame(tick) : 0;
-    };
-    const wake = () => {
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-    if (calm) paint();
-    else {
-      v = target();
-      paint();
-      window.addEventListener("scroll", wake, { passive: true });
-      window.addEventListener("resize", wake);
+    if (isCalm(el)) {
+      setShown(items.length);
+      return;
     }
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", wake);
-      window.removeEventListener("resize", wake);
-    };
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && setLive(true), { threshold: 0.45 });
+    io.observe(el);
+    return () => io.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // the timeline: dots before each of theirs, a short beat before each of yours
+  useEffect(() => {
+    if (!live) return;
+    const timers: number[] = [];
+    let t = 400;
+    setShown(0);
+    items.forEach((it, i) => {
+      if (it.side === "them") {
+        timers.push(window.setTimeout(() => setTyping(true), t));
+        t += 900 + Math.min(900, i * 120);
+      } else t += 650;
+      timers.push(
+        window.setTimeout(() => {
+          setTyping(false);
+          setShown(i + 1);
+          sound.play("pop", { strength: 0.4, pitch: it.side === "me" ? 1.15 : 0.95 });
+        }, t),
+      );
+      t += 350;
+    });
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, run]);
+
   return (
-    <div ref={runway} className="relative" style={{ height: `calc(min(84vh, 50rem) + ${N * 22}vh)` }}>
-      <div ref={win} className={cn("sticky top-24 h-[min(84vh,50rem)] rounded-lg bg-bubble overflow-hidden", DOT_GRID)}>
-        <div ref={col} className="absolute inset-x-0 top-0 flex flex-col gap-3 p-[clamp(1rem,3vw,2.5rem)] w-[min(100%,56rem)] mx-auto will-change-transform">
-          {items.map((it, i) => (
-            <div
-              key={i}
-              ref={(el) => {
-                rows.current[i] = el;
-              }}
-              className={cn(it.side === "me" ? "self-end origin-bottom-right" : "self-start origin-bottom-left", it.className)}
-              style={{ opacity: 0 }}
-            >
+    <div
+      ref={box}
+      className={cn("relative mx-[calc(-1*var(--gutter))] h-svh min-h-[40rem] bg-bubble overflow-hidden", DOT_GRID)}
+    >
+      <div className="absolute inset-x-0 bottom-0 top-0 flex flex-col justify-end px-(--gutter) pb-[clamp(1.5rem,4vw,3.5rem)] pt-24">
+        <div className="w-[min(100%,56rem)] mx-auto flex flex-col">
+          {items.slice(0, shown).map((it, i) => (
+            <ChatRow key={`${run}-${i}`} side={it.side}>
               {it.node}
-            </div>
+            </ChatRow>
           ))}
+          {typing && (
+            <ChatRow key={`${run}-typing-${shown}`} side="them">
+              <Typing />
+            </ChatRow>
+          )}
         </div>
       </div>
+      {shown === items.length && !isCalm(box.current) && (
+        <div className="absolute top-28 right-(--gutter) fun:animate-pop-in">
+          <Button size="sm" variant="solid" onClick={() => setRun((r) => r + 1)}>
+            Replay
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -704,20 +752,22 @@ function Wall() {
 <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} />`}
         stageClass="bg-paper place-items-stretch"
       >
-        {/* Scattered, not aligned: the cards wrap freely with a lot of air between
-            them, and each one is dropped a different distance down — a table of
-            printouts rather than a dashboard. On a phone they simply stack. */}
-        <div className="flex flex-wrap justify-center items-start gap-x-[clamp(2rem,5vw,6rem)] gap-y-16 w-full py-6">
+        {/* Scattered, not aligned, but balanced: two rows of three with a lot of air,
+            the middle card of each row lifted and the side cards dropped, so the set
+            reads as two gentle arcs rather than a grid. The two wide cards (heat grid,
+            ranking) have fixed widths, so hovering a value never re-flows them. On a
+            phone they simply stack. */}
+        <div className="flex flex-wrap justify-center items-start gap-x-[clamp(1.5rem,3vw,3rem)] gap-y-16 w-full py-6">
           {/* each chart in its own wrapper: BalanceChart cancels its pull-stretch with a
               negative margin, which a margin set on it directly would undo */}
           {(
             [
-              [<BalanceChart key="b" />, "mt-0"],
-              [<DonutChart key="d" />, "mt-24"],
-              [<SparkTable key="s" />, "mt-8"],
-              [<HeatGrid key="h" />, "mt-4"],
-              [<BarsChart key="bars" />, "mt-20"],
-              [<RaceBars key="r" />, "-mt-6"],
+              [<BalanceChart key="b" />, "mt-16"],
+              [<DonutChart key="d" />, "mt-0"],
+              [<SparkTable key="s" />, "mt-16"],
+              [<HeatGrid key="h" />, "mt-20"],
+              [<BarsChart key="bars" />, "mt-0"],
+              [<RaceBars key="r" className="w-[22rem]" />, "mt-20"],
             ] as const
           ).map(([c, offset]) => (
             <div key={c.key} className={cn("flex justify-center max-w-full max-[860px]:mt-0", offset)}>
@@ -769,7 +819,7 @@ const lb = useLightbox();
           </Display>
           <p className={COPY}>
             Audio with a waveform you scrub like a chart, bars that breathe to the live level; video whose controls float in one
-            pill, snap to chapters and skew the frame as you drag; a voice note for chat. Scroll — the conversation plays.
+            pill, snap to chapters and skew the frame as you drag; a voice note for chat. Scroll down — the conversation plays out.
           </p>
         </div>
         <MediaChat />

@@ -226,7 +226,7 @@ export const HeatGrid = forwardRef<HTMLDivElement, HeatGridProps>(function HeatG
   const figureId = useId();
 
   return (
-    <ChartCard ref={ref} corner={corner} data-slot="heat-grid" className={cn("w-full max-w-[26rem]", className)} {...rest}>
+    <ChartCard ref={ref} corner={corner} data-slot="heat-grid" className={cn("w-[26rem] max-w-full", className)} {...rest}>
       <div id={figureId} aria-live="polite" data-slot="heat-grid-readout">
         <ChartFigure value={cur ? (cur.v ?? 0) : total} unit={unit} />
         {cur ? (
