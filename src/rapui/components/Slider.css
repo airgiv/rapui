@@ -1,96 +1,11 @@
-.rap-slider {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 24px;
-  touch-action: none;
-  user-select: none;
-}
-.rap-slider[data-disabled] { opacity: 0.5; }
-.rap-slider__track {
-  position: relative;
-  flex: 1;
-  height: 6px;
-  border-radius: var(--rap-radius-pill);
-  background: var(--rap-fill-strong);
-  overflow: hidden;
-}
-.rap-slider__range { position: absolute; height: 100%; background: var(--rap-select); border-radius: inherit; }
-
-/* the thumb element is an unscaled hit box; the ball is its ::before, so the
-   stretch (--sq-x/--sq-y, from the spring) never distorts the bubble */
-.rap-slider__thumb {
-  --sq-x: 1;
-  --sq-y: 1;
-  --hold: 1;
-  position: relative;
-  display: block;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  cursor: grab;
-  outline: none;
-}
-.rap-slider__thumb::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 2px 8px rgb(0 0 0 / 0.18);
-  scale: calc(var(--sq-x) * var(--hold)) calc(var(--sq-y) * var(--hold));
-  transition: --hold var(--rap-dur-fast) var(--rap-ease-spring);
-}
-.rap-slider__thumb:hover { --hold: 1.1; }
-.rap-slider__thumb:active { --hold: 1.18; cursor: grabbing; }
-.rap-slider__thumb:focus-visible::before { box-shadow: 0 0 0 2px var(--rap-surface), 0 0 0 4px var(--rap-ring), 0 2px 8px rgb(0 0 0 / 0.18); }
-
-/* ── the balloon: pops above a held thumb, leans and swings about the thumb's centre ── */
-.rap-slider__bubble {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 10px);
-  min-width: 34px;
-  padding: 5px 9px;
-  border-radius: var(--rap-radius-pill);
-  background: var(--rap-ink);
-  color: var(--rap-paper);
-  font-family: var(--rap-font-sans);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  white-space: nowrap;
-  pointer-events: none;
-  translate: -50% 0;
-  /* the string is tied to the middle of the ball: 10px gap + half the thumb */
-  transform-origin: 50% calc(100% + 21px);
-  scale: 0;
-  opacity: 0;
-  transition: scale 240ms var(--rap-ease-back), opacity 120ms var(--rap-ease-rm);
-}
-.rap-slider__bubble::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: calc(100% - 1px);
-  width: 8px;
-  height: 5px;
-  translate: -50% 0;
-  background: inherit;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-}
-.rap-slider.is-dragging .rap-slider__thumb:focus .rap-slider__bubble,
-.rap-slider.is-keyed .rap-slider__thumb:focus .rap-slider__bubble { scale: 1; opacity: 1; }
+/* Slider — only the rule utilities cannot say: registering --hold, the
+   thumb's hover/grab swell, so the ball's `scale` (which multiplies it with
+   the spring's --sq-x/--sq-y) can transition on the spring curve instead of
+   jumping. Everything else is Tailwind in Slider.tsx. */
+@layer theme, base, components, utilities;
 
 @property --hold {
   syntax: "<number>";
   inherits: true;
   initial-value: 1;
 }
-
-[data-rap-motion="calm"] .rap-slider__bubble { rotate: none !important; transition: opacity 120ms var(--rap-ease-rm); }
-@media (prefers-reduced-motion: reduce) { .rap-slider__bubble { rotate: none !important; } }

@@ -2,7 +2,7 @@
    Label, control, hint and error in one stack.
 
    DELIGHT — THE FIELD SAYS "NO". When an error turns on, the
-   control shakes its head once (motion.css `rap-shake`: seven
+   control shakes its head once (`animate-shake`: seven
    pixels, dying out over 420ms — long enough to read as a
    gesture, short enough that you are already looking at the
    message by the time it stops) and the message slides down
@@ -40,7 +40,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { cx, prefersReducedMotion } from "../utils";
+import { cn, prefersReducedMotion } from "../utils";
 import { Label } from "./Label";
 import "./FormField.css";
 
@@ -128,21 +128,54 @@ export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(function For
 
   return (
     <FormFieldContext.Provider value={{ id, hintId, errorId, invalid }}>
-      <div ref={ref} className={cx("rap-form-field", invalid && "is-invalid", className)} {...rest}>
+      <div
+        ref={ref}
+        data-slot="form-field"
+        data-invalid={invalid || undefined}
+        className={cn(
+          "[--ff-gap:6px] flex flex-col gap-(--ff-gap) min-w-0 font-sans",
+          // the field's error state paints known rap/ui controls red
+          invalid && [
+            "[&_:is([data-slot=input],[data-slot=select-trigger],[data-slot=combobox-trigger],[data-slot=date-picker-trigger],[data-slot=textarea],[data-slot=number-field],[data-slot=input-otp-slot])]:shadow-[inset_0_0_0_2px_var(--rap-danger)]",
+            "[&_:is([data-slot=checkbox],[data-slot=radio-group-item],[data-slot=radio-group-card]):not([data-state=checked])]:shadow-[inset_0_0_0_1.5px_var(--rap-danger)]",
+          ],
+          className,
+        )}
+        {...rest}
+      >
         {(label != null || aside != null) && (
-          <div className="rap-form-field__head">
+          <div data-slot="form-field-head" className="flex items-baseline justify-between gap-3 px-0.5">
             {label != null && (
-              <Label htmlFor={id} className="rap-form-field__label">
+              <Label htmlFor={id} data-slot="form-field-label" className="inline-flex items-baseline gap-[0.4rem]">
                 {label}
-                {required && <span className="rap-form-field__req" aria-hidden> *</span>}
-                {optional && <span className="rap-form-field__opt">Optional</span>}
+                {required && (
+                  <span data-slot="form-field-required" className="text-danger -ml-[0.3rem]" aria-hidden>
+                    {" "}
+                    *
+                  </span>
+                )}
+                {optional && (
+                  <span data-slot="form-field-optional" className="text-[0.8125rem] font-normal text-mute">
+                    Optional
+                  </span>
+                )}
               </Label>
             )}
-            {aside != null && <span className="rap-form-field__aside">{aside}</span>}
+            {aside != null && (
+              <span data-slot="form-field-aside" className="text-[0.8125rem] tracking-[-0.01em] text-mute tabular-nums">
+                {aside}
+              </span>
+            )}
           </div>
         )}
+        {/* the control, in its own box so the shake moves the answer and not the question;
+            two names for one shake so a second "no" mid-shake restarts it */}
         <div
-          className={cx("rap-form-field__control", shake > 0 && (shake % 2 ? "is-shaking-a" : "is-shaking-b"))}
+          data-slot="form-field-control"
+          className={cn(
+            "flex flex-col min-w-0",
+            shake > 0 && (shake % 2 ? "fun:animate-shake" : "fun:animate-[rap-ff-shake_420ms_var(--rap-ease-rm)]"),
+          )}
           onAnimationEnd={(e) => {
             if (e.target === e.currentTarget) setShake(0);
           }}
@@ -150,13 +183,29 @@ export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(function For
           {control}
         </div>
         {hint != null && (
-          <p id={hintId} className="rap-form-field__hint">
+          <p id={hintId} data-slot="form-field-hint" className={cn(messageClass, "text-mute")}>
             {hint}
           </p>
         )}
         {errorId && (
-          <div className="rap-form-field__error-slot">
-            <p id={errorId} className="rap-form-field__error" role="alert">
+          /* the message slides down out of the gap: its row opens from 0 while the text
+             drops in from above, so nothing below jumps. Under a hint the pair sits
+             tight (2px), so the row opens from that tighter gap. */
+          <div
+            data-slot="form-field-error-slot"
+            className={cn(
+              "grid grid-rows-[1fr]",
+              hint != null
+                ? "mt-[calc(var(--rap-gap-tight)-var(--ff-gap))] fun:animate-[rap-ff-open-tight_320ms_var(--rap-ease-out)]"
+                : "fun:animate-[rap-ff-open_320ms_var(--rap-ease-out)]",
+            )}
+          >
+            <p
+              id={errorId}
+              data-slot="form-field-error"
+              className={cn(messageClass, "text-danger font-medium min-h-0 overflow-hidden fun:animate-[rap-ff-drop_380ms_var(--rap-ease-spring)]")}
+              role="alert"
+            >
               {error}
             </p>
           </div>
@@ -165,6 +214,8 @@ export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(function For
     </FormFieldContext.Provider>
   );
 });
+
+const messageClass = "m-0 px-0.5 text-[0.8125rem] leading-[1.4] tracking-[-0.01em]";
 
 export interface FieldGroupProps extends FieldsetHTMLAttributes<HTMLFieldSetElement> {
   /** Section title (rendered as the fieldset's legend). */
@@ -180,10 +231,33 @@ export const FieldGroup = forwardRef<HTMLFieldSetElement, FieldGroupProps>(funct
   ref,
 ) {
   return (
-    <fieldset ref={ref} className={cx("rap-field-group", className)} {...rest}>
-      {legend != null && <legend className="rap-field-group__legend">{legend}</legend>}
-      {description != null && <p className="rap-field-group__desc">{description}</p>}
-      <div className={cx("rap-field-group__body", columns === 2 && "rap-field-group__body--2")}>{children}</div>
+    <fieldset
+      ref={ref}
+      data-slot="field-group"
+      className={cn("min-w-0 m-0 p-0 border-0 font-sans disabled:opacity-60", className)}
+      {...rest}
+    >
+      {legend != null && (
+        <legend data-slot="field-group-legend" className="px-0.5 mb-1 text-[1.0625rem] font-medium tracking-[-0.02em] text-ink">
+          {legend}
+        </legend>
+      )}
+      {description != null && (
+        <p data-slot="field-group-description" className="mt-0 mx-0 mb-4 px-0.5 text-sm leading-[1.45] text-mute">
+          {description}
+        </p>
+      )}
+      <div
+        data-slot="field-group-body"
+        className={cn(
+          "grid gap-5",
+          // right under the legend (no description between) the body keeps 12px off it
+          legend != null && description == null && "mt-3",
+          columns === 2 && "grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-x-3",
+        )}
+      >
+        {children}
+      </div>
     </fieldset>
   );
 });

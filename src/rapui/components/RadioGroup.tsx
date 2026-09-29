@@ -44,7 +44,7 @@ import {
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
 import { useSpring } from "../hooks/useSpring";
 import { useSound } from "../sound";
-import { clamp, cx } from "../utils";
+import { clamp, cn } from "../utils";
 import { isMotionCalm } from "./FormField";
 import "./RadioGroup.css";
 
@@ -70,7 +70,7 @@ const MAX_HOP = 40;
 /** Where the chosen socket's centre is, in the group's own (unscaled) pixels. */
 function measure(root: HTMLElement): Socket | null {
   const item = root.querySelector<HTMLElement>(
-    '.rap-radio-item[data-state="checked"], .rap-radio-card[data-state="checked"] .rap-radio',
+    '[data-slot="radio-group-item"][data-state="checked"], [data-slot="radio-group-card"][data-state="checked"] [data-slot="radio-group-socket"]',
   );
   if (!item) return null;
   const r = root.getBoundingClientRect();
@@ -195,19 +195,70 @@ export const RadioGroup = forwardRef<ElementRef<typeof RadioGroupPrimitive.Root>
     <RadioCtx.Provider value={{ variant, size }}>
       <RadioGroupPrimitive.Root
         ref={setRef}
-        className={cx("rap-radio-group", `rap-radio-group--${variant}`, to && "is-marbled", className)}
+        data-slot="radio-group"
+        data-variant={variant}
+        data-marbled={to ? "" : undefined}
+        className={cn(
+          "group/radio relative grid font-sans",
+          variant === "default" &&
+            "gap-3 data-[orientation=horizontal]:grid-flow-col data-[orientation=horizontal]:justify-start data-[orientation=horizontal]:gap-5",
+          variant === "card" &&
+            "gap-tile data-[orientation=horizontal]:grid-flow-col data-[orientation=horizontal]:auto-cols-fr data-[orientation=horizontal]:justify-stretch",
+          className,
+        )}
         {...rest}
       >
         {children}
-        <span className="rap-radio-marble" style={marble} aria-hidden>
-          <span className={cx("rap-radio-marble__ball", lands > 0 && (lands % 2 ? "is-land-a" : "is-land-b"))}>
-            <span className="rap-radio-marble__pip" />
+        {/* the marble: one blue ball with a white pip, positioned by JS over the chosen socket.
+            While it is there the sockets stay empty rings. */}
+        <span
+          data-slot="radio-group-marble"
+          className={cn(
+            "absolute top-0 left-0 z-2 rounded-full pointer-events-none origin-center",
+            "[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-rm)] group-data-[disabled]/radio:opacity-45",
+          )}
+          style={marble}
+          aria-hidden
+        >
+          {/* the landing squash; two names so a quick second landing restarts it */}
+          <span
+            className={cn(
+              "grid place-items-center size-full rounded-full bg-select",
+              lands > 0 &&
+                (lands % 2
+                  ? "fun:animate-[rap-radio-land-a_300ms_var(--rap-ease-out)]"
+                  : "fun:animate-[rap-radio-land-b_300ms_var(--rap-ease-out)]"),
+            )}
+          >
+            <span className="size-[38%] rounded-full bg-select-ink" />
           </span>
         </span>
       </RadioGroupPrimitive.Root>
     </RadioCtx.Provider>
   );
 });
+
+/* ── the socket: the round dot ───────────────────────────
+   In the default variant it is the radio button itself; in a card it is a
+   span inside the tile. Either way it reads two local properties set by
+   whichever element carries the state (the item, or the card), so the
+   states are written once: an empty ring, a darker ring on hover, blue when
+   chosen — and back to an empty ring while the marble sits in it. */
+const socketClass = cn(
+  "relative inline-grid place-items-center flex-none size-(--rd) p-0 border-0 rounded-full",
+  "bg-(--sock-bg) shadow-[inset_0_0_0_1.5px_var(--sock-ring)]",
+  "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),box-shadow_var(--rap-dur-fast)_var(--rap-ease-rm),scale_var(--rap-dur-fast)_var(--rap-ease-rm)]",
+);
+const socketStates = cn(
+  "[--sock-bg:transparent] [--sock-ring:var(--rap-fill-strong)] hover:not-data-[state=checked]:[--sock-ring:var(--rap-mute)]",
+  "data-[state=checked]:[--sock-bg:var(--rap-select)] data-[state=checked]:[--sock-ring:transparent]",
+  "group-data-[marbled]/radio:data-[state=checked]:[--sock-bg:transparent] group-data-[marbled]/radio:data-[state=checked]:[--sock-ring:var(--rap-fill-strong)]",
+);
+const socketSize = { sm: "[--rd:18px]", md: "[--rd:22px]", lg: "[--rd:28px]" } as const;
+/* the dot Radix mounts in the chosen socket (pops in on the spring); hidden once the marble has measured */
+const dotClass =
+  "size-[calc(var(--rd)*0.38)] rounded-full bg-select-ink animate-[rap-radio-pop_360ms_var(--rap-ease-spring)] group-data-[marbled]/radio:invisible";
+const focusRing = "focus-visible:outline-2! focus-visible:outline-offset-2! focus-visible:outline-ring! disabled:opacity-45 disabled:pointer-events-none";
 
 export interface RadioGroupItemProps extends ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item> {
   /** Card variant: the option's title. In the default variant, wrap the item with a `Label` instead. */
@@ -219,26 +270,50 @@ export interface RadioGroupItemProps extends ComponentPropsWithoutRef<typeof Rad
 export const RadioGroupItem = forwardRef<ElementRef<typeof RadioGroupPrimitive.Item>, RadioGroupItemProps>(
   function RadioGroupItem({ className, label, description, children, ...rest }, ref) {
     const { variant, size } = useContext(RadioCtx);
-    const dot = (
-      <span className={cx("rap-radio", `rap-radio--${size}`)} aria-hidden>
-        <RadioGroupPrimitive.Indicator className="rap-radio__dot" />
-      </span>
-    );
     if (variant === "card") {
+      // a filled tile, label + description, the socket on the right
       return (
-        <RadioGroupPrimitive.Item ref={ref} className={cx("rap-radio-card", className)} {...rest}>
-          <span className="rap-radio-card__text">
-            {label != null && <span className="rap-radio-card__label">{label}</span>}
-            {description != null && <span className="rap-radio-card__desc">{description}</span>}
+        <RadioGroupPrimitive.Item
+          ref={ref}
+          data-slot="radio-group-card"
+          className={cn(
+            "flex items-start justify-between gap-4 w-full py-4 pr-4 pl-5 border-0 rounded-pop bg-fill text-ink [font:inherit] text-left cursor-pointer",
+            "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),box-shadow_var(--rap-dur-fast)_var(--rap-ease-rm)]",
+            "hover:not-data-[state=checked]:bg-fill-hover data-[state=checked]:bg-surface data-[state=checked]:shadow-[inset_0_0_0_2px_var(--rap-select)]",
+            socketStates,
+            focusRing,
+            className,
+          )}
+          {...rest}
+        >
+          <span data-slot="radio-group-card-text" className="flex flex-col gap-0.5 min-w-0">
+            {label != null && (
+              <span data-slot="radio-group-card-label" className="text-[0.9375rem] font-medium tracking-[-0.01em] leading-[1.35]">
+                {label}
+              </span>
+            )}
+            {description != null && (
+              <span data-slot="radio-group-card-description" className="text-[0.8125rem] tracking-[-0.01em] leading-[1.4] text-mute">
+                {description}
+              </span>
+            )}
             {children}
           </span>
-          {dot}
+          <span data-slot="radio-group-socket" className={cn(socketClass, socketSize[size])} aria-hidden>
+            <RadioGroupPrimitive.Indicator data-slot="radio-group-indicator" className={dotClass} />
+          </span>
         </RadioGroupPrimitive.Item>
       );
     }
     return (
-      <RadioGroupPrimitive.Item ref={ref} className={cx("rap-radio-item", `rap-radio-item--${size}`, className)} {...rest}>
-        <RadioGroupPrimitive.Indicator className="rap-radio-item__dot" />
+      <RadioGroupPrimitive.Item
+        ref={ref}
+        data-slot="radio-group-item"
+        data-size={size}
+        className={cn(socketClass, socketSize[size], socketStates, "cursor-pointer active:scale-92", focusRing, className)}
+        {...rest}
+      >
+        <RadioGroupPrimitive.Indicator data-slot="radio-group-indicator" className={dotClass} />
       </RadioGroupPrimitive.Item>
     );
   },

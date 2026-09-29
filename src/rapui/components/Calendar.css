@@ -1,211 +1,18 @@
-.rap-cal {
-  --cal-cell: var(--rap-control-h);
-  --cal-pen: var(--rap-flame);
-  position: relative;
-  display: inline-block;
-  color: var(--rap-ink);
-  font-family: var(--rap-font-sans);
-  font-size: 0.9375rem;
-  letter-spacing: -0.01em;
-}
-.rap-cal--sm { --cal-cell: 36px; font-size: 0.875rem; }
+/* Calendar — only the keyframes utilities cannot say. Everything else is
+   Tailwind in Calendar.tsx.
 
-.rap-cal__months { position: relative; display: flex; flex-wrap: wrap; gap: 28px; }
-.rap-cal__month { display: flex; flex-direction: column; gap: 6px; }
+   The ripple: a neighbour of the picked day is pushed 4px away from it
+   (--rip-x/-y, a unit vector), shrunk and tinted, then rebounds 1.5px past
+   rest — all scaled by --rip-a, the strength left at its distance, and
+   started --rip-delay later (40ms per cell) so the wave travels outward and
+   dies. The selected disc gets the same push without the tint (-still), so
+   it keeps its own colour while it ripples.
 
-/* caption on the left, round nav buttons pinned top-right */
-.rap-cal__caption {
-  display: flex;
-  align-items: center;
-  height: var(--cal-cell);
-  padding: 0 8px;
-}
-.rap-cal__caption-label {
-  position: relative;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-/* the month, large, on a hand-laid acid highlighter stroke */
-.rap-cal__caption-month {
-  position: relative;
-  z-index: 0;
-  font-size: 1.375rem;
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1;
-}
-.rap-cal__caption-month::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  left: -4px;
-  right: -6px;
-  bottom: -0.08em;
-  height: 0.42em;
-  border-radius: 3px 8px 5px 10px;
-  background: var(--rap-acid);
-  rotate: -1.5deg;
-  transform-origin: left center;
-}
-[data-rap-theme="dark"] .rap-cal__caption-month::after { opacity: 0.55; }
-.rap-cal--sm .rap-cal__caption-month { font-size: 1.1875rem; }
-.rap-cal__caption-year { font-size: 1rem; font-weight: 400; color: var(--rap-mute); letter-spacing: -0.01em; }
-.rap-cal__caption-label .rap-cal__chevron { width: 16px; height: 16px; opacity: 0.6; }
+   The page turn: the new month slides in 36px from the side you are heading
+   to (--turn: 1 or -1) with a 3° turn. Two names so a quick second turn
+   restarts it. */
+@layer theme, base, components, utilities;
 
-.rap-cal__nav {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 1;
-  display: flex;
-  gap: var(--rap-gap-tight);
-}
-.rap-cal__nav-btn {
-  display: grid;
-  place-items: center;
-  width: var(--cal-cell);
-  height: var(--cal-cell);
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--rap-fill);
-  color: var(--rap-ink);
-  cursor: pointer;
-  transition: background var(--rap-dur-fast) var(--rap-ease-rm), transform var(--rap-dur-fast) var(--rap-ease-rm);
-}
-.rap-cal__nav-btn:hover { background: var(--rap-fill-hover); }
-.rap-cal__nav-btn:active { transform: scale(0.92); }
-.rap-cal__nav-btn:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
-.rap-cal__nav-btn[aria-disabled="true"] { opacity: 0.35; pointer-events: none; }
-.rap-cal__nav-btn .rap-cal__chevron { width: 18px; height: 18px; }
-
-/* dropdown caption: native select laid invisibly over a styled label */
-.rap-cal__dropdowns { display: inline-flex; align-items: center; gap: var(--rap-gap-tight); }
-.rap-cal__dropdown-root {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 10px 0 12px;
-  border-radius: var(--rap-radius-pill);
-  background: var(--rap-fill);
-}
-.rap-cal__dropdown-root:hover { background: var(--rap-fill-hover); }
-.rap-cal__dropdown-root:focus-within { box-shadow: inset 0 0 0 2px var(--rap-ring); }
-.rap-cal__dropdown-root .rap-cal__caption-label { font-size: 0.875rem; }
-.rap-cal__dropdown {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  opacity: 0;
-  cursor: pointer;
-  appearance: none;
-  font: inherit;
-}
-
-/* grid */
-.rap-cal__grid { border-collapse: separate; border-spacing: 0 var(--rap-gap-tight); }
-.rap-cal__weekday {
-  width: var(--cal-cell);
-  height: 28px;
-  padding: 0;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--rap-mute);
-  text-align: center;
-}
-.rap-cal__week-number,
-.rap-cal__week-number-header { width: var(--cal-cell); font-size: 0.75rem; color: var(--rap-mute); text-align: center; }
-
-.rap-cal__day {
-  width: var(--cal-cell);
-  height: var(--cal-cell);
-  padding: 0;
-  text-align: center;
-}
-.rap-cal__day-btn {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: var(--cal-cell);
-  height: var(--cal-cell);
-  margin: 0 auto;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm),
-    box-shadow var(--rap-dur-fast) var(--rap-ease-rm);
-}
-.rap-cal__day-btn:hover { background: var(--rap-fill-hover); }
-.rap-cal__day-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
-
-.rap-cal__day.is-outside { color: var(--rap-mute); }
-.rap-cal__num { position: relative; z-index: 1; }
-
-/* today: circled by hand in the flame pen, not a machine ring */
-.rap-cal__day.is-today .rap-cal__day-btn { font-weight: 600; }
-.rap-cal__today-ring {
-  position: absolute;
-  inset: -3px;
-  z-index: 2;
-  width: calc(100% + 6px);
-  height: calc(100% + 6px);
-  fill: none;
-  stroke: var(--cal-pen);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  rotate: -8deg;
-  pointer-events: none;
-}
-.rap-cal__day.is-disabled .rap-cal__day-btn { opacity: 0.35; cursor: not-allowed; background: none; }
-.rap-cal__day.is-hidden { visibility: hidden; }
-
-.rap-cal__day.is-selected .rap-cal__day-btn {
-  background: var(--rap-select);
-  color: var(--rap-select-ink);
-  font-weight: 500;
-}
-.rap-cal__day.is-selected .rap-cal__day-btn:focus-visible { box-shadow: 0 0 0 2px var(--rap-surface), 0 0 0 4px var(--rap-ring); }
-
-/* range: a fill band behind the middle, the ends are blue circles sitting on the band */
-.rap-cal__day.is-range-middle { background: var(--rap-fill); }
-.rap-cal__day.is-range-middle .rap-cal__day-btn { background: transparent; color: var(--rap-ink); font-weight: 400; }
-.rap-cal__day.is-range-middle .rap-cal__day-btn:hover { background: var(--rap-fill-hover); }
-.rap-cal__day.is-range-start { background: linear-gradient(to right, transparent 50%, var(--rap-fill) 50%); }
-.rap-cal__day.is-range-end { background: linear-gradient(to left, transparent 50%, var(--rap-fill) 50%); }
-.rap-cal__day.is-range-start.is-range-end { background: none; }
-/* the band wraps round at the row edges */
-.rap-cal__day.is-range-middle:first-child { border-radius: var(--rap-radius-pill) 0 0 var(--rap-radius-pill); }
-.rap-cal__day.is-range-middle:last-child { border-radius: 0 var(--rap-radius-pill) var(--rap-radius-pill) 0; }
-.rap-cal__day.is-range-start:last-child,
-.rap-cal__day.is-range-end:first-child { background: none; }
-
-.rap-cal__footer { padding: 10px 8px 2px; font-size: 0.8125rem; color: var(--rap-mute); }
-
-/* days from the neighbouring month keep their state but step back */
-.rap-cal__day.is-outside.is-selected,
-.rap-cal__day.is-outside.is-range-middle { opacity: 0.45; }
-
-/* ── the drop: the picked day splats, the days around it ripple outward ──
-   (data attributes set from the click; --rip-x/-y point away from the drop,
-   --rip-a is the strength left at that distance, --rip-delay the travel time) */
-.rap-cal__day-btn[data-splat] { animation: rap-splat 480ms var(--rap-ease-out); }
-.rap-cal__day-btn[data-ripple] { animation: rap-cal-ripple 520ms var(--rap-ease-out) var(--rip-delay, 0ms) both; }
 @keyframes rap-cal-ripple {
   0%, 100% { translate: 0 0; scale: 1; }
   30% {
@@ -218,21 +25,9 @@
     scale: calc(1 + 0.03 * var(--rip-a));
   }
 }
-/* the selected disc keeps its own colour while it ripples */
-.rap-cal__day.is-selected .rap-cal__day-btn[data-ripple] { animation-name: rap-cal-ripple-still; }
 @keyframes rap-cal-ripple-still {
   30% { translate: calc(var(--rip-x) * 4px * var(--rip-a)) calc(var(--rip-y) * 4px * var(--rip-a)); scale: calc(1 - 0.1 * var(--rip-a)); }
   65% { translate: calc(var(--rip-x) * -1.5px * var(--rip-a)) calc(var(--rip-y) * -1.5px * var(--rip-a)); }
 }
-
-/* ── the page turn: the new month slides in from where you are heading, with a 3° turn ── */
-.rap-cal.is-turn-a :is(.rap-cal__grid, .rap-cal__caption-label) { animation: rap-cal-turn-a 460ms var(--rap-ease-spring); }
-.rap-cal.is-turn-b :is(.rap-cal__grid, .rap-cal__caption-label) { animation: rap-cal-turn-b 460ms var(--rap-ease-spring); }
-.rap-cal__grid { transform-origin: 50% 130%; }
 @keyframes rap-cal-turn-a { from { translate: calc(var(--turn, 1) * 36px) 0; rotate: calc(var(--turn, 1) * 3deg); opacity: 0; } }
 @keyframes rap-cal-turn-b { from { translate: calc(var(--turn, 1) * 36px) 0; rotate: calc(var(--turn, 1) * 3deg); opacity: 0; } }
-
-[data-rap-motion="calm"] .rap-cal :is(.rap-cal__day-btn, .rap-cal__grid, .rap-cal__caption-label) { animation: none; }
-@media (prefers-reduced-motion: reduce) {
-  .rap-cal :is(.rap-cal__day-btn, .rap-cal__grid, .rap-cal__caption-label) { animation: none !important; }
-}

@@ -23,10 +23,10 @@ import type { DateRange } from "react-day-picker";
 import { useSpring } from "../hooks/useSpring";
 import { CalendarDays } from "../icons";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { Calendar, type CalendarProps } from "./Calendar";
 import { isMotionCalm } from "./FormField";
-import "./Select.css";
+import { selectTriggerVariants, selectValueClass } from "./Select";
 import "./DatePicker.css";
 
 export type { DateRange };
@@ -168,28 +168,46 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
           type="button"
           aria-invalid={invalid || buttonRest["aria-invalid"] || undefined}
           data-placeholder={label ? undefined : ""}
-          className={cx(
-            "rap-select-trigger",
-            `rap-select-trigger--${size}`,
-            "rap-datepicker",
-            invalid && "is-invalid",
+          data-slot="date-picker-trigger"
+          data-size={size}
+          className={cn(
+            // the Select pill (fill, focus ring); the icon leads instead of a trailing chevron
+            selectTriggerVariants({ size, invalid: !!invalid }),
+            "justify-start w-auto min-w-48 pr-[calc(var(--in-h)*0.45)]",
             className,
           )}
           {...buttonRest}
         >
-          <CalendarDays className="rap-datepicker__icon" aria-hidden />
-          <span className="rap-select-trigger__value">{label ?? placeholder}</span>
+          <CalendarDays
+            data-slot="date-picker-icon"
+            className="size-[18px] flex-none -ml-0.5 opacity-70 group-data-[placeholder]/trigger:opacity-50"
+            aria-hidden
+          />
+          <span data-slot="date-picker-value" className={cn(selectValueClass, "tabular-nums")}>
+            {label ?? placeholder}
+          </span>
         </button>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
+        {/* the sticky note: it pivots on the edge nearest the trigger (rotate/scale inline, from
+            the spring); the stock pop-in is replaced by a plain fade so the swing is the entrance.
+            `!` because they override the `pop` utility's own origin and animation. */}
         <PopoverPrimitive.Content
           align={align}
           sideOffset={6}
-          className="rap-pop rap-datepicker__content"
+          data-slot="date-picker-content"
+          className={cn(
+            "pop p-3 origin-[50%_0]! data-[side=top]:origin-[50%_100%]! data-[side=left]:origin-[100%_50%]! data-[side=right]:origin-[0_50%]!",
+            "animate-[rap-fade-in_160ms_var(--rap-ease-out)]! data-[state=closed]:animate-[rap-dp-out_140ms_var(--rap-ease-rm)_forwards]!",
+          )}
           style={{ rotate: `${tilt}deg`, scale: String(1 + Math.abs(tilt) * 0.005) }}
         >
           {calendar}
-          {footer != null && <div className="rap-datepicker__footer">{footer}</div>}
+          {footer != null && (
+            <div data-slot="date-picker-footer" className="flex flex-wrap gap-tight mt-2 pt-2.5 border-t border-line">
+              {footer}
+            </div>
+          )}
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>

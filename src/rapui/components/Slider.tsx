@@ -40,7 +40,7 @@ import {
 import { Slider as SliderPrimitive } from "radix-ui";
 import { useSpring } from "../hooks/useSpring";
 import { useSound } from "../sound";
-import { clamp, cx } from "../utils";
+import { clamp, cn } from "../utils";
 import { useMotionCalm } from "./FormField";
 import "./Slider.css";
 
@@ -89,9 +89,41 @@ function Thumb({
   } as CSSProperties;
 
   return (
-    <SliderPrimitive.Thumb className="rap-slider__thumb" style={style}>
+    /* the thumb element is an unscaled hit box; the ball is its ::before, so the
+       stretch (--sq-x/--sq-y, from the spring) never distorts the bubble. --hold
+       (registered in Slider.css so it can transition) swells it on hover and grab. */
+    <SliderPrimitive.Thumb
+      data-slot="slider-thumb"
+      className={cn(
+        "group/thumb relative block size-[22px] rounded-full cursor-grab outline-none [--hold:1] hover:[--hold:1.1] active:[--hold:1.18] active:cursor-grabbing",
+        "before:absolute before:inset-0 before:rounded-full before:bg-white",
+        "before:shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_2px_8px_rgb(0_0_0/0.18)]",
+        "focus-visible:before:shadow-[0_0_0_2px_var(--rap-surface),0_0_0_4px_var(--rap-ring),0_2px_8px_rgb(0_0_0/0.18)]",
+        "before:[scale:calc(var(--sq-x,1)*var(--hold))_calc(var(--sq-y,1)*var(--hold))]",
+        "before:[transition:--hold_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+      )}
+      style={style}
+    >
       {bubble != null && (
-        <span className="rap-slider__bubble" style={{ rotate: `${clamp(swing * 1.6, -28, 28)}deg` }} aria-hidden>
+        /* the balloon: pops above a held thumb (pointer drag or keyboard steps), leans and
+           swings about the thumb's centre — the string is tied to the middle of the ball:
+           10px gap + half the thumb, hence the origin at 100% + 21px. Calm: no swing. */
+        <span
+          data-slot="slider-bubble"
+          className={cn(
+            "absolute left-1/2 bottom-[calc(100%+10px)] min-w-[34px] py-[5px] px-[9px] rounded-pill bg-ink text-paper",
+            "font-sans text-[0.8125rem] font-medium leading-[1.2] tracking-[-0.01em] tabular-nums text-center whitespace-nowrap",
+            "pointer-events-none -translate-x-1/2 origin-[50%_calc(100%+21px)] scale-0 opacity-0",
+            "[transition:scale_240ms_cubic-bezier(0.34,1.8,0.64,1),opacity_120ms_var(--rap-ease-rm)]",
+            "group-data-[held]/slider:group-focus/thumb:scale-100 group-data-[held]/slider:group-focus/thumb:opacity-100",
+            "calm:rotate-none! calm:[transition:opacity_120ms_var(--rap-ease-rm)] motion-reduce:rotate-none!",
+            // the string's knot: a small triangle under the balloon, in its colour
+            "after:absolute after:left-1/2 after:top-[calc(100%-1px)] after:w-2 after:h-[5px] after:-translate-x-1/2",
+            "after:bg-inherit after:[clip-path:polygon(0_0,100%_0,50%_100%)]",
+          )}
+          style={{ rotate: `${clamp(swing * 1.6, -28, 28)}deg` }}
+          aria-hidden
+        >
           {bubble}
         </span>
       )}
@@ -137,7 +169,13 @@ export const Slider = forwardRef<ElementRef<typeof SliderPrimitive.Root>, Slider
   return (
     <SliderPrimitive.Root
       ref={setRef}
-      className={cx("rap-slider", dragging && "is-dragging", keyed && "is-keyed", className)}
+      data-slot="slider"
+      data-held={dragging || keyed || undefined}
+      className={cn(
+        // rap-slider: a stable marker the site CSS still sizes the slider through
+        "rap-slider group/slider relative flex items-center w-full h-6 touch-none select-none data-[disabled]:opacity-50",
+        className,
+      )}
       value={value}
       defaultValue={defaultValue}
       min={min}
@@ -164,8 +202,8 @@ export const Slider = forwardRef<ElementRef<typeof SliderPrimitive.Root>, Slider
       }}
       {...rest}
     >
-      <SliderPrimitive.Track className="rap-slider__track">
-        <SliderPrimitive.Range className="rap-slider__range" />
+      <SliderPrimitive.Track data-slot="slider-track" className="relative flex-1 h-1.5 rounded-pill bg-fill-strong overflow-hidden">
+        <SliderPrimitive.Range data-slot="slider-range" className="absolute h-full bg-select rounded-[inherit]" />
       </SliderPrimitive.Track>
       {vals.map((v, i) => (
         <Thumb

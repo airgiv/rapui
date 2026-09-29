@@ -1,69 +1,22 @@
-.rap-otp {
-  --otp-cell: var(--rap-control-h-lg);
-  --otp-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--rap-font-sans);
-}
-.rap-otp--sm { --otp-cell: var(--rap-control-h); --otp-radius: 14px; }
-.rap-otp--lg { --otp-cell: 60px; --otp-radius: 18px; }
-.rap-otp:has(.rap-otp__input:disabled) { opacity: 0.5; cursor: not-allowed; }
+/* InputOTP — only the keyframes utilities cannot say. Everything else is
+   Tailwind in InputOTP.tsx.
 
-.rap-otp__group { display: flex; align-items: center; gap: var(--rap-gap-tile); }
+   rap-otp-pop: a typed character grows into its slot on the spring.
+   rap-otp-blink: the fake caret, on/off in steps (no fade — a caret blinks).
+   rap-otp-hop-b / rap-otp-shake: motion.css `rap-hop` / `rap-shake` under
+   second names, so a new hop or "no" that lands mid-animation restarts it.
+   rap-otp-wave: the complete-code wave — each tile lifts 9px, a bit higher
+   and fuller than a hop, 45ms after the one on its left. */
+@layer theme, base, components, utilities;
 
-.rap-otp__slot {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: var(--otp-cell);
-  height: var(--otp-cell);
-  border-radius: var(--otp-radius);
-  background: var(--rap-fill);
-  color: var(--rap-ink);
-  font-size: calc(var(--otp-cell) * 0.42);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  transition: background var(--rap-dur-fast) var(--rap-ease-rm), box-shadow var(--rap-dur-fast) var(--rap-ease-rm);
-}
-.rap-otp__slot.is-active { z-index: 1; background: var(--rap-surface); box-shadow: inset 0 0 0 2px var(--rap-ring); }
-.rap-otp.is-invalid .rap-otp__slot { box-shadow: inset 0 0 0 2px var(--rap-danger); }
-.rap-otp__char { animation: rap-otp-pop 260ms var(--rap-ease-spring); }
 @keyframes rap-otp-pop { from { transform: scale(0.6); opacity: 0; } }
-.rap-otp__placeholder { color: var(--rap-mute); }
-
-.rap-otp__caret {
-  position: absolute;
-  width: 2px;
-  height: 42%;
-  border-radius: 2px;
-  background: var(--rap-ring);
-  animation: rap-otp-blink 1.1s step-end infinite;
-}
 @keyframes rap-otp-blink { 50% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .rap-otp__caret { animation: none; } }
-
-.rap-otp__sep { display: grid; place-items: center; width: 14px; }
-.rap-otp__sep span { width: 10px; height: 2px; border-radius: 2px; background: var(--rap-fill-strong); }
-.rap-otp__input:focus-visible { outline: none; }
-
-/* ── tiles that answer back ── */
-/* a character lands: the slot hops (two names so fast typing into one slot restarts it) */
-.rap-otp__slot.is-hop-a { animation: rap-otp-hop-a 360ms var(--rap-ease-out); }
-.rap-otp__slot.is-hop-b { animation: rap-otp-hop-b 360ms var(--rap-ease-out); }
-@keyframes rap-otp-hop-a { 0%, 100% { translate: 0 0; } 40% { translate: 0 -5px; } 70% { translate: 0 1px; } }
 @keyframes rap-otp-hop-b { 0%, 100% { translate: 0 0; } 40% { translate: 0 -5px; } 70% { translate: 0 1px; } }
-/* the code is complete: a wave from left to right, a bit higher than a hop */
-.rap-otp__slot.is-complete { animation: rap-otp-wave 460ms var(--rap-ease-out) both; animation-delay: calc(var(--i, 0) * 45ms); }
 @keyframes rap-otp-wave {
   0%, 100% { translate: 0 0; scale: 1; }
   35% { translate: 0 -9px; scale: 1.04; }
   65% { translate: 0 2px; scale: 0.99; }
 }
-/* wrong code: the row shakes "no" (two names so a second "no" restarts it) */
-.rap-otp.is-shaking-a { animation: rap-shake 420ms var(--rap-ease-rm); }
-.rap-otp.is-shaking-b { animation: rap-otp-shake 420ms var(--rap-ease-rm); }
 @keyframes rap-otp-shake {
   0%, 100% { translate: 0; }
   15% { translate: -7px; }
@@ -72,5 +25,3 @@
   60% { translate: 3px; }
   75% { translate: -1px; }
 }
-[data-rap-motion="calm"] :is(.rap-otp, .rap-otp__slot, .rap-otp__char) { animation: none; }
-@media (prefers-reduced-motion: reduce) { :is(.rap-otp, .rap-otp__slot, .rap-otp__char) { animation: none !important; } }

@@ -1,86 +1,12 @@
-.rap-combobox.is-invalid { box-shadow: inset 0 0 0 2px var(--rap-danger); }
+/* Combobox — only the keyframe utilities cannot say (the trigger's roll
+   keyframes come from Select.css). Everything else is Tailwind in Combobox.tsx.
 
-.rap-combobox__content {
-  width: var(--radix-popover-trigger-width);
-  min-width: 220px;
-}
-.rap-combobox__command { display: flex; flex-direction: column; }
+   The highlighter swipe: the acid stroke grows from the left edge of each
+   matched character. The ink turns dark only as the marker reaches it (held at
+   ink until 60%), so it never sits dark-on-dark in the dark theme. */
+@layer theme, base, components, utilities;
 
-.rap-combobox__search {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  height: 40px;
-  margin: 4px 4px 2px;
-  padding: 0 14px;
-  border-radius: var(--rap-radius-pill);
-  background: var(--rap-fill);
-  color: var(--rap-mute);
-}
-.rap-combobox__search:focus-within { box-shadow: inset 0 0 0 2px var(--rap-ring); }
-.rap-combobox__search svg { width: 16px; height: 16px; flex: none; }
-.rap-combobox__input {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--rap-ink);
-  font-family: var(--rap-font-sans);
-  font-size: 0.9375rem;
-  letter-spacing: -0.01em;
-  outline: none;
-}
-.rap-combobox__input::placeholder { color: var(--rap-mute); }
-
-.rap-combobox__list {
-  max-height: min(var(--radix-popover-content-available-height, 320px), 280px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 2px 4px 4px;
-  scroll-padding-block: 4px;
-}
-.rap-combobox__empty {
-  padding: 1.25rem 0.9rem;
-  font-size: 0.875rem;
-  color: var(--rap-mute);
-  text-align: center;
-}
-
-/* cmdk marks the active row with data-selected="true", and every row with data-disabled="true|false" */
-.rap-combobox__item { padding-right: 2.25rem; }
-.rap-combobox__item[data-selected="true"] { background: var(--rap-fill); }
-.rap-combobox__item[data-disabled="false"] { opacity: 1; pointer-events: auto; }
-.rap-combobox__item[data-disabled="true"] { opacity: 0.4; pointer-events: none; }
-.rap-combobox__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rap-combobox__check { position: absolute; right: 0.75rem; color: var(--rap-select); }
-
-/* ── the deal, only in the window just after opening ── */
-.rap-combobox__list.is-dealing .rap-combobox__item {
-  animation: rap-deal-in 260ms var(--rap-ease-out) both;
-  animation-delay: calc(var(--i, 0) * 22ms);
-}
-
-/* ── the highlighter: each matched character is swiped left to right, one after
-   the other along its run (--k), in the acid marker. Acid is the same in both
-   themes, so the ink on it is too. ── */
-.rap-combobox__hit {
-  color: #282828;
-  background: linear-gradient(var(--rap-acid), var(--rap-acid)) no-repeat 0 55% / 100% 86%;
-  animation: rap-combobox-swipe 110ms linear both;
-  animation-delay: calc(var(--k, 0) * 18ms);
-}
-.rap-combobox__hit.is-first { border-radius: 5px 2px 2px 5px; margin-left: -1px; padding-left: 1px; }
-.rap-combobox__hit.is-last { border-radius: 2px 5px 5px 2px; margin-right: -1px; padding-right: 1px; }
-.rap-combobox__hit.is-first.is-last { border-radius: 5px; }
-/* the ink turns dark only as the marker reaches it, so it never sits dark-on-dark */
 @keyframes rap-combobox-swipe {
   from { background-size: 0% 86%; color: var(--rap-ink); }
   60% { color: var(--rap-ink); }
-}
-
-[data-rap-motion="calm"] :is(.rap-combobox__list.is-dealing .rap-combobox__item, .rap-combobox__hit) { animation: none; }
-@media (prefers-reduced-motion: reduce) {
-  :is(.rap-combobox__list.is-dealing .rap-combobox__item, .rap-combobox__hit) { animation: none !important; }
 }

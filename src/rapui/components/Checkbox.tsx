@@ -32,9 +32,9 @@ import { forwardRef, useCallback, useRef, useState, type ComponentPropsWithoutRe
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
 import { useSpring } from "../hooks/useSpring";
 import { useSound } from "../sound";
-import { clamp, cx } from "../utils";
+import { cva } from "class-variance-authority";
+import { clamp, cn } from "../utils";
 import { useMotionCalm } from "./FormField";
-import "./Checkbox.css";
 
 type CheckedState = boolean | "indeterminate";
 
@@ -49,6 +49,28 @@ const LAG = 18;
 const RUN = 70;
 /* how much of the spring's overshoot the fill shows */
 const SWELL = 0.6;
+
+const checkboxVariants = cva(
+  [
+    // rap-checkbox: a stable marker other components' CSS still targets (DataTable)
+    "rap-checkbox relative inline-grid place-items-center flex-none size-(--cb) p-0 border-0",
+    // soft square: a third of the side, so it reads as a checkbox, not a radio
+    "rounded-[calc(var(--cb)*0.34)] bg-transparent shadow-[inset_0_0_0_1.5px_var(--rap-fill-strong)] text-select-ink cursor-pointer",
+    // the release springs back past round (380ms on the back-out curve, the theme's `ease-back`)
+    "[transition:box-shadow_var(--rap-dur-fast)_var(--rap-ease-rm),scale_380ms_cubic-bezier(0.34,1.8,0.64,1)]",
+    "hover:shadow-[inset_0_0_0_1.5px_var(--rap-mute)]",
+    // the press: a thumb flattens it
+    "fun:active:scale-x-112 fun:active:scale-y-84 active:[transition:scale_90ms_var(--rap-ease-rm)]",
+    "focus-visible:outline-2! focus-visible:outline-offset-2! focus-visible:outline-ring!",
+    "disabled:opacity-45 disabled:pointer-events-none",
+  ],
+  {
+    variants: {
+      size: { sm: "[--cb:18px]", md: "[--cb:22px]", lg: "[--cb:28px]" },
+    },
+    defaultVariants: { size: "md" },
+  },
+);
 
 /**
  * Soft-cornered checkbox (Radix). Unticked it is a quiet ring; ticked the blue fill
@@ -87,7 +109,9 @@ export const Checkbox = forwardRef<ElementRef<typeof CheckboxPrimitive.Root>, Ch
   return (
     <CheckboxPrimitive.Root
       ref={setRef}
-      className={cx("rap-checkbox", `rap-checkbox--${size}`, className)}
+      data-slot="checkbox"
+      data-size={size}
+      className={cn(checkboxVariants({ size }), className)}
       checked={state}
       onCheckedChange={(c) => {
         setInner(c);
@@ -96,8 +120,20 @@ export const Checkbox = forwardRef<ElementRef<typeof CheckboxPrimitive.Root>, Ch
       }}
       {...rest}
     >
-      <span className="rap-checkbox__fill" style={{ scale: String(fill), opacity: fill > 0.01 ? 1 : 0 }} aria-hidden />
-      <svg className="rap-checkbox__mark" viewBox="0 0 24 24" aria-hidden>
+      {/* the fill: scaled from the centre by the spring (inline `scale`), swells past the box */}
+      <span
+        data-slot="checkbox-fill"
+        className="absolute inset-0 rounded-[inherit] bg-select pointer-events-none"
+        style={{ scale: String(fill), opacity: fill > 0.01 ? 1 : 0 }}
+        aria-hidden
+      />
+      {/* the tick: a stroked path drawn by the same spring (inline dash offset) */}
+      <svg
+        data-slot="checkbox-mark"
+        className="relative size-[calc(var(--cb)*0.72)] fill-none stroke-current stroke-3 [stroke-linecap:round] [stroke-linejoin:round] overflow-visible pointer-events-none"
+        viewBox="0 0 24 24"
+        aria-hidden
+      >
         <path
           d={shape === "dash" ? "M6.5 12h11" : "M5.6 12.6l4.1 4.1 8.7-9.1"}
           pathLength={1}

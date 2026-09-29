@@ -5,7 +5,7 @@
    DELIGHT — A HAND OF CARDS AND A SLOT WINDOW.
 
    Opening DEALS the options: each row drops in 22ms after the one
-   above it (motion.css `rap-deal-in`), so the list arrives as a
+   above it (`rap-deal-in`, the theme keyframe), so the list arrives as a
    hand being laid down rather than a panel appearing. The stagger
    is capped at the 12th row — past that nobody is watching the
    top any more and a long list must not take a second to arrive.
@@ -38,7 +38,8 @@ import {
 import { Select as SelectPrimitive } from "radix-ui";
 import { Check, ChevronDown } from "../icons";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cva } from "class-variance-authority";
+import { cn } from "../utils";
 import { isMotionCalm } from "./FormField";
 import "./Select.css";
 
@@ -102,11 +103,22 @@ export function useRoll(watch: RefObject<HTMLElement | null>, opts: { observe?: 
     seen(text, !!watch.current?.closest("[data-placeholder]"));
   }, [text, seen, watch]);
 
-  const valueClass = rolls > 0 ? (rolls % 2 ? "is-roll-a" : "is-roll-b") : undefined;
+  // two names for one roll-in so a pick that lands mid-roll restarts it
+  const valueClass =
+    rolls > 0
+      ? rolls % 2
+        ? "fun:animate-[rap-roll-in-a_420ms_var(--rap-ease-spring)]"
+        : "fun:animate-[rap-roll-in-b_420ms_var(--rap-ease-spring)]"
+      : undefined;
   const ghostEl: ReactNode = ghost ? (
     <span
       key={ghost.n}
-      className={cx("rap-select-trigger__ghost", ghost.muted && "is-muted")}
+      data-slot="select-ghost"
+      className={cn(
+        "overflow-hidden text-ellipsis whitespace-nowrap pointer-events-none",
+        "fun:animate-[rap-roll-out_300ms_var(--rap-ease-rm)_forwards] calm:hidden motion-reduce:hidden",
+        ghost.muted && "text-mute",
+      )}
       aria-hidden
       onAnimationEnd={() => setGhost(null)}
     >
@@ -116,6 +128,47 @@ export function useRoll(watch: RefObject<HTMLElement | null>, opts: { observe?: 
   return { valueClass, ghost: ghostEl };
 }
 
+/* ── the trigger, shared by Select, Combobox and DatePicker ──
+   --in-h drives the height and the side padding together (the same
+   pill maths as Input). Focus and open draw the inset ring; the open
+   trigger lifts to the surface colour like a focused field. */
+export const selectTriggerVariants = cva(
+  [
+    "group/trigger inline-flex items-center justify-between gap-2 w-full h-(--in-h) pl-[calc(var(--in-h)*0.4)] pr-[calc(var(--in-h)*0.3)]",
+    "border-0 rounded-pill bg-fill text-ink font-sans text-[1rem] tracking-[-0.01em] text-left cursor-pointer",
+    "transition-[background-color,box-shadow] duration-(--rap-dur-fast) ease-rm",
+    "hover:not-data-[state=open]:bg-fill-hover focus-visible:outline-none! focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+    "data-[state=open]:bg-surface data-[state=open]:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+    "disabled:opacity-50 disabled:pointer-events-none",
+  ],
+  {
+    variants: {
+      size: {
+        sm: "[--in-h:var(--rap-control-h-sm)] text-[0.875rem]",
+        md: "[--in-h:var(--rap-control-h)]",
+        lg: "[--in-h:var(--rap-control-h-lg)] text-[1.0625rem]",
+      },
+      invalid: {
+        // wins over focus and open, as it did when it came last in the cascade
+        true: "shadow-[inset_0_0_0_2px_var(--rap-danger)] focus-visible:shadow-[inset_0_0_0_2px_var(--rap-danger)] data-[state=open]:shadow-[inset_0_0_0_2px_var(--rap-danger)]",
+        false: "",
+      },
+    },
+    defaultVariants: { size: "md", invalid: false },
+  },
+);
+
+/* the slot window: the value rolls in from below, the old one rolls up and away.
+   A little headroom (0.3em each way) so the reel is clipped by a window, not by the glyphs. */
+export const selectWindowClass =
+  "relative grid grid-cols-[minmax(0,1fr)] flex-[1_1_auto] min-w-0 overflow-hidden py-[0.3em] -my-[0.3em] *:[grid-area:1/1]";
+export const selectValueClass = "overflow-hidden text-ellipsis whitespace-nowrap group-data-[placeholder]/trigger:text-mute";
+export const selectIconClass =
+  "size-[18px] flex-none opacity-60 transition-[rotate] duration-(--rap-dur-fast) ease-rm group-data-[state=open]/trigger:rotate-180";
+
+/* the deal: rows of a freshly opened list drop in one after another, 22ms apart (--i set in JS) */
+export const dealRowClass = "fun:animate-[rap-deal-in_260ms_var(--rap-ease-out)_calc(var(--i,0)*22ms)_both]";
+
 export const SelectTrigger = forwardRef<
   ElementRef<typeof SelectPrimitive.Trigger>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & { size?: "sm" | "md" | "lg" }
@@ -123,22 +176,31 @@ export const SelectTrigger = forwardRef<
   const valueRef = useRef<HTMLSpanElement>(null);
   const roll = useRoll(valueRef, { observe: true });
   return (
-    <SelectPrimitive.Trigger ref={ref} className={cx("rap-select-trigger", `rap-select-trigger--${size}`, className)} {...rest}>
-      <span className="rap-select-trigger__window">
-        <span ref={valueRef} className={cx("rap-select-trigger__value", roll.valueClass)}>
+    <SelectPrimitive.Trigger
+      ref={ref}
+      data-slot="select-trigger"
+      data-size={size}
+      className={cn(selectTriggerVariants({ size }), className)}
+      {...rest}
+    >
+      <span data-slot="select-window" className={selectWindowClass}>
+        <span ref={valueRef} data-slot="select-value" className={cn(selectValueClass, roll.valueClass)}>
           {children}
         </span>
         {roll.ghost}
       </span>
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="rap-select-trigger__icon" aria-hidden />
+        <ChevronDown data-slot="select-icon" className={selectIconClass} aria-hidden />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
 });
 
 /** Number every row of a freshly opened list (--i) so the CSS can deal them in, capped at 12. */
-export function dealRows(node: HTMLElement | null, selector = ".rap-menu-item, .rap-menu-label, .rap-menu-separator") {
+export function dealRows(
+  node: HTMLElement | null,
+  selector = '[data-slot="select-item"], [data-slot="select-label"], [data-slot="select-separator"]',
+) {
   if (!node) return;
   node.querySelectorAll<HTMLElement>(selector).forEach((row, i) => row.style.setProperty("--i", String(Math.min(i, 12))));
 }
@@ -161,10 +223,16 @@ export const SelectContent = forwardRef<
         ref={setRef}
         position={position}
         sideOffset={sideOffset}
-        className={cx("rap-pop", "rap-select-content", className)}
+        data-slot="select-content"
+        className={cn(
+          "pop min-w-(--radix-select-trigger-width) max-h-[min(var(--radix-select-content-available-height),320px)]",
+          className,
+        )}
         {...rest}
       >
-        <SelectPrimitive.Viewport className="rap-select-viewport">{children}</SelectPrimitive.Viewport>
+        <SelectPrimitive.Viewport data-slot="select-viewport" className="p-1">
+          {children}
+        </SelectPrimitive.Viewport>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   );
@@ -173,9 +241,9 @@ export const SelectContent = forwardRef<
 export const SelectItem = forwardRef<ElementRef<typeof SelectPrimitive.Item>, ComponentPropsWithoutRef<typeof SelectPrimitive.Item>>(
   function SelectItem({ className, children, ...rest }, ref) {
     return (
-      <SelectPrimitive.Item ref={ref} className={cx("rap-menu-item", "rap-select-item", className)} {...rest}>
+      <SelectPrimitive.Item ref={ref} data-slot="select-item" className={cn("menu-item pr-9", dealRowClass, className)} {...rest}>
         <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-        <SelectPrimitive.ItemIndicator className="rap-select-item__check">
+        <SelectPrimitive.ItemIndicator data-slot="select-item-indicator" className="absolute right-3 inline-flex text-select">
           <Check size={16} strokeWidth={2.5} />
         </SelectPrimitive.ItemIndicator>
       </SelectPrimitive.Item>
@@ -185,7 +253,7 @@ export const SelectItem = forwardRef<ElementRef<typeof SelectPrimitive.Item>, Co
 
 export const SelectLabel = forwardRef<ElementRef<typeof SelectPrimitive.Label>, ComponentPropsWithoutRef<typeof SelectPrimitive.Label>>(
   function SelectLabel({ className, ...rest }, ref) {
-    return <SelectPrimitive.Label ref={ref} className={cx("rap-menu-label", className)} {...rest} />;
+    return <SelectPrimitive.Label ref={ref} data-slot="select-label" className={cn("menu-label", dealRowClass, className)} {...rest} />;
   },
 );
 
@@ -193,5 +261,5 @@ export const SelectSeparator = forwardRef<
   ElementRef<typeof SelectPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(function SelectSeparator({ className, ...rest }, ref) {
-  return <SelectPrimitive.Separator ref={ref} className={cx("rap-menu-separator", className)} {...rest} />;
+  return <SelectPrimitive.Separator ref={ref} data-slot="select-separator" className={cn("menu-separator", dealRowClass, className)} {...rest} />;
 });

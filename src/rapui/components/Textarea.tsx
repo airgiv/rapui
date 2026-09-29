@@ -33,7 +33,7 @@ import {
 } from "react";
 import { useSpring } from "../hooks/useSpring";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { isMotionCalm } from "./FormField";
 import "./Textarea.css";
 
@@ -127,19 +127,30 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     if (crossed) sound.play("error");
   }, [length, over, counted, limit, cap, sound]);
 
+  const flagged = invalid || (limit != null && over);
   const field = (
     <textarea
       ref={setRef}
       rows={rows}
-      className={cx(
-        "rap-textarea",
-        `rap-textarea--${size}`,
-        autoGrow && "rap-textarea--grow",
-        counted && "rap-textarea--counted",
-        (invalid || (limit != null && over)) && "is-invalid",
+      data-slot="textarea"
+      data-size={size}
+      className={cn(
+        "block w-full min-h-[calc(var(--rap-control-h)*1.5)] px-(--ta-pad-x) py-(--ta-pad-y) border-0 rounded-pop",
+        "bg-fill text-ink font-sans text-[1rem] tracking-[-0.01em] resize-y outline-none",
+        "transition-[background-color,box-shadow] duration-(--rap-dur-fast) ease-rm",
+        "placeholder:text-mute hover:not-focus:bg-fill-hover focus:bg-surface focus:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+        "focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none",
+        size === "sm" && "[--ta-pad-x:14px] [--ta-pad-y:9px] text-[0.875rem] rounded-[16px] min-h-control",
+        size === "md" && "[--ta-pad-x:16px] [--ta-pad-y:12px]",
+        size === "lg" && "[--ta-pad-x:20px] [--ta-pad-y:15px] text-[1.0625rem]",
+        "leading-[1.45]", // after the sizes: tailwind-merge drops a leading that precedes a text size
+        autoGrow && "resize-none overflow-hidden",
+        // room under the text for the counter in the corner
+        counted && "pb-[calc(var(--ta-pad-y)+1.4em)]",
+        flagged && "shadow-[inset_0_0_0_2px_var(--rap-danger)] focus:shadow-[inset_0_0_0_2px_var(--rap-danger)]",
         className,
       )}
-      aria-invalid={invalid || (limit != null && over) || rest["aria-invalid"] || undefined}
+      aria-invalid={flagged || rest["aria-invalid"] || undefined}
       style={autoGrow && natural != null ? { ...style, height } : style}
       onInput={(e) => {
         fit();
@@ -152,10 +163,20 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
 
   if (!counted) return field;
   return (
-    <span className={cx("rap-textarea-wrap", `rap-textarea-wrap--${size}`)}>
+    <span data-slot="textarea-wrap" className="relative block w-full">
       {field}
+      {/* the soft-limit counter, in the bottom-right corner. Over the limit it goes flame and
+          hops — two names for one hop so every character past the limit restarts it */}
       <span
-        className={cx("rap-textarea__count", over && "is-over", hops > 0 && (hops % 2 ? "is-hop-a" : "is-hop-b"))}
+        data-slot="textarea-count"
+        data-over={over || undefined}
+        className={cn(
+          "absolute px-2 py-0.5 rounded-pill font-sans text-[0.75rem] font-medium tracking-[-0.01em] tabular-nums text-mute pointer-events-none",
+          "transition-[background-color,color] duration-(--rap-dur-fast) ease-rm",
+          size === "sm" ? "right-2 bottom-1.5" : "right-2.5 bottom-2",
+          over && "bg-flame text-white",
+          over && hops > 0 && (hops % 2 ? "fun:animate-hop" : "fun:animate-[rap-textarea-hop_360ms_var(--rap-ease-out)]"),
+        )}
         aria-hidden
       >
         {length}/{cap}

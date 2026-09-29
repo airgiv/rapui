@@ -1,4 +1,4 @@
-// Form controls. Each component lives in ../components/<Name>.tsx with its own CSS.
+// Form controls. Each component lives in ../components/<Name>.tsx, styled with Tailwind classes.
 export { Label } from "../components/Label";
 export { Input } from "../components/Input";
 export type { InputProps } from "../components/Input";

@@ -28,8 +28,8 @@ import { Popover as PopoverPrimitive } from "radix-ui";
 import { Command } from "cmdk";
 import { Check, ChevronDown, Search } from "../icons";
 import { useSound } from "../sound";
-import { cx } from "../utils";
-import { useRoll } from "./Select";
+import { cn } from "../utils";
+import { dealRowClass, selectIconClass, selectTriggerVariants, selectValueClass, selectWindowClass, useRoll } from "./Select";
 import "./Select.css";
 import "./Combobox.css";
 
@@ -51,6 +51,15 @@ function matchesOf(label: string, query: string): number[] {
   return j === q.length ? out : [];
 }
 
+/* The highlighter: each matched character is swiped left to right, one after the
+   other along its run (--k, 18ms apart), in the acid marker. Acid is the same in both
+   themes, so the ink on it is too. The ends of a run get rounder corners and a pixel
+   of bleed so the stroke looks laid on, not boxed. */
+const hitClass = cn(
+  "text-[#282828] bg-[linear-gradient(var(--rap-acid),var(--rap-acid))] bg-no-repeat bg-[position:0_55%] bg-[size:100%_86%]",
+  "fun:animate-[rap-combobox-swipe_110ms_linear_calc(var(--k,0)*18ms)_both]",
+);
+
 /** The label with every matched character marked; `--k` is its place in its run, for the swipe. */
 function Marked({ label, query }: { label: string; query: string }) {
   const hits = new Set(matchesOf(label, query));
@@ -61,10 +70,28 @@ function Marked({ label, query }: { label: string; query: string }) {
       {Array.from(label).map((ch, i) => {
         const hit = hits.has(i);
         k = hit ? k + 1 : 0;
+        const first = !hits.has(i - 1);
+        const last = !hits.has(i + 1);
         return (
           <span
             key={i}
-            className={hit ? cx("rap-combobox__hit", !hits.has(i - 1) && "is-first", !hits.has(i + 1) && "is-last") : undefined}
+            data-slot={hit ? "combobox-hit" : undefined}
+            className={
+              hit
+                ? cn(
+                    hitClass,
+                    first && last
+                      ? "rounded-[5px]"
+                      : first
+                        ? "rounded-[5px_2px_2px_5px]"
+                        : last
+                          ? "rounded-[2px_5px_5px_2px]"
+                          : undefined,
+                    first && "-ml-px pl-px",
+                    last && "-mr-px pr-px",
+                  )
+                : undefined
+            }
             style={hit ? ({ "--k": k - 1 } as CSSProperties) : undefined}
           >
             {ch}
@@ -162,44 +189,72 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
           aria-invalid={invalid || rest["aria-invalid"] || undefined}
           disabled={disabled}
           data-placeholder={selected ? undefined : ""}
-          className={cx(
-            "rap-select-trigger",
-            `rap-select-trigger--${size}`,
-            "rap-combobox",
-            invalid && "is-invalid",
-            className,
-          )}
+          data-slot="combobox-trigger"
+          data-size={size}
+          className={cn(selectTriggerVariants({ size, invalid: !!invalid }), className)}
           {...rest}
         >
-          <span className="rap-select-trigger__window">
-            <span ref={valueRef} className={cx("rap-select-trigger__value", roll.valueClass)}>
+          <span data-slot="combobox-window" className={selectWindowClass}>
+            <span ref={valueRef} data-slot="combobox-value" className={cn(selectValueClass, roll.valueClass)}>
               {selected ? selected.label : placeholder}
             </span>
             {roll.ghost}
           </span>
-          <ChevronDown className="rap-select-trigger__icon" aria-hidden />
+          <ChevronDown data-slot="combobox-icon" className={selectIconClass} aria-hidden />
         </button>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
           align="start"
           sideOffset={6}
-          className={cx("rap-pop", "rap-combobox__content", contentClassName)}
+          data-slot="combobox-content"
+          className={cn("pop w-(--radix-popover-trigger-width) min-w-[220px]", contentClassName)}
         >
-          <Command className="rap-combobox__command" loop>
-            <div className="rap-combobox__search">
+          <Command data-slot="combobox-command" className="flex flex-col" loop>
+            <div
+              data-slot="combobox-search"
+              className={cn(
+                "flex items-center gap-2 h-10 mt-1 mx-1 mb-0.5 px-3.5 rounded-pill bg-fill text-mute",
+                "focus-within:shadow-[inset_0_0_0_2px_var(--rap-ring)] [&_svg]:size-4 [&_svg]:flex-none",
+              )}
+            >
               <Search aria-hidden />
-              <Command.Input className="rap-combobox__input" placeholder={searchPlaceholder} value={query} onValueChange={setQuery} />
+              <Command.Input
+                data-slot="combobox-input"
+                className={cn(
+                  "flex-1 min-w-0 h-full p-0 border-0 bg-transparent text-ink font-sans text-[0.9375rem] tracking-[-0.01em]",
+                  "outline-none placeholder:text-mute",
+                )}
+                placeholder={searchPlaceholder}
+                value={query}
+                onValueChange={setQuery}
+              />
             </div>
-            <Command.List className={cx("rap-combobox__list", dealing && "is-dealing")}>
-              <Command.Empty className="rap-combobox__empty">{emptyText}</Command.Empty>
+            <Command.List
+              data-slot="combobox-list"
+              data-dealing={dealing || undefined}
+              className={cn(
+                "max-h-[min(var(--radix-popover-content-available-height,320px),280px)] overflow-y-auto overscroll-contain",
+                "pt-0.5 px-1 pb-1 scroll-py-1",
+              )}
+            >
+              <Command.Empty data-slot="combobox-empty" className="py-5 px-[0.9rem] text-[0.875rem] text-mute text-center">
+                {emptyText}
+              </Command.Empty>
               {options.map((o, i) => (
                 <Command.Item
                   key={o.value}
                   value={o.value}
                   keywords={[o.label, ...(o.keywords ?? [])]}
                   disabled={o.disabled}
-                  className="rap-menu-item rap-combobox__item"
+                  data-slot="combobox-item"
+                  className={cn(
+                    // cmdk marks the active row with data-selected="true", and every row with
+                    // data-disabled="true|false" (menu-item only dims a disabled that is not "false")
+                    "menu-item pr-9 data-[selected=true]:bg-fill",
+                    // the deal, only in the window just after opening
+                    dealing && dealRowClass,
+                  )}
                   style={{ "--i": Math.min(i, 12) } as CSSProperties}
                   onSelect={() => {
                     sound.play("tick");
@@ -208,10 +263,12 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
                     setOpen(false);
                   }}
                 >
-                  <span className="rap-combobox__label">
+                  <span data-slot="combobox-label" className="overflow-hidden text-ellipsis whitespace-nowrap">
                     <Marked label={o.label} query={query} />
                   </span>
-                  {o.value === current && <Check className="rap-combobox__check" size={16} strokeWidth={2.5} />}
+                  {o.value === current && (
+                    <Check data-slot="combobox-check" className="absolute right-3 text-select" size={16} strokeWidth={2.5} />
+                  )}
                 </Command.Item>
               ))}
             </Command.List>

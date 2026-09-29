@@ -1,34 +1,16 @@
-.rap-form-field {
-  --ff-gap: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ff-gap);
-  min-width: 0;
-  font-family: var(--rap-font-sans);
-}
-.rap-form-field__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0 2px; }
-.rap-form-field__label { display: inline-flex; align-items: baseline; gap: 0.4rem; }
-.rap-form-field__req { color: var(--rap-danger); margin-left: -0.3rem; }
-.rap-form-field__opt { font-size: 0.8125rem; font-weight: 400; color: var(--rap-mute); }
-.rap-form-field__aside { font-size: 0.8125rem; letter-spacing: -0.01em; color: var(--rap-mute); font-variant-numeric: tabular-nums; }
+/* FormField — only the keyframes utilities cannot say. Layout, colours and
+   the "which animation when" live in FormField.tsx as Tailwind classes.
 
-.rap-form-field__hint,
-.rap-form-field__error {
-  margin: 0;
-  padding: 0 2px;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-}
-.rap-form-field__hint { color: var(--rap-mute); }
-.rap-form-field__error { color: var(--rap-danger); font-weight: 500; }
-.rap-form-field__hint + .rap-form-field__error-slot { margin-top: calc(var(--rap-gap-tight) - var(--ff-gap)); }
+   rap-ff-shake is motion.css `rap-shake` under a second name: the control
+   alternates between the two so a second "no" that lands mid-shake restarts
+   it instead of being swallowed.
 
-/* the control, in its own box so the shake moves the answer and not the question */
-.rap-form-field__control { display: flex; flex-direction: column; min-width: 0; }
-/* two names for one shake so a second "no" mid-shake restarts it */
-.rap-form-field__control.is-shaking-a { animation: rap-shake 420ms var(--rap-ease-rm); }
-.rap-form-field__control.is-shaking-b { animation: rap-ff-shake 420ms var(--rap-ease-rm); }
+   The error message slides down out of the gap: its grid row opens from 0fr
+   (rap-ff-open) while the text drops in from above (rap-ff-drop), so nothing
+   below jumps. The negative start margin cancels the flex gap the new row
+   brings with it; under a hint the gap is the tight 2px one (-open-tight). */
+@layer theme, base, components, utilities;
+
 @keyframes rap-ff-shake {
   0%, 100% { translate: 0; }
   15% { translate: -7px; }
@@ -37,63 +19,12 @@
   60% { translate: 3px; }
   75% { translate: -1px; }
 }
-
-/* the message slides down out of the gap: its row opens from 0 while the text
-   drops in from above, so nothing below jumps */
-.rap-form-field__error-slot {
-  display: grid;
-  grid-template-rows: 1fr;
-  animation: rap-ff-open 320ms var(--rap-ease-out);
-}
-.rap-form-field__error-slot > .rap-form-field__error {
-  min-height: 0;
-  overflow: hidden;
-  animation: rap-ff-drop 380ms var(--rap-ease-spring);
-}
 @keyframes rap-ff-open {
   from { grid-template-rows: 0fr; margin-top: calc(var(--ff-gap) * -1); }
+}
+@keyframes rap-ff-open-tight {
+  from { grid-template-rows: 0fr; margin-top: calc(var(--ff-gap) * -2 + var(--rap-gap-tight)); }
 }
 @keyframes rap-ff-drop {
   from { translate: 0 -0.9em; opacity: 0; }
 }
-.rap-form-field__hint + .rap-form-field__error-slot { animation-name: rap-ff-open-tight; }
-@keyframes rap-ff-open-tight {
-  from { grid-template-rows: 0fr; margin-top: calc(var(--ff-gap) * -2 + var(--rap-gap-tight)); }
-}
-
-[data-rap-motion="calm"] :is(.rap-form-field__control, .rap-form-field__error-slot, .rap-form-field__error) { animation: none; }
-@media (prefers-reduced-motion: reduce) {
-  :is(.rap-form-field__control, .rap-form-field__error-slot, .rap-form-field__error) { animation: none !important; }
-}
-
-/* the field's error state paints known rap/ui controls red */
-.rap-form-field.is-invalid .rap-input,
-.rap-form-field.is-invalid .rap-select-trigger,
-.rap-form-field.is-invalid .rap-textarea,
-.rap-form-field.is-invalid .rap-numberfield,
-.rap-form-field.is-invalid .rap-otp__slot { box-shadow: inset 0 0 0 2px var(--rap-danger); }
-.rap-form-field.is-invalid .rap-checkbox:not([data-state="checked"]),
-.rap-form-field.is-invalid .rap-radio-item:not([data-state="checked"]) { box-shadow: inset 0 0 0 1.5px var(--rap-danger); }
-.rap-form-field.is-invalid .rap-radio-card:not([data-state="checked"]) { box-shadow: inset 0 0 0 1.5px var(--rap-danger); }
-
-/* ── FieldGroup ── */
-.rap-field-group {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-family: var(--rap-font-sans);
-}
-.rap-field-group__legend {
-  padding: 0 2px;
-  margin-bottom: 4px;
-  font-size: 1.0625rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  color: var(--rap-ink);
-}
-.rap-field-group__desc { margin: 0 0 16px; padding: 0 2px; font-size: 0.875rem; line-height: 1.45; color: var(--rap-mute); }
-.rap-field-group__legend + .rap-field-group__body { margin-top: 12px; }
-.rap-field-group__body { display: grid; gap: 20px; }
-.rap-field-group__body--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); column-gap: 12px; }
-.rap-field-group[disabled] { opacity: 0.6; }

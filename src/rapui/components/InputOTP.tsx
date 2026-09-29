@@ -3,8 +3,8 @@
    row of filled cells, so paste, autofill and SMS codes just work.
 
    DELIGHT — TILES THAT ANSWER BACK.
-   · Each slot HOPS as a character lands in it (motion.css
-     `rap-hop`, 5px) — typing a code feels like dropping tiles
+   · Each slot HOPS as a character lands in it (`animate-hop`:
+     5px) — typing a code feels like dropping tiles
      into a tray, and the hop tells you which slot took the key.
    · When the last slot is filled the whole row does a WAVE: each
      tile lifts a little higher than a hop, 45ms after the one on
@@ -14,7 +14,7 @@
    · When `invalid` turns on (the code was wrong) the row SHAKES
      "no" once (`rap-shake`), on the rising edge only.
 
-   All of it is CSS keyed off classes, so the characters and the
+   All of it is `fun:` animation classes, so the characters and the
    caret are never delayed. Reduced motion / data-rap-motion=
    "calm": none of it. Sound: "type" per character, "success"
    when complete, "error" when invalid turns on. */
@@ -31,7 +31,7 @@ import {
 } from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import "./InputOTP.css";
 
 export { REGEXP_ONLY_DIGITS, REGEXP_ONLY_CHARS, REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
@@ -73,14 +73,20 @@ export const InputOTP = forwardRef<ElementRef<typeof OTPInput>, InputOTPProps>(f
   return (
     <OTPInput
       ref={ref}
-      containerClassName={cx(
-        "rap-otp",
-        `rap-otp--${size}`,
-        invalid && "is-invalid",
-        shakes > 0 && (shakes % 2 ? "is-shaking-a" : "is-shaking-b"),
+      data-slot="input-otp-input"
+      containerClassName={cn(
+        "flex items-center gap-2.5 font-sans has-[input:disabled]:opacity-50 has-[input:disabled]:cursor-not-allowed",
+        // --otp-cell sizes the slots (and their digits); corners grow with them
+        size === "sm" && "[--otp-cell:var(--rap-control-h)] [--otp-radius:14px]",
+        size === "md" && "[--otp-cell:var(--rap-control-h-lg)] [--otp-radius:16px]",
+        size === "lg" && "[--otp-cell:60px] [--otp-radius:18px]",
+        // wrong code: every slot is ringed red (over the active ring too)
+        invalid && "[&_[data-slot=input-otp-slot]]:shadow-[inset_0_0_0_2px_var(--rap-danger)]!",
+        // …and the row shakes "no" (two names so a second "no" restarts it)
+        shakes > 0 && (shakes % 2 ? "fun:animate-shake" : "fun:animate-[rap-otp-shake_420ms_var(--rap-ease-rm)]"),
         containerClassName,
       )}
-      className={cx("rap-otp__input", className)}
+      className={cn("focus-visible:outline-none", className)}
       aria-invalid={invalid || undefined}
       onChange={(v: string) => {
         if (v.length > typed.current) sound.play("type");
@@ -100,7 +106,7 @@ export const InputOTPGroup = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEl
   { className, ...rest },
   ref,
 ) {
-  return <div ref={ref} className={cx("rap-otp__group", className)} {...rest} />;
+  return <div ref={ref} data-slot="input-otp-group" className={cn("flex items-center gap-tile", className)} {...rest} />;
 });
 
 export const InputOTPSlot = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> & { index: number }>(
@@ -120,12 +126,17 @@ export const InputOTPSlot = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
     return (
       <div
         ref={ref}
-        className={cx(
-          "rap-otp__slot",
-          slot?.isActive && "is-active",
-          char != null && "is-filled",
-          hops > 0 && (hops % 2 ? "is-hop-a" : "is-hop-b"),
-          complete && "is-complete",
+        data-slot="input-otp-slot"
+        data-filled={char != null || undefined}
+        className={cn(
+          "relative grid place-items-center size-(--otp-cell) rounded-(--otp-radius) bg-fill text-ink",
+          "text-[length:calc(var(--otp-cell)*0.42)] font-medium tracking-[-0.02em] tabular-nums",
+          "transition-[background-color,box-shadow] duration-(--rap-dur-fast) ease-rm",
+          "data-[active]:z-1 data-[active]:bg-surface data-[active]:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+          // a character lands: the slot hops (two names so fast typing into one slot restarts it)
+          hops > 0 && (hops % 2 ? "fun:animate-hop" : "fun:animate-[rap-otp-hop-b_360ms_var(--rap-ease-out)]"),
+          // the code is complete: a wave from left to right (45ms a slot), a bit higher than a hop
+          complete && "fun:animate-[rap-otp-wave_460ms_var(--rap-ease-out)_calc(var(--i,0)*45ms)_both]",
           className,
         )}
         data-active={slot?.isActive || undefined}
@@ -137,11 +148,21 @@ export const InputOTPSlot = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
         }}
       >
         {slot?.char != null ? (
-          <span className="rap-otp__char">{slot.char}</span>
+          <span data-slot="input-otp-char" className="fun:animate-[rap-otp-pop_260ms_var(--rap-ease-spring)]">
+            {slot.char}
+          </span>
         ) : slot?.placeholderChar ? (
-          <span className="rap-otp__placeholder">{slot.placeholderChar}</span>
+          <span data-slot="input-otp-placeholder" className="text-mute">
+            {slot.placeholderChar}
+          </span>
         ) : null}
-        {slot?.hasFakeCaret && <span className="rap-otp__caret" aria-hidden />}
+        {slot?.hasFakeCaret && (
+          <span
+            data-slot="input-otp-caret"
+            className="absolute w-0.5 h-[42%] rounded-[2px] bg-ring animate-[rap-otp-blink_1.1s_step-end_infinite] motion-reduce:animate-none"
+            aria-hidden
+          />
+        )}
       </div>
     );
   },
@@ -152,8 +173,8 @@ export const InputOTPSeparator = forwardRef<HTMLDivElement, HTMLAttributes<HTMLD
   ref,
 ) {
   return (
-    <div ref={ref} role="separator" className={cx("rap-otp__sep", className)} {...rest}>
-      <span />
+    <div ref={ref} role="separator" data-slot="input-otp-separator" className={cn("grid place-items-center w-3.5", className)} {...rest}>
+      <span className="w-2.5 h-0.5 rounded-[2px] bg-fill-strong" />
     </div>
   );
 });

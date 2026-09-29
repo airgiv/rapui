@@ -1,80 +1,12 @@
-.rap-select-trigger {
-  --in-h: var(--rap-control-h);
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  width: 100%;
-  height: var(--in-h);
-  padding: 0 calc(var(--in-h) * 0.3) 0 calc(var(--in-h) * 0.4);
-  border: 0;
-  border-radius: var(--rap-radius-pill);
-  background: var(--rap-fill);
-  color: var(--rap-ink);
-  font-family: var(--rap-font-sans);
-  font-size: 1rem;
-  letter-spacing: -0.01em;
-  text-align: left;
-  cursor: pointer;
-  transition: background var(--rap-dur-fast) var(--rap-ease-rm), box-shadow var(--rap-dur-fast) var(--rap-ease-rm);
-}
-.rap-select-trigger--sm { --in-h: var(--rap-control-h-sm); font-size: 0.875rem; }
-.rap-select-trigger--lg { --in-h: var(--rap-control-h-lg); font-size: 1.0625rem; }
-.rap-select-trigger:hover { background: var(--rap-fill-hover); }
-.rap-select-trigger:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
-.rap-select-trigger[data-state="open"] { background: var(--rap-surface); box-shadow: inset 0 0 0 2px var(--rap-ring); }
-.rap-select-trigger[data-placeholder] .rap-select-trigger__value { color: var(--rap-mute); }
-.rap-select-trigger:disabled { opacity: 0.5; pointer-events: none; }
-.rap-select-trigger__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Select — only the keyframes utilities cannot say (shared with Combobox,
+   which imports this file). Everything else is Tailwind classes in Select.tsx.
 
-/* ── the slot window: the value rolls in from below, the old one rolls up and away ── */
-.rap-select-trigger__window {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  /* a little headroom so the reel is clipped by a window, not by the glyphs */
-  padding-block: 0.3em;
-  margin-block: -0.3em;
-}
-.rap-select-trigger__window > * { grid-area: 1 / 1; }
-.rap-select-trigger__value.is-roll-a { animation: rap-roll-in-a 420ms var(--rap-ease-spring); }
-.rap-select-trigger__value.is-roll-b { animation: rap-roll-in-b 420ms var(--rap-ease-spring); }
-.rap-select-trigger__ghost {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  pointer-events: none;
-  animation: rap-roll-out 300ms var(--rap-ease-rm) forwards;
-}
-.rap-select-trigger__ghost.is-muted { color: var(--rap-mute); }
+   The slot window: the new value rolls up from below (115%, so it starts
+   fully out of the clipped window with a sliver of gap) on the spring, while
+   the old text, kept as a ghost, rolls up and away. Two names for one roll-in
+   so a pick that lands mid-roll restarts it. */
+@layer theme, base, components, utilities;
+
 @keyframes rap-roll-in-a { from { translate: 0 115%; opacity: 0.2; } }
 @keyframes rap-roll-in-b { from { translate: 0 115%; opacity: 0.2; } }
 @keyframes rap-roll-out { to { translate: 0 -115%; opacity: 0; } }
-
-/* ── the deal: rows of a freshly opened list drop in one after another (--i set in JS) ── */
-.rap-select-content :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) {
-  animation: rap-deal-in 260ms var(--rap-ease-out) both;
-  animation-delay: calc(var(--i, 0) * 22ms);
-}
-
-[data-rap-motion="calm"] :is(.rap-select-trigger__value, .rap-select-trigger__ghost),
-[data-rap-motion="calm"] .rap-select-content :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) { animation: none; }
-[data-rap-motion="calm"] .rap-select-trigger__ghost { display: none; }
-@media (prefers-reduced-motion: reduce) {
-  :is(.rap-select-trigger__value, .rap-select-trigger__ghost),
-  .rap-select-content :is(.rap-menu-item, .rap-menu-label, .rap-menu-separator) { animation: none !important; }
-  .rap-select-trigger__ghost { display: none; }
-}
-.rap-select-trigger__icon { width: 18px; height: 18px; flex: none; opacity: 0.6; transition: transform var(--rap-dur-fast) var(--rap-ease-rm); }
-.rap-select-trigger[data-state="open"] .rap-select-trigger__icon { transform: rotate(180deg); }
-
-.rap-select-content {
-  min-width: var(--radix-select-trigger-width);
-  max-height: min(var(--radix-select-content-available-height), 320px);
-}
-.rap-select-viewport { padding: 4px; }
-.rap-select-item { padding-right: 2.25rem; }
-.rap-select-item__check { position: absolute; right: 0.75rem; display: inline-flex; color: var(--rap-select); }

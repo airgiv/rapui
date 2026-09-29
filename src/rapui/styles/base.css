@@ -1,3 +1,7 @@
+/* legacy stylesheet kept during the Tailwind migration — layered so utilities win */
+@layer theme, base, components, utilities;
+
+@layer components {
 /* Opt-in base: apply `rap-root` (or use <RapProvider>) to get paper/ink + fonts. */
 .rap-root {
   background: var(--rap-paper);
@@ -33,3 +37,6 @@
    the drawn line under a giant Field), so the generic outline would be a
    second box around it. */
 .rap-root :is(input, textarea, [contenteditable]):focus-visible { outline: none; }
+}
+
+

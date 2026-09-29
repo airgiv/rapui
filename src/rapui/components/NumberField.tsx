@@ -27,7 +27,7 @@
 import { forwardRef, useEffect, useRef, useState, type CSSProperties, type InputHTMLAttributes, type KeyboardEvent, type ReactNode } from "react";
 import { Minus, Plus } from "../icons";
 import { useSound } from "../sound";
-import { clamp, cx } from "../utils";
+import { clamp, cn } from "../utils";
 import { isMotionCalm } from "./FormField";
 import "./NumberField.css";
 
@@ -59,18 +59,31 @@ interface Roll {
   n: number;
 }
 
+/* The reels: laid exactly over the input while they turn. Up: the old digit leaves
+   upward and the new one comes up from below; down: the reverse. Each reel to the
+   left waits 30ms more (--carry) — the carry. A digit that disappears (100 → 99)
+   folds its width away as it turns. */
+const reelTurn = {
+  up: "fun:animate-[rap-nf-reel-up_460ms_var(--rap-ease-spring)_calc(var(--carry,0)*30ms)_both]",
+  down: "fun:animate-[rap-nf-reel-down_460ms_var(--rap-ease-spring)_calc(var(--carry,0)*30ms)_both]",
+};
+
 /** The reels: old and new text right-aligned, every changed character turning over. */
 function Odometer({ roll }: { roll: Roll }) {
   const len = Math.max(roll.from.length, roll.to.length);
   const a = roll.from.padStart(len, " ");
   const b = roll.to.padStart(len, " ");
   return (
-    <span className="rap-numberfield__odo" aria-hidden>
+    <span
+      data-slot="number-field-odometer"
+      className="absolute inset-0 flex items-center justify-center font-medium tabular-nums tracking-[-0.01em] whitespace-pre pointer-events-none"
+      aria-hidden
+    >
       {Array.from(b).map((ch, i) => {
         const fromRight = len - 1 - i;
         if (a[i] === ch) {
           return ch === " " ? null : (
-            <span key={`${roll.n}-${fromRight}`} className="rap-numberfield__reel">
+            <span key={`${roll.n}-${fromRight}`} data-slot="number-field-reel" className="inline-block leading-[1.3]">
               {ch}
             </span>
           );
@@ -79,10 +92,14 @@ function Odometer({ roll }: { roll: Roll }) {
         return (
           <span
             key={`${roll.n}-${fromRight}`}
-            className={cx("rap-numberfield__reel", "is-turning", roll.dir > 0 ? "is-up" : "is-down", ch === " " && "is-vanishing")}
+            data-slot="number-field-reel"
+            className={cn(
+              "inline-block leading-[1.3] h-[1.3em] overflow-hidden align-middle",
+              ch === " " && "fun:animate-[rap-nf-fold_460ms_var(--rap-ease-rm)_both]",
+            )}
             style={{ "--carry": fromRight } as CSSProperties}
           >
-            <span className="rap-numberfield__strip">
+            <span className={cn("flex flex-col *:h-[1.3em] *:leading-[1.3] *:text-center", roll.dir > 0 ? reelTurn.up : reelTurn.down)}>
               <span>{strip[0] === " " ? "\u00a0" : strip[0]}</span>
               <span>{strip[1] === " " ? "\u00a0" : strip[1]}</span>
             </span>
@@ -208,15 +225,33 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
   const atMin = current != null && current <= min;
   const atMax = current != null && current >= max;
 
+  /* --nf-h drives the height and the round buttons, which sit --nf-inset (2px)
+     inside the ends. Focused, the pill lifts to the surface and the buttons drop to
+     the fill so they stay visible on it. */
   return (
     <div
       ref={box}
-      className={cx("rap-numberfield", `rap-numberfield--${size}`, invalid && "is-invalid", disabled && "is-disabled", className)}
+      data-slot="number-field"
+      data-size={size}
+      data-invalid={invalid || undefined}
+      className={cn(
+        "group/nf inline-flex items-center justify-between gap-1 w-full min-w-[9.5rem] max-w-48 h-(--nf-h) p-(--nf-inset)",
+        "rounded-pill bg-fill text-ink font-sans text-[1rem] [--nf-inset:var(--rap-gap-tight)]",
+        "transition-[background-color,box-shadow] duration-(--rap-dur-fast) ease-rm",
+        "hover:not-focus-within:bg-fill-hover focus-within:bg-surface focus-within:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+        size === "sm" && "[--nf-h:var(--rap-control-h-sm)] text-[0.875rem]",
+        size === "md" && "[--nf-h:var(--rap-control-h)]",
+        size === "lg" && "[--nf-h:var(--rap-control-h-lg)] text-[1.0625rem]",
+        invalid && "shadow-[inset_0_0_0_2px_var(--rap-danger)] focus-within:shadow-[inset_0_0_0_2px_var(--rap-danger)]",
+        disabled && "opacity-50 pointer-events-none",
+        className,
+      )}
     >
       <button
         type="button"
         tabIndex={-1}
-        className="rap-numberfield__btn"
+        data-slot="number-field-decrement"
+        className={cn(buttonClass, size === "sm" && "[&_svg]:size-3.5")}
         aria-label={decrementLabel}
         aria-disabled={atMin || undefined}
         disabled={disabled || readOnly}
@@ -224,21 +259,38 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
       >
         <Minus aria-hidden />
       </button>
+      {/* the bonk: the number knocks against the end it hit (--bonk: 1 right, -1 left);
+          two names so a second bonk mid-bonk restarts it */}
       <span
-        className={cx("rap-numberfield__value", bonk && (bonk.n % 2 ? "is-bonk-a" : "is-bonk-b"))}
+        data-slot="number-field-value"
+        className={cn(
+          "inline-flex items-center justify-center gap-[0.2em] flex-1 min-w-0 h-full self-stretch",
+          bonk &&
+            (bonk.n % 2
+              ? "fun:animate-[rap-nf-bonk-a_320ms_var(--rap-ease-out)]"
+              : "fun:animate-[rap-nf-bonk-b_320ms_var(--rap-ease-out)]"),
+        )}
         style={bonk ? ({ "--bonk": bonk.dir } as CSSProperties) : undefined}
         onAnimationEnd={(e) => {
           if (e.target === e.currentTarget) setBonk(null);
         }}
       >
-        <span className="rap-numberfield__slot">
+        <span data-slot="number-field-slot" className="relative inline-flex items-center h-full max-w-full">
         <input
           ref={ref}
           type="text"
           inputMode="decimal"
           role="spinbutton"
           autoComplete="off"
-          className={cx("rap-numberfield__input", roll && "is-rolling")}
+          data-slot="number-field-input"
+          className={cn(
+            "min-w-[2ch] max-w-full w-auto h-full p-0 border-0 bg-transparent text-inherit font-medium tabular-nums",
+            // the pill's font, spelled out: a `font` shorthand would also reset weight and tabular-nums
+            "[font-family:inherit] [font-size:inherit] [line-height:inherit] [font-style:inherit]",
+            "tracking-[-0.01em] text-center outline-none focus-visible:outline-none [field-sizing:content]",
+            // while the reels turn over it, the input's own text is hidden — its caret is not
+            roll && "text-transparent caret-ink",
+          )}
           aria-valuenow={current ?? undefined}
           aria-valuemin={Number.isFinite(min) ? min : undefined}
           aria-valuemax={Number.isFinite(max) ? max : undefined}
@@ -257,12 +309,17 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
         />
         {roll && <Odometer roll={roll} />}
         </span>
-        {unit != null && <span className="rap-numberfield__unit">{unit}</span>}
+        {unit != null && (
+          <span data-slot="number-field-unit" className="text-mute text-[0.9em]">
+            {unit}
+          </span>
+        )}
       </span>
       <button
         type="button"
         tabIndex={-1}
-        className="rap-numberfield__btn"
+        data-slot="number-field-increment"
+        className={cn(buttonClass, size === "sm" && "[&_svg]:size-3.5")}
         aria-label={incrementLabel}
         aria-disabled={atMax || undefined}
         disabled={disabled || readOnly}
@@ -273,3 +330,14 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
     </div>
   );
 });
+
+/* the round −/+ buttons: surface on the fill, fill on the focused (surface) pill; ink on
+   hover. At a limit the button looks spent but still answers — with a bonk — so it keeps
+   its resting colour under the pointer. */
+const buttonClass = cn(
+  "grid place-items-center flex-none size-[calc(var(--nf-h)-var(--nf-inset)*2)] p-0 border-0 rounded-full",
+  "bg-surface text-ink cursor-pointer group-focus-within/nf:bg-fill",
+  "transition-[background-color,color,scale] duration-(--rap-dur-fast) ease-rm",
+  "not-aria-disabled:hover:bg-ink not-aria-disabled:hover:text-paper active:scale-90",
+  "disabled:opacity-35 disabled:pointer-events-none aria-disabled:opacity-35 [&_svg]:size-4",
+);

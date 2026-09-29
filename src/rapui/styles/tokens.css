@@ -78,6 +78,8 @@
   --rap-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --rap-ease-in-out: cubic-bezier(0.83, 0, 0.17, 1);
   --rap-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --rap-ease-back: cubic-bezier(0.34, 1.8, 0.64, 1);
+  --rap-ease-gravity: cubic-bezier(0.55, 0, 1, 0.45);
   --rap-dur-fast: 220ms;
   --rap-dur: 550ms;
   --rap-dur-slow: 900ms;

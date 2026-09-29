@@ -1,7 +1,0 @@
-.rap-aspect { overflow: hidden; background: var(--rap-fill); }
-.rap-aspect--none { border-radius: 0; }
-.rap-aspect--sm { border-radius: var(--rap-radius-sm); }
-.rap-aspect--md { border-radius: 20px; }
-.rap-aspect--lg { border-radius: var(--rap-radius); }
-.rap-aspect > img,
-.rap-aspect > video { display: block; width: 100%; height: 100%; object-fit: cover; }

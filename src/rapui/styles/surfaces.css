@@ -1,3 +1,7 @@
+/* legacy stylesheet kept during the Tailwind migration — layered so utilities win */
+@layer theme, base, components, utilities;
+
+@layer components {
 /* ───────────────────────────────────────────────────────────
    Shared pieces for floating UI (select, menus, popovers…).
    Components add these classes next to their own.
@@ -16,9 +20,6 @@
   animation: rap-pop-in 200ms var(--rap-ease-out);
 }
 .rap-pop[data-state="closed"] { animation: rap-pop-out 140ms var(--rap-ease-rm) forwards; }
-@keyframes rap-pop-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
-@keyframes rap-pop-out { to { opacity: 0; transform: scale(0.97); } }
-
 /* a row in any list-like menu */
 .rap-menu-item {
   position: relative;
@@ -51,5 +52,10 @@
   animation: rap-fade-in 200ms var(--rap-ease-rm);
 }
 .rap-scrim[data-state="closed"] { animation: rap-fade-out 160ms var(--rap-ease-rm) forwards; }
+}
+
+@keyframes rap-pop-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+@keyframes rap-pop-out { to { opacity: 0; transform: scale(0.97); } }
+
 @keyframes rap-fade-in { from { opacity: 0; } }
 @keyframes rap-fade-out { to { opacity: 0; } }
