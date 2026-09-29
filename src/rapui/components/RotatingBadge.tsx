@@ -40,7 +40,7 @@ export function RotatingBadge({ text, size = 140, duration = 14, center, color =
         viewBox="0 0 100 100"
         aria-hidden
         className={cn(
-          "absolute inset-0 size-full animate-[spin_var(--rap-rb-dur)_linear_infinite] transition-[animation-duration] duration-(--rap-dur)",
+          "absolute inset-0 size-full fun:animate-[spin_var(--rap-rb-dur)_linear_infinite] transition-[animation-duration] duration-(--rap-dur)",
           /* hover spins it up to four times the speed */
           "group-hover/rbadge:[animation-duration:calc(var(--rap-rb-dur)/4)]",
           /* the running text, in user units of the 100-unit viewBox */
@@ -57,7 +57,7 @@ export function RotatingBadge({ text, size = 140, duration = 14, center, color =
         </text>
       </svg>
       <div data-slot="rotating-badge-center" className="relative text-[2rem] leading-none">
-        {center ?? <span className="inline-block animate-[spin_6s_linear_infinite_reverse]">✳</span>}
+        {center ?? <span className="inline-block fun:animate-[spin_6s_linear_infinite_reverse]">✳</span>}
       </div>
     </div>
   );

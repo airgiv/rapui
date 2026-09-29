@@ -7,7 +7,7 @@ export function Grain({ opacity = 0.08 }: { opacity?: number }) {
       data-slot="grain"
       /* twice the viewport, centred, so the jitter (Grain.css) never shows an
          edge; multiply darkens paper, screen lightens the dark theme */
-      className="fixed -inset-1/2 w-[200%] h-[200%] z-9998 pointer-events-none mix-blend-multiply dark:mix-blend-screen animate-[rap-grain_0.9s_steps(4)_infinite] motion-reduce:animate-none"
+      className="fixed -inset-1/2 w-[200%] h-[200%] z-9998 pointer-events-none mix-blend-multiply dark:mix-blend-screen fun:animate-[rap-grain_0.9s_steps(4)_infinite]"
       style={{ opacity }}
       aria-hidden
     >

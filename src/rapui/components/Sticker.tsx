@@ -119,7 +119,7 @@ const stickerVariants = cva(
         svg: "aspect-square whitespace-normal text-center leading-[1.05]",
       },
       /* Spinning shapes turn as one piece, words included, on `rotate`. */
-      turn: { true: "animate-[rap-sticker-turn_24s_linear_infinite] motion-reduce:animate-none", false: "" },
+      turn: { true: "fun:animate-[rap-sticker-turn_24s_linear_infinite]", false: "" },
     },
     defaultVariants: { color: "acid", pad: "pill", shape: "pill", turn: false },
   },
