@@ -30,24 +30,30 @@ const flag = {
     }
   },
 };
-const Docs = lazy(() =>
-  import("./Docs")
-    .then((m) => {
-      flag.set(false);
-      return { default: m.Docs };
-    })
-    .catch((err) => {
-      if (!flag.get()) {
-        flag.set(true);
-        window.location.reload();
-        return new Promise<never>(() => {}); // the page is going away
-      }
-      throw err;
-    }),
-);
+function lazyPage<T>(load: () => Promise<T>) {
+  return lazy(() =>
+    load()
+      .then((m) => {
+        flag.set(false);
+        return m as never;
+      })
+      .catch((err) => {
+        if (!flag.get()) {
+          flag.set(true);
+          window.location.reload();
+          return new Promise<never>(() => {}); // the page is going away
+        }
+        throw err;
+      }),
+  );
+}
+const Docs = lazyPage(() => import("./Docs").then((m) => ({ default: m.Docs })));
+/* the beginners' guide: its own small chunk too */
+const Guide = lazyPage(() => import("./Guide").then((m) => ({ default: m.Guide })));
 
-/* Two views on one bundle, picked by the hash:
-   #docs or #docs.<slug> → the components explorer, anything else → the landing page.
+/* Three views on one bundle, picked by the hash:
+   #docs or #docs.<slug> → the components explorer, #start → the beginners' guide,
+   anything else → the landing page.
    Plain tokens only (no slashes), so deep links survive hosts that strip paths. */
 function useHash() {
   const [hash, setHash] = useState(() => window.location.hash.slice(1));
@@ -84,15 +90,20 @@ function Root() {
   }, [sound]);
 
   const inDocs = hash === "docs" || hash.startsWith("docs.");
+  const inGuide = hash === "start";
   useEffect(() => {
-    if (!inDocs) document.title = "rapui — all the components, none of the boring";
-  }, [inDocs]);
+    if (!inDocs && !inGuide) document.title = "rapui — all the components, none of the boring";
+  }, [inDocs, inGuide]);
 
   return (
     <SoundProvider {...sound}>
       {inDocs ? (
         <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
           <Docs slug={hash.slice(5)} dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
+        </Suspense>
+      ) : inGuide ? (
+        <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
+          <Guide dark={dark} setDark={setDark} />
         </Suspense>
       ) : (
         <App dark={dark} setDark={setDark} sound={sound} setSound={setSound} />

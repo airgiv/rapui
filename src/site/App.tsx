@@ -73,6 +73,7 @@ const COPY = "m-0 text-ink-2 text-[1.15rem] leading-[1.5] max-w-[46ch] [&_code]:
 const NAV = [
   ["#docs", "Docs"],
   ["#wall", "Components"],
+  ["#start", "Start here"],
   ["#tech", "Under the hood"],
   ["#install", "Install"],
 ] as const;
@@ -110,12 +111,12 @@ function Header({
       {/* a soft pill behind the link on hover — the same shape as everything else in
           the bar — instead of rolling letters; the words sit a pixel high to meet the
           optical middle of the lowercase logo */}
-      <nav className="flex gap-1 text-[1.05rem] font-medium max-[860px]:hidden">
+      <nav className="flex gap-1 text-[1.05rem] font-medium max-[1180px]:hidden">
         {NAV.map(([href, label]) => (
           <a
             key={href}
             href={href}
-            className="px-4 h-11 flex items-center leading-none -translate-y-px rounded-pill transition-colors duration-200 hover:bg-ink/12 focus-visible:outline-2 focus-visible:outline-ring"
+            className="px-4 h-11 flex items-center whitespace-nowrap leading-none -translate-y-px rounded-pill transition-colors duration-200 hover:bg-ink/12 focus-visible:outline-2 focus-visible:outline-ring"
           >
             {label}
           </a>
@@ -124,18 +125,18 @@ function Header({
       {/* on a phone everything packs a little tighter so the header pill fits; the
           sound switch (no room for its word) moves into the menu, where it is labelled */}
       <div className="flex items-center gap-3 max-[480px]:gap-2">
-        <span className="contents max-[860px]:hidden">
+        <span className="contents max-[1180px]:hidden">
           <SoundControls value={sound} onChange={setSound} />
         </span>
         <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
-        <Button size="md" icon className="max-[860px]:hidden" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
+        <Button size="md" icon className="max-[1180px]:hidden" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
           Get it
         </Button>
         <button
           type="button"
           onClick={() => setMenu(true)}
           aria-label="Menu"
-          className="hidden max-[860px]:grid place-items-center size-11 rounded-full bg-ink text-paper transition-transform active:scale-90 [&_svg]:size-5"
+          className="hidden max-[1180px]:grid place-items-center size-11 rounded-full bg-ink text-paper transition-transform active:scale-90 [&_svg]:size-5"
         >
           <Menu />
         </button>
@@ -1126,6 +1127,9 @@ function Install() {
           <p className={COPY}>
             Precompiled CSS for any React app, or the Tailwind theme for apps that already use Tailwind v4. The fonts are optional.
           </p>
+          <a href="#start" className="self-start inline-flex items-center gap-2 h-12 px-6 rounded-pill bg-ink text-paper font-medium transition-colors hover:bg-flame">
+            Never used a terminal? Start here →
+          </a>
         </div>
         <div className="flex flex-col gap-4 min-w-0">
           <Code>{`npm install @rapui/react`}</Code>
