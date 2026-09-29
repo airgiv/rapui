@@ -1,0 +1,31 @@
+.rap-card {
+  --card-pad: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: var(--card-pad);
+  border-radius: var(--rap-radius);
+  background: var(--rap-surface);
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+}
+.rap-card--sm { --card-pad: 1.25rem; gap: 1rem; border-radius: 22px; }
+.rap-card--lg { --card-pad: 2.25rem; gap: 1.5rem; border-radius: var(--rap-radius-lg); }
+
+.rap-card__header { display: flex; flex-direction: column; gap: 0.35rem; }
+.rap-card__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.rap-card__desc {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: var(--rap-mute);
+}
+.rap-card__content { font-size: 0.9375rem; line-height: 1.5; }
+.rap-card__footer { display: flex; align-items: center; gap: var(--rap-gap-tight); margin-top: auto; }

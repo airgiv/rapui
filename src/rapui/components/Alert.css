@@ -1,0 +1,53 @@
+.rap-alert {
+  --al-color: var(--rap-blue);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 1.125rem;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--al-color) 10%, var(--rap-surface));
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+  letter-spacing: -0.01em;
+}
+.rap-alert--info { --al-color: var(--rap-blue); }
+.rap-alert--success { --al-color: var(--rap-success); }
+.rap-alert--warning { --al-color: var(--rap-warning); }
+.rap-alert--danger { --al-color: var(--rap-danger); }
+.rap-alert--neutral { --al-color: var(--rap-ink); background: var(--rap-fill); }
+
+.rap-alert__icon { display: inline-flex; flex: none; margin-top: 1px; color: var(--al-color); }
+.rap-alert--neutral .rap-alert__icon { color: var(--rap-ink-2); }
+.rap-alert--warning .rap-alert__icon { color: color-mix(in srgb, var(--rap-warning) 85%, var(--rap-ink)); }
+.rap-alert__icon svg { width: 20px; height: 20px; }
+
+.rap-alert__body { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0; }
+.rap-alert__title { font-size: 0.9375rem; font-weight: 500; line-height: 1.35; }
+.rap-alert__desc { font-size: 0.9375rem; line-height: 1.45; color: var(--rap-ink-2); }
+.rap-alert__desc a { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; }
+
+.rap-alert__action { display: flex; align-items: center; gap: var(--rap-gap-tight); flex: none; align-self: center; }
+.rap-alert__close {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: -4px -6px -4px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--rap-ink-2);
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-alert__close:hover { background: var(--rap-fill); }
+.rap-alert__close:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-alert__close svg { width: 16px; height: 16px; }
+
+@media (max-width: 560px) {
+  .rap-alert { flex-wrap: wrap; }
+  .rap-alert__action { order: 3; width: 100%; padding-left: calc(20px + 0.75rem); }
+}

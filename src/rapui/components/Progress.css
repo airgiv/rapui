@@ -1,0 +1,57 @@
+.rap-progress {
+  --pg-h: 8px;
+  --pg-color: var(--rap-blue);
+  position: relative;
+  width: 100%;
+  height: var(--pg-h);
+  overflow: hidden;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill-strong);
+  /* Safari clips rounded overflow correctly only on its own layer */
+  isolation: isolate;
+}
+.rap-progress--sm { --pg-h: 4px; }
+.rap-progress--lg { --pg-h: 12px; }
+.rap-progress--blue { --pg-color: var(--rap-blue); }
+.rap-progress--flame { --pg-color: var(--rap-flame); }
+.rap-progress--ink { --pg-color: var(--rap-ink); }
+.rap-progress--success { --pg-color: var(--rap-success); }
+
+.rap-progress__bar {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--pg-color);
+  transition: width var(--rap-dur) var(--rap-ease-out);
+}
+.rap-progress.is-indeterminate .rap-progress__bar {
+  width: 40%;
+  animation: rap-progress-sweep 1.4s var(--rap-ease-in-out) infinite;
+}
+@keyframes rap-progress-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+.rap-cprogress {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  font-family: var(--rap-font-sans);
+}
+.rap-cprogress svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.rap-cprogress__track { fill: none; stroke: var(--rap-fill-strong); }
+.rap-cprogress__bar {
+  fill: none;
+  stroke: var(--pg-color, var(--rap-blue));
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--rap-dur) var(--rap-ease-out);
+}
+.rap-cprogress__label {
+  position: relative;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--rap-ink);
+  font-variant-numeric: tabular-nums;
+}

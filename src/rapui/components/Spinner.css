@@ -1,0 +1,10 @@
+.rap-spinner {
+  flex: none;
+  vertical-align: middle;
+  /* spinning is information, so keep it even with reduced motion — just slower */
+  animation: rap-spin 0.8s linear infinite;
+}
+@keyframes rap-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .rap-spinner { animation-duration: 2s; }
+}

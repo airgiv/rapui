@@ -1,0 +1,60 @@
+.rap-badge {
+  --bd-h: 26px;
+  --bd-bg: var(--rap-fill);
+  --bd-ink: var(--rap-ink);
+  --bd-dot: currentColor;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  height: var(--bd-h);
+  padding: 0 0.7em;
+  border-radius: var(--rap-radius-pill);
+  background: var(--bd-bg);
+  color: var(--bd-ink);
+  font-family: var(--rap-font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+.rap-badge--sm { --bd-h: 22px; font-size: 0.75rem; padding: 0 0.6em; }
+
+/* fallback: line box is taller below the baseline than above the caps,
+   so nudge the label up a touch to sit in the optical middle */
+.rap-badge__label { display: block; transform: translateY(-0.05em); }
+@supports (text-box: trim-both cap alphabetic) {
+  .rap-badge__label { transform: none; text-box: trim-both cap alphabetic; }
+}
+
+.rap-badge__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bd-dot);
+}
+
+.rap-badge--neutral { --bd-dot: var(--rap-mute); }
+.rap-badge--ink { --bd-bg: var(--rap-ink); --bd-ink: var(--rap-paper); }
+.rap-badge--blue { --bd-bg: var(--rap-blue); --bd-ink: #ffffff; }
+.rap-badge--flame { --bd-bg: var(--rap-flame); --bd-ink: #ffffff; }
+/* semantic ones are tinted so a column of statuses stays calm */
+.rap-badge--success {
+  --bd-bg: color-mix(in srgb, var(--rap-success) 14%, transparent);
+  --bd-ink: color-mix(in srgb, var(--rap-success) 78%, var(--rap-ink));
+  --bd-dot: var(--rap-success);
+}
+.rap-badge--warning {
+  --bd-bg: color-mix(in srgb, var(--rap-warning) 20%, transparent);
+  --bd-ink: color-mix(in srgb, var(--rap-warning) 55%, var(--rap-ink));
+  --bd-dot: var(--rap-warning);
+}
+.rap-badge--danger {
+  --bd-bg: color-mix(in srgb, var(--rap-danger) 13%, transparent);
+  --bd-ink: color-mix(in srgb, var(--rap-danger) 82%, var(--rap-ink));
+  --bd-dot: var(--rap-danger);
+}
+.rap-badge--outline { --bd-bg: transparent; box-shadow: inset 0 0 0 1px var(--rap-fill-strong); --bd-dot: var(--rap-mute); }

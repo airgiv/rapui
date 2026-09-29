@@ -1,0 +1,24 @@
+.rap-kbd {
+  --kbd-h: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--kbd-h);
+  height: var(--kbd-h);
+  padding: 0 0.45em;
+  border-radius: 8px;
+  background: var(--rap-fill);
+  box-shadow: inset 0 -1px 0 var(--rap-fill-strong);
+  color: var(--rap-ink-2);
+  font-family: var(--rap-font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+.rap-kbd--sm { --kbd-h: 20px; font-size: 0.6875rem; border-radius: 6px; }
+.rap-kbd svg { width: 1.1em; height: 1.1em; }
+.rap-kbd-group { display: inline-flex; align-items: center; gap: var(--rap-gap-tight); }
