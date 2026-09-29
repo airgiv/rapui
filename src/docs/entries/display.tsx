@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis } from "recharts";
 import { ArrowUpRight, Command, Plus, RefreshCw, Search, Upload } from "../../rapui/icons";
 import {
   Alert,
@@ -20,6 +20,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   chartAxisProps,
+  chartLineProps,
+  ChartCard,
+  ChartDelta,
+  ChartFigure,
+  ChartTabs,
+  useSound,
   chartGridProps,
   CircularProgress,
   createDataTableColumns,
@@ -143,10 +149,13 @@ const WEEKS = [
   { week: "Sep 14", published: 94, drafts: 38 },
   { week: "Sep 21", published: 102, drafts: 44 },
 ];
+/* green like BalanceChart's line; drafts are the quiet second voice */
 const chartConfig: ChartConfig = {
-  published: { label: "Published", color: "var(--rap-blue)" },
-  drafts: { label: "Drafts", color: "var(--rap-flame)" },
+  published: { label: "Published", color: "var(--rap-chart-up)" },
+  drafts: { label: "Drafts", color: "var(--rap-mute)" },
 };
+/* a paper ground inside the white stage: chart cards are white sheets */
+const GROUND_CHART = "grid place-items-center w-full p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
 
 /* ── controls ─────────────────────────────────────── */
 
@@ -239,8 +248,9 @@ const toastControls: Control[] = [
 const chartControls: Control[] = [
   { type: "select", prop: "type", options: ["area", "bar"], default: "area" },
   { type: "boolean", prop: "drafts", label: "drafts series", default: true },
-  { type: "boolean", prop: "grid", default: true },
+  { type: "boolean", prop: "grid", default: false },
   { type: "boolean", prop: "legend", default: true },
+  { type: "boolean", prop: "tooltip", label: "floating tooltip", default: false },
 ];
 
 const spinnerControls: Control[] = [
@@ -769,66 +779,102 @@ ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
   {
     slug: "chart",
     name: "Chart",
-    group: "Data display",
+    group: "Charts",
     basedOn: "Recharts 3",
     description:
-      "A themed wrapper for Recharts. Series colours come from CSS variables, so charts follow the theme; grid, ticks and tooltip use rap/ui tokens. Delight: lines are drawn in by a pen and bars grow out of the baseline one after another with a springy overshoot — press “Replay”, switch the type or toggle a series.",
+      "A themed wrapper for Recharts, dressed like BalanceChart: a white card, the big figure and change above a bare 2.1px line, no axes or grid by default. Series colours come from CSS variables, so charts follow the theme. The figure IS the tooltip — hover the plot and it follows the week under the pointer, the cursor is a hairline and the dot a hollow ring. Delight: lines are drawn in by a pen and bars grow out of the baseline one after another with a springy overshoot — press “Replay”, switch the type or toggle a series.",
     controls: chartControls,
     Demo: function ChartDemo({ p }) {
       const [take, setTake] = useState(0);
+      const [span, setSpan] = useState<"4w" | "8w" | "12w">("12w");
+      const [hover, setHover] = useState<number | null>(null);
+      const sound = useSound();
+      const weeks = WEEKS.slice(-Number(span.slice(0, -1)));
       const config: ChartConfig = p.drafts ? chartConfig : { published: chartConfig.published };
-      const tooltip = <ChartTooltip content={<ChartTooltipContent valueFormatter={(v) => `${v} pages`} />} />;
+      const i = hover ?? weeks.length - 1;
+      const change = weeks[i].published - weeks[0].published;
+      const onMove = (s: { activeTooltipIndex?: number | string | null }) => {
+        const n = s.activeTooltipIndex == null ? null : Number(s.activeTooltipIndex);
+        if (n !== hover && n != null) {
+          const lo = Math.min(...weeks.map((w) => w.published));
+          const hi = Math.max(...weeks.map((w) => w.published));
+          sound.detent(0.5, { pitch: Math.pow(1.5, ((weeks[n].published - lo) / (hi - lo || 1)) * 2 - 1) });
+        }
+        setHover(n);
+      };
+      // the figure is the tooltip: the cursor is a hairline and nothing floats over the line
+      const tooltip = p.tooltip ? (
+        <ChartTooltip content={<ChartTooltipContent valueFormatter={(v) => `${v} pages`} />} />
+      ) : (
+        <ChartTooltip content={() => null} cursor={{ stroke: "currentColor", strokeOpacity: 0.28, strokeWidth: 1 }} />
+      );
+      const margin = { top: 10, right: 6, left: 6, bottom: 0 };
       return (
-        <div className="doc-stack" style={{ width: "100%", gap: "1.25rem" }}>
-          <div className="doc-row doc-between">
-            <div className="doc-stack" style={{ gap: 2 }}>
-              <span style={{ fontWeight: 500 }}>Weekly published pages</span>
-              <span className="doc-muted" style={{ fontSize: "0.875rem" }}>Jul 6 – Sep 27, all workspaces</span>
+        <div className={GROUND_CHART}>
+          <ChartCard className="w-full max-w-[560px]">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <ChartFigure value={weeks[i].published} unit=" pages" />
+                <ChartDelta change={change} pct={(change / weeks[0].published) * 100} when={hover == null ? `past ${weeks.length} weeks` : `week of ${weeks[i].week}`} />
+              </div>
+              <Button size="sm" variant="soft" icon={<RefreshCw />} onClick={() => setTake((t) => t + 1)}>
+                Replay
+              </Button>
             </div>
-            <Button size="sm" variant="soft" icon={<RefreshCw />} onClick={() => setTake((t) => t + 1)}>
-              Replay
-            </Button>
-          </div>
-          <ChartContainer key={take} config={config} height={260}>
-            {p.type === "bar" ? (
-              <BarChart data={WEEKS} margin={{ top: 8, right: 4, left: -16, bottom: 0 }} barGap={2}>
-                {p.grid && <CartesianGrid {...chartGridProps} />}
-                <XAxis dataKey="week" {...chartAxisProps} interval="preserveStartEnd" minTickGap={16} />
-                <YAxis {...chartAxisProps} width={48} />
-                {tooltip}
-                <Bar dataKey="published" fill="var(--color-published)" radius={[8, 8, 8, 8]} maxBarSize={22} />
-                {p.drafts && <Bar dataKey="drafts" fill="var(--color-drafts)" radius={[8, 8, 8, 8]} maxBarSize={22} />}
-              </BarChart>
-            ) : (
-              <AreaChart data={WEEKS} margin={{ top: 8, right: 4, left: -16, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="fill-published" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-published)" stopOpacity={0.28} />
-                    <stop offset="100%" stopColor="var(--color-published)" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="fill-drafts" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-drafts)" stopOpacity={0.22} />
-                    <stop offset="100%" stopColor="var(--color-drafts)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                {p.grid && <CartesianGrid {...chartGridProps} />}
-                <XAxis dataKey="week" {...chartAxisProps} interval="preserveStartEnd" minTickGap={16} />
-                <YAxis {...chartAxisProps} width={48} />
-                {tooltip}
-                <Area
-                  type="monotone"
-                  dataKey="published"
-                  stroke="var(--color-published)"
-                  strokeWidth={2.5}
-                  fill="url(#fill-published)"
-                />
-                {p.drafts && (
-                  <Area type="monotone" dataKey="drafts" stroke="var(--color-drafts)" strokeWidth={2.5} fill="url(#fill-drafts)" />
-                )}
-              </AreaChart>
-            )}
-          </ChartContainer>
-          {p.legend && <ChartLegend config={config} />}
+            <ChartContainer
+              key={`${take}-${span}`}
+              config={config}
+              height={200}
+              className="mt-6 text-ink [&_.recharts-cartesian-axis-tick-value]:fill-ink/40"
+              onPointerLeave={() => setHover(null)}
+            >
+              {p.type === "bar" ? (
+                <BarChart data={weeks} margin={margin} barGap={3} onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+                  {p.grid && <CartesianGrid {...chartGridProps} />}
+                  <XAxis dataKey="week" {...chartAxisProps} interval="preserveStartEnd" minTickGap={24} />
+                  {tooltip}
+                  {Object.keys(config).map((key) => (
+                    <Bar key={key} dataKey={key} fill={`var(--color-${key})`} radius={999} maxBarSize={14}>
+                      {weeks.map((_, n) => (
+                        // the bar under the pointer stays whole, the rest step back
+                        <Cell key={n} fillOpacity={hover == null || hover === n ? 1 : 0.28} className="transition-[fill-opacity] duration-150" />
+                      ))}
+                    </Bar>
+                  ))}
+                </BarChart>
+              ) : (
+                <AreaChart data={weeks} margin={margin} onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+                  {p.grid && <CartesianGrid {...chartGridProps} />}
+                  <XAxis dataKey="week" {...chartAxisProps} interval="preserveStartEnd" minTickGap={24} />
+                  {tooltip}
+                  {Object.keys(config).map((key) => (
+                    <Area
+                      key={key}
+                      type="monotone"
+                      dataKey={key}
+                      stroke={`var(--color-${key})`}
+                      fill="none"
+                      {...chartLineProps(`var(--color-${key})`)}
+                    />
+                  ))}
+                </AreaChart>
+              )}
+            </ChartContainer>
+            {p.legend && <ChartLegend config={config} className="mt-3 px-1 text-[12.5px]" />}
+            <ChartTabs
+              aria-label="Range"
+              options={[
+                { id: "4w", label: "4W" },
+                { id: "8w", label: "8W" },
+                { id: "12w", label: "12W" },
+              ]}
+              value={span}
+              onChange={(v) => {
+                setHover(null);
+                setSpan(v);
+              }}
+            />
+          </ChartCard>
         </div>
       );
     },
@@ -837,20 +883,19 @@ ${keys.map((k) => `  <Kbd${a}>${k}</Kbd>`).join("\n")}
       const series = (key: string) =>
         p.type === "bar"
           ? `    <Bar dataKey="${key}" fill="var(--color-${key})" radius={8} />`
-          : `    <Area dataKey="${key}" type="monotone" stroke="var(--color-${key})" fill="var(--color-${key})" fillOpacity={0.15} />`;
+          : `    <Area dataKey="${key}" type="monotone" stroke="var(--color-${key})" fill="none" {...chartLineProps("var(--color-${key})")} />`;
       return `import { ${Chart}, ${p.type === "bar" ? "Bar" : "Area"}, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, chartAxisProps, chartGridProps${
+import { ChartContainer, ChartTooltip, ChartTooltipContent, chartAxisProps, chartGridProps, chartLineProps${
         p.legend ? ", ChartLegend" : ""
       }, type ChartConfig } from "rapui";
 
 const config = {
-  published: { label: "Published", color: "var(--rap-blue)" },${p.drafts ? `\n  drafts: { label: "Drafts", color: "var(--rap-flame)" },` : ""}
+  published: { label: "Published", color: "var(--rap-chart-up)" },${p.drafts ? `\n  drafts: { label: "Drafts", color: "var(--rap-mute)" },` : ""}
 } satisfies ChartConfig;
 
 <ChartContainer config={config} height={260}>
   <${Chart} data={weeks}>${p.grid ? "\n    <CartesianGrid {...chartGridProps} />" : ""}
     <XAxis dataKey="week" {...chartAxisProps} />
-    <YAxis {...chartAxisProps} />
     <ChartTooltip content={<ChartTooltipContent />} />
 ${series("published")}${p.drafts ? `\n${series("drafts")}` : ""}
   </${Chart}>

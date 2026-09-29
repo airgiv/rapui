@@ -49,7 +49,7 @@ function Root() {
 
   const inDocs = hash === "docs" || hash.startsWith("docs.");
   useEffect(() => {
-    if (!inDocs) document.title = "rap/ui — interfaces with nerve";
+    if (!inDocs) document.title = "rapui — all the components, none of the boring";
   }, [inDocs]);
 
   return (

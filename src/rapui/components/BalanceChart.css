@@ -69,6 +69,11 @@
 
 [data-rap-theme="dark"] .bal { --ink-rgb: 245, 245, 245; }
 
+/* rap/ui: never wider than its column. The card is 320 by design and
+   the curve stretches with it, so a phone-width column simply gets a
+   narrower card rather than a clipped one. */
+.bal { max-width: 100%; }
+
 /* ── the rest of them ────────────────────────────────────────
    Not every block has a ::before to hang a border on, and
    giving each one a pseudo-element it does not otherwise need

@@ -150,7 +150,7 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(fu
           "[&_.recharts-cartesian-axis-tick-value_tspan]:text-[12px] [&_.recharts-cartesian-axis-tick-value_tspan]:tracking-[-0.01em]",
           "[&_:is(.recharts-cartesian-axis-line,.recharts-cartesian-axis-tick-line)]:stroke-line",
           "[&_.recharts-tooltip-cursor]:stroke-fill-strong [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-fill [&_.recharts-rectangle.recharts-tooltip-cursor]:stroke-none",
-          "[&_.recharts-active-dot_circle]:stroke-surface [&_.recharts-reference-line_line]:stroke-fill-strong",
+          "[&_.recharts-active-dot_circle[stroke='#fff']]:stroke-surface [&_.recharts-reference-line_line]:stroke-fill-strong",
           className,
         )}
         style={{ height, ...vars, ...style } as CSSProperties}
@@ -242,3 +242,16 @@ export const chartAxisProps = {
 
 /** Spread onto <CartesianGrid>: horizontal hairlines only. */
 export const chartGridProps = { vertical: false, strokeDasharray: "0" } as const;
+
+/**
+ * Spread onto <Line>/<Area>: BalanceChart's line — 2.1px, round, no dots at rest, and
+ * on hover a hollow ring (surface fill, 2px ring in the series colour) instead of a filled blob.
+ */
+export const chartLineProps = (color: string) =>
+  ({
+    strokeWidth: 2.1,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    dot: false,
+    activeDot: { r: 4.5, strokeWidth: 2, stroke: color, fill: "var(--rap-surface)" },
+  }) as const;

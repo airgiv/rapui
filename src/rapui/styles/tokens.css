@@ -16,7 +16,7 @@
   --rap-line: rgb(40 40 40 / 0.12);
 
   /* accents */
-  --rap-flame: #ec520b;
+  --rap-flame: #ff5b1a;
   --rap-blue: #0582ff;
   --rap-plum: #8e0d99;
   --rap-acid: #d7ff3c;
@@ -59,6 +59,10 @@
   --rap-danger: #e5322d;
   --rap-success: #14a85c;
   --rap-warning: #f5a524;
+  /* chart strokes: the success / flame hues with the saturation a 2px line needs
+     (a thin stroke of a text colour reads darker and duller than a block of it) */
+  --rap-chart-up: #12b055;
+  --rap-chart-down: #e8552a;
 
   /* floating surfaces: popovers, menus, dialogs */
   --rap-surface: var(--rap-paper-2);
@@ -99,6 +103,8 @@
   --rap-fill-hover: rgb(245 245 245 / 0.12);
   --rap-fill-strong: rgb(245 245 245 / 0.2);
   --rap-surface: #242424;
+  --rap-chart-up: #3ce085;
+  --rap-chart-down: #ff7a4d;
   --rap-shadow-pop: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 40px rgb(0 0 0 / 0.5);
   --rap-scrim: rgb(0 0 0 / 0.55);
   color-scheme: dark;

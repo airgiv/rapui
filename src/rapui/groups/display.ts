@@ -39,6 +39,7 @@ export {
   chartAxisProps,
   chartGridProps,
   useChartConfig,
+  chartLineProps,
 } from "../components/Chart";
 export type { ChartConfig, ChartContainerProps, ChartTooltipContentProps } from "../components/Chart";
 export { Spinner } from "../components/Spinner";

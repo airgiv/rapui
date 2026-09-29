@@ -296,6 +296,10 @@
 /* the wall's gap — see .lab, whose padding this was overriding */
 .tik { padding: 12px; }
 
+/* rap/ui: 340 is set inline by the component; on a narrower column the
+   ticks are flex: 1 and simply get thinner, so let the card give. */
+.tik { max-width: 100%; }
+
 .tik-head {
   display: flex;
   align-items: baseline;

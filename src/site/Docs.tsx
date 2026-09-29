@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Search } from "../rapui/icons";
 import {
-  Accent,
   Display,
   Input,
   Select,
@@ -18,6 +17,7 @@ import { ENTRIES } from "../docs/registry";
 import { defaults } from "../docs/codegen";
 import { GROUPS, type Control, type DocEntry, type Props } from "../docs/types";
 import { Code } from "./Code";
+import { Wordmark } from "./Wordmark";
 import { SMALL_SWITCH, SoundControls } from "./SoundControls";
 import { cn } from "../rapui/utils";
 import type { SoundSettings } from "../rapui";
@@ -185,8 +185,8 @@ export function Docs({
           "bg-[color-mix(in_srgb,var(--rap-paper)_85%,transparent)] backdrop-blur-[14px]",
         )}
       >
-        <a href="#top" className="font-display font-semibold text-[1.3rem] tracking-[-0.06em]">
-          rap<Accent>/</Accent>ui
+        <a href="#top" className="text-[1.4rem]" aria-label="rapui, home">
+          <Wordmark />
         </a>
         {/* on a phone the switches need the room: the page title and count step aside */}
         <span className="w-px h-5 bg-line max-sm:hidden" aria-hidden />
