@@ -31,6 +31,15 @@ import { isCalm } from "./ScrubNumber";
    layout around it never reflows while the pill breathes. The
    pill is centred in that box (hero: pinned left, like the label).
 
+   ── EVERY WORD SITS IN THE PILL'S MIDDLE ────────────────
+   Each label is centred in the pill, not hung off its left
+   padding. The width is measured to fit, so at rest that is the
+   same place — but a label pinned left went wrong wherever the
+   pill is wider than its word: mid-spring, and always in hero,
+   whose 14rem floor left a short "Sure?" pressed against the left
+   end of a long pill. Centred, it stays in the visual middle while
+   the pill breathes, whatever the size.
+
    ── THE ROLL ────────────────────────────────────────────
    States are ordered idle → sure → done. A newer state comes
    up from below and the old one leaves upward; going back (the
@@ -132,7 +141,7 @@ function Rolling({ text, at, current, check }: { text: string; at: Step; current
       data-slot="confirm-button-label"
       data-at={at}
       aria-hidden={d !== 0 || undefined}
-      className="absolute inset-y-0 left-(--cb-px) flex items-center gap-[0.4em]"
+      className="absolute inset-0 flex items-center justify-center gap-[0.4em]"
     >
       {check && (
         <svg

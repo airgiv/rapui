@@ -92,10 +92,10 @@ const iconBtn = cn(
   "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-1",
 );
 
-/* Picture-in-picture: not in the icon set, drawn in its stroke (Phosphor Light-ish, 1.5 on 24) */
+/* Picture-in-picture: not in the icon set, drawn in its stroke (Hugeicons-style, 2 on 24, round) */
 function PipGlyph() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" aria-hidden>
       <rect x="3" y="5" width="18" height="14" rx="2.5" />
       <rect x="12" y="11.5" width="6.5" height="5" rx="1.2" fill="currentColor" stroke="none" />
     </svg>

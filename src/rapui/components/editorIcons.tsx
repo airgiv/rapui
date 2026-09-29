@@ -4,7 +4,7 @@ import "./EditorToolbar.css";
 
 /* ── the editor icon set ─────────────────────────────────────
    Bespoke glyphs for the big EditorToolbar — the "fun" tier between
-   the technical Phosphor set (icons.tsx) and the illustrative Solar
+   the technical Hugeicons set (icons.tsx) and the illustrative Solar
    one (FancyIcon). Drawn by hand on a 32px grid, 2px round strokes.
 
    Two-tone like a riso print: a soft filled shape sits BEHIND the ink

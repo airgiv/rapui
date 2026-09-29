@@ -40,7 +40,7 @@ export { Grain } from "./components/Grain";
 export { TimeScrubber } from "./components/TimeScrubber";
 export { RangeDial } from "./components/RangeDial";
 
-// icons: thin technical set (Phosphor Light) as a namespace, fancy Solar duotone
+// icons: rounded technical set (Hugeicons Stroke Rounded) as a namespace, fancy Solar duotone
 export * as icons from "./icons";
 export type { IconComponent, IconProps } from "./icons";
 export { FancyIcon, FANCY_ICONS } from "./components/FancyIcon";
