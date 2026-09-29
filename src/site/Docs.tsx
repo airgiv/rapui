@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Search } from "../rapui/icons";
+import { ArrowLeft, ArrowRight, ChevronDown, Search } from "../rapui/icons";
 import {
   Display,
   Input,
   Select,
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetTitle,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -129,12 +133,63 @@ function Playground({ entry }: { entry: DocEntry }) {
 
 /* ── page ───────────────────────────────────────────────────── */
 
-/* the current page is ink on paper; on narrow screens the links become surface pills in a row */
+/* the current page is ink on paper */
 const NAV_LINK = cn(
   "flex items-center h-9 px-[0.9rem] rounded-pill text-[0.9375rem] tracking-[-0.01em]",
-  "transition-colors duration-(--rap-dur-fast) ease-rm hover:bg-fill max-[900px]:bg-surface max-[900px]:hover:bg-fill",
+  "transition-colors duration-(--rap-dur-fast) ease-rm hover:bg-fill",
   "aria-[current=page]:bg-ink! aria-[current=page]:text-paper",
 );
+
+/* The list of every component, by group, with its search — the desktop sidebar,
+   and on a phone the same list inside the menu sheet. */
+function NavList({
+  q,
+  setQ,
+  groups,
+  entry,
+  onPick,
+  big = false,
+}: {
+  q: string;
+  setQ: (q: string) => void;
+  groups: { g: string; items: DocEntry[] }[];
+  entry: DocEntry;
+  onPick?: () => void;
+  big?: boolean;
+}) {
+  return (
+    <>
+      <Input
+        className="flex-none"
+        size={big ? "md" : "sm"}
+        placeholder={`Search ${ENTRIES.length} components`}
+        prefix={<Search />}
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        aria-label="Search components"
+      />
+      <nav className="flex flex-col gap-5">
+        {groups.map(({ g, items }) => (
+          <div className="flex flex-col gap-tight" key={g}>
+            <span className="px-[0.9rem] pb-[0.3rem] text-[0.8125rem] font-medium text-mute">{g}</span>
+            {items.map((e) => (
+              <a
+                key={e.slug}
+                href={`#docs.${e.slug}`}
+                className={cn(NAV_LINK, big && "h-11 text-[1.0625rem]")}
+                aria-current={e === entry ? "page" : undefined}
+                onClick={onPick}
+              >
+                {e.name}
+              </a>
+            ))}
+          </div>
+        ))}
+        {groups.length === 0 && <p className="px-[0.9rem] text-mute text-[0.9375rem]">Nothing called “{q}”.</p>}
+      </nav>
+    </>
+  );
+}
 const PAGER_LINK =
   "inline-flex items-center gap-2 h-12 px-[1.3rem] rounded-pill bg-surface font-medium transition-colors duration-(--rap-dur-fast) ease-rm hover:bg-ink hover:text-paper [&_svg]:size-[18px]";
 
@@ -152,6 +207,7 @@ export function Docs({
   setSound: (v: SoundSettings) => void;
 }) {
   const [q, setQ] = useState("");
+  const [menu, setMenu] = useState(false);
   // Calm switches off the playful layer everywhere (data-rap-motion="calm" on <html>, so portals follow)
   const [calm, setCalm] = useState(false);
   useEffect(() => {
@@ -188,42 +244,53 @@ export function Docs({
         <a href="#top" className="text-[1.4rem]" aria-label="rapui, home">
           <Wordmark />
         </a>
-        {/* on a phone the switches need the room: the page title and count step aside */}
-        <span className="w-px h-5 bg-line max-sm:hidden" aria-hidden />
-        <span className="font-medium max-sm:hidden">Components</span>
-        <span className="py-[0.1rem] px-[0.55rem] rounded-pill bg-fill text-[0.8125rem] font-medium tabular-nums max-sm:hidden">{ENTRIES.length}</span>
+        <span className="w-px h-5 bg-line max-[900px]:hidden" aria-hidden />
+        <span className="font-medium max-[900px]:hidden">Components</span>
+        <span className="py-[0.1rem] px-[0.55rem] rounded-pill bg-fill text-[0.8125rem] font-medium tabular-nums max-[900px]:hidden">{ENTRIES.length}</span>
+        {/* on a phone the sidebar lives behind this button: it names the page you are
+            on and opens the menu — search, every component by group, and the switches */}
+        <button
+          type="button"
+          onClick={() => setMenu(true)}
+          className="hidden max-[900px]:inline-flex min-w-0 items-center gap-2 h-10 pl-4 pr-3 rounded-pill bg-fill font-medium text-[0.9375rem] transition-colors hover:bg-fill-strong [&_svg]:size-4 [&_svg]:flex-none"
+          aria-haspopup="dialog"
+        >
+          <span className="truncate">{entry.name}</span>
+          <ChevronDown />
+        </button>
         <div className="ml-auto flex items-center gap-tight">
-          <SoundControls value={sound} onChange={setSound} />
-          <label className="inline-flex items-center gap-2 mr-3 text-[0.875rem] font-medium text-mute">
-            <span>Calm</span>
-            <Switch checked={calm} onCheckedChange={setCalm} onText="" offText="" className={SMALL_SWITCH} />
-          </label>
+          <div className="contents max-[900px]:hidden">
+            <SoundControls value={sound} onChange={setSound} />
+            <label className="inline-flex items-center gap-2 mr-3 text-[0.875rem] font-medium text-mute">
+              <span>Calm</span>
+              <Switch checked={calm} onCheckedChange={setCalm} onText="" offText="" className={SMALL_SWITCH} />
+            </label>
+          </div>
           <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
         </div>
       </header>
 
-      {/* sidebar + page; under 900px the sidebar becomes a wrapping row of pills above the page */}
+      {/* the phone menu: the sidebar's list in a sheet, with the switches under it */}
+      <Sheet open={menu} onOpenChange={setMenu}>
+        <SheetContent side="left" className="gap-4 p-5 pt-6 [--sheet-size:360px]">
+          <SheetTitle className="text-[1.25rem]">Components</SheetTitle>
+          <SheetBody className="-mx-5 px-5 flex flex-col gap-4">
+            <NavList q={q} setQ={setQ} groups={groups} entry={entry} onPick={() => setMenu(false)} big />
+          </SheetBody>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-4 border-t border-line">
+            <SoundControls value={sound} onChange={setSound} />
+            <label className="inline-flex items-center gap-2 text-[0.875rem] font-medium text-mute">
+              <span>Calm</span>
+              <Switch checked={calm} onCheckedChange={setCalm} onText="" offText="" className={SMALL_SWITCH} />
+            </label>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* sidebar + page; under 900px the sidebar moves into the menu sheet */}
       <div className="grid grid-cols-[17rem_minmax(0,1fr)] gap-[clamp(1rem,3vw,3rem)] px-[clamp(1rem,2.5vw,1.5rem)] max-[900px]:grid-cols-[minmax(0,1fr)]">
-        <aside
-          className={cn(
-            "sticky top-16 self-start flex flex-col gap-4 h-[calc(100vh-64px)] pt-5 pb-8 overflow-y-auto [scrollbar-width:thin]",
-            "max-[900px]:static max-[900px]:h-auto max-[900px]:pb-0",
-          )}
-        >
-          <Input className="flex-none" size="sm" placeholder="Search" prefix={<Search />} value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search components" />
-          <nav className="flex flex-col gap-5 max-[900px]:flex-row max-[900px]:flex-wrap max-[900px]:gap-tight">
-            {groups.map(({ g, items }) => (
-              <div className="flex flex-col gap-tight max-[900px]:flex-row max-[900px]:flex-wrap" key={g}>
-                <span className="px-[0.9rem] pb-[0.3rem] text-[0.8125rem] font-medium text-mute max-[900px]:hidden">{g}</span>
-                {items.map((e) => (
-                  <a key={e.slug} href={`#docs.${e.slug}`} className={NAV_LINK} aria-current={e === entry ? "page" : undefined}>
-                    {e.name}
-                  </a>
-                ))}
-              </div>
-            ))}
-            {groups.length === 0 && <p className="px-[0.9rem] text-mute text-[0.9375rem]">Nothing called “{q}”.</p>}
-          </nav>
+        <aside className="sticky top-16 self-start flex flex-col gap-4 h-[calc(100vh-64px)] pt-5 pb-8 overflow-y-auto [scrollbar-width:thin] max-[900px]:hidden">
+          <NavList q={q} setQ={setQ} groups={groups} entry={entry} />
         </aside>
 
         <main className="flex flex-col gap-5 min-w-0 pt-10 pb-20 max-w-[72rem]" key={entry.slug}>
