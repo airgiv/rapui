@@ -1,9 +1,35 @@
-/* Sticker — only the burst's and flower's slow turn lives here (a keyframe
-   utilities cannot declare). Everything else is Tailwind in Sticker.tsx.
-   It animates the separate `rotate` property so it stacks with the resting
-   tilt and the hover wobble, which live on `transform`. */
+/* Sticker — only the keyframes live here (utilities cannot declare them).
+   Everything else is Tailwind in Sticker.tsx; the shapes are computed in
+   stickerShapes.ts. */
 @layer theme, base, components, utilities;
 
+/* the slow turn: on the separate `rotate` property of the art and the
+   words (not the host), so it stacks with the tilt and the hover wobble on
+   `transform`, while the shadow layer above stays put and keeps the light
+   coming from one side */
 @keyframes rap-sticker-turn {
   to { rotate: 360deg; }
+}
+
+/* slapped down: in from 1.55× above the page with a 10° twist, squashed
+   under the thumb at 45% (0.95), a small rebound, flat. Individual
+   properties, so the resting tilt on `transform` is untouched. */
+@keyframes rap-sticker-slap {
+  0% { opacity: 0; scale: 1.55; rotate: 10deg; translate: 0 -14%; }
+  18% { opacity: 1; }
+  45% { scale: 0.95; rotate: -1.5deg; translate: 0 0; }
+  70% { scale: 1.025; rotate: 0.5deg; }
+  100% { opacity: 1; scale: 1; rotate: 0deg; translate: 0 0; }
+}
+
+/* ...and its shadow: big and soft while it is in the air, snapping to
+   the contact shadow as it lands (same two-shadow list, so it interpolates) */
+@keyframes rap-sticker-slap-shadow {
+  0% { filter: drop-shadow(0 8px 5px rgb(0 0 0 / 0.08)) drop-shadow(0 26px 22px rgb(0 0 0 / 0.2)); }
+  45%, 100% { filter: var(--st-shadow); }
+}
+
+/* the "live" dot breathes */
+@keyframes rap-sticker-dot {
+  50% { scale: 0.7; opacity: 0.55; }
 }

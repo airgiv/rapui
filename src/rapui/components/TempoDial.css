@@ -1,0 +1,15 @@
+/* TempoDial — only the beat's flash lives here (a keyframe utilities
+   cannot declare). Everything else is Tailwind in TempoDial.tsx.
+
+   The lit quarter of the ring is mounted fresh on every beat (its
+   key is the beat count), so the animation replays by mounting, not
+   by toggling a class. It starts at full flame and decays to nothing
+   with a fast-out curve: a light that is struck, not faded in — the
+   decay is what reads as a pulse. `both`, so it rests invisible once
+   done rather than snapping back to full. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-tempo-flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}

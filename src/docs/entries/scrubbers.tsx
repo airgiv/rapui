@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { RangeDial, TimeScrubber } from "../../rapui";
-import { ElasticSlider, Knob, ScrubNumber, TimeWheel, WheelPicker } from "../../rapui/groups/scrubbers";
+import {
+  DateScrubber,
+  ElasticSlider,
+  HueRing,
+  Knob,
+  LensRuler,
+  ScrubNumber,
+  SplitSlider,
+  TempoDial,
+  TimeWheel,
+  WheelPicker,
+  hueName,
+} from "../../rapui/groups/scrubbers";
+import { DialsDemo } from "../../site/demos/DialsDemo";
 import { Eye, Moon, RefreshCw, Sun, Volume1, Volume2 } from "../../rapui/icons";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
@@ -176,6 +189,104 @@ function InspectorDemo() {
     </div>
   );
 }
+
+
+/* ── DateScrubber, TempoDial, HueRing, LensRuler, SplitSlider ─────── */
+
+const dateControls: Control[] = [
+  { type: "number", prop: "momentum", label: "fling carry", min: 0, max: 100, default: 50 },
+  { type: "boolean", prop: "relative", default: true },
+  { type: "boolean", prop: "bounded", label: "next 60 days only", default: false, codeDefault: null },
+];
+
+const isoIn = (days: number) => {
+  const n = new Date();
+  return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate() + days)).toISOString().slice(0, 10);
+};
+
+function BookingDemo() {
+  const [d, setD] = useState(() => isoIn(3));
+  return (
+    <div style={{ ...card, width: "min(100%, 34rem)" }}>
+      <div className="doc-between doc-row">
+        <span style={{ fontWeight: 500 }}>Studio booking</span>
+        <span style={caption}>{d}</span>
+      </div>
+      <DateScrubber aria-label="Booking date" value={d} onValueChange={setD} min={isoIn(0)} max={isoIn(90)} relative={false} />
+    </div>
+  );
+}
+
+const tempoControls: Control[] = [
+  { type: "number", prop: "defaultValue", label: "start bpm", min: 40, max: 220, default: 96, codeDefault: 96 },
+  { type: "number", prop: "size", min: 160, max: 320, step: 8, default: 220 },
+  { type: "select", prop: "beats", options: ["3", "4", "6"], default: "4" },
+  { type: "boolean", prop: "playing", default: true },
+  { type: "boolean", prop: "tap", label: "tap pill", default: true },
+];
+
+const hueControls: Control[] = [
+  { type: "number", prop: "defaultValue", label: "start hue", min: 0, max: 359, default: 60, codeDefault: 60 },
+  { type: "number", prop: "size", min: 160, max: 320, step: 8, default: 220 },
+  { type: "select", prop: "ticks", options: ["36", "48", "72", "96"], default: "72" },
+  { type: "number", prop: "lightness", min: 0.5, max: 0.9, step: 0.02, default: 0.72 },
+  { type: "number", prop: "chroma", min: 0.04, max: 0.22, step: 0.01, default: 0.15 },
+];
+
+function ThemeTintDemo() {
+  const [h, setH] = useState(262);
+  return (
+    <div style={{ ...card, width: "min(100%, 30rem)", flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: "1.5rem" }}>
+      <HueRing aria-label="Accent hue" value={h} onValueChange={setH} size={180} step={5} />
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", minWidth: 0 }}>
+        <span style={caption}>Workspace accent</span>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            height: "var(--rap-control-h)",
+            padding: "0 1.25rem",
+            borderRadius: "var(--rap-radius-pill)",
+            background: `oklch(0.6 0.17 ${h})`,
+            color: "var(--rap-paper-2)",
+            fontWeight: 500,
+          }}
+        >
+          Publish
+        </span>
+        <span style={caption}>{hueName(h)}</span>
+      </div>
+    </div>
+  );
+}
+
+const lensControls: Control[] = [
+  { type: "number", prop: "min", min: 0, max: 20, default: 16 },
+  { type: "number", prop: "max", min: 21, max: 40, default: 26 },
+  { type: "select", prop: "step", options: ["0.1", "0.5", "1"], default: "0.5" },
+  { type: "text", prop: "unit", default: "°", codeDefault: "" },
+  { type: "text", prop: "label", default: "Studio", codeDefault: "" },
+  { type: "number", prop: "height", min: 200, max: 440, step: 20, default: 300 },
+];
+
+function TypeRampDemo() {
+  const [s, setS] = useState(32);
+  return (
+    <div style={{ ...card, width: "min(100%, 30rem)", flexDirection: "row", alignItems: "center", gap: "1.5rem" }}>
+      <LensRuler label="Size" unit="px" min={8} max={96} step={1} major={8} value={s} onValueChange={setS} height={320} />
+      <span style={{ fontSize: s, fontWeight: 500, letterSpacing: "-0.04em", lineHeight: 1, minWidth: 0, overflowWrap: "anywhere" }}>Aa</span>
+    </div>
+  );
+}
+
+const splitControls: Control[] = [
+  { type: "number", prop: "defaultValue", label: "left share", min: 0, max: 100, default: 60, codeDefault: 60 },
+  { type: "text", prop: "left", label: "left label", default: "Deep work", codeDefault: null },
+  { type: "text", prop: "right", label: "right label", default: "Meetings", codeDefault: null },
+  { type: "select", prop: "step", options: ["1", "5", "10"], default: "1" },
+  { type: "number", prop: "ticks", min: 16, max: 72, step: 4, default: 44 },
+  { type: "boolean", prop: "centerDetent", label: "sticky 50/50", default: true },
+];
 
 export const entries: DocEntry[] = [
   {
@@ -409,5 +520,171 @@ import { Moon, Sun } from "rapui/icons";
 <ScrubNumber size="sm" label={<Eye />} aria-label="Opacity" unit="%" min={0} max={100} defaultValue={100} />`,
       },
     ],
+  },
+  {
+    slug: "date-scrubber",
+    name: "Date scrubber",
+    group: "Scrubbers",
+    description:
+      "The time scrubber's ruler laid out in days: drag the calendar under the mark, fling it and it coasts to a whole day; ← → step a day, ↑ ↓ a week, PageUp/PageDown a month, Home jumps to today. Delight: weeks and months show as tick lengths and week-ends as a lighter patch of the tape, the day of the month rolls in big figures, and every day crossed clicks — pitched up through the month, firmest on the 1st.",
+    controls: dateControls,
+    Demo: ({ p }) => (
+      <div className={GROUND}>
+        <div style={{ ...card, width: "min(100%, 34rem)" }}>
+          <DateScrubber
+            key={String(p.bounded)}
+            momentum={Number(p.momentum)}
+            relative={Boolean(p.relative)}
+            min={p.bounded ? isoIn(0) : undefined}
+            max={p.bounded ? isoIn(60) : undefined}
+          />
+        </div>
+      </div>
+    ),
+    code: (p) => `import { DateScrubber } from "rapui";
+
+const [date, setDate] = useState("2026-10-02");
+
+<DateScrubber value={date} onValueChange={setDate}${p.bounded ? ` min="2026-09-29" max="2026-11-28"` : ""}${attrs(p, dateControls, ["bounded"])} />`,
+    examples: [
+      {
+        title: "Plan the night — every scrubber on one desk",
+        Demo: () => (
+          <div className="w-full p-3 rounded-[calc(var(--rap-radius)-8px)] bg-paper">
+            <DialsDemo />
+          </div>
+        ),
+        code: `<DateScrubber value={date} onValueChange={setDate} />
+<LensRuler label="Room" unit="°" min={15} max={25} value={temp} onValueChange={setTemp} />
+<RangeDial />
+<TimeScrubber step="15" format="24h" />
+<TempoDial value={bpm} onValueChange={setBpm} onBeat={pulseLamp} />
+<HueRing value={hue} onValueChange={setHue} />
+<SplitSlider labels={["Rain", "Brown noise"]} value={mix} onValueChange={setMix} />
+<ElasticSlider value={volume} onValueChange={setVolume} />
+<Knob size="sm" label="Fade" min={0} max={60} step={5} value={fade} onValueChange={setFade} />`,
+      },
+      {
+        title: "Bounded — the next 90 days, stretches past the ends and springs back",
+        Demo: BookingDemo,
+        code: `<DateScrubber value={date} onValueChange={setDate} min={today} max={in90Days} relative={false} />`,
+      },
+    ],
+  },
+  {
+    slug: "tempo-dial",
+    name: "Tempo dial",
+    group: "Scrubbers",
+    description:
+      "A jog wheel for a tempo: spin the ring of ticks round (clockwise is faster), fling it and it coasts, arrows step one bpm, PageUp/PageDown ten, T or the pill taps the tempo in. Delight: one quarter of the ring flashes flame on every beat, walking round the face like a conductor's hand, and a tapped tempo spins the ring there on the spring instead of cutting to it.",
+    controls: tempoControls,
+    Demo: ({ p }) => (
+      <div className={GROUND}>
+        <TempoDial
+          key={`${p.defaultValue}`}
+          defaultValue={Number(p.defaultValue)}
+          size={Number(p.size)}
+          beats={Number(p.beats)}
+          playing={Boolean(p.playing)}
+          tap={Boolean(p.tap)}
+        />
+      </div>
+    ),
+    code: (p) => `import { TempoDial } from "rapui";
+
+<TempoDial${attrs(p, tempoControls).replace(/beats="(\d)"/, "beats={$1}")} onValueChange={setBpm} />`,
+  },
+  {
+    slug: "hue-ring",
+    name: "Hue ring",
+    group: "Scrubbers",
+    description:
+      "A colour wheel made of ticks, each inked in its own OKLCH hue, so every step round the ring weighs the same to the eye; press anywhere on it, drag round, or use the arrows. Delight: the ticks around the chosen hue swell into a bulge that travels the short way round on a spring, the swatch pill in the middle takes the colour, and each tick crossed clicks, pitched round the wheel.",
+    controls: hueControls,
+    Demo: ({ p }) => (
+      <div className={GROUND}>
+        <HueRing
+          key={`${p.defaultValue}`}
+          defaultValue={Number(p.defaultValue)}
+          size={Number(p.size)}
+          ticks={Number(p.ticks)}
+          lightness={Number(p.lightness)}
+          chroma={Number(p.chroma)}
+        />
+      </div>
+    ),
+    code: (p) => `import { HueRing } from "rapui";
+
+<HueRing${attrs(p, hueControls).replace(/ticks="(\d+)"/, "ticks={$1}")} onValueChange={setHue} />`,
+    examples: [
+      {
+        title: "Workspace accent, in 5° steps",
+        Demo: ThemeTintDemo,
+        code: `const [hue, setHue] = useState(262);
+
+<HueRing value={hue} onValueChange={setHue} size={180} step={5} />
+<Button style={{ background: \`oklch(0.6 0.17 \${hue})\` }}>Publish</Button>`,
+      },
+    ],
+  },
+  {
+    slug: "lens-ruler",
+    name: "Lens ruler",
+    group: "Scrubbers",
+    description:
+      "A vertical ruler for a precise number — a thermostat, a type size: press anywhere and the value goes there, drag to fine-tune, arrows step, PageUp/PageDown jump a labelled unit. Delight: a magnifying lens rides the value on a spring, and under it the ticks spread apart in a fisheye and the fine ones, too close to read at rest, come into view.",
+    controls: lensControls,
+    Demo: ({ p }) => (
+      <div className={GROUND}>
+        <div style={{ ...card, flexDirection: "row" }}>
+          <LensRuler
+            key={`${p.min}-${p.max}-${p.step}`}
+            min={Number(p.min)}
+            max={Number(p.max)}
+            step={Number(p.step)}
+            defaultValue={Math.round((Number(p.min) + Number(p.max)) / 2)}
+            unit={String(p.unit)}
+            label={String(p.label) || undefined}
+            height={Number(p.height)}
+          />
+        </div>
+      </div>
+    ),
+    code: (p) => `import { LensRuler } from "rapui";
+
+<LensRuler${attrs(p, lensControls).replace(/step="([\d.]+)"/, "step={$1}")} value={temp} onValueChange={setTemp} />`,
+    examples: [
+      {
+        title: "Type size, labelled every 8px",
+        Demo: TypeRampDemo,
+        code: `<LensRuler label="Size" unit="px" min={8} max={96} step={1} major={8} value={size} onValueChange={setSize} height={320} />`,
+      },
+    ],
+  },
+  {
+    slug: "split-slider",
+    name: "Split slider",
+    group: "Scrubbers",
+    description:
+      "One amount shared between two things — a crossfade, a 60/40 split: ticks fill the row from both ends and meet at a handle you drag; arrows step, Home/End go all one way, = snaps to even. Delight: the handle parts the ticks like a comb through grass — they lean away as it moves and stand back up when it stops — and 50/50 is a sticky centre notch with the firmest click.",
+    controls: splitControls,
+    Demo: ({ p }) => (
+      <div className={GROUND}>
+        <div style={{ ...card, width: "min(100%, 26rem)" }}>
+          <SplitSlider
+            key={`${p.defaultValue}-${p.step}`}
+            aria-label="Week split"
+            defaultValue={Number(p.defaultValue)}
+            labels={[String(p.left), String(p.right)]}
+            step={Number(p.step)}
+            ticks={Number(p.ticks)}
+            centerDetent={Boolean(p.centerDetent)}
+          />
+        </div>
+      </div>
+    ),
+    code: (p) => `import { SplitSlider } from "rapui";
+
+<SplitSlider labels={["${p.left}", "${p.right}"]}${attrs(p, splitControls, ["left", "right"]).replace(/step="(\d+)"/, "step={$1}")} onValueChange={setShare} />`,
   },
 ];

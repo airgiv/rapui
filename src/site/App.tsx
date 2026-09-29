@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   Accent,
   BalanceChart,
@@ -6,8 +6,6 @@ import {
   BigLink,
   Button,
   ButtonGroup,
-  CanvasToolbar,
-  Checkbox,
   Checklist,
   CircleButton,
   ConfirmButton,
@@ -16,16 +14,13 @@ import {
   Display,
   DonutChart,
   ElasticSlider,
-  FormStack,
   GaugeChart,
   Highlight,
   HoldButton,
   Input,
-  Knob,
   Lead,
   Marquee,
   RaceBars,
-  RangeDial,
   RollText,
   SlideButton,
   Sparkline,
@@ -34,7 +29,6 @@ import {
   Switch,
   Tabs,
   TiltCard,
-  TimeScrubber,
   AudioPlayer,
   CardStack,
   FanGallery,
@@ -44,14 +38,19 @@ import {
   VideoPlayer,
   WarpStrip,
   VoiceNote,
+  useSound,
   type SoundSettings,
-  type StackState,
 } from "../rapui";
-import { Volume1, Volume2 } from "../rapui/icons";
+import { ArrowLeft, ArrowRight, Volume1, Volume2 } from "../rapui/icons";
 import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
+import { Floaty, HeroScene } from "./HeroScene";
+import { FormDemo } from "./demos/FormDemo";
+import { ToolbarDemo } from "./demos/ToolbarDemo";
+import { DialsDemo } from "./demos/DialsDemo";
+import { StickersDemo } from "./demos/StickersDemo";
 import gridLines from "./media/grid-lines.wav";
 import voiceNote from "./media/voice-note.wav";
 import reel from "./media/reel.webm";
@@ -65,9 +64,6 @@ const COUNT = 110;
 
 /* a centred, wrapping row of demo pieces with room to breathe */
 const ROW = "flex flex-wrap items-center justify-center gap-10";
-/* the lit backdrop the glass toolbar refracts: three accent dots on grey paper */
-const GLASS_GROUND =
-  "[background:radial-gradient(circle_at_28%_60%,var(--rap-flame)_0_14%,transparent_15%),radial-gradient(circle_at_70%_42%,var(--rap-blue)_0_18%,transparent_19%),radial-gradient(circle_at_52%_78%,var(--rap-acid)_0_10%,transparent_11%),var(--rap-paper-3)]";
 /* body copy under a section title */
 const COPY = "m-0 text-ink-2 text-[1.15rem] leading-[1.5] max-w-[46ch] [&_code]:bg-paper-2 [&_code]:py-[0.1em] [&_code]:px-[0.35em] [&_code]:rounded-[6px] [&_code]:text-[0.9em]";
 
@@ -113,51 +109,81 @@ function Header({
   );
 }
 
-/* one line of the hero headline */
-const HERO_LINE = "relative block whitespace-nowrap max-[900px]:whitespace-normal";
+/* the headline words: huge, each one a loose object */
+const LINE = "flex flex-wrap items-center gap-x-[0.2em] font-display font-medium tracking-[-0.055em] leading-[0.8] text-[clamp(3.2rem,10vw,10.5rem)]";
+/* the small live things scattered around the headline */
+const PROP = "rounded-card bg-surface shadow-[0_18px_50px_-18px_rgb(0_0_0/0.22)] dark:shadow-[0_18px_50px_-18px_rgb(0_0_0/0.7)]";
 
 function Hero() {
+  const [fun, setFun] = useState(true);
   return (
     <section className="relative min-h-svh pt-36 px-(--gutter) pb-14 flex flex-col justify-between gap-14 max-[900px]:min-h-0 max-[900px]:pt-28" id="top">
-      {/* The pitch in one sentence, and the one part of the old headline worth keeping:
-          the "boring" tag. It is the joke — a sticker on the very word the kit refuses. */}
-      <Display as="h1" size="mega" className="flex flex-col">
-        <span className={HERO_LINE}>
-          <SplitReveal by="char" stagger={30}>All the</SplitReveal>
-        </span>
-        <span className={cn(HERO_LINE, "pl-[10vw] max-[900px]:pl-0")}>
-          <Accent>
-            <SplitReveal delay={200}>components,</SplitReveal>
-          </Accent>
-          <Sticker
-            shape="burst"
-            color="acid"
-            size="clamp(0.7rem, 1.2vw, 1.1rem)"
-            rotate={12}
-            className="absolute -top-[0.35em] right-[4vw] w-[clamp(5rem,10vw,9rem)] max-[900px]:hidden"
-          >
-            {COUNT}+
-            <br />
-            inside
-          </Sticker>
-        </span>
-        <span className={HERO_LINE}>
-          <SplitReveal by="char" stagger={30} delay={380}>none of the</SplitReveal>{" "}
-          <Sticker color="blue" rotate={-8} size="clamp(0.9rem, 2vw, 1.8rem)" className="align-middle origin-center -top-[0.35em]">
-            boring
-          </Sticker>
-        </span>
-      </Display>
+      <HeroScene className="relative">
+        {/* The pitch as a table of loose words — tilted, drifting with the pointer,
+            draggable. The "boring" tag sits in the MIDDLE of the last line, where it
+            reads as the word the kit refuses rather than a label hung off the end. */}
+        <h1 className="m-0 flex flex-col items-start gap-0 max-w-[min(100%,74rem)]" aria-label="All the components, none of the boring parts">
+          <span className={LINE} aria-hidden>
+            <Floaty depth={10} rotate={-2}>All</Floaty>
+            <Floaty depth={16} rotate={1.5}>the</Floaty>
+          </span>
+          <span className={cn(LINE, "pl-[8vw] max-[900px]:pl-0")} aria-hidden>
+            <Floaty depth={22} rotate={-1.2} className="text-flame">components,</Floaty>
+          </span>
+          <span className={LINE} aria-hidden>
+            <Floaty depth={12} rotate={1}>none of</Floaty>
+            <Floaty depth={34} rotate={-9}>
+              <Sticker color="blue" rotate={0} size="clamp(1.1rem, 3vw, 2.8rem)" className="px-[0.9em] py-[0.35em]">
+                boring
+              </Sticker>
+            </Floaty>
+            <Floaty depth={18} rotate={-1.5}>parts.</Floaty>
+          </span>
+        </h1>
+
+        {/* live props: real components, loose on the table. On a phone they
+            drop into a row under the headline instead of floating over it. */}
+        <div className="pointer-events-none absolute inset-0 max-[1100px]:static max-[1100px]:mt-12 max-[1100px]:flex max-[1100px]:flex-wrap max-[1100px]:gap-6 max-[1100px]:items-center">
+          <Floaty depth={40} rotate={12} className="pointer-events-auto absolute right-[4%] top-[-2%] max-[1100px]:static">
+            <Sticker shape="burst" color="acid" spin={false} size="clamp(0.9rem,1.3vw,1.15rem)" rotate={0} className="w-[clamp(6.5rem,10vw,9.5rem)]">
+              {COUNT}+
+              <br />
+              inside
+            </Sticker>
+          </Floaty>
+          <Floaty depth={26} rotate={-5} className="pointer-events-auto absolute right-[2%] top-[34%] max-[1100px]:static">
+            <div className={cn(PROP, "flex items-center gap-5 py-4 px-5")}>
+              <span className="text-[1.05rem] font-medium">Fun mode</span>
+              <Switch checked={fun} onCheckedChange={setFun} />
+            </div>
+          </Floaty>
+          <Floaty depth={32} rotate={4} className="pointer-events-auto absolute right-[20%] top-[58%] max-[1100px]:static">
+            <div className={cn(PROP, "py-4 px-5 flex flex-col gap-2")}>
+              <span className="text-[1.6rem] font-medium tracking-[-0.03em] tabular-nums leading-none">
+                $58,834<span className="text-[1.1rem] opacity-35">.75</span>
+              </span>
+              <span className="flex items-center gap-2 text-[0.8rem] font-medium text-success">
+                +2.1% <Sparkline data={[12, 14, 13, 17, 16, 19, 18, 22, 25]} width={84} height={20} />
+              </span>
+            </div>
+          </Floaty>
+          <Floaty depth={20} rotate={-3} className="pointer-events-auto absolute right-[3%] top-[80%] max-[1100px]:static">
+            <HoldButton size="md" variant="ink" doneLabel="Shipped">
+              Hold to ship
+            </HoldButton>
+          </Floaty>
+        </div>
+      </HeroScene>
 
       <div className="grid grid-cols-[1.3fr_1fr] items-end gap-10 max-[900px]:grid-cols-1">
-        <Lead className="max-w-[44ch]">
-          Tired of grey rectangles with 4px corners? rapui is a React kit with <Highlight>the same breadth as shadcn/ui</Highlight>{" "}
-          — forms, overlays, tables, charts — built on the same Radix + Tailwind base, but big, round and springy, with a small
-          joke hidden in every component.
+        <Lead className="max-w-[46ch]">
+          Everything you would reach for in shadcn/ui — dialogs, forms, tables, calendars — on the same Radix + Tailwind base.
+          <Highlight>Plus the things it never shipped</Highlight>: hold-to-delete buttons, liquid forms, charts you scrub, galleries
+          you throw, players that dance. {COUNT}+ components, every one with a small joke in it.
         </Lead>
         <ButtonGroup className="justify-self-end max-[900px]:justify-self-start">
           <Button size="lg" variant="blue" icon onClick={() => (window.location.hash = "docs")}>
-            Browse {COUNT}+ components
+            Browse components
           </Button>
           <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
             npm i rapui
@@ -200,62 +226,110 @@ function Bands() {
    land on rapui. Same API is the point, so the code under it does not
    change when you flip. */
 
+/* the "sensible default" skin: small, grey, 4px — drawn by hand so it is nobody's in particular */
 const PLAIN_BTN = "h-9 px-4 rounded-[4px] bg-[#18181b] text-white text-[14px] font-medium";
 const PLAIN_INPUT = "h-9 w-full px-3 rounded-[4px] border border-[#e4e4e7] bg-white text-[14px] text-[#18181b] placeholder:text-[#a1a1aa]";
+const PLAIN_LABEL = "text-[13px] font-medium text-[#18181b]";
 
+/* One card, two skins, one divider you drag. The left of the line is what a
+   sensible default kit renders from these props; the right is rapui from the
+   SAME props. The code under it never changes — which is the argument. */
 function SameApi() {
-  const [fun, setFun] = useState(true);
+  const [at, setAt] = useState(46);
   const [on, setOn] = useState(true);
   const [vol, setVol] = useState(60);
+  const box = useRef<HTMLDivElement>(null);
+  const held = useRef(false);
+  const sound = useSound();
+  const place = (x: number) => {
+    const r = box.current?.getBoundingClientRect();
+    if (!r) return;
+    const v = Math.min(96, Math.max(4, ((x - r.left) / r.width) * 100));
+    if (Math.round(v / 10) !== Math.round(at / 10)) sound.detent(0.4, { pitch: 0.8 + v / 125 });
+    setAt(v);
+  };
+  const plain = (
+    <div className="grid gap-4 content-center h-full p-[clamp(1.5rem,4vw,3rem)] bg-white text-[#18181b] font-[system-ui,sans-serif]">
+      <span className="text-[18px] font-semibold">Publish project</span>
+      <input className={PLAIN_INPUT} defaultValue="Summer zine" aria-hidden tabIndex={-1} />
+      <label className={cn(PLAIN_LABEL, "flex items-center gap-2")}>
+        <input type="checkbox" checked={on} readOnly tabIndex={-1} /> Autosave
+      </label>
+      <input type="range" value={vol} readOnly tabIndex={-1} aria-hidden />
+      <div className="flex gap-2">
+        <button className={PLAIN_BTN} tabIndex={-1}>Publish</button>
+        <button className={cn(PLAIN_BTN, "bg-[#f4f4f5] text-[#18181b]")} tabIndex={-1}>Preview</button>
+      </div>
+    </div>
+  );
+  const rap = (
+    <div className="grid gap-5 content-center h-full p-[clamp(1.5rem,4vw,3rem)] bg-paper-2">
+      <Display size="md">Publish project</Display>
+      <Input size="lg" defaultValue="Summer zine" aria-label="Project name" />
+      <Switch checked={on} onCheckedChange={setOn} label="Autosave" />
+      <ElasticSlider aria-label="Volume" value={vol} onValueChange={setVol} icons={[<Volume1 key="a" />, <Volume2 key="b" />]} />
+      <ButtonGroup>
+        <Button size="lg" icon>Publish</Button>
+        <Button size="lg" variant="soft">Preview</Button>
+      </ButtonGroup>
+    </div>
+  );
   return (
-    <section className="px-(--gutter) pt-10 pb-32 grid grid-cols-[1fr_1.2fr] gap-16 items-center max-[1000px]:grid-cols-1" id="same-api">
-      <div className="flex flex-col gap-8">
+    <section className="px-(--gutter) pt-10 pb-32 flex flex-col gap-12" id="same-api">
+      <div className="grid grid-cols-[1fr_minmax(0,30rem)] gap-10 items-end max-[900px]:grid-cols-1">
         <Display size="xxl">
           Same API. <Accent tone="mute">Different nerve.</Accent>
         </Display>
         <p className={COPY}>
-          If you know shadcn/ui you already know rapui: Radix underneath, <code>className</code> merged with <code>cn()</code>,
-          variants through <code>cva</code>, a <code>data-slot</code> on every part. What changes is everything you can see and
-          hear.
+          If you know shadcn/ui you already know rapui: Radix underneath, <code>cn()</code>, <code>cva</code> variants, a{" "}
+          <code>data-slot</code> on every part. Drag the line: same props on both sides.
         </p>
-        <Switch size="lg" checked={fun} onCheckedChange={setFun} label={fun ? "rapui" : "a sensible default"} />
       </div>
-
-      <div className={cn("grid gap-6 p-[clamp(1.5rem,4vw,3rem)] rounded-lg transition-colors duration-(--rap-dur)", fun ? "bg-paper-2" : "bg-white text-[#18181b]")}>
-        {fun ? (
-          <div key="fun" className="grid gap-6 fun:animate-toss-in">
-            <ButtonGroup>
-              <Button size="lg" icon>
-                Publish
-              </Button>
-              <Button size="lg" variant="soft">
-                Preview
-              </Button>
-            </ButtonGroup>
-            <Input size="lg" placeholder="Project name" aria-label="Project name" />
-            <div className="flex flex-wrap items-center gap-8">
-              <Switch checked={on} onCheckedChange={setOn} label="Autosave" />
-              <Checkbox defaultChecked aria-label="Public" />
-            </div>
-            <ElasticSlider aria-label="Volume" value={vol} onValueChange={setVol} icons={[<Volume1 key="a" />, <Volume2 key="b" />]} />
-          </div>
-        ) : (
-          <div key="plain" className="grid gap-4 font-[system-ui,sans-serif]">
-            <div className="flex gap-2">
-              <button className={PLAIN_BTN}>Publish</button>
-              <button className={cn(PLAIN_BTN, "bg-[#f4f4f5] text-[#18181b]")}>Preview</button>
-            </div>
-            <input className={PLAIN_INPUT} placeholder="Project name" aria-label="Project name" />
-            <label className="flex items-center gap-2 text-[14px]">
-              <input type="checkbox" defaultChecked /> Autosave
-            </label>
-            <input type="range" aria-label="Volume" value={vol} onChange={(e) => setVol(Number(e.target.value))} />
-          </div>
-        )}
-        <Code>{`<Button icon>Publish</Button>
-<Input placeholder="Project name" />
-<Switch checked={on} onCheckedChange={setOn} />`}</Code>
+      <div
+        ref={box}
+        className="relative grid min-h-[30rem] rounded-lg overflow-hidden shadow-[inset_0_0_0_1px_var(--rap-line)] select-none"
+      >
+        {/* the rapui skin underneath, full width and fully live */}
+        <div className="col-start-1 row-start-1">{rap}</div>
+        {/* the plain skin on top, cut at the line; inert, it is a picture of the other kit */}
+        <div className="col-start-1 row-start-1 pointer-events-none" style={{ clipPath: `inset(0 ${100 - at}% 0 0)` }} aria-hidden>
+          {plain}
+        </div>
+        <div
+          role="slider"
+          aria-label="Compare a plain kit with rapui"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(at)}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") setAt((v) => Math.max(4, v - 5));
+            if (e.key === "ArrowRight") setAt((v) => Math.min(96, v + 5));
+          }}
+          onPointerDown={(e) => {
+            held.current = true;
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => held.current && place(e.clientX)}
+          onPointerUp={() => (held.current = false)}
+          className="absolute inset-y-0 z-10 w-12 -ml-6 grid place-items-center cursor-ew-resize touch-none outline-none group/cmp"
+          style={{ left: `${at}%` }}
+        >
+          <span className="absolute inset-y-0 left-1/2 w-[2px] -ml-px bg-ink" />
+          <span className="relative grid place-items-center size-12 rounded-full bg-ink text-paper text-[1.1rem] font-medium shadow-[0_8px_24px_rgb(0_0_0/0.25)] transition-transform duration-200 ease-spring group-active/cmp:scale-110 group-focus-visible/cmp:outline-2 group-focus-visible/cmp:outline-ring group-focus-visible/cmp:outline-offset-2">
+            ↔
+          </span>
+        </div>
+        <Sticker color="paper" rotate={-4} size="0.95rem" className="absolute left-5 top-5 z-5 pointer-events-none">
+          a sensible default
+        </Sticker>
+        <Sticker color="acid" rotate={5} size="0.95rem" className="absolute right-5 top-5 z-5 pointer-events-none">
+          rapui
+        </Sticker>
       </div>
+      <Code>{`<Input defaultValue="Summer zine" />
+<Switch checked={on} onCheckedChange={setOn} label="Autosave" />
+<Button icon>Publish</Button>`}</Code>
     </section>
   );
 }
@@ -327,54 +401,6 @@ function Showcase({
   );
 }
 
-function LoginDemo() {
-  const [state, setState] = useState<StackState>("idle");
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    setState("loading");
-    // "wrong" as the password shows the other ending
-    window.setTimeout(() => {
-      setState(pw === "wrong" ? "error" : "success");
-      if (pw !== "wrong") window.setTimeout(() => setState("idle"), 2200);
-    }, 1500);
-  };
-  return (
-    <div className="flex flex-col gap-6 w-[min(100%,34rem)]">
-      <Display size="xl">
-        Log in <Accent className="text-[0.5em] tracking-[-0.02em] align-[0.35em]">or join</Accent>
-      </Display>
-      <FormStack state={state} errorIndex={1} onSubmit={submit}>
-        <Input
-          size="hero"
-          type="email"
-          placeholder="Email"
-          aria-label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          status={/.+@.+\..+/.test(email) ? "valid" : undefined}
-        />
-        <Input
-          size="hero"
-          type="password"
-          placeholder="Password (try “wrong”)"
-          aria-label="Password"
-          value={pw}
-          invalid={state === "error"}
-          onChange={(e) => {
-            setPw(e.target.value);
-            if (state === "error") setState("idle");
-          }}
-        />
-        <Button size="hero" variant="accent" align="start" block type="submit" successLabel="Welcome back" errorLabel="Wrong password">
-          Continue
-        </Button>
-      </FormStack>
-    </div>
-  );
-}
-
 function GalleriesDemo() {
   const lb = useLightbox();
   return (
@@ -392,8 +418,72 @@ function GalleriesDemo() {
   );
 }
 
+/* a sparkline's natural habitat: a table row */
+const PAGES = [
+  { name: "Summer zine", views: "12.4k", data: [3, 5, 4, 8, 7, 11, 14] },
+  { name: "Portfolio", views: "8.1k", data: [9, 8, 9, 7, 8, 6, 7] },
+  { name: "Night swim", views: "5.6k", data: [2, 3, 5, 4, 6, 9, 8] },
+  { name: "Pricing", views: "3.9k", data: [6, 6, 5, 7, 6, 8, 9] },
+];
+
+function SparkTable() {
+  return (
+    <div className="w-80 max-w-full bg-surface rounded-[26px] pt-[22px] px-4 pb-3">
+      <p className="m-0 text-[33px] leading-none font-medium tracking-[-0.03em] tabular-nums">
+        30.0k<span className="text-[24px] opacity-35"> views</span>
+      </p>
+      <p className="mt-[9px] mb-3 text-[12.5px] font-medium text-success">
+        +12.4% <span className="text-ink/42">top pages, 7 days</span>
+      </p>
+      {PAGES.map((pg) => (
+        <div key={pg.name} className="flex items-center gap-3 py-2.5 border-t border-line text-[0.9rem] font-medium">
+          <span className="flex-1 truncate">{pg.name}</span>
+          <Sparkline data={pg.data} width={76} height={22} />
+          <span className="w-12 text-right tabular-nums text-ink/55">{pg.views}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── the players, as a conversation ─────────────────────────
+   Big chat bubbles with the media dropped in between them, the way
+   people actually send video and voice. "them" sits left on white,
+   "me" right on blue; each bubble tosses in as it scrolls into view
+   (the deal utility, --i staggered). */
+const BUBBLE = "max-w-[min(100%,34rem)] px-6 py-4 text-[clamp(1.1rem,1.8vw,1.5rem)] leading-[1.3] tracking-[-0.015em] font-medium";
+const THEM = "self-start rounded-[28px] rounded-bl-[8px] bg-surface";
+const ME = "self-end rounded-[28px] rounded-br-[8px] bg-blue text-white";
+
+function MediaChat() {
+  const chapters = [
+    { at: 0, title: "Intro" },
+    { at: 3, title: "Shapes" },
+    { at: 6, title: "Type" },
+    { at: 9, title: "Outro" },
+  ];
+  return (
+    <div className="deal flex flex-col gap-3 w-[min(100%,54rem)] mx-auto">
+      <div className={cn(BUBBLE, THEM, "[--i:0]")}>Cut the reel for Friday. Tell me what you think 👀</div>
+      <div className="self-start w-[min(100%,40rem)] [--i:1]">
+        <VideoPlayer src={reel} title="Studio reel" chapters={chapters} />
+      </div>
+      <div className={cn(BUBBLE, ME, "[--i:2]")}>wait — the whole frame leans when I scrub?? 😂</div>
+      <VoiceNote src={voiceNote} from="me" sent="14:02" className="self-end [--i:3]" />
+      <div className={cn(BUBBLE, THEM, "[--i:4]")}>It does. And here’s the track for it:</div>
+      <div className="self-start w-[min(100%,30rem)] [--i:5]">
+        <AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" />
+      </div>
+      <div className={cn(THEM, "flex gap-1.5 px-5 py-5 [--i:6]")} aria-label="typing">
+        {[0, 1, 2].map((d) => (
+          <span key={d} className="size-2.5 rounded-full bg-ink/35 fun:animate-dot" style={{ animationDelay: `${d * 160}ms` }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Wall() {
-  const [knob, setKnob] = useState(42);
   return (
     <div id="wall" className="px-(--gutter)">
       <div className="flex flex-col gap-8 pb-20">
@@ -430,16 +520,17 @@ function Wall() {
         id="forms"
         title="Forms"
         sub="that melt"
-        desc="Readymag's stacked login, made liquid: the pills fuse into one shape, the focused one swells, submitting sucks the fields into the button, and a wrong password spits them back out, shaking its head."
+        desc="A booking you fill in like a sentence. The pills melt into one bar, the one you are typing in swells, booking sucks the whole sentence into the button — and Monday, a party of forty or a 3 am snack get spat back out, the guilty pill shaking its head."
         code={`import { FormStack, Input, Button } from "rapui";
 
-<FormStack state={state} errorIndex={1} onSubmit={logIn}>
-  <Input size="hero" type="email" placeholder="Email" />
-  <Input size="hero" type="password" placeholder="Password" />
-  <Button size="hero" variant="accent" type="submit" block>Continue</Button>
+<FormStack direction="row" state={state} errorIndex={error?.index} onSubmit={book}>
+  <Input size="hero" prefix="Table for" value={guests} />
+  <Input size="hero" prefix="on" value={day} />
+  <Input size="hero" prefix="at" value={time} />
+  <Button size="hero" variant="accent" type="submit" icon>Book it</Button>
 </FormStack>`}
       >
-        <LoginDemo />
+        <FormDemo />
       </Showcase>
 
       <Showcase
@@ -461,12 +552,22 @@ function Wall() {
 <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} />`}
         stageClass="bg-paper place-items-stretch"
       >
-        <div className="flex flex-wrap justify-center items-start gap-tile w-full">
-          <BalanceChart />
-          <DonutChart />
-          <GaugeChart defaultValue={72} />
-          <BarsChart />
-          <RaceBars />
+        {/* An even bento: six equal white tiles, rows of one height (auto-rows-fr), each
+            chart centred in its tile. The charts are different shapes by nature; the
+            grid is what makes them read as one set. */}
+        <div className="grid grid-cols-3 auto-rows-fr gap-tile w-full max-[1180px]:grid-cols-2 max-[760px]:grid-cols-1">
+          {[
+            <BalanceChart key="b" />,
+            <DonutChart key="d" />,
+            <GaugeChart key="g" defaultValue={72} />,
+            <BarsChart key="bars" />,
+            <RaceBars key="r" />,
+            <SparkTable key="s" />,
+          ].map((chart) => (
+            <div key={chart.key} className="grid place-items-center min-w-0 p-3 rounded-lg bg-surface">
+              {chart}
+            </div>
+          ))}
         </div>
       </Showcase>
 
@@ -474,21 +575,17 @@ function Wall() {
         id="dials"
         title="Dials"
         sub="& scrubbers"
-        desc="Controls for the things sliders are bad at: a range on a 24-hour clock whose handles fuse like drops, a ruler of time you can fling, a knob with magnetic detents, a slider that stretches like rubber at its ends."
-        code={`import { RangeDial, TimeScrubber, Knob, ElasticSlider } from "rapui";
+        desc="Plan a night with nothing but rulers and rings: fling a strip of days, turn a tempo wheel that flashes on the beat, pick a lamp colour off a ring of hues, set the room under a magnifying lens, split rain against brown noise. The last card reads the whole desk back to you."
+        code={`import { DateScrubber, TempoDial, HueRing, LensRuler, SplitSlider, RangeDial } from "rapui";
 
-<RangeDial snap="15" />
-<TimeScrubber step="15" />
-<Knob label="Gain" value={gain} onValueChange={setGain} />`}
-        stageClass="bg-paper"
+<DateScrubber value={night} onValueChange={setNight} />
+<TempoDial bpm={68} onBeat={pulse} />
+<HueRing value={hue} onValueChange={setHue} />
+<LensRuler min={16} max={24} step={0.5} value={temp} onValueChange={setTemp} />
+<SplitSlider value={60} labels={["Rain", "Brown noise"]} />`}
+        stageClass="bg-paper p-[clamp(0.75rem,2vw,1.5rem)] place-items-stretch"
       >
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,19rem),1fr))] gap-12 w-full justify-items-center items-center">
-          <RangeDial />
-          <div className="flex flex-col items-center gap-10">
-            <TimeScrubber />
-            <Knob size="lg" label="Gain" value={knob} onValueChange={setKnob} />
-          </div>
-        </div>
+        <DialsDemo />
       </Showcase>
 
       <Showcase
@@ -521,42 +618,35 @@ const lb = useLightbox();
 <VoiceNote src="/note.wav" from="me" sent="14:02" />`}
         stageClass="bg-paper"
       >
-        <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-tile w-full items-start max-[1000px]:grid-cols-1">
-          <VideoPlayer
-            src={reel}
-            title="Studio reel"
-            chapters={[
-              { at: 0, title: "Intro" },
-              { at: 3, title: "Shapes" },
-              { at: 6, title: "Type" },
-              { at: 9, title: "Outro" },
-            ]}
-          />
-          <div className="flex flex-col gap-tile min-w-0">
-            <AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" />
-            <VoiceNote src={voiceNote} from="me" sent="14:02" className="self-end" />
-          </div>
-        </div>
+        <MediaChat />
+      </Showcase>
+
+      <Showcase
+        id="tools"
+        title="Tools"
+        sub="that feel like toys"
+        desc="A big editor bar in the Readymag spirit: chunky round slots, one pad that glides to the tool you pick, and sixteen hand-drawn icons that each do a little something — the cursor clicks, the ball bounces, the sticker peels. Press 1–9 to pick, + for widgets."
+        code={`import { EditorToolbar } from "rapui";
+
+<EditorToolbar size="hero" tone="blue" onValueChange={setTool} />`}
+        stageClass="p-0 place-items-stretch"
+      >
+        <ToolbarDemo />
       </Showcase>
 
       <Showcase
         id="lists"
-        title="Lists & tools"
-        sub="with a spring each"
+        title="Checklist"
+        sub="that falls apart"
         stageClass="bg-paper"
-        desc="From Bencho (MIT). Tick the last task and the whole checklist collapses into a heap; the canvas rail remembers your last shape and goes glass on request."
-        code={`import { Checklist, CanvasToolbar } from "rapui";
+        desc="From Bencho (MIT). Fill, tick, strike-through and fading ink all run on one spring per row — tick the last task and the whole list collapses into a heap."
+        code={`import { Checklist } from "rapui";
 
-<Checklist />
-<div data-surface="glass">
-  <CanvasToolbar />
-</div>`}
+<Checklist />`}
       >
-        <div className={cn(ROW, "w-full")}>
+        <div className={ROW}>
           <Checklist />
-          <div className={cn("grid place-items-center min-h-64 w-[min(100%,24rem)] rounded-card overflow-hidden", GLASS_GROUND)} data-surface="glass">
-            <CanvasToolbar corner={20} />
-          </div>
+          <Checklist bounce={85} box={20} corner={28} />
         </div>
       </Showcase>
 
@@ -564,7 +654,7 @@ const lb = useLightbox();
         id="loud"
         title="The loud bits"
         sub="for landing pages"
-        desc="Headline links, stickers in ten soft shapes, tickers, cards that lean toward the cursor. The editorial half of the kit, for the pages people remember."
+        desc="Headline links, a board of stickers in sixteen shapes — price tags on strings, seals with running text, tickets, stamps, labels that peel — cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
         code={`import { BigLink, Sticker, TiltCard, CircleButton } from "rapui";
 
 <BigLink href="/work" meta="24 projects">Work</BigLink>
@@ -577,26 +667,7 @@ const lb = useLightbox();
             <BigLink href="#loud" meta="24 projects">Work</BigLink>
             <BigLink href="#loud" meta="→ mail">Say hello</BigLink>
           </div>
-          <div className={cn(ROW, "gap-x-12 gap-y-8")}>
-            <Sticker color="acid" size="1.5rem">fresh</Sticker>
-            <Sticker color="flame" shape="burst" className="w-32" size="1.05rem" rotate={10}>
-              hot
-              <br />
-              drop!
-            </Sticker>
-            <Sticker color="bubble" shape="circle" className="w-28" size="1.15rem" rotate={9}>
-              say
-              <br />
-              hi
-            </Sticker>
-            <Sticker color="plum" shape="flower" className="w-28" size="1.05rem" rotate={-8}>
-              new
-            </Sticker>
-            <Sticker color="sky" shape="tag" size="1.3rem" rotate={4}>
-              sale −30%
-            </Sticker>
-            <CircleButton size={150} />
-          </div>
+          <StickersDemo />
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-tile">
             {(
               [
@@ -666,22 +737,118 @@ import { Button } from "rapui"; // just Button`,
   },
 ];
 
+/* A horizontal run of big cards, ~70% of the viewport each, so every claim gets a
+   whole slide: the words on the left, the proof on the right, the code wrapped so
+   nothing scrolls inside a card. The strip itself scrolls — snap, drag with the
+   mouse, arrows, or a trackpad — and the scrollbar is hidden; a row of dots and a
+   counter say where you are. */
 function Tech() {
+  const strip = useRef<HTMLDivElement>(null);
+  const [at, setAt] = useState(0);
+  const drag = useRef<{ x: number; left: number } | null>(null);
+  const sound = useSound();
+  const go = (i: number) => {
+    const el = strip.current;
+    const card = el?.children[Math.max(0, Math.min(TECH.length - 1, i))] as HTMLElement | undefined;
+    if (el && card) el.scrollTo({ left: card.offsetLeft - el.offsetLeft - parseFloat(getComputedStyle(el).paddingLeft), behavior: "smooth" });
+  };
+  const onScroll = () => {
+    const el = strip.current;
+    if (!el) return;
+    const w = (el.children[0] as HTMLElement)?.offsetWidth || 1;
+    const i = Math.round(el.scrollLeft / (w + 12));
+    if (i !== at) {
+      setAt(i);
+      sound.detent(0.5, { pitch: 0.9 + i * 0.08 });
+    }
+  };
   return (
-    <section className="pt-32 pb-24 px-(--gutter) border-t-[1.5px] border-line" id="tech">
-      <div className="flex flex-col gap-8 pb-16">
-        <Display size="xxl">
-          Fun on top, <Accent tone="mute">serious underneath</Accent>
-        </Display>
-        <p className={COPY}>The jokes are a layer. The foundation is the same boring, reliable stack you would pick anyway.</p>
-      </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-tile">
-        {TECH.map((t) => (
-          <div key={t.title} className="flex flex-col gap-5 p-8 rounded-lg bg-paper-2 min-w-0">
-            <Display size="md">{t.title}</Display>
-            <p className="m-0 text-ink-2 text-[1rem] leading-[1.5]">{t.body}</p>
-            <Code className="mt-auto">{t.code}</Code>
+    <section className="pt-32 pb-24 border-t-[1.5px] border-line" id="tech">
+      <div className="flex flex-wrap items-end justify-between gap-8 pb-14 px-(--gutter)">
+        <div className="flex flex-col gap-8">
+          <Display size="xxl">
+            Fun on top, <Accent tone="mute">serious underneath</Accent>
+          </Display>
+          <p className={COPY}>The jokes are a layer. The foundation is the same reliable stack you would pick anyway.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-[1.05rem] font-medium tabular-nums text-ink-2">
+            {at + 1} / {TECH.length}
+          </span>
+          <div className="flex gap-tight">
+            {([["Previous", -1, ArrowLeft], ["Next", 1, ArrowRight]] as const).map(([label, d, Icon]) => (
+              <button
+                key={label}
+                type="button"
+                aria-label={label}
+                onClick={() => go(at + d)}
+                className="grid place-items-center size-14 rounded-full bg-fill hover:bg-ink hover:text-paper transition-colors duration-200 cursor-pointer [&_svg]:size-6 active:scale-94"
+              >
+                <Icon />
+              </button>
+            ))}
           </div>
+        </div>
+      </div>
+      <div
+        ref={strip}
+        onScroll={onScroll}
+        onPointerDown={(e) => {
+          if (e.pointerType !== "mouse" || (e.target as Element).closest("button")) return;
+          drag.current = { x: e.clientX, left: strip.current!.scrollLeft };
+          strip.current!.style.scrollSnapType = "none";
+        }}
+        onPointerMove={(e) => {
+          if (!drag.current) return;
+          strip.current!.scrollLeft = drag.current.left - (e.clientX - drag.current.x);
+        }}
+        onPointerUp={() => {
+          if (!drag.current) return;
+          drag.current = null;
+          strip.current!.style.scrollSnapType = "";
+          go(at);
+        }}
+        onPointerLeave={() => {
+          if (!drag.current) return;
+          drag.current = null;
+          strip.current!.style.scrollSnapType = "";
+        }}
+        className={cn(
+          "flex gap-tile overflow-x-auto snap-x snap-mandatory px-(--gutter) scroll-px-(--gutter) pb-2 cursor-grab active:cursor-grabbing select-none",
+          "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        )}
+      >
+        {TECH.map((t, i) => (
+          <article
+            key={t.title}
+            className={cn(
+              "snap-start shrink-0 w-[min(70vw,64rem)] max-[760px]:w-[86vw] grid grid-cols-[1fr_1.15fr] gap-10 p-[clamp(1.5rem,3.5vw,3.5rem)] rounded-lg min-h-[26rem] max-[900px]:grid-cols-1",
+              i % 3 === 0 ? "bg-paper-2" : i % 3 === 1 ? "bg-ink text-paper dark:bg-paper-2 dark:text-ink" : "bg-acid text-[#282828]",
+            )}
+          >
+            <div className="flex flex-col justify-between gap-8">
+              <span className="text-[clamp(3rem,6vw,5.5rem)] font-display font-medium tracking-[-0.05em] leading-none opacity-25 tabular-nums">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="flex flex-col gap-4">
+                <Display size="lg">{t.title}</Display>
+                <p className="m-0 text-[1.1rem] leading-[1.5] opacity-80 max-w-[40ch]">{t.body}</p>
+              </div>
+            </div>
+            <Code wrap className="self-end">{t.code}</Code>
+          </article>
+        ))}
+      </div>
+      <div className="flex justify-center gap-2 pt-8" role="tablist" aria-label="Slides">
+        {TECH.map((t, i) => (
+          <button
+            key={t.title}
+            role="tab"
+            aria-selected={i === at}
+            aria-label={t.title}
+            onClick={() => go(i)}
+            className={cn("h-2.5 rounded-pill transition-all duration-300 ease-spring cursor-pointer", i === at ? "w-8 bg-ink" : "w-2.5 bg-ink/20 hover:bg-ink/40")}
+          />
         ))}
       </div>
     </section>
@@ -782,7 +949,7 @@ function Footer() {
         </CircleButton>
       </div>
       <div className="mt-20 mb-8 -ml-[0.04em] text-[clamp(6rem,30vw,34rem)] whitespace-nowrap" aria-hidden>
-        <Wordmark className="font-[550] tracking-[-0.075em]" />
+        <Wordmark className="w-full h-auto" />
       </div>
       <div className="flex flex-wrap justify-between gap-4 pt-6 border-t border-white/15 dark:border-line text-[0.95rem] font-medium">
         <span>© 2026 rapui — MIT</span>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Accent, Accordion, BigLink, Button, ButtonGroup, CircleButton, Display, Field, FormStack, Input, Switch } from "../../rapui";
 import type { StackState } from "../../rapui";
 import type { ButtonSize, ButtonVariant } from "../../rapui";
+import { FormDemo } from "../../site/demos/FormDemo";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
 
@@ -38,7 +39,7 @@ function LoginDemo({ p }: { p: Record<string, string | number | boolean> }) {
     }, 1500);
   };
   return (
-    <div className="flex flex-col gap-6 w-[min(100%,34rem)]">
+    <div className="flex flex-col gap-6 w-[min(100%,34rem)] [contain:inline-size]">
       <Display size="xl">
         Log in <Accent className="text-[0.5em] tracking-[-0.02em] align-[0.35em]">or join</Accent>
       </Display>
@@ -115,10 +116,67 @@ export const entries: DocEntry[] = [
     name: "Form stack",
     group: "Actions",
     description:
-      "Readymag's big form: 88px pills stacked edge to edge, fields then the button, reading as one object. Delight: the pills are one liquid shape (a goo filter pools the notches into necks), focus swells a field, submitting sucks the fields into the button, and an error spits them back out with the wrong one shaking.",
+      "Readymag's big form: 88px pills set edge to edge, fields then the button, reading as one object — stacked or in a row. Delight: the pills are one liquid shape (a goo filter pools the notches into necks, which stay the field's colour right up to a crisp edge on the button), focus swells a field, submitting sucks the fields into the button, and an error spits them back out with the wrong one shaking.",
     controls: stackControls,
     Demo: LoginDemo,
     examples: [
+      {
+        title: "A sentence in a row: book a table (try Monday, or the whole office)",
+        Demo: FormDemo,
+        code: `<FormStack direction="row" state={state} errorIndex={error?.index} onSubmit={book}>
+  <Input size="hero" prefix="Table for" value={guests} invalid={error?.index === 0} />
+  <Input size="hero" prefix="on" value={day} invalid={error?.index === 1} />
+  <Input size="hero" prefix="at" value={time} invalid={error?.index === 2} />
+  <Button size="hero" variant="accent" type="submit" icon
+    successLabel={\`See you \${day}\`} errorLabel={error?.message}>
+    Book it
+  </Button>
+</FormStack>`,
+      },
+      {
+        title: "Redeem a gift card (codes starting OLD have expired)",
+        Demo: function GiftCard() {
+          const [state, setState] = useState<StackState>("idle");
+          const [code, setCode] = useState("");
+          const expired = /^old/i.test(code.trim());
+          return (
+            <div className="w-[min(100%,40rem)] [contain:inline-size]">
+              <FormStack
+                direction="row"
+                state={state}
+                errorIndex={0}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setState("loading");
+                  window.setTimeout(() => {
+                    setState(expired ? "error" : "success");
+                    if (!expired) window.setTimeout(() => setState("idle"), 2400);
+                  }, 1300);
+                }}
+              >
+                <Input
+                  size="hero"
+                  placeholder="RAP-GIFT-2026"
+                  aria-label="Gift card code"
+                  value={code}
+                  invalid={state === "error"}
+                  onChange={(e) => {
+                    setCode(e.target.value.toUpperCase());
+                    if (state === "error") setState("idle");
+                  }}
+                />
+                <Button size="hero" variant="blue" type="submit" successLabel="€50 added" errorLabel="Expired">
+                  Redeem
+                </Button>
+              </FormStack>
+            </div>
+          );
+        },
+        code: `<FormStack direction="row" state={state} errorIndex={0} onSubmit={redeem}>
+  <Input size="hero" placeholder="RAP-GIFT-2026" invalid={state === "error"} />
+  <Button size="hero" variant="blue" type="submit" successLabel="€50 added" errorLabel="Expired">Redeem</Button>
+</FormStack>`,
+      },
       {
         title: "In a row: newsletter",
         Demo: function Newsletter() {
