@@ -3,7 +3,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding-top: 1.6em;
+  /* room above the input for the floated label */
+  padding-top: 1.6rem;
   font-size: 1rem;
 }
 .rap-field--md { --f-fs: 1.25rem; }
@@ -19,6 +20,7 @@
   font-weight: 400;
   font-size: var(--f-fs);
   letter-spacing: -0.04em;
+  line-height: 1.2;
   padding: 0.15em 0 0.25em;
   outline: none;
   caret-color: var(--rap-accent);
@@ -28,7 +30,11 @@
 .rap-field__label {
   position: absolute;
   left: 0;
-  top: calc(1.6em + var(--f-fs) * 0.2);
+  /* sits exactly on the input's text line: the field's rem padding
+     plus the input's own top padding (0.15 of its font size). Both
+     in absolute units — an em here would be the label's own, huge. */
+  top: calc(1.6rem + var(--f-fs) * 0.15);
+  line-height: 1.2;
   font-family: var(--rap-font-display);
   font-size: var(--f-fs);
   letter-spacing: -0.04em;
@@ -66,3 +72,5 @@
 }
 .rap-field--error .rap-field__line { transform: scaleX(1); background: var(--rap-flame); }
 .rap-field--error .rap-field__msg { color: var(--rap-flame); }
+/* the drawn accent line is this field's focus indicator; no extra box */
+.rap-field__input:focus-visible { outline: none; }

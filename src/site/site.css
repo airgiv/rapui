@@ -340,3 +340,7 @@ code { font-family: var(--rap-font-mono); font-size: 0.85em; }
     var(--rap-paper-3);
 }
 .show__stage--ground { background: var(--rap-paper); box-shadow: inset 0 0 0 1px var(--rap-line); }
+.demo-stickers .rap-sticker--flower,
+.demo-stickers .rap-sticker--heart,
+.demo-stickers .rap-sticker--blob,
+.demo-stickers .rap-sticker--clover { width: 7.5rem; }

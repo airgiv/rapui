@@ -1,8 +1,9 @@
 import type { Control, Props } from "./types";
 
 /**
- * Turns control values into JSX attributes, skipping the ones still at
- * their default so the snippet shows only what you changed.
+ * Turns control values into JSX attributes, skipping the ones equal to the
+ * component's default (`codeDefault`, else the panel default) so the snippet
+ * shows only what differs.
  *   attrs(p, controls) → ` size="lg" disabled`
  */
 export function attrs(p: Props, controls: Control[] = [], skip: string[] = []): string {
@@ -10,7 +11,8 @@ export function attrs(p: Props, controls: Control[] = [], skip: string[] = []): 
   for (const c of controls) {
     if (skip.includes(c.prop)) continue;
     const v = p[c.prop];
-    if (v === c.default) continue;
+    const base = c.codeDefault === undefined ? c.default : c.codeDefault;
+    if (base !== null && v === base) continue;
     if (typeof v === "boolean") out.push(v ? ` ${c.prop}` : ` ${c.prop}={false}`);
     else if (typeof v === "number") out.push(` ${c.prop}={${v}}`);
     else out.push(` ${c.prop}="${v}"`);

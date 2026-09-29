@@ -92,7 +92,7 @@ function Hero() {
           that makes people scroll back up.
         </Lead>
         <ButtonGroup className="hero__actions">
-          <Button size="lg" variant="blue" icon onClick={() => document.getElementById("components")?.scrollIntoView({ behavior: "smooth" })}>
+          <Button size="lg" variant="blue" icon onClick={() => (window.location.hash = "docs")}>
             Browse components
           </Button>
           <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
@@ -439,14 +439,17 @@ function Components() {
         id="stickers"
         title="Stickers"
         sub="& tags"
-        desc="Rotated labels that wobble when you touch them. Pill, circle, tag, star and spinning burst — in every accent."
+        desc="Rotated labels that wobble when you touch them. Ten soft shapes with no sharp corners (pill, circle, tag, star, burst, flower, clover, blob, heart, squircle) in every accent."
         code={`import { Sticker } from "rapui";
 
 <Sticker color="acid">fresh</Sticker>
 <Sticker color="flame" shape="burst" size="1.2rem">hot!</Sticker>
 <Sticker color="blue" shape="star">★</Sticker>
 <Sticker color="bubble" shape="circle">say hi</Sticker>
-<Sticker color="sky" shape="tag" rotate={4}>sale</Sticker>`}
+<Sticker color="sky" shape="tag" rotate={4}>sale</Sticker>
+<Sticker color="plum" shape="flower">new</Sticker>
+<Sticker color="acid" shape="heart">love it</Sticker>
+// also: blob, clover, squircle`}
       >
         <div className="demo-row demo-row--center demo-stickers">
           <Sticker color="acid" size="1.6rem">fresh</Sticker>
@@ -465,6 +468,18 @@ function Components() {
           </Sticker>
           <Sticker color="sky" shape="tag" size="1.4rem" rotate={4}>
             sale −30%
+          </Sticker>
+          <Sticker color="plum" shape="flower" size="1.1rem" rotate={-8}>
+            new
+          </Sticker>
+          <Sticker color="acid" shape="heart" size="1.1rem" rotate={6}>
+            love it
+          </Sticker>
+          <Sticker color="sky" shape="blob" size="1.1rem" rotate={-4}>
+            soft
+          </Sticker>
+          <Sticker color="flame" shape="clover" size="1.1rem" rotate={10}>
+            lucky
           </Sticker>
           <Sticker color="ink" size="1.2rem" rotate={-3}>
             ink

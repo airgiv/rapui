@@ -19,9 +19,17 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   roll?: boolean;
 }
 
+/* One continuous stroke — head and shaft meet at a single round join, so
+   there is no overlap seam where two square-capped lines used to cross. */
 export const Arrow = () => (
   <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" aria-hidden>
-    <path d="M5 19 19 5M8 5h11v11" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" />
+    <path
+      d="M7.5 6.5h10v10M17.5 6.5 6.5 17.5"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 

@@ -120,9 +120,11 @@
      moments, and a size stated twice is a size that will
      disagree with itself later. See .chk-say, which is where
      these three numbers come from. */
-  font-size: 14px;
+  /* rap/ui: 18px at 450, from 14px — rap/ui sets UI text larger
+     than Bencho, and at 14 the checklist read as a foreign block. */
+  font-size: 18px;
   font-weight: 450;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   transition: opacity 200ms ease;}
 
 /* it keeps its space while the heap is down — removing it
@@ -253,9 +255,11 @@
      this box, so a full-width span would strike out the empty
      half of the line as well */
   display: inline-block;
-  font-size: 14px;
+  /* rap/ui: 18px at 450, from 14px — rap/ui sets UI text larger
+     than Bencho, and at 14 the checklist read as a foreign block. */
+  font-size: 18px;
   font-weight: 450;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   line-height: 1.2;}
 
 .chk-word { display: inline-block; }

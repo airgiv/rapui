@@ -165,3 +165,32 @@
   .docs-nav__link { background: var(--rap-surface); }
   .docs-play { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* demo grounds for the expressive entries */
+.doc-marquee {
+  padding: 1rem 0;
+  border-block: 1.5px solid var(--rap-ink);
+  font-family: var(--rap-font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+.doc-emoji { font-family: var(--rap-font-display); font-size: 4.5rem; line-height: 1; }
+.doc-ground {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 20rem;
+  padding: 1.5rem;
+  border-radius: calc(var(--rap-radius) - 8px);
+  background: var(--rap-paper);
+}
+.doc-ground--glass {
+  background:
+    radial-gradient(circle at 28% 60%, var(--rap-flame) 0 14%, transparent 15%),
+    radial-gradient(circle at 70% 42%, var(--rap-blue) 0 18%, transparent 19%),
+    radial-gradient(circle at 52% 78%, var(--rap-acid) 0 10%, transparent 11%),
+    var(--rap-paper-3);
+}
+.docs-side > .rap-input { flex: none; }

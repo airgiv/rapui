@@ -160,3 +160,9 @@
 .rap-btn-group--vertical { flex-direction: column; align-items: stretch; }
 .rap-btn-group--fill { display: flex; }
 .rap-btn-group--fill > * { flex: 1 1 0; }
+
+/* Word ↔ arrow bubble. Scaled to the button's height so the air reads the
+   same at every size: ~0.36 of the height (≈19px at md, 24px at lg),
+   roughly twice the bubble's inset from the edge, which keeps the bubble
+   from looking glued to the word. */
+.rap-btn--has-icon { gap: calc(var(--btn-h) * 0.36); }

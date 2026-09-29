@@ -1,6 +1,6 @@
 /* Adapted from Bencho — https://bencho.dev — MIT licence,
    see bencho.dev/licence. Source kept as published apart from
-   the stylesheet import below and CORNER (see there); the tokens
+   the stylesheet import below and the sizes marked "rap/ui"; the tokens
    its CSS reads are mapped onto rap/ui's in Checklist.css. */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -158,27 +158,39 @@ const stillness = () =>
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 
-const W = 300;
+/* rap/ui: 360, from 300 — the type is set at 18px here rather
+   than 14 (see .chk-say), and the card grows with it so the
+   longest default task still leaves the same share of air. */
+const W = 360;
 /* the inset, and it is the SAME on all four sides — which is
    not what `padding: 14px` gives you here. See the note where
    it is used. */
-const PAD = 14;
+/* rap/ui: 18, from 14 — scaled with the type. */
+const PAD = 18;
 /* 40, down from 52. The gap between two tasks is whatever the
    row has left over after the box, twice — so 52 put 30px
    between them and read as a list of three separate things.
    40 leaves 18, which is a list. */
-const ROW = 40;
+/* rap/ui: 52, from 40 — the same 40:14 row-to-type ratio at
+   18px type. The gap between two boxes works out to 28, which
+   is Bencho's 22 scaled by the same factor, so it still reads
+   as a list rather than three separate things. */
+const ROW = 52;
 /* 18, against 14px text. 22 was the first number and it had
    no reasoning behind it beyond looking balanced on its own —
    which is the trap with a control next to type: a checkbox is
    sized against the LINE it sits beside, and at 22 it was
    half again the cap height of the words it belonged to and
    read as the subject of the row rather than as its switch. */
-const BOX = 18;
+/* rap/ui: 24, from 18 — the same box-to-type ratio at 18px. */
+const BOX = 24;
 /* rap/ui: 28, from 18 — the card corner every rap/ui surface
    uses (--rap-radius), so the checklist sits in the family of
    round, Readymag-style cards rather than Bencho's tighter wall. */
 const CORNER = 28;
+/* rap/ui: the box corner as a share of its side — 0.38, up from
+   Bencho's 0.32, to match the rounder rap/ui Checkbox. */
+const ROUND = 0.38;
 const BOUNCE = 50;
 
 /* ── the rule follows the tick, it does not race it ────────
@@ -591,7 +603,7 @@ export function Checklist({
           <span
             className="chk-ghost"
             aria-hidden="true"
-            style={{ width: side, height: side, borderRadius: side * 0.32 }}
+            style={{ width: side, height: side, borderRadius: side * ROUND }}
           />
           {adding ? (
             <input
@@ -752,13 +764,13 @@ function Row({
         style={{
           width: side,
           height: side,
-          borderRadius: side * 0.32,
+          borderRadius: side * ROUND,
         }}
       >
         <span
           className="chk-fill"
           style={{
-            borderRadius: side * 0.32,
+            borderRadius: side * ROUND,
             /* RAW, so it goes past full and settles — this is
                the one place the overshoot belongs */
             transform: `scale(${t.toFixed(4)})`,

@@ -53,12 +53,17 @@ const TAIL = [
    rule that makes a corner hug what is inside it. So the knob
    sets the RAIL and the tools follow, and there is no setting
    where a square rail holds rounded tools. */
-/* rap/ui: 23, from 15 — half the rail's height (38px slot +
-   4px pad each side = 46), so the rail is a full pill and the
-   38px tools inside it (23 − 4 = 19) are circles. Readymag's
-   controls are round, and the concentric rule above still holds. */
-const BAR_CORNER = 23;
-const BAR_MAX = 25;
+/* rap/ui: 27, from 15 — half the rail's height (46px slot +
+   4px pad each side = 54), so the rail is a full pill and the
+   46px tools inside it (27 − 4 = 23) are circles. Readymag's
+   controls are round, and the concentric rule above still holds.
+   BAR_MAX goes to 32 so the knob can still reach a full pill. */
+const BAR_CORNER = 27;
+const BAR_MAX = 32;
+/* rap/ui: glyphs at 20 on a 1.75 stroke, from 17 on 2 — sized
+   to the 46px slot the way 17 was to 38. */
+const GLYPH = 20;
+const STROKE = 1.75;
 
 /* ── hoisted out of the component (rap/ui change) ───────────
    In the original this was declared inside Toolbar, which
@@ -87,7 +92,7 @@ function Btn({
       onPointerDown={hold}
       aria-label={k}
     >
-      <Icon size={17} strokeWidth={2} />
+      <Icon size={GLYPH} strokeWidth={STROKE} />
     </button>
   );
 }
@@ -122,7 +127,7 @@ export function CanvasToolbar({ corner = BAR_CORNER }: { corner?: number } = {})
               onPointerDown={hold}
               aria-label={s.key}
             >
-              <s.Icon size={17} strokeWidth={2} />
+              <s.Icon size={GLYPH} strokeWidth={STROKE} />
             </button>
           ))}
         </div>
@@ -141,7 +146,7 @@ export function CanvasToolbar({ corner = BAR_CORNER }: { corner?: number } = {})
             onPointerDown={hold}
             aria-label={shape.key}
           >
-            <shape.Icon size={17} strokeWidth={2} />
+            <shape.Icon size={GLYPH} strokeWidth={STROKE} />
           </button>
           <button
             className="bar-notch"

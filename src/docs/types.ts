@@ -13,12 +13,18 @@ export const GROUPS = [
 ] as const;
 export type Group = (typeof GROUPS)[number];
 
-/** One knob in the playground's settings panel. `prop` is the key in `Props`. */
+/**
+ * One knob in the playground's settings panel. `prop` is the key in `Props`.
+ * `codeDefault` is the COMPONENT's own default, used by `attrs()` to decide what
+ * to leave out of the snippet; it falls back to `default` (the panel's starting
+ * value). Set it to `null` for a prop that must always be printed.
+ */
+type Base = { prop: string; label?: string };
 export type Control =
-  | { type: "select"; prop: string; label?: string; options: readonly string[]; default: string }
-  | { type: "boolean"; prop: string; label?: string; default: boolean }
-  | { type: "text"; prop: string; label?: string; default: string }
-  | { type: "number"; prop: string; label?: string; min: number; max: number; step?: number; default: number };
+  | (Base & { type: "select"; options: readonly string[]; default: string; codeDefault?: string | null })
+  | (Base & { type: "boolean"; default: boolean; codeDefault?: boolean | null })
+  | (Base & { type: "text"; default: string; codeDefault?: string | null })
+  | (Base & { type: "number"; min: number; max: number; step?: number; default: number; codeDefault?: number | null });
 
 export type Props = Record<string, string | number | boolean>;
 
