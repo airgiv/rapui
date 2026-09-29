@@ -169,6 +169,11 @@ function NavList({
         aria-label="Search components"
       />
       <nav className="flex flex-col gap-5">
+        {!q && (
+          <a href="#start" className={cn(NAV_LINK, "bg-acid text-[#282828] hover:bg-acid font-medium", big && "h-11 text-[1.0625rem]")} onClick={onPick}>
+            New to code? Start here →
+          </a>
+        )}
         {groups.map(({ g, items }) => (
           <div className="flex flex-col gap-tight" key={g}>
             <span className="px-[0.9rem] pb-[0.3rem] text-[0.8125rem] font-medium text-mute">{g}</span>
