@@ -333,26 +333,43 @@ export interface StickerGeometry {
   inner: number;
 }
 
-const toPath = (pts: Pt[], w: number, h: number, extra = "") => {
+const toPath = (pts: Pt[], w: number, h: number) => {
   let d = "";
   for (let i = 0; i < pts.length; i++) d += `${i ? "L" : "M"}${(pts[i][0] + w / 2).toFixed(1)} ${(pts[i][1] + h / 2).toFixed(1)}`;
-  return d + "Z" + extra;
-};
-
-/** A punched hole as a second, reversed ring (fill-rule evenodd cuts it out). */
-export const holePath = (cx: number, cy: number, r: number) => {
-  let d = "";
-  for (let i = 0; i < 28; i++) {
-    const t = (-i / 28) * PI * 2;
-    d += `${i ? "L" : "M"}${(cx + r * cos(t)).toFixed(1)} ${(cy + r * sin(t)).toFixed(1)}`;
-  }
   return d + "Z";
 };
 
-/** Where the price tag's hole sits, in viewBox px. */
-export const tagHole = (h: number, em: number) => {
+/* ── the price tag's punched hole ──────────────────────────
+   Not part of the outline: Sticker cuts it out of the whole
+   print with ONE mask (fill, die-cut border, paper rim and grain
+   together), so no stroke traces it and no two anti-aliased
+   edges meet on it. (It was a 28-gon subpath of the outline:
+   every stroke on the outline — the paper colour's 1.5px edge,
+   the die-cut border, the rim light — drew a ring round it.)
+
+   Where: on the tag's axis, as far in from the pointed end as
+   it takes for the tag to show 1.35 hole radii of print all
+   round it — i.e. the hole's edge sits that far inside the two
+   tapered sides, measured with the tag's own distance function.
+   That centres it in the tapered end instead of on a fixed share
+   of the height, which put the hole ~0.5px from the tip: a thin
+   sliver of print round a hole punched through the edge. */
+export const tagHole = (w: number, h: number, em: number) => {
+  const a = w / 2;
   const b = h / 2;
-  return { cx: b * 0.85 * 0.62, cy: b, r: min(b * 0.2, 0.2 * em) };
+  const r = min(b * 0.2, 0.2 * em);
+  const want = -r * (1 + 1.35);
+  const f = define("tag", { a, b, m: min(a, b), em }).sdf;
+  /* the SDF falls from the tip inward: bisect for where it reaches `want` */
+  let lo = -a;
+  let hi = 0;
+  if (f(hi, 0) > want) return { cx: a, cy: b, r };
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (f(mid, 0) > want) lo = mid;
+    else hi = mid;
+  }
+  return { cx: hi + a, cy: b, r };
 };
 
 const cache = new Map<string, StickerGeometry>();
@@ -376,16 +393,14 @@ export function stickerGeometry(shape: ShapeKey, w: number, h: number, em: numbe
   const aims = aimPoints(box.a, box.b, n);
   const reach = hypot(w, h) * 0.75 + 4;
   const base = trace(define(shape, box), aims, reach);
-  const hole = shape === "tag" ? tagHole(h, em) : null;
-  const extra = hole ? holePath(hole.cx, hole.cy, hole.r) : "";
   let out: StickerGeometry;
   if (opts.peel) {
     const lim = min(w, h) * 0.42;
     const p0 = peel(base, min(opts.peel[0], lim));
     const p1 = peel(base, min(opts.peel[1], lim));
     out = {
-      d0: toPath(p0.kept, w, h, extra),
-      d1: toPath(p1.kept, w, h, extra),
+      d0: toPath(p0.kept, w, h),
+      d1: toPath(p1.kept, w, h),
       flap0: toPath(p0.flap, w, h),
       flap1: toPath(p1.flap, w, h),
       fold0: p0.c,
@@ -393,11 +408,11 @@ export function stickerGeometry(shape: ShapeKey, w: number, h: number, em: numbe
       inner: nearest(base),
     };
   } else {
-    const d0 = toPath(base, w, h, extra);
+    const d0 = toPath(base, w, h);
     const to = opts.morph && opts.morph !== shape ? trace(define(opts.morph, box), aims, reach) : null;
     const r0 = nearest(base);
     const r1 = to ? nearest(to) : r0;
-    out = { d0, d1: to ? toPath(to, w, h, extra) : d0, inner: min(r0, r1 - 0.15 * max(0, r0 - r1)) };
+    out = { d0, d1: to ? toPath(to, w, h) : d0, inner: min(r0, r1 - 0.15 * max(0, r0 - r1)) };
   }
   if (cache.size > 400) cache.clear();
   cache.set(key, out);

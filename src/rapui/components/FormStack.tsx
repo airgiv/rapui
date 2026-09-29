@@ -208,6 +208,50 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
     }
   }, [state, errorIndex, calm, sound, items]);
 
+  /* ── a button's own splat / shake, on its blob too ──
+     A Button splats (scale 0.4 → 1.18 × 0.9 → 1) on success and shakes on
+     error with a CSS animation on itself. Inside a stack its pill is not
+     itself but its blob down in the two goo layers, so that animation moved
+     only the words: on a block, align="start" button the check sat ~35px in
+     from the left end, and scaling the button by 1.18 about its middle threw
+     it ~10px PAST the pill's left end (and at 0.4 it floated in the middle).
+     So in a stack the button's CSS animation is switched off and the same
+     motion runs here, on the button and both its blobs at once: words and
+     pill move as one piece. A wide pill's splat is also gentler sideways —
+     1.18 of 576px is 52px a side; the overshoot is capped at 0.18 of three
+     heights (~24px), which still reads as a splat. */
+  useEffect(() => {
+    const el = form.current;
+    if (!el) return;
+    const mo = new MutationObserver((records) => {
+      for (const r of records) {
+        const b = r.target as HTMLElement;
+        const now = b.dataset.state;
+        if (b.parentElement !== el || b.dataset.slot !== "button" || now === r.oldValue) continue;
+        if ((now !== "success" && now !== "error") || isCalm(el)) continue;
+        const i = items().indexOf(b);
+        const targets = [b, ...el.querySelectorAll<HTMLElement>(`[data-stack-layer] [data-i="${i}"]`)];
+        const ease = (name: string) => getComputedStyle(el).getPropertyValue(name).trim() || "ease-out";
+        if (now === "success") {
+          const k = (0.18 * Math.min(b.offsetWidth, 3 * b.offsetHeight)) / Math.max(1, b.offsetWidth);
+          const frames = [
+            { scale: "0.4", offset: 0 },
+            { scale: `${1 + k} 0.9`, offset: 0.55 },
+            { scale: `${1 - k * 0.28} 1.05`, offset: 0.75 },
+            { scale: "1", offset: 1 },
+          ];
+          // added onto whatever scale the blob already has (a focused blob is swollen)
+          targets.forEach((t) => t.animate(frames, { duration: 480, easing: ease("--rap-ease-out"), composite: "add" }));
+        } else {
+          const frames = [0, -7, 6, -4, 3, -1, 0].map((x, j) => ({ translate: `${x}px 0`, offset: j === 6 ? 1 : j * 0.15 }));
+          targets.forEach((t) => t.animate(frames, { duration: 420, easing: ease("--rap-ease-rm"), composite: "add" }));
+        }
+      }
+    });
+    mo.observe(el, { subtree: true, attributes: true, attributeFilter: ["data-state"], attributeOldValue: true });
+    return () => mo.disconnect();
+  }, [items]);
+
   const goo = (layer: "shape" | "paint") => (liquid ? `url(#${filterId}-${layer})` : undefined);
   // one geometry for both layers, so the paint always sits exactly on its part of the shape
   const blobStyle = (b: Blob, i: number): CSSProperties => {
@@ -237,6 +281,8 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
           direction === "column" ? "flex-col" : "flex-row items-stretch [&>[data-slot=input]]:flex-1 [&>[data-slot=input]]:min-w-0 [&>[data-slot=button]]:w-auto [&>[data-slot=button]]:flex-none",
           // inside a stack the pills lose their own background: the blob layer draws it
           "[&>[data-slot=input]]:bg-transparent! [&>[data-slot=button]]:bg-transparent!",
+          // ...and their splat / shake runs on the blob as well (see above), not in CSS on the button alone
+          "[&>[data-slot=button]]:animate-none!",
           className,
         )}
         style={style}

@@ -11,7 +11,7 @@ import {
 import { cva } from "class-variance-authority";
 import { cn } from "../utils";
 import { springEasing } from "./galleryKit";
-import { stickerGeometry, type ShapeKey } from "./stickerShapes";
+import { stickerGeometry, tagHole, type ShapeKey } from "./stickerShapes";
 import "./Sticker.css";
 
 /* ══ Sticker ══════════════════════════════════════════════
@@ -54,11 +54,29 @@ import "./Sticker.css";
    off to the right.
 
    ── AIR MAIL ────────────────────────────────────────────
-   `airmail` gives a stamp the edging of an air-mail envelope: a
-   band of 45° white bars, 0.3em in from the cut (clear of the
-   0.19em perforation) and 0.34em wide, the bars as wide as the
-   gaps. It replaces the stamp's printed hairline frame, and the
-   words get a little more room so the band does not crowd them.
+   `airmail` frames a stamp with a plain white line printed just
+   inside the perforation: 0.36em in from the cut (clear of the
+   0.19em holes with a hair of print between) and 0.07em thick
+   (never under 1.5px), corners eased 0.14em. It replaces the
+   stamp's faint hairline frame. (It used to be a band of 45°
+   air-mail bars; the ask was just a line.)
+
+   ── PUNCHED HOLE ────────────────────────────────────────
+   The price tag's hole is one mask over the whole print — fill,
+   die-cut border, rim light and grain together — so nothing traces
+   its edge and there is a single anti-aliased cut, no hairline.
+   Its place comes from the tag's own distance function (see
+   tagHole): centred in the tapered end, 1.35 radii of print round it.
+
+   ── LIVE ────────────────────────────────────────────────
+   `dot` is the "live" light: a dot inside a ring, in the words'
+   colour (white on green, ink on acid),
+   drawn as one SVG so the dot is centred on the ring by geometry
+   (two nested boxes snap to pixels separately and drifted half a
+   pixel apart at small sizes), 0.8em across, its middle on the
+   middle of the cap height (top: 50% of the trimmed words' box).
+   color="green" + dot is the classic live badge: green, white
+   word, white light.
 
    ── MOTION (all behind `fun:`) ─────────────────────────
    Hover: the tilt flips and it swells 8% on the library's spring
@@ -70,7 +88,7 @@ import "./Sticker.css";
    turn, words included (or just the ring, for seals). Calm and
    reduced motion: every sticker holds still, fully drawn. */
 
-export type StickerColor = "flame" | "acid" | "blue" | "plum" | "bubble" | "sky" | "ink" | "paper";
+export type StickerColor = "flame" | "acid" | "blue" | "plum" | "bubble" | "sky" | "green" | "ink" | "paper";
 export type StickerShape =
   | "pill"
   | "circle"
@@ -112,9 +130,9 @@ export interface StickerProps extends HTMLAttributes<HTMLSpanElement> {
   spin?: boolean | "ring";
   /** Slapped onto the page when it mounts. A number waits that many ms first (stagger a pile). */
   slap?: boolean | number;
-  /** A small green "live" dot in a ring before the words. */
+  /** A "live" light before the words: a dot in a ring, in the words' colour (color="green" gives the white-on-green live badge). */
   dot?: boolean;
-  /** Stamp only: frame it with the diagonal white stripes of an air-mail edging, just inside the perforation. */
+  /** Stamp only: a thin white line printed just inside the perforation, like the edge of an air-mail stamp. */
   airmail?: boolean;
 }
 
@@ -202,6 +220,7 @@ const stickerVariants = cva(
         blue: "[--st-bg:var(--rap-blue)] [--st-fg:#fff]",
         bubble: "[--st-bg:var(--rap-bubble)] [--st-fg:#282828]",
         sky: "[--st-bg:var(--rap-sky)] [--st-fg:#282828]",
+        green: "[--st-bg:var(--rap-success)] [--st-fg:#fff]",
         ink: "[--st-bg:var(--rap-ink)] [--st-fg:var(--rap-paper)]",
         paper: "[--st-bg:var(--rap-paper-2)] [--st-fg:var(--rap-ink)] [--st-edge:var(--rap-line)]",
       },
@@ -382,7 +401,8 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
 
   const pad = hasRing ? "ring" : round ? "round" : shape;
   const glyph = typeof children === "string" ? ASTERISK.exec(children) : null;
-  const stripes = airmail && shape === "stamp";
+  const frame = airmail && shape === "stamp";
+  const hole = box && shape === "tag" ? tagHole(box.w, box.h, box.em) : null;
   /* the words' nudge: their ink back to the middle, then onto the shape's mass */
   const m = box ? Math.min(box.w, box.h) / 2 : 0;
   const nx = box ? -box.ix * box.em : 0;
@@ -423,7 +443,6 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
       className={cn(
         stickerVariants({ color, pad: pad as "pill", hover: how, slap: slap !== false, paper }),
         shape === "heart" && "pt-[1.3em] pb-[1.9em]",
-        stripes && "pt-[1.2em] px-[1.4em] pb-[1.32em] supports-[text-box:trim-both_cap_alphabetic]:py-[1.25em]",
         className,
       )}
       style={{ ...vars, ...style }}
@@ -468,87 +487,83 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
                   <feColorMatrix type="saturate" values="0" />
                 </filter>
               )}
+              {hole && (
+                /* the punched hole: one cut through everything printed (see PUNCHED HOLE) */
+                <mask id={id("hole")} maskUnits="userSpaceOnUse" x={-box.w} y={-box.h} width={3 * box.w} height={3 * box.h}>
+                  <rect x={-box.w} y={-box.h} width={3 * box.w} height={3 * box.h} fill="#fff" />
+                  <circle cx={hole.cx} cy={hole.cy} r={hole.r} fill="#000" />
+                </mask>
+              )}
               {hasRing && (
                 <path id={id("ring")} d={`M${box.w / 2} ${box.h / 2 - ringR}a${ringR} ${ringR} 0 1 1 0 ${2 * ringR}a${ringR} ${ringR} 0 1 1 0 ${-2 * ringR}`} />
               )}
             </defs>
 
-            {/* the print, with the die-cut border painted under it */}
-            <path
-              data-slot="sticker-body"
-              d={geo.d0}
-              fillRule="evenodd"
-              className={cn(
-                MORPH,
-                "fill-(--st-bg)",
-                diecut && "stroke-white [stroke-width:0.62em] [stroke-linejoin:round] [paint-order:stroke]",
-                !diecut && color === "paper" && "stroke-(--st-edge) stroke-[1.5] [paint-order:stroke]",
-              )}
-            />
-
-            {(paper || grain) && (
-              <g clipPath={`url(#${id("clip")})`}>
-                {paper && (
-                  <path d={geo.d0} fill={`url(#${id("sheen")})`} stroke={`url(#${id("rim")})`} strokeWidth="3" fillRule="evenodd" className={MORPH} />
+            <g mask={hole ? `url(#${id("hole")})` : undefined}>
+              {/* the print, with the die-cut border painted under it */}
+              <path
+                data-slot="sticker-body"
+                d={geo.d0}
+                fillRule="evenodd"
+                className={cn(
+                  MORPH,
+                  "fill-(--st-bg)",
+                  diecut && "stroke-white [stroke-width:0.62em] [stroke-linejoin:round] [paint-order:stroke]",
+                  !diecut && color === "paper" && "stroke-(--st-edge) stroke-[1.5] [paint-order:stroke]",
                 )}
-                {grain && <rect width={box.w} height={box.h} filter={`url(#${id("grain")})`} className="opacity-[0.22] mix-blend-multiply" />}
-              </g>
-            )}
-
-            {/* printed details */}
-            {stripes && (
-              <g data-slot="sticker-airmail">
-                <defs>
-                  <pattern
-                    id={id("air")}
-                    patternUnits="userSpaceOnUse"
-                    width={0.5 * box.em}
-                    height={0.5 * box.em}
-                    patternTransform="rotate(45)"
-                  >
-                    <rect width={0.25 * box.em} height={0.5 * box.em} className={color === "paper" ? "fill-blue" : "fill-white"} />
-                  </pattern>
-                </defs>
-                <path
-                  fillRule="evenodd"
-                  fill={`url(#${id("air")})`}
-                  d={(() => {
-                    const o = 0.3 * box.em;
-                    const t = 0.34 * box.em;
-                    const rect = (i: number) => `M${i} ${i}H${box.w - i}V${box.h - i}H${i}Z`;
-                    return rect(o) + rect(o + t);
-                  })()}
-                />
-              </g>
-            )}
-            {shape === "stamp" && !stripes && (
-              <rect
-                x={0.45 * box.em}
-                y={0.45 * box.em}
-                width={box.w - 0.9 * box.em}
-                height={box.h - 0.9 * box.em}
-                rx="2"
-                fill="none"
-                className="stroke-(--st-fg) opacity-35"
-                strokeWidth="1.2"
               />
-            )}
-            {hasRing && (
-              <g className="fill-(--st-fg)">
-                <circle cx={box.w / 2} cy={box.h / 2} r={ringR + ringFs * 0.95} fill="none" className="stroke-(--st-fg) opacity-30" strokeWidth="1" />
-                <circle cx={box.w / 2} cy={box.h / 2} r={ringR - ringFs * 0.95} fill="none" className="stroke-(--st-fg) opacity-30" strokeWidth="1" />
-                <text
-                  className="font-sans font-semibold tracking-[0.02em]"
-                  style={{ fontSize: ringFs }}
-                  dominantBaseline="central"
-                >
-                  <textPath href={`#${id("ring")}`} textLength={2 * Math.PI * ringR * 0.985} lengthAdjust="spacing">
-                    {ringText}
-                  </textPath>
-                </text>
-              </g>
-            )}
 
+              {(paper || grain) && (
+                <g clipPath={`url(#${id("clip")})`}>
+                  {paper && (
+                    <path d={geo.d0} fill={`url(#${id("sheen")})`} stroke={`url(#${id("rim")})`} strokeWidth="3" fillRule="evenodd" className={MORPH} />
+                  )}
+                  {grain && <rect width={box.w} height={box.h} filter={`url(#${id("grain")})`} className="opacity-[0.22] mix-blend-multiply" />}
+                </g>
+              )}
+
+              {/* printed details */}
+              {frame && (
+                <rect
+                  data-slot="sticker-airmail"
+                  x={0.36 * box.em}
+                  y={0.36 * box.em}
+                  width={box.w - 0.72 * box.em}
+                  height={box.h - 0.72 * box.em}
+                  rx={0.14 * box.em}
+                  fill="none"
+                  className={color === "paper" ? "stroke-blue" : "stroke-white"}
+                  strokeWidth={Math.max(1.5, 0.07 * box.em)}
+                />
+              )}
+              {shape === "stamp" && !frame && (
+                <rect
+                  x={0.45 * box.em}
+                  y={0.45 * box.em}
+                  width={box.w - 0.9 * box.em}
+                  height={box.h - 0.9 * box.em}
+                  rx="2"
+                  fill="none"
+                  className="stroke-(--st-fg) opacity-35"
+                  strokeWidth="1.2"
+                />
+              )}
+              {hasRing && (
+                <g className="fill-(--st-fg)">
+                  <circle cx={box.w / 2} cy={box.h / 2} r={ringR + ringFs * 0.95} fill="none" className="stroke-(--st-fg) opacity-30" strokeWidth="1" />
+                  <circle cx={box.w / 2} cy={box.h / 2} r={ringR - ringFs * 0.95} fill="none" className="stroke-(--st-fg) opacity-30" strokeWidth="1" />
+                  <text
+                    className="font-sans font-semibold tracking-[0.02em]"
+                    style={{ fontSize: ringFs }}
+                    dominantBaseline="central"
+                  >
+                    <textPath href={`#${id("ring")}`} textLength={2 * Math.PI * ringR * 0.985} lengthAdjust="spacing">
+                      {ringText}
+                    </textPath>
+                  </text>
+                </g>
+              )}
+            </g>
           </svg>
         </span>
       )}
@@ -561,19 +576,31 @@ export const Sticker = forwardRef<HTMLSpanElement, StickerProps>(function Sticke
           glyph ? "grid place-items-center" : "supports-[text-box:trim-both_cap_alphabetic]:[text-box:trim-both_cap_alphabetic]",
           turn === true && TURN,
           geo?.fold0 !== undefined && FOLD,
+          /* room for the live light: 0.8em of ring + 0.34em of air */
+          dot && "pl-[1.14em]",
         )}
         style={box ? { translate: `${nx.toFixed(2)}px ${ny.toFixed(2)}px` } : undefined}
       >
         {dot && (
-          /* a green light in a ring: 0.8em across, its middle on the middle of
-             the cap height (0.7em in Onest), so it lines up with the words */
-          <span
+          /* the live light: a dot in a ring, one drawing so the dot sits on
+             the ring's centre exactly. 0.8em across, placed absolutely at
+             top: 50% of the words' box — which text-box trim cuts to cap
+             height and baseline — so its middle IS the middle of the cap
+             height. (Set inline with vertical-align it rode ~1px high:
+             Chromium seats an inline SVG's box by its own baseline rule,
+             not by the numbers we gave it.) */
+          <svg
             data-slot="sticker-dot"
             aria-hidden
-            className="inline-grid place-items-center size-[0.8em] mr-[0.34em] align-[-0.05em] rounded-full bg-[color-mix(in_oklab,var(--rap-success)_24%,transparent)] shadow-[inset_0_0_0_0.075em_color-mix(in_oklab,var(--rap-success)_70%,transparent)]"
+            viewBox="-10 -10 20 20"
+            className="absolute left-0 top-1/2 -translate-y-1/2 size-[0.8em] overflow-visible"
           >
-            <span className="size-[0.34em] rounded-full bg-success fun:animate-[rap-sticker-dot_1.6s_ease-in-out_infinite]" />
-          </span>
+            <circle r="8.9" fill="none" className="stroke-(--st-fg)" strokeWidth="1.9" />
+            <circle
+              r="4"
+              className="fill-(--st-fg) [transform-box:fill-box] origin-center fun:animate-[rap-sticker-dot_1.6s_ease-in-out_infinite]"
+            />
+          </svg>
         )}
         {/* a drawn glyph only holds its place here (so a pill still fits it);
             it is drawn below, centred on the sticker itself */}
