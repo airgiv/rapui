@@ -141,7 +141,9 @@ const TILE = "relative grid place-items-center min-h-[15rem] p-6 rounded-lg over
    the mouth is drawn around it: fun on, a wide white smile UNDER the switch; fun off,
    the smile is erased — rubbed out from its left end — and a frown of the same width
    is drawn ABOVE the switch, from the right, bowing up. Switch on and it runs in
-   reverse. One trick for both: pathLength=1 and a dash sliding along the line. */
+   reverse. One trick for both: pathLength=1 and a dash sliding along the line.
+   Serious mode also drains the tile — sky blue fades to a flat grey — so the
+   switch renders its own tile. */
 function HeroSwitch() {
   const [on, setOn] = useState(true);
   const line = (visible: boolean, hidden: number) => ({
@@ -151,22 +153,21 @@ function HeroSwitch() {
   });
   const ARC = "w-[min(100%,15rem)] overflow-visible";
   return (
-    <div className="flex w-full flex-col items-center gap-3">
-      {/* frown, above: drawn from the right */}
-      <svg viewBox="0 0 300 70" className={ARC} aria-hidden>
-        <path d="M286 62 Q150 -22 14 62" pathLength={1} fill="none" stroke="white" strokeWidth="12" strokeLinecap="round" style={line(!on, 1.05)} />
-      </svg>
-      <Switch
-        size="lg"
-        checked={on}
-        onCheckedChange={setOn}
-        label={on ? "Fun mode" : "Serious mode"}
-        className="flex-col gap-2 [&_label]:font-medium"
-      />
-      {/* smile, below: drawn left to right, erased from the left */}
-      <svg viewBox="0 0 300 70" className={ARC} aria-hidden>
-        <path d="M14 8 Q150 92 286 8" pathLength={1} fill="none" stroke="white" strokeWidth="12" strokeLinecap="round" style={line(on, -1.05)} />
-      </svg>
+    <div
+      className={cn(TILE, "[--i:3] text-[#282828] transition-colors duration-500 ease-out", on ? "bg-sky" : "bg-[#d4d4d0]")}
+      data-rap-theme="light"
+    >
+      <div className="flex w-full flex-col items-center gap-3">
+        {/* frown, above: drawn from the right */}
+        <svg viewBox="0 0 300 70" className={ARC} aria-hidden>
+          <path d="M286 62 Q150 -22 14 62" pathLength={1} fill="none" stroke="white" strokeWidth="12" strokeLinecap="round" style={line(!on, 1.05)} />
+        </svg>
+        <Switch size="lg" checked={on} onCheckedChange={setOn} label={on ? "Fun mode" : "Serious mode"} />
+        {/* smile, below: drawn left to right, erased from the left */}
+        <svg viewBox="0 0 300 70" className={ARC} aria-hidden>
+          <path d="M14 8 Q150 92 286 8" pathLength={1} fill="none" stroke="white" strokeWidth="12" strokeLinecap="round" style={line(on, -1.05)} />
+        </svg>
+      </div>
     </div>
   );
 }
@@ -225,9 +226,7 @@ function Hero() {
             drop
           </Sticker>
         </div>
-        <div className={cn(TILE, "[--i:3] bg-sky text-[#282828]")} data-rap-theme="light">
-          <HeroSwitch />
-        </div>
+        <HeroSwitch />
         <div className={cn(TILE, "[--i:4] bg-paper-2")}>
           <HeroRating />
         </div>
