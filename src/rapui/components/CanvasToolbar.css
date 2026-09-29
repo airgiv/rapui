@@ -54,6 +54,11 @@
    --g-shadow is deliberately NOT defined: it is read as
    var(--g-shadow, <the whole recipe>), so it is an override
    hook, and setting it would throw the recipe away. */
+/* rap/ui on Tailwind: Bencho's CSS is kept as written (its comments are the
+   point), inside the components layer so Tailwind utilities can still override it. */
+@layer theme, base, components, utilities;
+
+@layer components {
 .bar-well {
   --ink: var(--rap-ink);
   --ink-rgb: 40, 40, 40;
@@ -358,6 +363,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bar-flyout { animation-duration: 1ms; }
+}
 }
 
 @keyframes bar-rise {

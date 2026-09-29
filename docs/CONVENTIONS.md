@@ -17,9 +17,44 @@ Read this before adding a component. The reference implementations are
   Illustrative spots (empty states, feature tiles, milestones, toasts, marketing) use
   `<FancyIcon icon="rocket" tone="flame" />` (Solar Bold Duotone, `components/FancyIcon.tsx`).
   Several are new majors — read the `.d.ts` in `node_modules` before using an API from memory.
-- **Styling:** plain CSS, one `.css` per component, imported at the top of the `.tsx`.
-  No Tailwind, no CSS-in-JS. Every colour, radius, height and duration comes from a token in
-  `src/rapui/styles/tokens.css`.
+- **Styling: Tailwind CSS v4** (like shadcn/ui), with `cn()` (clsx + tailwind-merge, `src/rapui/utils.ts`) and
+  `cva` (class-variance-authority) for variants. The theme lives in `src/rapui/styles/theme.css`: rap/ui tokens
+  stay CSS custom properties (tokens.css) and are exposed to Tailwind via `@theme inline`, so dark mode and runtime
+  overrides keep working. Reference conversions: `Button.tsx` (cva + per-variant custom properties),
+  `ToggleGroup.tsx` (data-state variants, group variants, glider), `Input.tsx` + `Input.css` (hybrid, see below).
+
+### Tailwind rules
+
+1. **Utilities first.** Every colour, size, radius, font and duration comes from the theme or a rap/ui variable:
+   `bg-surface text-ink bg-fill hover:bg-fill-hover text-mute bg-select text-select-ink outline-ring bg-danger`,
+   `rounded-pill rounded-card rounded-pop rounded-row`, `h-control h-control-sm h-control-lg`, `gap-tight gap-tile`,
+   `font-sans font-display text-display-xl`, `ease-rm ease-soft ease-spring ease-back ease-gravity`,
+   `duration-(--rap-dur-fast)`, `shadow-pop`. CSS variables with the v4 shorthand: `h-(--btn-h)`, `bg-(--btn-bg)`,
+   `text-(length:--btn-fs)`. Never hard-code a hex or a font name.
+2. **Variants:** size/variant/tone props map through `cva` (or small conditional `cn()` for one or two classes).
+   Put per-variant differences into local custom properties (`[--btn-bg:var(--rap-ink)]`) so shared rules are written once.
+3. **State from Radix/cmdk data attributes:** `data-[state=open]:…`, `data-[highlighted]:…`, `data-[disabled]:…`,
+   `aria-invalid:…`; parent-driven styling with named groups `group/x` + `group-hover/x:` / `group-data-[state=on]/x:`;
+   `has-[…]:`, `in-[.rap-roll-host:hover]:`, `*:`/`[&_svg]:size-5` for children.
+4. **Motion:** shared animations are utilities: `animate-shake animate-hop animate-splat animate-wiggle animate-toss-in
+   animate-fall-out animate-deal-in animate-float animate-pop-in animate-pop-out animate-fade-in animate-fade-out`.
+   **Every playful effect goes behind the `fun:` variant** (`fun:animate-hop`) — it only applies without reduced
+   motion and outside `data-rap-motion="calm"`. `calm:` targets calm mode explicitly; `dark:` the dark theme.
+   Prefer the individual `translate-*`/`rotate-*`/`scale-*` utilities (they stack).
+5. **Shared component utilities** (replace the old surfaces.css classes): `pop` (floating surface with enter/exit
+   keyed off `data-state`), `menu-item`, `menu-label`, `menu-separator`, `menu-shortcut`, `scrim`, `deal`
+   (children dealt in; set `--i` on each child).
+6. **Styling hooks are `data-slot`, not class names.** Put `data-slot="<component>-<part>"` on every part
+   (`data-slot="select-trigger"`), plus `data-size`/`data-variant` where useful. JS queries (`querySelector`,
+   MutationObserver targets) and cross-component selectors use `[data-slot=…]`, never `.rap-*` classes.
+7. **Hybrid, only when utilities genuinely cannot say it:** registered `@property`, component-specific `@keyframes`,
+   multi-layer masks / `mask-composite`, conic sweeps, complex `::before` art. Keep ONLY that rule in a co-located
+   `<Name>.css`, starting with `@layer theme, base, components, utilities;` and wrapping rules in `@layer components`
+   (keyframes/@property stay top level), with its why-comment. Target the element through one stable marker class
+   (e.g. `rap-input`) or `[data-slot=…]`. Everything else in utilities. Delete the CSS file when nothing is left.
+8. **Keep behaviour identical** (props, ARIA, sounds, springs, timings) and keep the "why" comments from the old CSS
+   by moving them next to the classes they explain (above the `cn()`/`cva` block) — the numbers still need their reasons.
+9. **Visual parity:** the conversion must look the same as before. Compare against the baseline screenshots.
 
 ## API shape
 

@@ -1,3 +1,7 @@
+/* Preview site. Tailwind (with preflight) + the rap/ui theme. */
+@import "tailwindcss";
+@import "../rapui/styles/theme.css";
+
 /* Preview site layout. Library styles live in src/rapui. */
 
 *,

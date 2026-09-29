@@ -23,6 +23,11 @@
    a literal red (#e5484d). It is --tms-mark here, set to rap/ui's
    flame, the same orange the rest of the system uses for "this
    one". No -rgb tokens are read by this block. */
+/* rap/ui on Tailwind: Bencho's CSS is kept as written (its comments are the
+   point), inside the components layer so Tailwind utilities can still override it. */
+@layer theme, base, components, utilities;
+
+@layer components {
 .tms {
   --card: var(--rap-surface);
   --ink: var(--rap-ink);
@@ -141,6 +146,7 @@
   margin-left: -1.5px;
   border-radius: 2px;
   background: var(--tms-mark, #e5484d);}
+}
 
 @keyframes tms-blur-a { from { filter: blur(2px); } to { filter: blur(0); } }
 

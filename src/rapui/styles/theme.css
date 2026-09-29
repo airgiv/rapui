@@ -1,0 +1,258 @@
+/* ───────────────────────────────────────────────────────────
+   rap/ui × Tailwind v4 — the theme.
+
+   Tokens stay CSS custom properties (tokens.css), so the dark
+   theme and runtime overrides keep working. `@theme inline`
+   hands them to Tailwind as utilities:
+
+     colors   bg-paper  bg-surface  text-ink  text-mute  bg-fill
+              bg-flame  bg-blue  bg-select  ring-ring  border-line …
+     type     font-sans  font-display  text-display-xl …
+     shape    rounded-pill  rounded-card  rounded-pop  rounded-row
+     size     h-control  h-control-sm  h-control-lg  gap-tight  gap-tile
+     motion   ease-rm  ease-spring  ease-back  ease-gravity  ease-soft
+              animate-shake  animate-hop  animate-splat  animate-toss-in …
+     shadow   shadow-pop
+
+   Variants:  dark:   the rap/ui dark theme (data-rap-theme="dark")
+              calm:   inside data-rap-motion="calm"
+              fun:    only when playful motion is allowed — no reduced
+                      motion and no calm ancestor. Put every playful
+                      animation behind it:  fun:animate-hop
+   ─────────────────────────────────────────────────────────── */
+
+@import "./tokens.css";
+
+@custom-variant dark (&:where([data-rap-theme="dark"], [data-rap-theme="dark"] *));
+@custom-variant calm (&:where([data-rap-motion="calm"], [data-rap-motion="calm"] *));
+@custom-variant fun {
+  @media (prefers-reduced-motion: no-preference) {
+    &:not(:where([data-rap-motion="calm"], [data-rap-motion="calm"] *)) {
+      @slot;
+    }
+  }
+}
+
+@theme inline {
+  /* colours */
+  --color-paper: var(--rap-paper);
+  --color-paper-2: var(--rap-paper-2);
+  --color-paper-3: var(--rap-paper-3);
+  --color-surface: var(--rap-surface);
+  --color-ink: var(--rap-ink);
+  --color-ink-2: var(--rap-ink-2);
+  --color-mute: var(--rap-mute);
+  --color-line: var(--rap-line);
+  --color-fill: var(--rap-fill);
+  --color-fill-hover: var(--rap-fill-hover);
+  --color-fill-strong: var(--rap-fill-strong);
+  --color-flame: var(--rap-flame);
+  --color-blue: var(--rap-blue);
+  --color-plum: var(--rap-plum);
+  --color-acid: var(--rap-acid);
+  --color-bubble: var(--rap-bubble);
+  --color-sky: var(--rap-sky);
+  --color-accent: var(--rap-accent);
+  --color-accent-ink: var(--rap-accent-ink);
+  --color-select: var(--rap-select);
+  --color-select-ink: var(--rap-select-ink);
+  --color-ring: var(--rap-ring);
+  --color-danger: var(--rap-danger);
+  --color-success: var(--rap-success);
+  --color-warning: var(--rap-warning);
+  --color-scrim: var(--rap-scrim);
+
+  /* type */
+  --font-sans: var(--rap-font-sans);
+  --font-display: var(--rap-font-display);
+  --font-mono: var(--rap-font-mono);
+  --text-display-mega: var(--rap-size-mega);
+  --text-display-xxl: var(--rap-size-xxl);
+  --text-display-xl: var(--rap-size-xl);
+  --text-display-lg: var(--rap-size-lg);
+  --text-display-md: var(--rap-size-md);
+
+  /* shape */
+  --radius-xs: var(--rap-radius-xs);
+  --radius-sm: var(--rap-radius-sm);
+  --radius-row: 14px;
+  --radius-pop: 20px;
+  --radius-card: var(--rap-radius);
+  --radius-lg: var(--rap-radius-lg);
+  --radius-pill: var(--rap-radius-pill);
+
+  /* sizes */
+  --spacing-control-sm: var(--rap-control-h-sm);
+  --spacing-control: var(--rap-control-h);
+  --spacing-control-lg: var(--rap-control-h-lg);
+  --spacing-tight: var(--rap-gap-tight);
+  --spacing-tile: var(--rap-gap-tile);
+
+  /* motion */
+  --ease-rm: var(--rap-ease-rm);
+  --ease-soft: var(--rap-ease-out);
+  --ease-spring: var(--rap-ease-spring);
+  --ease-back: cubic-bezier(0.34, 1.8, 0.64, 1);
+  --ease-gravity: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-in-out: var(--rap-ease-in-out);
+
+  --shadow-pop: var(--rap-shadow-pop);
+
+  --animate-shake: rap-shake 420ms var(--rap-ease-rm);
+  --animate-hop: rap-hop 360ms var(--rap-ease-out);
+  --animate-splat: rap-splat 480ms var(--rap-ease-out);
+  --animate-wiggle: rap-wiggle 500ms var(--rap-ease-out);
+  --animate-toss-in: rap-toss-in 520ms var(--rap-ease-spring);
+  --animate-fall-out: rap-fall-out 420ms cubic-bezier(0.55, 0, 1, 0.45) forwards;
+  --animate-deal-in: rap-deal-in 260ms var(--rap-ease-out) both;
+  --animate-float: rap-float 3.2s var(--rap-ease-in-out) infinite;
+  --animate-pop-in: rap-pop-in 200ms var(--rap-ease-out);
+  --animate-pop-out: rap-pop-out 140ms var(--rap-ease-rm) forwards;
+  --animate-fade-in: rap-fade-in 200ms var(--rap-ease-rm);
+  --animate-fade-out: rap-fade-out 160ms var(--rap-ease-rm) forwards;
+  --animate-spin-slow: spin 18s linear infinite;
+}
+
+/* ── keyframes: the shared physical vocabulary ─────────────── */
+@keyframes rap-shake {
+  0%, 100% { translate: 0; }
+  15% { translate: -7px; }
+  30% { translate: 6px; }
+  45% { translate: -4px; }
+  60% { translate: 3px; }
+  75% { translate: -1px; }
+}
+@keyframes rap-hop {
+  0%, 100% { translate: 0 0; }
+  40% { translate: 0 -5px; }
+  70% { translate: 0 1px; }
+}
+@keyframes rap-splat {
+  0% { scale: 0.4; }
+  55% { scale: 1.18 0.9; }
+  75% { scale: 0.95 1.05; }
+  100% { scale: 1; }
+}
+@keyframes rap-toss-in {
+  from { opacity: 0; translate: 0 36px; rotate: -4deg; scale: 0.94; }
+  60% { opacity: 1; rotate: 1deg; }
+}
+@keyframes rap-fall-out {
+  to { opacity: 0; translate: 0 120px; rotate: 8deg; }
+}
+@keyframes rap-deal-in {
+  from { opacity: 0; translate: 0 -6px; scale: 0.97; }
+}
+@keyframes rap-float {
+  0%, 100% { translate: 0 0; rotate: -3deg; }
+  50% { translate: 0 -6px; rotate: 3deg; }
+}
+@keyframes rap-wiggle {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -8deg; }
+  50% { rotate: 6deg; }
+  75% { rotate: -3deg; }
+}
+@keyframes rap-pop-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+@keyframes rap-pop-out { to { opacity: 0; transform: scale(0.97); } }
+@keyframes rap-fade-in { from { opacity: 0; } }
+@keyframes rap-fade-out { to { opacity: 0; } }
+
+/* ── shared component utilities (were surfaces.css) ─────────── */
+
+/* a floating surface: popover, menu, select list, hover card */
+@utility pop {
+  z-index: 1000;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--rap-surface);
+  color: var(--rap-ink);
+  box-shadow: var(--rap-shadow-pop), 0 0 0 1px var(--rap-line);
+  font-family: var(--rap-font-sans);
+  transform-origin: var(--radix-popper-transform-origin, top center);
+  animation: rap-pop-in 200ms var(--rap-ease-out);
+  &[data-state="closed"] { animation: rap-pop-out 140ms var(--rap-ease-rm) forwards; }
+}
+
+/* a row in any list-like menu */
+@utility menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 40px;
+  padding: 0 0.9rem;
+  border-radius: 14px;
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  color: var(--rap-ink);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  &[data-highlighted] { background: var(--rap-fill); }
+  &[data-disabled]:not([data-disabled="false"]) { opacity: 0.4; pointer-events: none; }
+  & svg { width: 18px; height: 18px; flex: none; }
+}
+@utility menu-label { padding: 0.5rem 0.9rem 0.25rem; font-size: 0.8125rem; font-weight: 500; color: var(--rap-mute); }
+@utility menu-separator { height: 1px; margin: 4px 0.5rem; background: var(--rap-line); }
+@utility menu-shortcut { margin-left: auto; font-size: 0.8125rem; color: var(--rap-mute); letter-spacing: 0.02em; }
+
+/* the dimmed layer behind dialogs and sheets */
+@utility scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: var(--rap-scrim);
+  animation: rap-fade-in 200ms var(--rap-ease-rm);
+  &[data-state="closed"] { animation: rap-fade-out 160ms var(--rap-ease-rm) forwards; }
+}
+
+/* children dealt in one after another; set --i on each child (0,1,2…) */
+@utility deal {
+  & > * { animation: rap-deal-in 260ms var(--rap-ease-out) both; animation-delay: calc(var(--i, 0) * 22ms); }
+  @media (prefers-reduced-motion: reduce) { & > * { animation: none; } }
+  &:where([data-rap-motion="calm"] *) > * { animation: none; }
+}
+
+/* ── base ──────────────────────────────────────────────────── */
+@layer base {
+  :root { --rap-playful: 1; }
+  [data-rap-motion="calm"] { --rap-playful: 0; }
+}
+
+@layer components {
+  /* opt-in page base: paper/ink + font (or use Tailwind classes directly) */
+  .rap-root {
+    background: var(--rap-paper);
+    color: var(--rap-ink);
+    font-family: var(--rap-font-sans);
+    font-size: var(--rap-size-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background var(--rap-dur) var(--rap-ease-out), color var(--rap-dur) var(--rap-ease-out);
+  }
+  .rap-root ::selection { background: var(--rap-acid); color: #282828; }
+  .rap-root :focus-visible { outline: 2px solid var(--rap-accent); outline-offset: 4px; }
+  /* text entry draws its own focus state */
+  .rap-root :is(input, textarea, [contenteditable]):focus-visible { outline: none; }
+
+  /* legacy helper classes still used by useReplay callers — prefer animate-* utilities */
+  .rap-anim-shake { animation: rap-shake 420ms var(--rap-ease-rm); }
+  .rap-anim-hop { animation: rap-hop 360ms var(--rap-ease-out); }
+  .rap-anim-splat { animation: rap-splat 480ms var(--rap-ease-out); }
+  .rap-anim-wiggle { animation: rap-wiggle 500ms var(--rap-ease-out); }
+  :where([data-rap-motion="calm"]) :is(.rap-anim-shake, .rap-anim-hop, .rap-anim-splat, .rap-anim-wiggle) { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    :is(.rap-anim-shake, .rap-anim-hop, .rap-anim-splat, .rap-anim-wiggle) { animation: none !important; }
+  }
+
+  .rap-visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

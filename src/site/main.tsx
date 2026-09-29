@@ -1,8 +1,10 @@
 import { StrictMode, Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+// site.css first: it declares Tailwind's layer order (theme, base, components,
+// utilities) before any component stylesheet can declare a layer of its own
+import "./site.css";
 import "../rapui/fonts";
 import "../rapui";
-import "./site.css";
 import { App } from "./App";
 import { SoundProvider, type SoundSettings } from "../rapui";
 /* the explorer pulls in charts, tables, calendars…: load it only when opened */

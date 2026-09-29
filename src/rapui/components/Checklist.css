@@ -26,6 +26,11 @@
    "Fill" override; rap/ui has no such control, so they alias
    the card and ink here. Override them on a wrapper
    (`.my-wrap .chk { --fill-slab: var(--rap-acid) }`) to tint it. */
+/* rap/ui on Tailwind: Bencho's CSS is kept as written (its comments are the
+   point), inside the components layer so Tailwind utilities can still override it. */
+@layer theme, base, components, utilities;
+
+@layer components {
 .chk {
   --card: var(--rap-paper-2);
   --ink: var(--rap-ink);
@@ -277,3 +282,6 @@
   background: currentColor;
   transform-origin: left center;
   pointer-events: none;}
+}
+
+

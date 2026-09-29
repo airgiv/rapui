@@ -1,0 +1,9 @@
+/* rap/ui library stylesheet — what `rapui/styles.css` ships.
+   Tailwind's theme and utilities only, no preflight, so it does not
+   reset the host app. Apps that already use Tailwind v4 can instead
+   `@import "rapui/theme.css"` and add `@source` for rapui's dist. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./theme.css";
+@source "../";

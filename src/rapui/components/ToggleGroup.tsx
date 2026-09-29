@@ -9,9 +9,8 @@ import {
 } from "react";
 import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui";
 import { useGlide } from "../hooks/useGlide";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { useSound } from "../sound";
-import "./ToggleGroup.css";
 
 /**
  * Segmented control (Radix ToggleGroup). `type="single"` for one choice,
@@ -34,7 +33,7 @@ export const ToggleGroup = forwardRef<
   useLayoutEffect(() => {
     const el = root.current;
     if (!el || !single) return;
-    const find = () => setActive(el.querySelector<HTMLElement>('.rap-tgroup__item[data-state="on"]'));
+    const find = () => setActive(el.querySelector<HTMLElement>('[data-slot="toggle-group-item"][data-state="on"]'));
     find();
     const mo = new MutationObserver(find);
     mo.observe(el, { subtree: true, attributes: true, attributeFilter: ["data-state"], childList: true });
@@ -47,7 +46,7 @@ export const ToggleGroup = forwardRef<
   const prevActive = useRef<HTMLElement | null>(null);
   useLayoutEffect(() => {
     if (prevActive.current && active && prevActive.current !== active) {
-      const items = Array.from(root.current?.querySelectorAll(".rap-tgroup__item") ?? []);
+      const items = Array.from(root.current?.querySelectorAll('[data-slot="toggle-group-item"]') ?? []);
       sound.play("tap", { pitch: 0.9 + items.indexOf(active) * 0.08 });
     }
     prevActive.current = active;
@@ -56,10 +55,21 @@ export const ToggleGroup = forwardRef<
   return (
     <ToggleGroupPrimitive.Root
       ref={root}
-      className={cx("rap-tgroup", `rap-tgroup--${size}`, single && "rap-tgroup--glide", className)}
+      data-slot="toggle-group"
+      data-size={size}
+      data-glide={single || undefined}
+      className={cn(
+        "group/tg relative isolate inline-flex gap-tight p-[3px] rounded-pill bg-fill",
+        size === "sm" && "[--tg-h:var(--rap-control-h-sm)]",
+        size === "md" && "[--tg-h:var(--rap-control-h)]",
+        size === "lg" && "[--tg-h:var(--rap-control-h-lg)]",
+        className,
+      )}
       {...(rest as ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root>)}
     >
-      {single && <span className="rap-tgroup__glider" style={glide.style} aria-hidden />}
+      {single && (
+        <span className="absolute top-0 left-0 -z-1 rounded-pill bg-ink pointer-events-none" style={glide.style} aria-hidden />
+      )}
       {children}
     </ToggleGroupPrimitive.Root>
   );
@@ -69,5 +79,22 @@ export const ToggleGroupItem = forwardRef<
   ElementRef<typeof ToggleGroupPrimitive.Item>,
   ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item>
 >(function ToggleGroupItem({ className, ...rest }, ref) {
-  return <ToggleGroupPrimitive.Item ref={ref} className={cx("rap-tgroup__item", className)} {...rest} />;
+  return (
+    <ToggleGroupPrimitive.Item
+      ref={ref}
+      data-slot="toggle-group-item"
+      className={cn(
+        "inline-flex items-center justify-center gap-1.5 h-[calc(var(--tg-h)-6px)] min-w-[calc(var(--tg-h)-6px)] px-4",
+        "rounded-pill border-0 bg-transparent text-ink font-sans text-[0.9375rem] font-medium tracking-[-0.01em] whitespace-nowrap cursor-pointer",
+        "transition-[background-color,color] duration-(--rap-dur-fast) ease-rm",
+        "hover:bg-fill data-[state=on]:bg-ink data-[state=on]:text-paper",
+        // with the glider the pill is drawn by it, not by the item
+        "group-data-[glide]/tg:data-[state=on]:bg-transparent group-data-[glide]/tg:data-[state=on]:hover:bg-transparent",
+        "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
+        "disabled:opacity-40 disabled:pointer-events-none [&_svg]:size-[18px]",
+        className,
+      )}
+      {...rest}
+    />
+  );
 });

@@ -121,7 +121,7 @@
 .docs-ctl__label { font-size: 0.8125rem; font-weight: 500; color: var(--rap-mute); display: flex; justify-content: space-between; }
 .docs-ctl__num { color: var(--rap-ink); font-variant-numeric: tabular-nums; }
 .docs-ctl__seg { display: flex; }
-.docs-ctl__seg .rap-tgroup__item { flex: 1; padding: 0 0.5rem; font-size: 0.8125rem; }
+.docs-ctl__seg [data-slot="toggle-group-item"] { flex: 1; padding: 0 0.5rem; font-size: 0.8125rem; }
 .docs-ctl .rap-switch { --sw-h: 1.75rem; --sw-w: 3rem; --sw-pad: 3px; }
 
 .docs-pager { display: flex; justify-content: space-between; gap: var(--rap-gap-tight); margin-top: 2rem; }
