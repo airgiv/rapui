@@ -1,0 +1,32 @@
+.rap-toggle {
+  --tg-h: var(--rap-control-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: var(--tg-h);
+  min-width: var(--tg-h);
+  padding: 0 calc(var(--tg-h) * 0.36);
+  border: 0;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill);
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm),
+    transform var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-toggle--sm { --tg-h: var(--rap-control-h-sm); font-size: 0.875rem; }
+.rap-toggle--lg { --tg-h: var(--rap-control-h-lg); font-size: 1rem; }
+.rap-toggle--ghost { background: transparent; }
+.rap-toggle:hover { background: var(--rap-fill-hover); }
+.rap-toggle:active { transform: scale(0.96); }
+.rap-toggle[data-state="on"] { background: var(--rap-ink); color: var(--rap-paper); }
+.rap-toggle:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
+.rap-toggle:disabled { opacity: 0.4; pointer-events: none; }
+.rap-toggle svg { width: 18px; height: 18px; flex: none; }
+.rap-toggle--sm svg { width: 16px; height: 16px; }

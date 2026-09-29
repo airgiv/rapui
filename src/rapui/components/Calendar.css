@@ -1,0 +1,161 @@
+.rap-cal {
+  --cal-cell: 40px;
+  position: relative;
+  display: inline-block;
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+}
+.rap-cal--sm { --cal-cell: 36px; font-size: 0.875rem; }
+
+.rap-cal__months { position: relative; display: flex; flex-wrap: wrap; gap: 24px; }
+.rap-cal__month { display: flex; flex-direction: column; gap: 6px; }
+
+/* caption on the left, round nav buttons pinned top-right */
+.rap-cal__caption {
+  display: flex;
+  align-items: center;
+  height: var(--cal-cell);
+  padding: 0 8px;
+}
+.rap-cal__caption-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.rap-cal__caption-label .rap-cal__chevron { width: 16px; height: 16px; opacity: 0.6; }
+
+.rap-cal__nav {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  gap: var(--rap-gap-tight);
+}
+.rap-cal__nav-btn {
+  display: grid;
+  place-items: center;
+  width: var(--cal-cell);
+  height: var(--cal-cell);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rap-fill);
+  color: var(--rap-ink);
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), transform var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-cal__nav-btn:hover { background: var(--rap-fill-hover); }
+.rap-cal__nav-btn:active { transform: scale(0.92); }
+.rap-cal__nav-btn:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
+.rap-cal__nav-btn[aria-disabled="true"] { opacity: 0.35; pointer-events: none; }
+.rap-cal__nav-btn .rap-cal__chevron { width: 18px; height: 18px; }
+
+/* dropdown caption: native select laid invisibly over a styled label */
+.rap-cal__dropdowns { display: inline-flex; align-items: center; gap: var(--rap-gap-tight); }
+.rap-cal__dropdown-root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px 0 12px;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill);
+}
+.rap-cal__dropdown-root:hover { background: var(--rap-fill-hover); }
+.rap-cal__dropdown-root:focus-within { box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-cal__dropdown-root .rap-cal__caption-label { font-size: 0.875rem; }
+.rap-cal__dropdown {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+}
+
+/* grid */
+.rap-cal__grid { border-collapse: separate; border-spacing: 0 var(--rap-gap-tight); }
+.rap-cal__weekday {
+  width: var(--cal-cell);
+  height: 28px;
+  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--rap-mute);
+  text-align: center;
+}
+.rap-cal__week-number,
+.rap-cal__week-number-header { width: var(--cal-cell); font-size: 0.75rem; color: var(--rap-mute); text-align: center; }
+
+.rap-cal__day {
+  width: var(--cal-cell);
+  height: var(--cal-cell);
+  padding: 0;
+  text-align: center;
+}
+.rap-cal__day-btn {
+  display: grid;
+  place-items: center;
+  width: var(--cal-cell);
+  height: var(--cal-cell);
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm),
+    box-shadow var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-cal__day-btn:hover { background: var(--rap-fill-hover); }
+.rap-cal__day-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
+
+.rap-cal__day.is-outside { color: var(--rap-mute); }
+.rap-cal__day.is-today .rap-cal__day-btn { box-shadow: inset 0 0 0 1.5px var(--rap-ink); font-weight: 500; }
+.rap-cal__day.is-disabled .rap-cal__day-btn { opacity: 0.35; cursor: not-allowed; background: none; }
+.rap-cal__day.is-hidden { visibility: hidden; }
+
+.rap-cal__day.is-selected .rap-cal__day-btn {
+  background: var(--rap-select);
+  color: var(--rap-select-ink);
+  font-weight: 500;
+  animation: rap-cal-pop 300ms var(--rap-ease-spring);
+}
+.rap-cal__day.is-selected.is-today .rap-cal__day-btn { box-shadow: inset 0 0 0 2px var(--rap-select), inset 0 0 0 3.5px var(--rap-surface); }
+.rap-cal__day.is-selected .rap-cal__day-btn:focus-visible { box-shadow: 0 0 0 2px var(--rap-surface), 0 0 0 4px var(--rap-ring); }
+@keyframes rap-cal-pop { from { transform: scale(0.82); } }
+
+/* range: a fill band behind the middle, the ends are blue circles sitting on the band */
+.rap-cal__day.is-range-middle { background: var(--rap-fill); }
+.rap-cal__day.is-range-middle .rap-cal__day-btn { background: transparent; color: var(--rap-ink); font-weight: 400; animation: none; }
+.rap-cal__day.is-range-middle .rap-cal__day-btn:hover { background: var(--rap-fill-hover); }
+.rap-cal__day.is-range-start { background: linear-gradient(to right, transparent 50%, var(--rap-fill) 50%); }
+.rap-cal__day.is-range-end { background: linear-gradient(to left, transparent 50%, var(--rap-fill) 50%); }
+.rap-cal__day.is-range-start.is-range-end { background: none; }
+/* the band wraps round at the row edges */
+.rap-cal__day.is-range-middle:first-child { border-radius: var(--rap-radius-pill) 0 0 var(--rap-radius-pill); }
+.rap-cal__day.is-range-middle:last-child { border-radius: 0 var(--rap-radius-pill) var(--rap-radius-pill) 0; }
+.rap-cal__day.is-range-start:last-child,
+.rap-cal__day.is-range-end:first-child { background: none; }
+
+.rap-cal__footer { padding: 10px 8px 2px; font-size: 0.8125rem; color: var(--rap-mute); }
+
+/* days from the neighbouring month keep their state but step back */
+.rap-cal__day.is-outside.is-selected,
+.rap-cal__day.is-outside.is-range-middle { opacity: 0.45; }

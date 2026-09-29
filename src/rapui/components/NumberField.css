@@ -1,0 +1,79 @@
+.rap-numberfield {
+  --nf-h: var(--rap-control-h);
+  --nf-inset: var(--rap-gap-tight);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  min-width: 9.5rem;
+  max-width: 12rem;
+  height: var(--nf-h);
+  padding: var(--nf-inset);
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill);
+  color: var(--rap-ink);
+  font-family: var(--rap-font-sans);
+  font-size: 1rem;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), box-shadow var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-numberfield--sm { --nf-h: var(--rap-control-h-sm); font-size: 0.875rem; }
+.rap-numberfield--lg { --nf-h: var(--rap-control-h-lg); font-size: 1.0625rem; }
+.rap-numberfield:hover { background: var(--rap-fill-hover); }
+.rap-numberfield:focus-within { background: var(--rap-surface); box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-numberfield.is-invalid { box-shadow: inset 0 0 0 2px var(--rap-danger); }
+.rap-numberfield.is-disabled { opacity: 0.5; pointer-events: none; }
+
+.rap-numberfield__btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--nf-h) - var(--nf-inset) * 2);
+  height: calc(var(--nf-h) - var(--nf-inset) * 2);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rap-surface);
+  color: var(--rap-ink);
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm),
+    transform var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-numberfield__btn:hover { background: var(--rap-ink); color: var(--rap-paper); }
+.rap-numberfield__btn:active { transform: scale(0.9); }
+.rap-numberfield__btn:disabled { opacity: 0.35; pointer-events: none; }
+.rap-numberfield__btn svg { width: 16px; height: 16px; }
+.rap-numberfield--sm .rap-numberfield__btn svg { width: 14px; height: 14px; }
+
+.rap-numberfield__value {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.2em;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  align-self: stretch;
+  align-items: center;
+}
+.rap-numberfield__input {
+  min-width: 2ch;
+  max-width: 100%;
+  width: auto;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  text-align: center;
+  outline: none;
+  field-sizing: content;
+}
+.rap-numberfield__unit { color: var(--rap-mute); font-size: 0.9em; }
+.rap-numberfield:focus-within .rap-numberfield__btn { background: var(--rap-fill); }
+.rap-numberfield:focus-within .rap-numberfield__btn:hover { background: var(--rap-ink); }
+.rap-numberfield__input:focus-visible { outline: none; }

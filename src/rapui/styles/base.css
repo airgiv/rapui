@@ -29,3 +29,7 @@
   outline: 2px solid var(--rap-accent);
   outline-offset: 4px;
 }
+/* Text entry draws its own focus state (a ring on the filled wrapper, or
+   the drawn line under a giant Field), so the generic outline would be a
+   second box around it. */
+.rap-root :is(input, textarea, [contenteditable]):focus-visible { outline: none; }

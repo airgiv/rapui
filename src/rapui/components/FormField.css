@@ -1,0 +1,57 @@
+.rap-form-field {
+  --ff-gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ff-gap);
+  min-width: 0;
+  font-family: var(--rap-font-sans);
+}
+.rap-form-field__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0 2px; }
+.rap-form-field__label { display: inline-flex; align-items: baseline; gap: 0.4rem; }
+.rap-form-field__req { color: var(--rap-danger); margin-left: -0.3rem; }
+.rap-form-field__opt { font-size: 0.8125rem; font-weight: 400; color: var(--rap-mute); }
+.rap-form-field__aside { font-size: 0.8125rem; letter-spacing: -0.01em; color: var(--rap-mute); font-variant-numeric: tabular-nums; }
+
+.rap-form-field__hint,
+.rap-form-field__error {
+  margin: 0;
+  padding: 0 2px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+.rap-form-field__hint { color: var(--rap-mute); }
+.rap-form-field__error { color: var(--rap-danger); font-weight: 500; }
+.rap-form-field__hint + .rap-form-field__error { margin-top: calc(var(--rap-gap-tight) - var(--ff-gap)); }
+
+/* the field's error state paints known rap/ui controls red */
+.rap-form-field.is-invalid .rap-input,
+.rap-form-field.is-invalid .rap-select-trigger,
+.rap-form-field.is-invalid .rap-textarea,
+.rap-form-field.is-invalid .rap-numberfield,
+.rap-form-field.is-invalid .rap-otp__slot { box-shadow: inset 0 0 0 2px var(--rap-danger); }
+.rap-form-field.is-invalid .rap-checkbox:not([data-state="checked"]),
+.rap-form-field.is-invalid .rap-radio-item:not([data-state="checked"]) { box-shadow: inset 0 0 0 1.5px var(--rap-danger); }
+.rap-form-field.is-invalid .rap-radio-card:not([data-state="checked"]) { box-shadow: inset 0 0 0 1.5px var(--rap-danger); }
+
+/* ── FieldGroup ── */
+.rap-field-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--rap-font-sans);
+}
+.rap-field-group__legend {
+  padding: 0 2px;
+  margin-bottom: 4px;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--rap-ink);
+}
+.rap-field-group__desc { margin: 0 0 16px; padding: 0 2px; font-size: 0.875rem; line-height: 1.45; color: var(--rap-mute); }
+.rap-field-group__legend + .rap-field-group__body { margin-top: 12px; }
+.rap-field-group__body { display: grid; gap: 20px; }
+.rap-field-group__body--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); column-gap: 12px; }
+.rap-field-group[disabled] { opacity: 0.6; }
