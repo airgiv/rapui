@@ -41,7 +41,7 @@ export const entries: DocEntry[] = [
         <span className="relative rounded-pill bg-paper px-5 py-2.5 font-medium">Move over me</span>
       </>
     ),
-    code: (p) => `import { Pattern } from "rapui";
+    code: (p) => `import { Pattern } from "@rapui/react";
 
 <div className="relative">
   <Pattern${attrs(p, patternControls, ["tone"])}${p.spotlight ? ' spotColor="var(--rap-flame)"' : ""}${p.tone !== "ink" ? ` className="${TONE[String(p.tone)]}"` : ""} />

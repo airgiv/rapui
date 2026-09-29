@@ -258,7 +258,7 @@ function Hero() {
                 Browse all {COUNT}
               </Button>
               <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
-                npm i rapui
+                npm i @rapui/react
               </Button>
             </div>
           </div>
@@ -721,7 +721,7 @@ function Wall() {
         title="Buttons"
         sub="that make you mean it"
         desc="For the actions you should not do by accident. Hold until the liquid reaches the top, slide the thumb to the rim, or click twice before the ring runs out. Each one with its own springs and sounds."
-        code={`import { HoldButton, SlideButton, ConfirmButton } from "rapui";
+        code={`import { HoldButton, SlideButton, ConfirmButton } from "@rapui/react";
 
 <HoldButton variant="danger" onConfirm={deleteProject}>Hold to delete</HoldButton>
 <SlideButton label="Slide to publish" doneLabel="Published" onConfirm={publish} />
@@ -742,7 +742,7 @@ function Wall() {
         title="Forms"
         sub="that melt"
         desc="A booking you fill in like a sentence. The pills melt into one bar, the one you are typing in swells, booking sucks the whole sentence into the button — and Monday, a party of forty or a 3 am snack get spat back out, the guilty pill shaking its head."
-        code={`import { FormStack, Input, Button } from "rapui";
+        code={`import { FormStack, Input, Button } from "@rapui/react";
 
 <FormStack direction="row" state={state} errorIndex={error?.index} onSubmit={book}>
   <Input size="hero" prefix="Table for" value={guests} />
@@ -765,7 +765,7 @@ function Wall() {
             straight into a sentence.
           </>
         }
-        code={`import { BalanceChart, DonutChart, HeatGrid, BarsChart, RaceBars, Sparkline } from "rapui";
+        code={`import { BalanceChart, DonutChart, HeatGrid, BarsChart, RaceBars, Sparkline } from "@rapui/react";
 
 <BalanceChart />
 <DonutChart data={sources} />
@@ -803,7 +803,7 @@ function Wall() {
         title="Dials"
         sub="& scrubbers"
         desc="Plan a night with nothing but rulers and rings: fling a strip of days, turn a tempo wheel that flashes on the beat, pick a lamp colour off a ring of hues, set the room under a magnifying lens, split rain against brown noise. The last card reads the whole desk back to you."
-        code={`import { DateScrubber, TempoDial, HueRing, LensRuler, SplitSlider, RangeDial } from "rapui";
+        code={`import { DateScrubber, TempoDial, HueRing, LensRuler, SplitSlider, RangeDial } from "@rapui/react";
 
 <DateScrubber value={night} onValueChange={setNight} />
 <TempoDial bpm={68} onBeat={pulse} />
@@ -820,7 +820,7 @@ function Wall() {
         title="Galleries"
         sub="with a sense of humour"
         desc="A strip that skews and stretches with your speed, a messy pile you throw cards off, a hand of cards that fans apart, a collage of stickers that morph their shape on hover. Click any picture: it flies out full screen, swipe to go on, pull down to put it back."
-        code={`import { WarpStrip, CardStack, FanGallery, Lightbox, useLightbox } from "rapui";
+        code={`import { WarpStrip, CardStack, FanGallery, Lightbox, useLightbox } from "@rapui/react";
 
 const lb = useLightbox();
 
@@ -851,7 +851,7 @@ const lb = useLightbox();
         title="Tools"
         sub="that feel like toys"
         desc="A big editor bar: chunky round slots, one pad that glides to the tool you pick, and sixteen hand-drawn icons that each do a little something — the cursor clicks, the ball bounces, the sticker peels. Press 1–9 to pick, + for widgets."
-        code={`import { EditorToolbar } from "rapui";
+        code={`import { EditorToolbar } from "@rapui/react";
 
 <EditorToolbar size="hero" tone="blue" onValueChange={setTool} />`}
         stageClass="p-0 place-items-stretch"
@@ -865,7 +865,7 @@ const lb = useLightbox();
         sub="that pour"
         stageClass="bg-paper"
         desc="Tick a task and colour pours across its round row, a pen scribbles the words out, and the row rolls down onto the Done pile while the rest close up. Finish the list and the card squashes and throws confetti. The old heap-fall is still there as an option."
-        code={`import { Checklist } from "rapui";
+        code={`import { Checklist } from "@rapui/react";
 
 <Checklist title="Launch day" tasks={tasks} />
 <Checklist finish="heap" tone="acid" />`}
@@ -878,7 +878,7 @@ const lb = useLightbox();
         title="The loud bits"
         sub="for landing pages"
         desc="Headline links, a board of stickers in fifteen shapes — punched price tags, seals with running text, stamps, speech bubbles, labels that peel — and cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
-        code={`import { BigLink, Sticker, TiltCard, CircleButton } from "rapui";
+        code={`import { BigLink, Sticker, TiltCard, CircleButton } from "@rapui/react";
 
 <BigLink href="/work" meta="24 projects">Work</BigLink>
 <Sticker color="flame" shape="burst">hot!</Sticker>
@@ -922,14 +922,14 @@ const TECH: { title: string; body: ReactNode; code: string; tone?: string }[] = 
     title: "Tailwind v4, tokens first",
     body: "Every colour, radius, height and curve is a CSS variable exposed to Tailwind. Use the precompiled CSS, or import the theme into your own build and get bg-surface, rounded-pill and fun: in your code too.",
     code: `@import "tailwindcss";
-@import "rapui/theme.css";
+@import "@rapui/react/theme.css";
 
 <div className="bg-surface rounded-pill h-control" />`,
   },
   {
     title: "Radix under everything",
     body: "Dialogs, menus, popovers, selects, tabs and sliders sit on Radix primitives: focus traps, roving focus, typeahead, ARIA and Escape all come with them, not from us.",
-    code: `import { Dialog, DialogTrigger, DialogContent } from "rapui";
+    code: `import { Dialog, DialogTrigger, DialogContent } from "@rapui/react";
 // Radix Dialog, rapui skin`,
   },
   {
@@ -956,7 +956,7 @@ const TECH: { title: string; body: ReactNode; code: string; tone?: string }[] = 
     title: "Dark, typed, tree-shaken",
     body: "A full dark theme from one attribute, TypeScript types for every prop, ESM with side-effect-free modules so you ship only what you import.",
     code: `<html data-rap-theme="dark">
-import { Button } from "rapui"; // just Button`,
+import { Button } from "@rapui/react"; // just Button`,
   },
 ];
 
@@ -1128,12 +1128,12 @@ function Install() {
           </p>
         </div>
         <div className="flex flex-col gap-4 min-w-0">
-          <Code>{`npm install rapui`}</Code>
+          <Code>{`npm install @rapui/react`}</Code>
           <Code>{`// main.tsx
-import "rapui/styles.css";
-import "rapui/fonts"; // optional: Onest + Geist Mono
+import "@rapui/react/styles.css";
+import "@rapui/react/fonts"; // optional: Onest + Geist Mono
 
-import { Button, SoundProvider } from "rapui";
+import { Button, SoundProvider } from "@rapui/react";
 
 export function App() {
   return (
@@ -1144,8 +1144,8 @@ export function App() {
 }`}</Code>
           <Code>{`/* already on Tailwind v4? */
 @import "tailwindcss";
-@import "rapui/theme.css";
-@source "../node_modules/rapui/dist";`}</Code>
+@import "@rapui/react/theme.css";
+@source "../node_modules/@rapui/react/dist";`}</Code>
         </div>
       </div>
     </section>

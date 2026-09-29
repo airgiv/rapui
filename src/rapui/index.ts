@@ -1,6 +1,6 @@
 /* rap/ui — components. Styles are NOT imported here: add them once in your app,
-   either `import "rapui/styles.css"` (precompiled, no preflight) or, with
-   Tailwind v4, `@import "rapui/theme.css"` + an @source for rapui. */
+   either `import "@rapui/react/styles.css"` (precompiled, no preflight) or, with
+   Tailwind v4, `@import "@rapui/react/theme.css"` + an @source for rapui. */
 
 export { cn } from "./utils";
 export { useInView } from "./hooks/useInView";
