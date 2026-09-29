@@ -2,6 +2,26 @@
   "name": "rapui",
   "version": "0.1.0",
   "description": "A playful React UI kit on Radix + Tailwind v4: the breadth of shadcn/ui, plus hold buttons, liquid forms, charts you scrub and galleries you throw.",
+  "keywords": [
+    "react",
+    "ui",
+    "components",
+    "component-library",
+    "radix",
+    "tailwind",
+    "tailwindcss",
+    "shadcn",
+    "design-system",
+    "animation"
+  ],
+  "homepage": "https://rapui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/airgiv/rapui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/airgiv/rapui/issues"
+  },
   "type": "module",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -38,7 +58,8 @@
     "build": "tsc --noEmit && vite build",
     "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css dist/",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build:lib"
   },
   "peerDependencies": {
     "react": ">=18",
