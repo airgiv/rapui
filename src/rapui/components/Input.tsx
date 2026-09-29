@@ -29,7 +29,7 @@ import { cn } from "../utils";
 import "./Input.css";
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size" | "prefix"> {
-  /** `hero` is Readymag's form scale: an 88px pill with 20px text. */
+  /** `hero` is the big form scale: an 88px pill with 20px text. */
   size?: "sm" | "md" | "lg" | "hero";
   /**
    * loading — a small orbiting dot at the end (e.g. checking a username);

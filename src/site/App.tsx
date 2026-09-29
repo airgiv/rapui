@@ -850,7 +850,7 @@ const lb = useLightbox();
         id="tools"
         title="Tools"
         sub="that feel like toys"
-        desc="A big editor bar in the Readymag spirit: chunky round slots, one pad that glides to the tool you pick, and sixteen hand-drawn icons that each do a little something — the cursor clicks, the ball bounces, the sticker peels. Press 1–9 to pick, + for widgets."
+        desc="A big editor bar: chunky round slots, one pad that glides to the tool you pick, and sixteen hand-drawn icons that each do a little something — the cursor clicks, the ball bounces, the sticker peels. Press 1–9 to pick, + for widgets."
         code={`import { EditorToolbar } from "rapui";
 
 <EditorToolbar size="hero" tone="blue" onValueChange={setTool} />`}

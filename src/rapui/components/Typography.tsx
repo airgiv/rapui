@@ -55,7 +55,7 @@ const accentTones: Record<AccentTone, string> = {
 
 /**
  * Same face, different colour — how rap/ui marks the word that matters.
- * `mute` gives the two-tone grey/ink headline Readymag uses a lot.
+ * `mute` gives a two-tone grey/ink headline.
  */
 export function Accent({ className, tone = "flame", ...rest }: HTMLAttributes<HTMLSpanElement> & { tone?: AccentTone }) {
   return <span data-slot="accent" data-tone={tone} className={cn(accentTones[tone], className)} {...rest} />;

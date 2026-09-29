@@ -77,7 +77,7 @@ export interface FormStackProps extends FormHTMLAttributes<HTMLFormElement> {
   state?: StackState;
   /** Which child failed, 0-based — it shakes when state turns "error". */
   errorIndex?: number;
-  /** Melt the pills into one liquid shape. Off: plain touching pills, like Readymag. */
+  /** Melt the pills into one liquid shape. Off: plain touching pills. */
   liquid?: boolean;
   /** column (a login form) or row (a newsletter / search bar: field and button side by side). */
   direction?: "column" | "row";
