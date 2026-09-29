@@ -8,10 +8,11 @@ import {
   type HTMLAttributes,
 } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
+import { cva } from "class-variance-authority";
 import { springOf } from "../hooks/useSpring";
 import { X } from "../icons";
 import { useSound, type SoundName } from "../sound";
-import { clamp, cx, prefersReducedMotion } from "../utils";
+import { clamp, cn, prefersReducedMotion } from "../utils";
 import "./Dialog.css";
 
 /* Composable, shadcn-style: <Dialog><DialogTrigger/><DialogContent><DialogHeader><DialogTitle/>…
@@ -34,11 +35,63 @@ export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogPortal = DialogPrimitive.Portal;
 export const DialogClose = DialogPrimitive.Close;
 
+/* The card: shared by Dialog, AlertDialog and CommandDialog (not exported from the barrel).
+   Centred with `transform` on purpose — the toss/fall keyframes animate the
+   individual `translate`/`rotate`/`scale` properties, so they stack on top of
+   the centring instead of fighting it (Tailwind's -translate-* would use
+   `translate` and be overwritten by the animation). */
+export const dialogContentVariants = cva(
+  [
+    "fixed z-1000 left-1/2 top-1/2 flex flex-col gap-5 [transform:translate(-50%,-50%)]",
+    "w-[min(var(--dlg-w),calc(100vw-32px))] max-h-[calc(100vh-32px)] overflow-auto p-(--dlg-pad)",
+    "rounded-card bg-surface text-ink shadow-pop font-sans focus:outline-none",
+    // a closing (falling) card no longer takes clicks
+    "data-[state=closed]:pointer-events-none",
+  ],
+  {
+    variants: {
+      size: {
+        sm: "[--dlg-w:400px] [--dlg-pad:24px]",
+        md: "[--dlg-w:520px] [--dlg-pad:28px]",
+        lg: "[--dlg-w:720px] [--dlg-pad:32px]",
+      },
+      motion: {
+        toss: [
+          // calm / reduced motion: the old quiet fade and lift (Dialog.css keyframes)
+          "animate-[rap-dialog-in_var(--rap-dur)_var(--rap-ease-out)]",
+          "data-[state=closed]:animate-[rap-dialog-out_180ms_var(--rap-ease-rm)_forwards]",
+          "motion-reduce:data-[state=closed]:animate-[rap-dialog-out_1ms_linear_forwards]",
+          // tossed onto the table (theme `rap-toss-in`)…
+          "fun:animate-[rap-toss-in_var(--rap-dur)_var(--rap-ease-out)]",
+          // …and it falls off it under gravity; Radix waits for this before unmounting
+          "fun:data-[state=closed]:animate-fall-out",
+        ],
+        none: "",
+      },
+    },
+    defaultVariants: { size: "md", motion: "toss" },
+  },
+);
+
+/* the scrim stays dim while the card is falling (380ms, the fall is 420ms);
+   calm keeps the scrim's own 160ms fade, reduced motion leaves at once */
+const dialogScrimClass = cn(
+  "scrim",
+  "fun:data-[state=closed]:[animation-duration:380ms] motion-reduce:data-[state=closed]:[animation-duration:1ms]",
+);
+
+/* header, footer, title and description: shared by Dialog, AlertDialog, Sheet and Drawer */
+export const dialogHeaderClass = "flex flex-col gap-1.5 pr-11";
+/** Actions row: right-aligned, buttons 2px apart. */
+export const dialogFooterClass = "flex flex-wrap justify-end items-center gap-tight mt-1";
+export const dialogTitleClass = "m-0 text-[1.5rem] font-medium leading-[1.15] tracking-[-0.03em]";
+export const dialogDescriptionClass = "m-0 text-[0.9375rem] leading-[1.45] tracking-[-0.01em] text-mute";
+
 export const DialogOverlay = forwardRef<
   ElementRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(function DialogOverlay({ className, ...rest }, ref) {
-  return <DialogPrimitive.Overlay ref={ref} className={cx("rap-scrim", "rap-dialog-scrim", className)} {...rest} />;
+  return <DialogPrimitive.Overlay ref={ref} data-slot="dialog-overlay" className={cn(dialogScrimClass, className)} {...rest} />;
 });
 
 /** The round 36px close button used by Dialog and Sheet. */
@@ -47,7 +100,20 @@ export const DialogCloseButton = forwardRef<HTMLButtonElement, ComponentPropsWit
   ref,
 ) {
   return (
-    <DialogPrimitive.Close ref={ref} className={cx("rap-dialog-x", className)} aria-label="Close" {...rest}>
+    <DialogPrimitive.Close
+      ref={ref}
+      data-slot="dialog-close"
+      className={cn(
+        // round close button, top right; turns a quarter on hover
+        "absolute top-5 right-5 grid place-items-center size-control-sm p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
+        "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+        "hover:bg-fill-hover hover:[transform:rotate(90deg)]",
+        "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)] [&_svg]:size-[18px]",
+        className,
+      )}
+      aria-label="Close"
+      {...rest}
+    >
       <X aria-hidden />
     </DialogPrimitive.Close>
   );
@@ -69,7 +135,13 @@ export const DialogContent = forwardRef<ElementRef<typeof DialogPrimitive.Conten
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
-      <DialogPrimitive.Content ref={setRef} className={cx("rap-dialog", `rap-dialog--${size}`, className)} {...rest}>
+      <DialogPrimitive.Content
+        ref={setRef}
+        data-slot="dialog-content"
+        data-size={size}
+        className={cn(dialogContentVariants({ size }), className)}
+        {...rest}
+      >
         {children}
         {showClose && <DialogCloseButton />}
       </DialogPrimitive.Content>
@@ -78,17 +150,17 @@ export const DialogContent = forwardRef<ElementRef<typeof DialogPrimitive.Conten
 });
 
 export function DialogHeader({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx("rap-dialog-header", className)} {...rest} />;
+  return <div data-slot="dialog-header" className={cn(dialogHeaderClass, className)} {...rest} />;
 }
 
 /** Actions row: right-aligned, buttons 2px apart. */
 export function DialogFooter({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx("rap-dialog-footer", className)} {...rest} />;
+  return <div data-slot="dialog-footer" className={cn(dialogFooterClass, className)} {...rest} />;
 }
 
 export const DialogTitle = forwardRef<ElementRef<typeof DialogPrimitive.Title>, ComponentPropsWithoutRef<typeof DialogPrimitive.Title>>(
   function DialogTitle({ className, ...rest }, ref) {
-    return <DialogPrimitive.Title ref={ref} className={cx("rap-dialog-title", className)} {...rest} />;
+    return <DialogPrimitive.Title ref={ref} data-slot="dialog-title" className={cn(dialogTitleClass, className)} {...rest} />;
   },
 );
 
@@ -96,7 +168,9 @@ export const DialogDescription = forwardRef<
   ElementRef<typeof DialogPrimitive.Description>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(function DialogDescription({ className, ...rest }, ref) {
-  return <DialogPrimitive.Description ref={ref} className={cx("rap-dialog-description", className)} {...rest} />;
+  return (
+    <DialogPrimitive.Description ref={ref} data-slot="dialog-description" className={cn(dialogDescriptionClass, className)} {...rest} />
+  );
 });
 
 /* ── overlay physics helpers (shared by HoverCard and Drawer) ──────────

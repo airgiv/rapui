@@ -1,47 +1,16 @@
-.rap-sheet {
-  --sheet-inset: 8px;
-  --sheet-size: 420px;
-  position: fixed;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 28px;
-  overflow: hidden;
-  border-radius: var(--rap-radius);
-  background: var(--rap-surface);
-  color: var(--rap-ink);
-  box-shadow: var(--rap-shadow-pop);
-  font-family: var(--rap-font-sans);
-  animation-duration: 440ms;
-  animation-timing-function: var(--rap-ease-out);
-  /* useSpring tune 20 (k .112, d .66) sampled per 2 frames: ~5% overshoot, one settle */
-  animation-timing-function: linear(0, 0.191, 0.469, 0.717, 0.893, 0.995, 1.041, 1.051, 1.043, 1.029, 1.016, 1.007, 1);
-}
-.rap-sheet:focus { outline: none; }
-.rap-sheet[data-state="closed"] { animation-duration: 260ms; animation-timing-function: var(--rap-ease-rm); animation-fill-mode: forwards; }
+/* Sheet — what utilities cannot say. Surface, sizes, the spring easing and
+   the calm/reduced switches live in Sheet.tsx as Tailwind classes.
 
-.rap-sheet--right,
-.rap-sheet--left {
-  top: var(--sheet-inset);
-  bottom: var(--sheet-inset);
-  width: min(var(--sheet-size), calc(100vw - var(--sheet-inset) * 2));
-}
-.rap-sheet--right { right: var(--sheet-inset); animation-name: rap-sheet-in-right; }
-.rap-sheet--left { left: var(--sheet-inset); animation-name: rap-sheet-in-left; }
-.rap-sheet--top,
-.rap-sheet--bottom {
-  left: var(--sheet-inset);
-  right: var(--sheet-inset);
-  max-height: calc(100vh - var(--sheet-inset) * 2);
-}
-.rap-sheet--top { top: var(--sheet-inset); animation-name: rap-sheet-in-top; }
-.rap-sheet--bottom { bottom: var(--sheet-inset); animation-name: rap-sheet-in-bottom; }
-
-.rap-sheet--right[data-state="closed"] { animation-name: rap-sheet-out-right; }
-.rap-sheet--left[data-state="closed"] { animation-name: rap-sheet-out-left; }
-.rap-sheet--top[data-state="closed"] { animation-name: rap-sheet-out-top; }
-.rap-sheet--bottom[data-state="closed"] { animation-name: rap-sheet-out-bottom; }
+   1. The per-side slide keyframes (off-screen by the panel's own size plus
+      16px, so the 8px inset and the shadow are fully out of view).
+   2. The deal: once the panel has (nearly) stopped, its contents are dealt in
+      with the shared `rap-deal-in` — header, body rows, footer — 45ms apart.
+      These are the caller's children, so the stagger index comes from their
+      position (an nth-child ladder), and "body rows" means the body's children,
+      or its single wrapper's children. The panel's own rows wait 120ms, the
+      body's 165ms (they start after the header); the close button just appears
+      with the panel (60ms). */
+@layer theme, base, components, utilities;
 
 @keyframes rap-sheet-in-right { from { transform: translateX(calc(100% + 16px)); } }
 @keyframes rap-sheet-in-left { from { transform: translateX(calc(-100% - 16px)); } }
@@ -52,48 +21,34 @@
 @keyframes rap-sheet-out-top { to { transform: translateY(calc(-100% - 16px)); } }
 @keyframes rap-sheet-out-bottom { to { transform: translateY(calc(100% + 16px)); } }
 
-.rap-sheet-body {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  margin: 0 -28px;
-  padding: 0 28px;
-}
-.rap-sheet-footer { margin-top: auto; }
-.rap-sheet--top .rap-sheet-footer,
-.rap-sheet--bottom .rap-sheet-footer { margin-top: 0; }
+@layer components {
+  [data-slot="sheet-content"][data-state="open"] > :not([data-slot="sheet-body"]),
+  [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :not(:only-child),
+  [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * {
+    animation: rap-deal-in 320ms var(--rap-ease-out) both;
+    animation-delay: calc(120ms + var(--i, 0) * 45ms);
+  }
+  /* body rows: its children, or its wrapper's children when it has a single wrapper */
+  [data-slot="sheet-content"] > :nth-child(2), [data-slot="sheet-body"] > :nth-child(2), [data-slot="sheet-body"] > :only-child > :nth-child(2) { --i: 1; }
+  [data-slot="sheet-content"] > :nth-child(3), [data-slot="sheet-body"] > :nth-child(3), [data-slot="sheet-body"] > :only-child > :nth-child(3) { --i: 2; }
+  [data-slot="sheet-content"] > :nth-child(4), [data-slot="sheet-body"] > :nth-child(4), [data-slot="sheet-body"] > :only-child > :nth-child(4) { --i: 3; }
+  [data-slot="sheet-content"] > :nth-child(5), [data-slot="sheet-body"] > :nth-child(5), [data-slot="sheet-body"] > :only-child > :nth-child(5) { --i: 4; }
+  [data-slot="sheet-content"] > :nth-child(6), [data-slot="sheet-body"] > :nth-child(6), [data-slot="sheet-body"] > :only-child > :nth-child(6) { --i: 5; }
+  [data-slot="sheet-content"] > :nth-child(7), [data-slot="sheet-body"] > :nth-child(7), [data-slot="sheet-body"] > :only-child > :nth-child(7) { --i: 6; }
+  [data-slot="sheet-content"] > :nth-child(n + 8), [data-slot="sheet-body"] > :nth-child(n + 8), [data-slot="sheet-body"] > :only-child > :nth-child(n + 8) { --i: 7; }
+  /* body rows start after the header */
+  [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :not(:only-child),
+  [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * { animation-delay: calc(165ms + var(--i, 0) * 45ms); }
+  /* the close button just appears with the panel */
+  [data-slot="sheet-content"][data-state="open"] > [data-slot="sheet-close"] { animation-delay: 60ms; }
 
-/* contents dealt in once the panel has (nearly) stopped */
-.rap-sheet[data-state="open"] > :not(.rap-sheet-body),
-.rap-sheet[data-state="open"] .rap-sheet-body > :not(:only-child),
-.rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * {
-  animation: rap-deal-in 320ms var(--rap-ease-out) both;
-  animation-delay: calc(120ms + var(--i, 0) * 45ms);
+  /* calm and reduced motion: no deal */
+  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] > *,
+  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,
+  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot="sheet-content"][data-state="open"] > *,
+    [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,
+    [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * { animation: none !important; }
+  }
 }
-/* body rows: its children, or its wrapper's children when it has a single wrapper */
-.rap-sheet > :nth-child(2), .rap-sheet-body > :nth-child(2), .rap-sheet-body > :only-child > :nth-child(2) { --i: 1; }
-.rap-sheet > :nth-child(3), .rap-sheet-body > :nth-child(3), .rap-sheet-body > :only-child > :nth-child(3) { --i: 2; }
-.rap-sheet > :nth-child(4), .rap-sheet-body > :nth-child(4), .rap-sheet-body > :only-child > :nth-child(4) { --i: 3; }
-.rap-sheet > :nth-child(5), .rap-sheet-body > :nth-child(5), .rap-sheet-body > :only-child > :nth-child(5) { --i: 4; }
-.rap-sheet > :nth-child(6), .rap-sheet-body > :nth-child(6), .rap-sheet-body > :only-child > :nth-child(6) { --i: 5; }
-.rap-sheet > :nth-child(7), .rap-sheet-body > :nth-child(7), .rap-sheet-body > :only-child > :nth-child(7) { --i: 6; }
-.rap-sheet > :nth-child(n + 8), .rap-sheet-body > :nth-child(n + 8), .rap-sheet-body > :only-child > :nth-child(n + 8) { --i: 7; }
-/* body rows start after the header */
-.rap-sheet[data-state="open"] .rap-sheet-body > :not(:only-child),
-.rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * { animation-delay: calc(165ms + var(--i, 0) * 45ms); }
-/* the close button just appears with the panel */
-.rap-sheet[data-state="open"] > .rap-sheet__x { animation-delay: 60ms; }
-
-[data-rap-motion="calm"] .rap-sheet { animation-timing-function: var(--rap-ease-out); animation-duration: var(--rap-dur); }
-[data-rap-motion="calm"] .rap-sheet[data-state="closed"] { animation-duration: 260ms; animation-timing-function: var(--rap-ease-rm); }
-[data-rap-motion="calm"] .rap-sheet[data-state="open"] > *,
-[data-rap-motion="calm"] .rap-sheet[data-state="open"] .rap-sheet-body > *,
-[data-rap-motion="calm"] .rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * { animation: none; }
-@media (prefers-reduced-motion: reduce) {
-  .rap-sheet { animation-duration: 1ms !important; }
-  .rap-sheet[data-state="open"] > *,
-  .rap-sheet[data-state="open"] .rap-sheet-body > *,
-  .rap-sheet[data-state="open"] .rap-sheet-body > :only-child > * { animation: none !important; }
-}
-/* the scrim leaves with the panel, not with a falling dialog */
-.rap-scrim.rap-sheet-scrim[data-state="closed"] { animation-duration: 260ms; }

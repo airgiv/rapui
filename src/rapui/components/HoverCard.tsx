@@ -1,14 +1,13 @@
 import { forwardRef, useCallback, useEffect, useRef, type ComponentPropsWithoutRef, type ElementRef } from "react";
 import { HoverCard as HoverCardPrimitive } from "radix-ui";
-import { clamp, cx } from "../utils";
+import { clamp, cn } from "../utils";
 import { createSpring, isCalm, useMergedRef, useOpenCloseSound } from "./Dialog";
-import "./Popover.css";
-import "./HoverCard.css";
+import { popSwing } from "./Popover";
 
 /* Preview card that opens on hover/focus. For sighted pointer users; keep the trigger a real link.
 
    Delight: the card is aware of your pointer. It swings out of the link like
-   a Popover (shared `.rap-pop--swing`), and while it is open it TILTS TOWARD
+   a Popover (shared `popSwing`), and while it is open it TILTS TOWARD
    THE POINTER in 3D — the edge nearest the pointer dips away, as if your
    finger were resting on it — so as you move from the link onto the card it
    turns to "look" at you and follows you across its face. At most 6°, with a
@@ -97,7 +96,17 @@ export const HoverCardContent = forwardRef<
         sideOffset={sideOffset}
         align={align}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-pop--swing", "rap-hovercard", className)}
+        data-slot="hover-card-content"
+        className={cn(
+          "pop w-[min(300px,calc(100vw-24px))] p-[18px] text-[0.9375rem] tracking-[-0.01em] outline-none",
+          popSwing,
+          /* pointer tilt: --hc-rx / --hc-ry are written by the springs above.
+             `transform` is free here (the swing uses translate/rotate/scale), so they
+             stack; shifted to the centre and back, so it pivots on its middle while
+             the swing keeps Radix's origin. None under calm / reduced motion. */
+          "fun:[transform:translate(var(--hc-ox,0px),var(--hc-oy,0px))_perspective(700px)_rotateX(var(--hc-rx,0deg))_rotateY(var(--hc-ry,0deg))_translate(calc(-1*var(--hc-ox,0px)),calc(-1*var(--hc-oy,0px)))]",
+          className,
+        )}
         {...rest}
       />
     </HoverCardPrimitive.Portal>

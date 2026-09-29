@@ -1,11 +1,19 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes } from "react";
 import { ContextMenu as ContextMenuPrimitive } from "radix-ui";
-import { Check, ChevronRight } from "../icons";
-import { cx } from "../utils";
+import { Check } from "../icons";
+import { cn } from "../utils";
 import { useMergedRef } from "./Dialog";
-import { useRowGlide, type MenuItemExtras } from "./DropdownMenu";
-import "./DropdownMenu.css";
-import "./ContextMenu.css";
+import {
+  MenuChevron,
+  MenuDot,
+  MenuIndicator,
+  menuContentClass,
+  menuItemClass,
+  menuLabelClass,
+  menuSeparatorClass,
+  useRowGlide,
+  type MenuItemExtras,
+} from "./DropdownMenu";
 
 /* Right-click menu. Same parts as DropdownMenu: <ContextMenu><ContextMenuTrigger>area</ContextMenuTrigger><ContextMenuContent>…
 
@@ -32,7 +40,8 @@ export const ContextMenuContent = forwardRef<
       <ContextMenuPrimitive.Content
         ref={setRef}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", "rap-context-menu", "rap-menu--glide", className)}
+        data-slot="context-menu-content"
+        className={cn(menuContentClass, "max-h-[var(--radix-context-menu-content-available-height,none)]", className)}
         {...rest}
       >
         {glider}
@@ -50,7 +59,10 @@ export const ContextMenuItem = forwardRef<
   return (
     <ContextMenuPrimitive.Item
       ref={ref}
-      className={cx("rap-menu-item", inset && "rap-menu-item--inset", variant === "danger" && "rap-menu-item--danger", className)}
+      data-slot="context-menu-item"
+      data-inset={inset ? "" : undefined}
+      data-variant={variant}
+      className={cn(menuItemClass, className)}
       {...rest}
     />
   );
@@ -61,12 +73,12 @@ export const ContextMenuCheckboxItem = forwardRef<
   ComponentPropsWithoutRef<typeof ContextMenuPrimitive.CheckboxItem>
 >(function ContextMenuCheckboxItem({ className, children, ...rest }, ref) {
   return (
-    <ContextMenuPrimitive.CheckboxItem ref={ref} className={cx("rap-menu-item", "rap-menu-item--inset", className)} {...rest}>
-      <span className="rap-menu-indicator">
+    <ContextMenuPrimitive.CheckboxItem ref={ref} data-slot="context-menu-checkbox-item" data-inset="" className={cn(menuItemClass, className)} {...rest}>
+      <MenuIndicator>
         <ContextMenuPrimitive.ItemIndicator>
           <Check strokeWidth={2.5} />
         </ContextMenuPrimitive.ItemIndicator>
-      </span>
+      </MenuIndicator>
       {children}
     </ContextMenuPrimitive.CheckboxItem>
   );
@@ -77,12 +89,12 @@ export const ContextMenuRadioItem = forwardRef<
   ComponentPropsWithoutRef<typeof ContextMenuPrimitive.RadioItem>
 >(function ContextMenuRadioItem({ className, children, ...rest }, ref) {
   return (
-    <ContextMenuPrimitive.RadioItem ref={ref} className={cx("rap-menu-item", "rap-menu-item--inset", className)} {...rest}>
-      <span className="rap-menu-indicator">
+    <ContextMenuPrimitive.RadioItem ref={ref} data-slot="context-menu-radio-item" data-inset="" className={cn(menuItemClass, className)} {...rest}>
+      <MenuIndicator>
         <ContextMenuPrimitive.ItemIndicator>
-          <span className="rap-menu-dot" />
+          <MenuDot />
         </ContextMenuPrimitive.ItemIndicator>
-      </span>
+      </MenuIndicator>
       {children}
     </ContextMenuPrimitive.RadioItem>
   );
@@ -92,18 +104,26 @@ export const ContextMenuLabel = forwardRef<
   ElementRef<typeof ContextMenuPrimitive.Label>,
   ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & { inset?: boolean }
 >(function ContextMenuLabel({ className, inset, ...rest }, ref) {
-  return <ContextMenuPrimitive.Label ref={ref} className={cx("rap-menu-label", inset && "rap-menu-label--inset", className)} {...rest} />;
+  return (
+    <ContextMenuPrimitive.Label
+      ref={ref}
+      data-slot="context-menu-label"
+      data-inset={inset ? "" : undefined}
+      className={cn(menuLabelClass, className)}
+      {...rest}
+    />
+  );
 });
 
 export const ContextMenuSeparator = forwardRef<
   ElementRef<typeof ContextMenuPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Separator>
 >(function ContextMenuSeparator({ className, ...rest }, ref) {
-  return <ContextMenuPrimitive.Separator ref={ref} className={cx("rap-menu-separator", className)} {...rest} />;
+  return <ContextMenuPrimitive.Separator ref={ref} data-slot="context-menu-separator" className={cn(menuSeparatorClass, className)} {...rest} />;
 });
 
 export function ContextMenuShortcut({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cx("rap-menu-shortcut", className)} {...rest} />;
+  return <span data-slot="context-menu-shortcut" className={cn("menu-shortcut", className)} {...rest} />;
 }
 
 export const ContextMenuSubTrigger = forwardRef<
@@ -113,11 +133,13 @@ export const ContextMenuSubTrigger = forwardRef<
   return (
     <ContextMenuPrimitive.SubTrigger
       ref={ref}
-      className={cx("rap-menu-item", "rap-menu-subtrigger", inset && "rap-menu-item--inset", className)}
+      data-slot="context-menu-sub-trigger"
+      data-inset={inset ? "" : undefined}
+      className={cn(menuItemClass, className)}
       {...rest}
     >
       {children}
-      <ChevronRight className="rap-menu-chevron" aria-hidden />
+      <MenuChevron />
     </ContextMenuPrimitive.SubTrigger>
   );
 });
@@ -135,7 +157,8 @@ export const ContextMenuSubContent = forwardRef<
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", "rap-menu--glide", className)}
+        data-slot="context-menu-sub-content"
+        className={cn(menuContentClass, "max-h-[var(--radix-dropdown-menu-content-available-height,none)]", className)}
         {...rest}
       >
         {glider}

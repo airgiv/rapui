@@ -1,16 +1,23 @@
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type HTMLAttributes } from "react";
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { Button, type ButtonProps, type ButtonVariant } from "./Button";
-import { useMergedRef, useOpenCloseSound } from "./Dialog";
-import "./Dialog.css";
+import {
+  dialogContentVariants,
+  dialogDescriptionClass,
+  dialogFooterClass,
+  dialogHeaderClass,
+  dialogTitleClass,
+  useMergedRef,
+  useOpenCloseSound,
+} from "./Dialog";
 import "./AlertDialog.css";
 
 /**
  * A dialog that asks for a decision and can't be dismissed by clicking outside.
  * <AlertDialog><AlertDialogTrigger/><AlertDialogContent>…<AlertDialogCancel/><AlertDialogAction/>
  *
- * Delight: it is tossed in and falls away like Dialog (same `.rap-dialog` card),
+ * Delight: it is tossed in and falls away like Dialog (same card, `dialogContentVariants`),
  * and the `danger` action is nervous — while the pointer rests on it, it trembles
  * by about half a pixel and half a degree, as if it knows what it is about to do.
  * Small enough to stay perfectly clickable and readable; it only plays on hover
@@ -29,7 +36,18 @@ export const AlertDialogOverlay = forwardRef<
   ElementRef<typeof AlertDialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
 >(function AlertDialogOverlay({ className, ...rest }, ref) {
-  return <AlertDialogPrimitive.Overlay ref={ref} className={cx("rap-scrim", "rap-dialog-scrim", className)} {...rest} />;
+  return (
+    <AlertDialogPrimitive.Overlay
+      ref={ref}
+      data-slot="alert-dialog-overlay"
+      className={cn(
+        // the scrim stays dim while the card is falling (as Dialog's)
+        "scrim fun:data-[state=closed]:[animation-duration:380ms] motion-reduce:data-[state=closed]:[animation-duration:1ms]",
+        className,
+      )}
+      {...rest}
+    />
+  );
 });
 
 export interface AlertDialogContentProps extends ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> {
@@ -44,7 +62,9 @@ export const AlertDialogContent = forwardRef<ElementRef<typeof AlertDialogPrimit
         <AlertDialogOverlay />
         <AlertDialogPrimitive.Content
           ref={setRef}
-          className={cx("rap-dialog", `rap-dialog--${size}`, "rap-alertdialog", className)}
+          data-slot="alert-dialog-content"
+          data-size={size}
+          className={cn(dialogContentVariants({ size }), "gap-6", className)}
           {...rest}
         />
       </AlertDialogPrimitive.Portal>
@@ -53,31 +73,50 @@ export const AlertDialogContent = forwardRef<ElementRef<typeof AlertDialogPrimit
 );
 
 export function AlertDialogHeader({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx("rap-dialog-header", "rap-alertdialog-header", className)} {...rest} />;
+  // no close button to clear, so no right padding
+  return <div data-slot="alert-dialog-header" className={cn(dialogHeaderClass, "pr-0", className)} {...rest} />;
 }
 
 export function AlertDialogFooter({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx("rap-dialog-footer", className)} {...rest} />;
+  return <div data-slot="alert-dialog-footer" className={cn(dialogFooterClass, className)} {...rest} />;
 }
 
 export const AlertDialogTitle = forwardRef<
   ElementRef<typeof AlertDialogPrimitive.Title>,
   ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
 >(function AlertDialogTitle({ className, ...rest }, ref) {
-  return <AlertDialogPrimitive.Title ref={ref} className={cx("rap-dialog-title", className)} {...rest} />;
+  return <AlertDialogPrimitive.Title ref={ref} data-slot="alert-dialog-title" className={cn(dialogTitleClass, className)} {...rest} />;
 });
 
 export const AlertDialogDescription = forwardRef<
   ElementRef<typeof AlertDialogPrimitive.Description>,
   ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
 >(function AlertDialogDescription({ className, ...rest }, ref) {
-  return <AlertDialogPrimitive.Description ref={ref} className={cx("rap-dialog-description", className)} {...rest} />;
+  return (
+    <AlertDialogPrimitive.Description
+      ref={ref}
+      data-slot="alert-dialog-description"
+      className={cn(dialogDescriptionClass, className)}
+      {...rest}
+    />
+  );
 });
 
 export interface AlertDialogActionProps extends Omit<ButtonProps, "variant"> {
   /** Any Button variant, or `danger` for destructive confirms (red, ink on hover). */
   variant?: ButtonVariant | "danger";
 }
+
+/* destructive confirm: a solid Button re-coloured through its own custom
+   properties — red pill, ink blob on hover (cn/tailwind-merge replaces the
+   solid variant's --btn-* values) — and marked data-variant="danger".
+   Nervous: a small tremble while hovered (AlertDialog.css keyframes). `hover:`
+   only applies to real pointers, and `translate`/`rotate` stack with the
+   Button's magnetic transform. */
+const dangerAction = cn(
+  "[--btn-bg:var(--rap-danger)] [--btn-fg:#ffffff] [--btn-blob:var(--rap-ink)] [--btn-blob-fg:var(--rap-paper)]",
+  "fun:enabled:hover:animate-[rap-alertdialog-tremble_240ms_linear_infinite]",
+);
 
 /** Confirms and closes. Renders the library Button. */
 export const AlertDialogAction = forwardRef<HTMLButtonElement, AlertDialogActionProps>(function AlertDialogAction(
@@ -90,7 +129,8 @@ export const AlertDialogAction = forwardRef<HTMLButtonElement, AlertDialogAction
       <Button
         ref={ref}
         variant={danger ? "solid" : variant}
-        className={cx(danger && "rap-alertdialog-action--danger", className)}
+        {...(danger ? { "data-variant": "danger" } : null)}
+        className={cn(danger && dangerAction, className)}
         {...rest}
       />
     </AlertDialogPrimitive.Action>

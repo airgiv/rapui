@@ -7,14 +7,14 @@ import {
   type ComponentPropsWithoutRef,
   type ElementRef,
   type HTMLAttributes,
+  type ReactNode,
 } from "react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import { useGlide } from "../hooks/useGlide";
 import { Check, ChevronRight } from "../icons";
 import { useSound } from "../sound";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { useMergedRef } from "./Dialog";
-import "./DropdownMenu.css";
 
 /* Composable, shadcn-style: <DropdownMenu><DropdownMenuTrigger/><DropdownMenuContent><DropdownMenuItem/>…
 
@@ -40,18 +40,63 @@ export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
 export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
+/* ── shared menu styling (internal; also used by ContextMenu, Menubar, Command) ── */
+
+/** Rows dealt onto the panel, top to bottom (--i is set in document order by useRowGlide). */
+export const menuRowDeal = "fun:animate-[rap-deal-in_240ms_var(--rap-ease-out)_calc(var(--i,0)*22ms)_both]";
+
+/** The panel: a `pop` surface; relative + isolate so the glider can sit under the rows. */
+export const menuContentClass = "pop relative isolate min-w-[220px] p-1 overflow-y-auto outline-none";
+
+/* A row. The glider paints the highlight, not the row (transparent), except
+   under calm, where the glider is hidden and rows light up on their own again.
+   Icons are ink-2 (ink when highlighted); `danger` rows are red throughout. */
+export const menuItemClass = cn(
+  "menu-item",
+  menuRowDeal,
+  "data-[inset]:pl-[2.4rem]",
+  "[&>svg:not([data-slot=menu-chevron])]:text-ink-2 data-[highlighted]:[&>svg:not([data-slot=menu-chevron])]:text-ink",
+  "data-[variant=danger]:text-danger data-[variant=danger]:[&>svg:not([data-slot=menu-chevron])]:text-danger",
+  "data-[variant=danger]:data-[highlighted]:[&>svg:not([data-slot=menu-chevron])]:text-danger",
+  "data-[highlighted]:bg-transparent calm:data-[highlighted]:bg-fill",
+  "calm:data-[variant=danger]:data-[highlighted]:bg-[color-mix(in_srgb,var(--rap-danger)_12%,transparent)]",
+  // a sub-menu trigger stays lit while its sub-menu is open (the glider does it outside calm)
+  "calm:data-[state=open]:bg-fill",
+  // the sub-menu chevron is smaller than row icons
+  "[&>[data-slot=menu-chevron]]:size-4",
+);
+export const menuLabelClass = cn("menu-label", menuRowDeal, "data-[inset]:pl-[2.4rem]");
+export const menuSeparatorClass = cn("menu-separator", menuRowDeal);
+
+/** Check / radio mark, in the inset gutter on the left. */
+export function MenuIndicator({ children }: { children: ReactNode }) {
+  return (
+    <span
+      data-slot="menu-indicator"
+      className="absolute left-[0.8rem] inline-grid place-items-center size-[18px] text-select *:inline-grid *:place-items-center [&_svg]:size-4"
+    >
+      {children}
+    </span>
+  );
+}
+export const MenuDot = () => <span data-slot="menu-dot" className="block size-2 rounded-full bg-current" />;
+/** Sub-menu chevron; sits after the shortcut when there is one. */
+export const MenuChevron = () => (
+  <ChevronRight data-slot="menu-chevron" className="ml-auto text-mute [[data-slot$=shortcut]+&]:ml-2" aria-hidden />
+);
+
 /* ── the row glider (internal; also used by ContextMenu, Menubar, Command) ── */
 
-const RADIX_ROWS = ".rap-menu-item, .rap-menu-label, .rap-menu-separator";
+const RADIX_ROWS = '[data-slot$="-item"], [data-slot$="-sub-trigger"], [data-slot$="-label"], [data-slot$="-separator"]';
 const RADIX_WATCH = ["data-highlighted", "data-state"];
 const pickRadix = (root: HTMLElement) =>
-  root.querySelector<HTMLElement>(".rap-menu-item[data-highlighted]") ??
-  root.querySelector<HTMLElement>('.rap-menu-subtrigger[data-state="open"]');
+  root.querySelector<HTMLElement>('[data-slot$="-item"][data-highlighted], [data-slot$="-sub-trigger"][data-highlighted]') ??
+  root.querySelector<HTMLElement>('[data-slot$="-sub-trigger"][data-state="open"]');
 
 /**
  * One gliding highlight for a list of rows, plus the deal-in stagger.
  * `attach` goes on the scroll container (it must be position: relative +
- * isolation: isolate, see .rap-menu), `glider` is rendered as its first child.
+ * isolation: isolate, see menuContentClass), `glider` is rendered as its first child.
  */
 export function useRowGlide(
   options: {
@@ -110,10 +155,17 @@ export function useRowGlide(
   }, [root, rows, watchKey, pop]);
 
   const glide = useGlide(rootRef, active, { axis: "y" });
-  const danger = !!active?.classList.contains("rap-menu-item--danger");
+  const danger = active?.getAttribute("data-variant") === "danger";
   const glider = (
     <span
-      className="rap-menu-glider"
+      data-slot="menu-glider"
+      className={cn(
+        "absolute top-0 left-0 -z-1 rounded-row bg-fill pointer-events-none opacity-0 data-[on]:opacity-100",
+        "[transition:opacity_160ms_var(--rap-ease-rm),background-color_var(--rap-dur-fast)_var(--rap-ease-rm)]",
+        "data-[tone=danger]:bg-[color-mix(in_srgb,var(--rap-danger)_12%,transparent)]",
+        // calm: no glide — rows light up on their own again
+        "calm:hidden",
+      )}
       style={glide.style}
       data-on={on && glide.ready ? "" : undefined}
       data-tone={danger ? "danger" : undefined}
@@ -135,7 +187,8 @@ export const DropdownMenuContent = forwardRef<
         ref={setRef}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", "rap-menu--glide", className)}
+        data-slot="dropdown-menu-content"
+        className={cn(menuContentClass, "max-h-[var(--radix-dropdown-menu-content-available-height,none)]", className)}
         {...rest}
       >
         {glider}
@@ -159,7 +212,10 @@ export const DropdownMenuItem = forwardRef<
   return (
     <DropdownMenuPrimitive.Item
       ref={ref}
-      className={cx("rap-menu-item", inset && "rap-menu-item--inset", variant === "danger" && "rap-menu-item--danger", className)}
+      data-slot="dropdown-menu-item"
+      data-inset={inset ? "" : undefined}
+      data-variant={variant}
+      className={cn(menuItemClass, className)}
       {...rest}
     />
   );
@@ -170,12 +226,12 @@ export const DropdownMenuCheckboxItem = forwardRef<
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
 >(function DropdownMenuCheckboxItem({ className, children, ...rest }, ref) {
   return (
-    <DropdownMenuPrimitive.CheckboxItem ref={ref} className={cx("rap-menu-item", "rap-menu-item--inset", className)} {...rest}>
-      <span className="rap-menu-indicator">
+    <DropdownMenuPrimitive.CheckboxItem ref={ref} data-slot="dropdown-menu-checkbox-item" data-inset="" className={cn(menuItemClass, className)} {...rest}>
+      <MenuIndicator>
         <DropdownMenuPrimitive.ItemIndicator>
           <Check strokeWidth={2.5} />
         </DropdownMenuPrimitive.ItemIndicator>
-      </span>
+      </MenuIndicator>
       {children}
     </DropdownMenuPrimitive.CheckboxItem>
   );
@@ -186,12 +242,12 @@ export const DropdownMenuRadioItem = forwardRef<
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
 >(function DropdownMenuRadioItem({ className, children, ...rest }, ref) {
   return (
-    <DropdownMenuPrimitive.RadioItem ref={ref} className={cx("rap-menu-item", "rap-menu-item--inset", className)} {...rest}>
-      <span className="rap-menu-indicator">
+    <DropdownMenuPrimitive.RadioItem ref={ref} data-slot="dropdown-menu-radio-item" data-inset="" className={cn(menuItemClass, className)} {...rest}>
+      <MenuIndicator>
         <DropdownMenuPrimitive.ItemIndicator>
-          <span className="rap-menu-dot" />
+          <MenuDot />
         </DropdownMenuPrimitive.ItemIndicator>
-      </span>
+      </MenuIndicator>
       {children}
     </DropdownMenuPrimitive.RadioItem>
   );
@@ -201,18 +257,26 @@ export const DropdownMenuLabel = forwardRef<
   ElementRef<typeof DropdownMenuPrimitive.Label>,
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & { inset?: boolean }
 >(function DropdownMenuLabel({ className, inset, ...rest }, ref) {
-  return <DropdownMenuPrimitive.Label ref={ref} className={cx("rap-menu-label", inset && "rap-menu-label--inset", className)} {...rest} />;
+  return (
+    <DropdownMenuPrimitive.Label
+      ref={ref}
+      data-slot="dropdown-menu-label"
+      data-inset={inset ? "" : undefined}
+      className={cn(menuLabelClass, className)}
+      {...rest}
+    />
+  );
 });
 
 export const DropdownMenuSeparator = forwardRef<
   ElementRef<typeof DropdownMenuPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
 >(function DropdownMenuSeparator({ className, ...rest }, ref) {
-  return <DropdownMenuPrimitive.Separator ref={ref} className={cx("rap-menu-separator", className)} {...rest} />;
+  return <DropdownMenuPrimitive.Separator ref={ref} data-slot="dropdown-menu-separator" className={cn(menuSeparatorClass, className)} {...rest} />;
 });
 
 export function DropdownMenuShortcut({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cx("rap-menu-shortcut", className)} {...rest} />;
+  return <span data-slot="dropdown-menu-shortcut" className={cn("menu-shortcut", className)} {...rest} />;
 }
 
 export const DropdownMenuSubTrigger = forwardRef<
@@ -222,11 +286,13 @@ export const DropdownMenuSubTrigger = forwardRef<
   return (
     <DropdownMenuPrimitive.SubTrigger
       ref={ref}
-      className={cx("rap-menu-item", "rap-menu-subtrigger", inset && "rap-menu-item--inset", className)}
+      data-slot="dropdown-menu-sub-trigger"
+      data-inset={inset ? "" : undefined}
+      className={cn(menuItemClass, className)}
       {...rest}
     >
       {children}
-      <ChevronRight className="rap-menu-chevron" aria-hidden />
+      <MenuChevron />
     </DropdownMenuPrimitive.SubTrigger>
   );
 });
@@ -244,7 +310,8 @@ export const DropdownMenuSubContent = forwardRef<
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", "rap-menu--glide", className)}
+        data-slot="dropdown-menu-sub-content"
+        className={cn(menuContentClass, "max-h-[var(--radix-dropdown-menu-content-available-height,none)]", className)}
         {...rest}
       >
         {glider}

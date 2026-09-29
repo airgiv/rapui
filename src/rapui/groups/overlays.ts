@@ -1,5 +1,5 @@
 // Overlays: dialogs, sheets, drawers and everything that floats. Each component
-// lives in ../components/<Name>.tsx with its own CSS.
+// lives in ../components/<Name>.tsx, styled with Tailwind (a few keep a small <Name>.css for keyframes).
 export {
   Dialog,
   DialogClose,

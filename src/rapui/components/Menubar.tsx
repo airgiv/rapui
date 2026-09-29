@@ -10,13 +10,21 @@ import {
   type HTMLAttributes,
 } from "react";
 import { Menubar as MenubarPrimitive } from "radix-ui";
-import { Check, ChevronRight } from "../icons";
+import { Check } from "../icons";
 import { useGlide } from "../hooks/useGlide";
-import { cx } from "../utils";
+import { cn } from "../utils";
 import { useMergedRef } from "./Dialog";
-import { useRowGlide, type MenuItemExtras } from "./DropdownMenu";
-import "./DropdownMenu.css";
-import "./Menubar.css";
+import {
+  MenuChevron,
+  MenuDot,
+  MenuIndicator,
+  menuContentClass,
+  menuItemClass,
+  menuLabelClass,
+  menuSeparatorClass,
+  useRowGlide,
+  type MenuItemExtras,
+} from "./DropdownMenu";
 
 /* App menu bar: a pill track of menu triggers. <Menubar><MenubarMenu><MenubarTrigger/><MenubarContent>…
 
@@ -42,7 +50,7 @@ export const Menubar = forwardRef<
     const el = root.current;
     if (!el) return;
     const find = () => {
-      const t = el.querySelector<HTMLElement>('.rap-menubar__trigger[data-state="open"]');
+      const t = el.querySelector<HTMLElement>('[data-slot="menubar-trigger"][data-state="open"]');
       setOn(!!t);
       if (t) setActive(t);
     };
@@ -54,8 +62,30 @@ export const Menubar = forwardRef<
   const glide = useGlide(root, active);
 
   return (
-    <MenubarPrimitive.Root ref={root} className={cx("rap-menubar", `rap-menubar--${size}`, "rap-menubar--glide", className)} {...rest}>
-      <span className="rap-menubar__glider" style={glide.style} data-on={on && glide.ready ? "" : undefined} aria-hidden />
+    <MenubarPrimitive.Root
+      ref={root}
+      data-slot="menubar"
+      data-size={size}
+      className={cn(
+        "relative isolate inline-flex items-center gap-tight p-[3px] rounded-pill bg-fill font-sans",
+        size === "sm" && "[--mb-h:var(--rap-control-h-sm)]",
+        size === "md" && "[--mb-h:var(--rap-control-h)]",
+        size === "lg" && "[--mb-h:var(--rap-control-h-lg)]",
+        className,
+      )}
+      {...rest}
+    >
+      {/* the open menu's ink pill, travelling between triggers; hidden under calm */}
+      <span
+        data-slot="menubar-glider"
+        className={cn(
+          "absolute top-0 left-0 -z-1 rounded-pill bg-ink pointer-events-none opacity-0 data-[on]:opacity-100",
+          "transition-opacity duration-160 ease-rm calm:hidden",
+        )}
+        style={glide.style}
+        data-on={on && glide.ready ? "" : undefined}
+        aria-hidden
+      />
       {children}
     </MenubarPrimitive.Root>
   );
@@ -67,7 +97,24 @@ export const MenubarTrigger = forwardRef<
   ElementRef<typeof MenubarPrimitive.Trigger>,
   ComponentPropsWithoutRef<typeof MenubarPrimitive.Trigger>
 >(function MenubarTrigger({ className, ...rest }, ref) {
-  return <MenubarPrimitive.Trigger ref={ref} className={cx("rap-menubar__trigger", className)} {...rest} />;
+  return (
+    <MenubarPrimitive.Trigger
+      ref={ref}
+      data-slot="menubar-trigger"
+      className={cn(
+        "inline-flex items-center gap-[0.4rem] h-[calc(var(--mb-h)-6px)] px-4 border-0 rounded-pill bg-transparent text-ink",
+        "font-sans text-[0.9375rem] font-medium tracking-[-0.01em] whitespace-nowrap cursor-pointer outline-none",
+        "transition-[background,color] duration-(--rap-dur-fast) ease-rm",
+        "not-data-[state=open]:hover:bg-fill not-data-[state=open]:data-[highlighted]:bg-fill",
+        // open: ink text; the glider draws the ink pill behind it (the trigger paints it itself under calm)
+        "data-[state=open]:text-paper calm:data-[state=open]:bg-ink",
+        "focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+        "data-[disabled]:opacity-40 data-[disabled]:pointer-events-none [&_svg]:size-[18px]",
+        className,
+      )}
+      {...rest}
+    />
+  );
 });
 export const MenubarGroup = MenubarPrimitive.Group;
 export const MenubarPortal = MenubarPrimitive.Portal;
@@ -105,7 +152,8 @@ export const MenubarContent = forwardRef<
         align={align}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", "rap-menubar-menu", "rap-menu--glide", className)}
+        data-slot="menubar-content"
+        className={cn(menuContentClass, "max-h-[var(--radix-menubar-content-available-height,none)]", className)}
         onFocusOutside={(e) => {
           onFocusOutside?.(e);
           if (closing()) e.preventDefault();
@@ -131,7 +179,10 @@ export const MenubarItem = forwardRef<
   return (
     <MenubarPrimitive.Item
       ref={ref}
-      className={cx("rap-menu-item", inset && "rap-menu-item--inset", variant === "danger" && "rap-menu-item--danger", className)}
+      data-slot="menubar-item"
+      data-inset={inset ? "" : undefined}
+      data-variant={variant}
+      className={cn(menuItemClass, className)}
       {...rest}
     />
   );
@@ -142,12 +193,12 @@ export const MenubarCheckboxItem = forwardRef<
   ComponentPropsWithoutRef<typeof MenubarPrimitive.CheckboxItem>
 >(function MenubarCheckboxItem({ className, children, ...rest }, ref) {
   return (
-    <MenubarPrimitive.CheckboxItem ref={ref} className={cx("rap-menu-item", "rap-menu-item--inset", className)} {...rest}>
-      <span className="rap-menu-indicator">
+    <MenubarPrimitive.CheckboxItem ref={ref} data-slot="menubar-checkbox-item" data-inset="" className={cn(menuItemClass, className)} {...rest}>
+      <MenuIndicator>
         <MenubarPrimitive.ItemIndicator>
           <Check strokeWidth={2.5} />
         </MenubarPrimitive.ItemIndicator>
-      </span>
+      </MenuIndicator>
       {children}
     </MenubarPrimitive.CheckboxItem>
   );
@@ -158,12 +209,12 @@ export const MenubarRadioItem = forwardRef<
   ComponentPropsWithoutRef<typeof MenubarPrimitive.RadioItem>
 >(function MenubarRadioItem({ className, children, ...rest }, ref) {
   return (
-    <MenubarPrimitive.RadioItem ref={ref} className={cx("rap-menu-item", "rap-menu-item--inset", className)} {...rest}>
-      <span className="rap-menu-indicator">
+    <MenubarPrimitive.RadioItem ref={ref} data-slot="menubar-radio-item" data-inset="" className={cn(menuItemClass, className)} {...rest}>
+      <MenuIndicator>
         <MenubarPrimitive.ItemIndicator>
-          <span className="rap-menu-dot" />
+          <MenuDot />
         </MenubarPrimitive.ItemIndicator>
-      </span>
+      </MenuIndicator>
       {children}
     </MenubarPrimitive.RadioItem>
   );
@@ -173,18 +224,26 @@ export const MenubarLabel = forwardRef<
   ElementRef<typeof MenubarPrimitive.Label>,
   ComponentPropsWithoutRef<typeof MenubarPrimitive.Label> & { inset?: boolean }
 >(function MenubarLabel({ className, inset, ...rest }, ref) {
-  return <MenubarPrimitive.Label ref={ref} className={cx("rap-menu-label", inset && "rap-menu-label--inset", className)} {...rest} />;
+  return (
+    <MenubarPrimitive.Label
+      ref={ref}
+      data-slot="menubar-label"
+      data-inset={inset ? "" : undefined}
+      className={cn(menuLabelClass, className)}
+      {...rest}
+    />
+  );
 });
 
 export const MenubarSeparator = forwardRef<
   ElementRef<typeof MenubarPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof MenubarPrimitive.Separator>
 >(function MenubarSeparator({ className, ...rest }, ref) {
-  return <MenubarPrimitive.Separator ref={ref} className={cx("rap-menu-separator", className)} {...rest} />;
+  return <MenubarPrimitive.Separator ref={ref} data-slot="menubar-separator" className={cn(menuSeparatorClass, className)} {...rest} />;
 });
 
 export function MenubarShortcut({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cx("rap-menu-shortcut", className)} {...rest} />;
+  return <span data-slot="menubar-shortcut" className={cn("menu-shortcut", className)} {...rest} />;
 }
 
 export const MenubarSubTrigger = forwardRef<
@@ -194,11 +253,13 @@ export const MenubarSubTrigger = forwardRef<
   return (
     <MenubarPrimitive.SubTrigger
       ref={ref}
-      className={cx("rap-menu-item", "rap-menu-subtrigger", inset && "rap-menu-item--inset", className)}
+      data-slot="menubar-sub-trigger"
+      data-inset={inset ? "" : undefined}
+      className={cn(menuItemClass, className)}
       {...rest}
     >
       {children}
-      <ChevronRight className="rap-menu-chevron" aria-hidden />
+      <MenuChevron />
     </MenubarPrimitive.SubTrigger>
   );
 });
@@ -216,7 +277,8 @@ export const MenubarSubContent = forwardRef<
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
-        className={cx("rap-pop", "rap-menu", "rap-menu--glide", className)}
+        data-slot="menubar-sub-content"
+        className={cn(menuContentClass, "max-h-[var(--radix-dropdown-menu-content-available-height,none)]", className)}
         {...rest}
       >
         {glider}
