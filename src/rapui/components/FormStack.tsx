@@ -1,18 +1,40 @@
 /* ══ FormStack ════════════════════════════════════════════
-   Readymag's login form: big pills stacked edge to edge — fields,
+   Readymag's big form: tall pills set edge to edge — fields,
    then the button — reading as one object. rap/ui makes that
    object LIQUID.
 
    ── ONE SHAPE, DRAWN UNDER A GOO FILTER ─────────────────
    The pills keep their content (inputs, labels, icons) but lose
    their own background inside a stack. Their backgrounds are
-   redrawn as plain rounded blobs in one layer behind them, and
-   that layer goes through the classic metaball filter: blur, then
-   a steep alpha curve (×22 −9) that snaps the blur back into a hard
-   edge, then the sharp originals composited on top. Where two
-   pills touch, the blur pools in the notch between their round
-   ends and the threshold turns it into a neck — so the stack is
-   one continuous shape instead of a column of capsules.
+   redrawn as plain rounded blobs behind them, through the classic
+   metaball filter: blur the alpha, then a steep alpha curve (×22 −9)
+   that snaps the blur back into a hard edge (~1px of anti-aliasing).
+   Where two pills touch, the blur pools in the notch between their
+   round ends and the threshold turns it into a neck — so the stack
+   is one continuous shape instead of a column of capsules.
+
+   ── TWO LAYERS, SO THE NECK HAS ONE COLOUR ──────────────
+   A blur averages COLOUR as well as alpha. With a grey field and
+   an orange button in one gooey layer, the neck between them came
+   out as a muddy grey-to-orange gradient (and even a one-colour
+   neck banded in the dark theme, because its colour was read back
+   from pixels at 40% alpha, then boosted ×22). So the filter only
+   ever takes the SHAPE from the blur — colour is put back flat —
+   and the shape and the paint are split into two layers:
+   · the SHAPE layer draws every blob — the button's too — in the
+     field grey and goos them together, filled with one flood of that
+     grey. It owns the silhouette: every neck, every swell, every blob
+     on its way into the button. All one colour, nothing to smear.
+   · the PAINT layer draws only the buttons, in their own colour,
+     through the same threshold (coloured by the button itself,
+     dilated so the colour reaches past the blur). A lone pill through
+     the goo comes out as the same pill grown the same ~2px the shape
+     layer grows it, so the paint covers the button's part of the
+     silhouette exactly, with no grey rim — and stops dead at the
+     button's own outline instead of bleeding into the neck.
+   The neck therefore belongs to the field: grey liquid flows up to
+   the button and meets it on a crisp, anti-aliased edge, like a
+   drop of water touching a sweet.
 
    ── IT BEHAVES LIKE LIQUID ──────────────────────────────
    Focus swells the focused blob (3.5% wider, 8% taller): the necks
@@ -66,7 +88,8 @@ interface Blob {
   y: number;
   w: number;
   h: number;
-  color: string;
+  /** the button's own colour (its --btn-bg); empty for fields and see-through buttons */
+  paint: string;
   isButton: boolean;
 }
 
@@ -100,7 +123,9 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
         const isButton = el.dataset.slot === "button";
         // a Button keeps its colour in --btn-bg (the background itself is cleared in a stack)
         const btn = isButton ? getComputedStyle(el).getPropertyValue("--btn-bg").trim() : "";
-        return { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, color: btn || FIELD, isButton };
+        // outline / ghost buttons have no fill of their own: the field grey shows through
+        const paint = btn && btn !== "transparent" ? btn : "";
+        return { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, paint, isButton };
       }),
     );
   }, [items]);
@@ -165,7 +190,8 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
     if (state === "error" && (prev === "loading" || prev === "success")) sound.play("pop", { strength: 0.6 });
     if (state === "error" && errorIndex != null && !calm) {
       const el = items()[errorIndex];
-      const blob = form.current?.querySelectorAll<HTMLElement>('[data-slot="form-stack-blob"]')[errorIndex];
+      // its blob in both layers (a button has one in each)
+      const blobs = form.current?.querySelectorAll<HTMLElement>(`[data-stack-layer] [data-i="${errorIndex}"]`) ?? [];
       const shake = [
         { translate: "0" },
         { translate: "-9px" },
@@ -177,10 +203,28 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
       // after the spit-back lands
       window.setTimeout(() => {
         el?.animate(shake, { duration: 440, easing: "ease-out" });
-        blob?.animate(shake, { duration: 440, easing: "ease-out" });
+        blobs.forEach((b) => b.animate(shake, { duration: 440, easing: "ease-out" }));
       }, prev === "loading" || prev === "success" ? 520 : 0);
     }
   }, [state, errorIndex, calm, sound, items]);
+
+  const goo = (layer: "shape" | "paint") => (liquid ? `url(#${filterId}-${layer})` : undefined);
+  // one geometry for both layers, so the paint always sits exactly on its part of the shape
+  const blobStyle = (b: Blob, i: number): CSSProperties => {
+    const o = offsets[i];
+    const swell = i === focused ? "1.035 1.08" : i === hovered ? "1.012 1.02" : "1";
+    return {
+      left: b.x,
+      top: b.y,
+      width: b.w,
+      height: b.h,
+      translate: o ? `${o.dx}px ${o.dy}px` : "0 0",
+      scale: o ? "0.3" : swell,
+      transition: o
+        ? `translate 520ms var(--rap-ease-gravity) ${i * 70}ms, scale 520ms var(--rap-ease-gravity) ${i * 70}ms, background-color 300ms`
+        : `translate 620ms var(--rap-ease-back) ${(blobs.length - i) * 60}ms, scale 420ms var(--rap-ease-spring), background-color 300ms`,
+    };
+  };
 
   return (
     <StackContext.Provider value={{ state }}>
@@ -190,7 +234,7 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
         data-state={state}
         className={cn(
           "relative isolate flex w-full",
-          direction === "column" ? "flex-col" : "flex-row items-stretch [&>[data-slot=input]]:flex-1 [&>[data-slot=button]]:w-auto [&>[data-slot=button]]:flex-none",
+          direction === "column" ? "flex-col" : "flex-row items-stretch [&>[data-slot=input]]:flex-1 [&>[data-slot=input]]:min-w-0 [&>[data-slot=button]]:w-auto [&>[data-slot=button]]:flex-none",
           // inside a stack the pills lose their own background: the blob layer draws it
           "[&>[data-slot=input]]:bg-transparent! [&>[data-slot=button]]:bg-transparent!",
           className,
@@ -203,36 +247,42 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
         {...rest}
       >
         <svg data-stack-layer="filter" aria-hidden className="absolute size-0 overflow-hidden">
-          <filter id={filterId} x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
+          {/* shape: goo the ALPHA only, then fill it with one flat field colour */}
+          <filter id={`${filterId}-shape`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="9" result="blur" />
             {/* alpha × 22 − 9: the blur's soft edge snaps back to a hard one, pooled into necks */}
-            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="goo" />
-            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            <feColorMatrix in="blur" mode="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 22 -9" result="goo" />
+            <feFlood style={{ floodColor: FIELD }} result="ink" />
+            <feComposite in="ink" in2="goo" operator="in" />
+          </filter>
+          {/* paint: the same goo alpha, coloured by the button itself grown 16px (a bridge between
+              blobs never lies further than ~10px from one), so its edge is the threshold's, not the blur's */}
+          <filter id={`${filterId}-paint`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="9" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 22 -9" result="goo" />
+            <feMorphology in="SourceGraphic" operator="dilate" radius="16" result="ink" />
+            <feComposite in="ink" in2="goo" operator="in" />
           </filter>
         </svg>
-        <div
-          data-stack-layer="blobs"
-          aria-hidden
-          className="absolute inset-0 -z-1 pointer-events-none"
-          style={{ filter: liquid ? `url(#${filterId})` : undefined }}
-        >
-          {blobs.map((b, i) => {
-            const o = offsets[i];
-            const swell = i === focused ? "1.035 1.08" : i === hovered ? "1.012 1.02" : "1";
-            const blobStyle: CSSProperties = {
-              left: b.x,
-              top: b.y,
-              width: b.w,
-              height: b.h,
-              background: b.color,
-              translate: o ? `${o.dx}px ${o.dy}px` : "0 0",
-              scale: o ? "0.3" : swell,
-              transition: o
-                ? `translate 520ms var(--rap-ease-gravity) ${i * 70}ms, scale 520ms var(--rap-ease-gravity) ${i * 70}ms, background-color 300ms`
-                : `translate 620ms var(--rap-ease-back) ${(blobs.length - i) * 60}ms, scale 420ms var(--rap-ease-spring), background-color 300ms`,
-            };
-            return <span key={i} data-slot="form-stack-blob" className="absolute rounded-pill" style={blobStyle} />;
-          })}
+        {/* shape: every blob in the field grey — the silhouette, necks included */}
+        <div data-stack-layer="shape" aria-hidden className="absolute inset-0 -z-1 pointer-events-none" style={{ filter: goo("shape") }}>
+          {blobs.map((b, i) => (
+            <span key={i} data-i={i} data-slot="form-stack-blob" className="absolute rounded-pill" style={{ ...blobStyle(b, i), background: FIELD }} />
+          ))}
+        </div>
+        {/* paint: the buttons' own colour on top, gooed alike so it matches the shape to the pixel */}
+        <div data-stack-layer="paint" aria-hidden className="absolute inset-0 -z-1 pointer-events-none" style={{ filter: goo("paint") }}>
+          {blobs.map((b, i) =>
+            b.paint ? (
+              <span
+                key={i}
+                data-i={i}
+                data-slot="form-stack-paint"
+                className="absolute rounded-pill"
+                style={{ ...blobStyle(b, i), background: b.paint }}
+              />
+            ) : null,
+          )}
         </div>
         {children}
       </form>

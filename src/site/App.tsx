@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   Accent,
   BalanceChart,
@@ -15,7 +15,6 @@ import {
   Display,
   DonutChart,
   ElasticSlider,
-  FormStack,
   GaugeChart,
   Highlight,
   HoldButton,
@@ -45,7 +44,6 @@ import {
   VoiceNote,
   useSound,
   type SoundSettings,
-  type StackState,
 } from "../rapui";
 import { ArrowLeft, ArrowRight, Volume1, Volume2 } from "../rapui/icons";
 import { cn } from "../rapui/utils";
@@ -53,6 +51,7 @@ import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
 import { Floaty, HeroScene } from "./HeroScene";
+import { FormDemo } from "./demos/FormDemo";
 import gridLines from "./media/grid-lines.wav";
 import voiceNote from "./media/voice-note.wav";
 import reel from "./media/reel.webm";
@@ -406,54 +405,6 @@ function Showcase({
   );
 }
 
-function LoginDemo() {
-  const [state, setState] = useState<StackState>("idle");
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    setState("loading");
-    // "wrong" as the password shows the other ending
-    window.setTimeout(() => {
-      setState(pw === "wrong" ? "error" : "success");
-      if (pw !== "wrong") window.setTimeout(() => setState("idle"), 2200);
-    }, 1500);
-  };
-  return (
-    <div className="flex flex-col gap-6 w-[min(100%,34rem)]">
-      <Display size="xl">
-        Log in <Accent className="text-[0.5em] tracking-[-0.02em] align-[0.35em]">or join</Accent>
-      </Display>
-      <FormStack state={state} errorIndex={1} onSubmit={submit}>
-        <Input
-          size="hero"
-          type="email"
-          placeholder="Email"
-          aria-label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          status={/.+@.+\..+/.test(email) ? "valid" : undefined}
-        />
-        <Input
-          size="hero"
-          type="password"
-          placeholder="Password (try “wrong”)"
-          aria-label="Password"
-          value={pw}
-          invalid={state === "error"}
-          onChange={(e) => {
-            setPw(e.target.value);
-            if (state === "error") setState("idle");
-          }}
-        />
-        <Button size="hero" variant="accent" align="start" block type="submit" successLabel="Welcome back" errorLabel="Wrong password">
-          Continue
-        </Button>
-      </FormStack>
-    </div>
-  );
-}
-
 function GalleriesDemo() {
   const lb = useLightbox();
   return (
@@ -574,16 +525,17 @@ function Wall() {
         id="forms"
         title="Forms"
         sub="that melt"
-        desc="Readymag's stacked login, made liquid: the pills fuse into one shape, the focused one swells, submitting sucks the fields into the button, and a wrong password spits them back out, shaking its head."
+        desc="A booking you fill in like a sentence. The pills melt into one bar, the one you are typing in swells, booking sucks the whole sentence into the button — and Monday, a party of forty or a 3 am snack get spat back out, the guilty pill shaking its head."
         code={`import { FormStack, Input, Button } from "rapui";
 
-<FormStack state={state} errorIndex={1} onSubmit={logIn}>
-  <Input size="hero" type="email" placeholder="Email" />
-  <Input size="hero" type="password" placeholder="Password" />
-  <Button size="hero" variant="accent" type="submit" block>Continue</Button>
+<FormStack direction="row" state={state} errorIndex={error?.index} onSubmit={book}>
+  <Input size="hero" prefix="Table for" value={guests} />
+  <Input size="hero" prefix="on" value={day} />
+  <Input size="hero" prefix="at" value={time} />
+  <Button size="hero" variant="accent" type="submit" icon>Book it</Button>
 </FormStack>`}
       >
-        <LoginDemo />
+        <FormDemo />
       </Showcase>
 
       <Showcase
