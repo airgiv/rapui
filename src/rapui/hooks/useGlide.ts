@@ -17,6 +17,13 @@
 import { useEffect, useLayoutEffect, useState, type CSSProperties, type RefObject } from "react";
 import { useSpring } from "./useSpring";
 
+/** True when the playful layer is off for this element (calm attribute or reduced motion). */
+export function isCalm(el: Element | null | undefined) {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return true;
+  return !!(el?.closest?.('[data-rap-motion="calm"]') ?? document.documentElement.closest('[data-rap-motion="calm"]'));
+}
+
 export interface GlideBox {
   x: number;
   y: number;
@@ -68,10 +75,13 @@ export function useGlide(
     setDir(start > lastStart ? 1 : -1);
     setLastStart(start);
   }
+  // calm (data-rap-motion="calm" on an ancestor) or reduced motion: no caterpillar,
+  // both edges move together on the same spring — a plain slide
+  const calm = isCalm(container.current);
   // the tail holds its old position for `delay` ms, then follows on the heavy spring
-  const tailTarget = useDelayed(dir > 0 ? start : end, first ? 0 : delay);
-  const s = useSpring(dir > 0 ? tailTarget : start, dir > 0 ? trail : lead, first);
-  const e = useSpring(dir > 0 ? end : tailTarget, dir > 0 ? lead : trail, first);
+  const tailTarget = useDelayed(dir > 0 ? start : end, first || calm ? 0 : delay);
+  const s = useSpring(dir > 0 ? tailTarget : start, calm ? lead : dir > 0 ? trail : lead, first);
+  const e = useSpring(dir > 0 ? end : tailTarget, lead, first);
   const cross = useSpring(box ? (axis === "x" ? box.y : box.x) : 0, 50, first);
   const crossSize = box ? (axis === "x" ? box.h : box.w) : 0;
 
