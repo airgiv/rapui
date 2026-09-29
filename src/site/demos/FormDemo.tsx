@@ -7,7 +7,9 @@ import { cn } from "../../rapui/utils";
    Drag sideways inside the first pill and the number follows,
    one detent per person, pitched up as the party grows. 1–16 is
    the tape; typing still takes any number (40 won't fit, and it
-   says so). The lit ticks are the people you are bringing. */
+   says so). The lit ticks are the people you are bringing; the last
+   one — your pick — is the tall orange one. Ticks are centred on the
+   row's middle, so long marks grow up AND down from the short ones. */
 function PartyScrub({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   const MAX = 16;
   const box = useRef<HTMLSpanElement>(null);
@@ -38,14 +40,14 @@ function PartyScrub({ value, onChange }: { value: number; onChange: (n: number) 
       }}
       onPointerMove={(e) => held.current && set(e.clientX)}
       onPointerUp={() => (held.current = false)}
-      className="flex items-end gap-[5px] h-7 px-1 cursor-ew-resize touch-none select-none"
+      className="flex items-center gap-[5px] h-8 px-1 cursor-ew-resize touch-none select-none"
     >
       {Array.from({ length: MAX }, (_, i) => (
         <i
           key={i}
           className={cn(
             "block w-[2px] rounded-full transition-[height,background-color] duration-200 ease-spring",
-            i < value ? "bg-ink" : "bg-ink/20",
+            i === value - 1 ? "bg-flame w-[3px]" : i < value ? "bg-ink" : "bg-ink/20",
           )}
           style={{ height: i === value - 1 ? 26 : i % 4 === 3 ? 16 : 11 }}
         />

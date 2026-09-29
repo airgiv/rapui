@@ -5,19 +5,15 @@ import {
   BarsChart,
   BigLink,
   Button,
-  ButtonGroup,
   CircleButton,
   ConfirmButton,
-  Counter,
   Cursor,
   Display,
   DonutChart,
   ElasticSlider,
-  GaugeChart,
-  Highlight,
+  HeatGrid,
   HoldButton,
   Input,
-  Lead,
   Marquee,
   RaceBars,
   RollText,
@@ -129,136 +125,78 @@ function Header({
   );
 }
 
-/* one line of the headline */
-const LINE = "flex flex-wrap items-center gap-x-[0.2em] font-display font-medium tracking-[-0.055em] text-[clamp(3.2rem,10.5vw,11rem)] leading-[0.86] whitespace-nowrap max-[700px]:whitespace-normal";
-
 /* ── the hero ─────────────────────────────────────────────────
-   No parallax. The headline makes the claim and the page proves it
-   in the same breath: the orange word keeps changing — buttons,
-   toggles, sliders, charts, stickers, players — and beside it, a
-   live component of exactly that kind drops in, ready to be used.
-   It rolls every 2.4s; hovering the hero holds it; clicking the word
-   moves it on. Calm and reduced motion keep it on the first word. */
-const KINDS: { word: string; demo: ReactNode }[] = [
-  {
-    word: "buttons",
-    demo: (
-      <HoldButton size="hero" variant="ink" doneLabel="Shipped">
-        Hold to ship
-      </HoldButton>
-    ),
-  },
-  { word: "toggles", demo: <HeroToggle /> },
-  { word: "sliders", demo: <HeroSlider /> },
-  {
-    word: "charts",
-    demo: (
-      <div className="bg-paper-2 rounded-[26px] px-6 py-5 w-72">
-        <p className="m-0 text-[2rem] font-medium tracking-[-0.03em] tabular-nums leading-none">
-          $58,834<span className="text-[1.4rem] opacity-35">.75</span>
-        </p>
-        <p className="mt-2 mb-3 text-[0.8rem] font-medium text-success">+2.1% today</p>
-        <Sparkline data={[12, 14, 13, 17, 16, 19, 18, 22, 21, 25]} width={240} height={56} />
-      </div>
-    ),
-  },
-  {
-    word: "stickers",
-    demo: (
-      <Sticker shape="burst" color="flame" spin={false} rotate={10} size="1.3rem" className="w-44">
-        hot
-        <br />
-        drop
-      </Sticker>
-    ),
-  },
-  { word: "players", demo: <VoiceNote src={voiceNote} from="me" sent="14:02" /> },
-];
+   A poster, not a slogan with props around it: the claim in two
+   huge lines across the full width, and under it a bento of colour
+   blocks that fills the rest of the screen — the pitch on ink, and
+   four live components on flame, acid, sky and white, each one ready
+   to be pressed, flipped, held or scrubbed. The blocks are dealt in
+   on load; nothing drifts, nothing cycles. */
+const HEAD = "font-display font-medium tracking-[-0.055em] text-[clamp(2.8rem,7.6vw,8.4rem)] leading-[0.9]";
+const TILE = "relative grid place-items-center min-h-[15rem] p-6 rounded-lg overflow-hidden";
 
-function HeroToggle() {
+function HeroSwitch() {
   const [on, setOn] = useState(true);
-  return <Switch size="lg" checked={on} onCheckedChange={setOn} label="Dark mode" />;
-}
-function HeroSlider() {
-  const [v, setV] = useState(64);
-  return (
-    <div className="w-72">
-      <ElasticSlider aria-label="Volume" value={v} onValueChange={setV} icons={[<Volume1 key="a" />, <Volume2 key="b" />]} />
-    </div>
-  );
+  return <Switch size="lg" checked={on} onCheckedChange={setOn} label={on ? "Fun mode" : "Serious mode"} />;
 }
 
 function Hero() {
-  const [k, setK] = useState(0);
-  const held = useRef(false);
-  const box = useRef<HTMLElement>(null);
-  const sound = useSound();
-  useEffect(() => {
-    if (isCalm(box.current)) return;
-    const t = window.setInterval(() => {
-      if (!held.current && document.visibilityState === "visible") setK((x) => (x + 1) % KINDS.length);
-    }, 2400);
-    return () => window.clearInterval(t);
-  }, []);
-  const kind = KINDS[k];
   return (
-    <section
-      ref={box}
-      className="relative min-h-svh pt-36 px-(--gutter) pb-14 flex flex-col justify-between gap-14 max-[900px]:min-h-0 max-[900px]:pt-28"
-      id="top"
-      onPointerEnter={() => (held.current = true)}
-      onPointerLeave={() => (held.current = false)}
-    >
-      <div className="relative">
-        <h1 className="m-0 flex flex-col items-start">
-          <span className={LINE}>All the</span>
-          <span className={cn(LINE, "ml-[8vw] max-[900px]:ml-0")}>
-            <button
-              type="button"
-              onClick={() => {
-                setK((x) => (x + 1) % KINDS.length);
-                sound.play("pop", { strength: 0.5 });
-              }}
-              className="relative overflow-hidden text-flame cursor-pointer pb-[0.08em] -mb-[0.08em] text-left"
-              aria-label={`${kind.word}, show another kind`}
-            >
-              <span key={kind.word} className="inline-block fun:animate-hero-roll">
-                {kind.word},
-              </span>
-            </button>
-          </span>
-          <span className={LINE}>
-            none of the
-            <Sticker color="blue" rotate={-7} size="clamp(1.1rem, 3vw, 2.8rem)" className="px-[0.9em] py-[0.35em] tracking-normal">
-              boring
-            </Sticker>
-            bits.
-          </span>
-        </h1>
-        {/* the proof, live: a component of the kind the headline just named. It sits
-            in the empty top-right corner beside the short first line, so the headline
-            keeps the full width; on narrow screens it drops below. */}
-        <div className="absolute right-0 top-0 grid place-items-center w-[26rem] h-[min(22vw,17rem)] max-[1100px]:static max-[1100px]:mt-10 max-[1100px]:w-auto max-[1100px]:h-48 max-[1100px]:place-items-center max-[1100px]:justify-items-start">
-          <div key={kind.word} className="fun:animate-hero-pop">
-            {kind.demo}
+    <section className="relative min-h-svh pt-32 px-(--gutter) pb-14 flex flex-col gap-10 max-[900px]:pt-28" id="top">
+      <h1 className={cn("m-0", HEAD)}>
+        <span className="block">
+          All the <span className="text-flame">components,</span>
+        </span>
+        <span className="flex flex-wrap items-center gap-x-[0.22em]">
+          none of the
+          <Sticker color="blue" rotate={-7} size="clamp(1rem, 2.4vw, 2.3rem)" className="px-[0.9em] py-[0.35em] tracking-normal">
+            boring
+          </Sticker>
+          bits.
+        </span>
+      </h1>
+
+      <div className="deal grid flex-1 grid-cols-4 auto-rows-[minmax(15rem,1fr)] gap-tile max-[1000px]:grid-cols-2 max-[560px]:grid-cols-1">
+        <div className={cn(TILE, "[--i:0] col-span-2 row-span-2 bg-ink text-paper place-items-stretch p-[clamp(1.5rem,3vw,3rem)] max-[560px]:col-span-1")}>
+          <div className="flex flex-col justify-between gap-10">
+            <p className="m-0 text-[clamp(1.25rem,1.9vw,1.9rem)] leading-[1.3] tracking-[-0.02em] font-medium max-w-[30ch]">
+              Everything you would reach for in shadcn/ui, on the same Radix + Tailwind base — plus the things it never shipped:
+              hold-to-delete buttons, liquid forms, charts you scrub, galleries you throw. Bring a boring screen; we will rapui it.
+            </p>
+            <div className="flex flex-wrap items-center gap-tight" data-rap-theme="light">
+              <Button size="lg" variant="accent" icon onClick={() => (window.location.hash = "docs")}>
+                Browse all {COUNT}
+              </Button>
+              <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
+                npm i rapui
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-[1.3fr_1fr] items-end gap-10 max-[900px]:grid-cols-1">
-        <Lead className="max-w-[46ch]">
-          Everything you would reach for in shadcn/ui — dialogs, forms, tables, calendars — on the same Radix + Tailwind base.{" "}
-          <Highlight>Plus the things it never shipped</Highlight>: hold-to-delete buttons, liquid forms, charts you scrub, galleries
-          you throw. Bring a boring screen; we will rapui it.
-        </Lead>
-        <ButtonGroup className="justify-self-end max-[900px]:justify-self-start">
-          <Button size="lg" variant="blue" icon onClick={() => (window.location.hash = "docs")}>
-            Browse {COUNT} components
-          </Button>
-          <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
-            npm i rapui
-          </Button>
-        </ButtonGroup>
+        <div className={cn(TILE, "[--i:1] bg-flame")}>
+          <HoldButton size="lg" variant="ink" doneLabel="Shipped">
+            Hold to ship
+          </HoldButton>
+        </div>
+        <div className={cn(TILE, "[--i:2] bg-acid")}>
+          <Sticker shape="burst" color="bubble" spin={false} rotate={10} size="1.25rem" className="w-40 text-[#282828]">
+            hot
+            <br />
+            drop
+          </Sticker>
+        </div>
+        <div className={cn(TILE, "[--i:3] bg-sky text-[#282828]")} data-rap-theme="light">
+          <HeroSwitch />
+        </div>
+        <div className={cn(TILE, "[--i:4] bg-paper-2")}>
+          <div className="flex flex-col gap-2 w-full max-w-64">
+            <span className="text-[2rem] font-medium tracking-[-0.03em] tabular-nums leading-none">
+              $58,834<span className="text-[1.4rem] opacity-35">.75</span>
+            </span>
+            <span className="text-[0.85rem] font-medium text-success">+2.1% today</span>
+            <Sparkline data={[12, 14, 13, 17, 16, 19, 18, 22, 21, 25]} width={256} height={56} />
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -403,61 +341,77 @@ function GiantToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => 
   );
 }
 
-/* The numbers, huge, each one proven by a live thing under it rather than a
-   slogan: the count, a grey 4px rectangle that rapuis itself when you touch it,
-   and the one attribute that calms the whole page — a real switch that does it. */
-const STAT = "flex flex-col justify-between gap-10 min-h-[30rem] p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg bg-paper-2 overflow-hidden";
-const BIG = "font-display font-medium tracking-[-0.07em] leading-[0.8] tabular-nums text-[clamp(5rem,9.5vw,10rem)]";
-const STAT_TEXT = "m-0 max-w-[26ch] text-[1.15rem] leading-[1.4] text-ink-2";
+/* The numbers, huge, as plain cards: the figure and the sentence under it, nothing
+   else. The figure is an ODOMETER — each digit is a column of 0–9 that rolls to
+   its place when the card scrolls into view, the leftmost last and slowest, on a
+   back-out curve, so the number seems to wind up and click into place rather than
+   flicker through values. Calm shows the number at once. */
+const STAT = "flex flex-col gap-5 min-h-[24rem] justify-end p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg overflow-hidden";
+const BIG = "font-display font-medium tracking-[-0.07em] tabular-nums text-[clamp(6rem,11vw,11rem)] leading-[0.8]";
+const STAT_TEXT = "m-0 max-w-[24ch] text-[1.2rem] leading-[1.35] opacity-80";
+
+function Odometer({ value }: { value: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [go, setGo] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (isCalm(el)) return setGo(true);
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        setGo(true);
+        io.disconnect();
+      }
+    }, { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const digits = String(value).split("");
+  return (
+    <span ref={ref} className="inline-flex" aria-label={String(value)}>
+      {digits.map((d, i) => {
+        const n = Number(d);
+        // each column spins through a full turn plus its digit, the left ones further
+        const turns = (digits.length - i) * 10;
+        const to = go ? turns + n : 0;
+        return (
+          <span key={i} aria-hidden className="relative inline-block h-[0.92em] overflow-hidden">
+            <span
+              className="flex flex-col"
+              style={{
+                transform: `translateY(${-to * 0.92}em)`,
+                transition: go ? `transform ${1400 + (digits.length - i) * 350}ms cubic-bezier(0.2, 1.15, 0.3, 1)` : "none",
+              }}
+            >
+              {Array.from({ length: turns + 10 }, (_, k) => (
+                <span key={k} className="h-[0.92em] leading-[0.92]">
+                  {k % 10}
+                </span>
+              ))}
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
 function Stats() {
-  const [calm, setCalm] = useState(false);
-  useEffect(() => {
-    const root = document.documentElement;
-    if (calm) root.setAttribute("data-rap-motion", "calm");
-    else root.removeAttribute("data-rap-motion");
-    return () => root.removeAttribute("data-rap-motion");
-  }, [calm]);
+  const cards = [
+    { n: COUNT, text: "components, from Dialog and DataTable to a button you have to hold.", tone: "bg-flame text-white" },
+    { n: 0, text: "grey rectangles with 4px corners.", tone: "bg-paper-2" },
+    { n: 1, text: "attribute to turn every joke off, for the serious screens.", tone: "bg-ink text-paper" },
+  ];
   return (
     <section className="grid grid-cols-3 gap-tile px-(--gutter) pb-32 max-[1000px]:grid-cols-1">
-      {/* the number and its sentence read as one line — the text sits right under
-          the figure — and the live proof, if any, waits at the bottom of the card */}
-      <div className={STAT}>
-        <div className="flex flex-col gap-4">
+      {cards.map((c) => (
+        <div key={c.text} className={cn(STAT, c.tone)}>
           <span className={BIG}>
-            <Counter to={COUNT} />
+            <Odometer value={c.n} />
           </span>
-          <p className={STAT_TEXT}>components, from Dialog and DataTable to a button you have to hold.</p>
+          <p className={STAT_TEXT}>{c.text}</p>
         </div>
-      </div>
-      <div className={STAT}>
-        <div className="flex flex-col gap-4">
-          <span className={BIG}>
-            <Counter to={0} from={99} />
-          </span>
-          <p className={STAT_TEXT}>grey rectangles with 4px corners. Hover the one below.</p>
-        </div>
-        {/* the thing we don't ship: touch it and it gets rapui'd */}
-        <button
-          type="button"
-          className={cn(
-            "self-start h-11 px-5 rounded-[4px] bg-[#e4e4e7] text-[#52525b] text-[14px] font-medium cursor-pointer",
-            "transition-[border-radius,background-color,color,height,padding,font-size] duration-500 ease-spring",
-            "hover:rounded-[999px] hover:bg-flame hover:text-white hover:h-14 hover:px-8 hover:text-[1.1rem]",
-          )}
-        >
-          Grey rectangle
-        </button>
-      </div>
-      <div className={STAT}>
-        <div className="flex flex-col gap-4">
-          <span className={BIG}>
-            <Counter to={1} from={9} />
-          </span>
-          <p className={STAT_TEXT}>attribute turns every joke off, for the serious screens. The switch below really does it.</p>
-        </div>
-        <Switch size="lg" checked={calm} onCheckedChange={setCalm} label={calm ? "Calm — the page stands still" : "Calm mode"} />
-      </div>
+      ))}
     </section>
   );
 }
@@ -563,13 +517,15 @@ const BUBBLE = "max-w-[min(100%,34rem)] px-6 py-4 text-[clamp(1.1rem,1.8vw,1.5re
 const THEM = "rounded-[28px] rounded-bl-[8px] bg-paper-2 text-ink";
 const ME = "rounded-[28px] rounded-br-[8px] bg-ink text-paper";
 
-/* The conversation plays as you scroll. A tall runway holds a sticky pink window
-   (a phone-sized share of the screen, not a wall); how far you are through the
-   runway is how many messages have arrived. Messages are bottom-aligned like a
-   real chat, so each new one pushes the rest up and older ones slide out of the
-   top. Each arrives on mount: up from below, tilted toward its sender's side,
-   over-shooting on the back curve. Scroll back and they un-send. Calm shows the
-   whole thread at once. */
+/* The conversation plays as you scroll — continuously, not in steps. A tall
+   runway holds a sticky pink window; how far you are through it is a smooth
+   number v from 0 to N (N messages), eased toward the scroll on each frame so a
+   wheel notch glides instead of jumping. Message i is "arrived" by
+   a = clamp(v − i, 0, 1): it rises 48px, straightens from its sender's tilt and
+   fades in over that range. The thread is bottom-aligned like a real chat: the
+   column is shifted so the newest message's bottom meets the window's bottom,
+   interpolated by the same fraction — so older bubbles are pushed up smoothly as
+   the new one grows in, and scroll back un-sends them. Calm shows the thread. */
 const DOT_GRID = "[background-image:radial-gradient(circle,rgb(255_255_255/0.55)_1.4px,transparent_1.7px)] [background-size:24px_24px]";
 
 function MediaChat() {
@@ -594,41 +550,90 @@ function MediaChat() {
       )),
     },
   ];
+  const N = items.length;
   const runway = useRef<HTMLDivElement>(null);
-  const [n, setN] = useState(1);
+  const win = useRef<HTMLDivElement>(null);
+  const col = useRef<HTMLDivElement>(null);
+  const rows = useRef<(HTMLDivElement | null)[]>([]);
   const sound = useSound();
-  const last = useRef(1);
+
   useEffect(() => {
     const el = runway.current;
     if (!el) return;
-    if (isCalm(el)) return setN(items.length);
-    const read = () => {
+    const calm = isCalm(el);
+    let v = calm ? N : 0.9;
+    let raf = 0;
+    let heard = Math.floor(v);
+    const target = () => {
       const r = el.getBoundingClientRect();
-      const travel = r.height - window.innerHeight;
-      const p = Math.min(1, Math.max(0, (window.innerHeight * 0.35 - r.top) / Math.max(1, travel)));
-      const next = 1 + Math.min(items.length - 1, Math.floor(p * items.length));
-      if (next > last.current) sound.play("pop", { strength: 0.4, pitch: 0.9 + next * 0.05 });
-      last.current = next;
-      setN(next);
+      const travel = Math.max(1, r.height - window.innerHeight);
+      const p = Math.min(1, Math.max(0, (window.innerHeight * 0.2 - r.top) / travel));
+      return 0.9 + p * (N - 0.9);
     };
-    read();
-    window.addEventListener("scroll", read, { passive: true });
-    window.addEventListener("resize", read);
+    const paint = () => {
+      const w = win.current;
+      const c = col.current;
+      if (!w || !c) return;
+      const pad = parseFloat(getComputedStyle(c).paddingBottom) || 0;
+      // where the column's bottom should be: the bottom of message floor(v)-1, plus the
+      // current message's height scaled by its fraction
+      const k = Math.min(N - 1, Math.floor(v));
+      const f = Math.min(1, v - k);
+      const prev = k > 0 ? rows.current[k - 1] : null;
+      const cur = rows.current[k];
+      const prevBottom = prev ? prev.offsetTop + prev.offsetHeight : 0;
+      const curBottom = cur ? cur.offsetTop + cur.offsetHeight : prevBottom;
+      const bottom = prevBottom + (curBottom - prevBottom) * f;
+      c.style.transform = `translateY(${(w.clientHeight - pad - bottom).toFixed(1)}px)`;
+      rows.current.forEach((row, i) => {
+        if (!row) return;
+        const a = Math.min(1, Math.max(0, v - i));
+        const e = 1 - Math.pow(1 - a, 3);
+        const tilt = items[i].side === "me" ? 7 : -7;
+        row.style.opacity = String(Math.min(1, a * 1.6));
+        row.style.transform = `translateY(${((1 - e) * 48).toFixed(1)}px) rotate(${((1 - e) * tilt).toFixed(2)}deg) scale(${(0.86 + 0.14 * e).toFixed(3)})`;
+      });
+    };
+    const tick = () => {
+      const t = target();
+      v += (t - v) * 0.14;
+      if (Math.abs(t - v) < 0.002) v = t;
+      const whole = Math.floor(v + 0.15);
+      if (whole > heard) sound.play("pop", { strength: 0.35, pitch: 0.9 + whole * 0.05 });
+      heard = whole;
+      paint();
+      raf = Math.abs(t - v) > 0.002 ? requestAnimationFrame(tick) : 0;
+    };
+    const wake = () => {
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    if (calm) paint();
+    else {
+      v = target();
+      paint();
+      window.addEventListener("scroll", wake, { passive: true });
+      window.addEventListener("resize", wake);
+    }
     return () => {
-      window.removeEventListener("scroll", read);
-      window.removeEventListener("resize", read);
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", wake);
+      window.removeEventListener("resize", wake);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   return (
-    <div ref={runway} className="relative" style={{ height: `calc(min(74vh, 42rem) + ${items.length * 18}vh)` }}>
-      <div className={cn("sticky top-28 h-[min(74vh,42rem)] rounded-lg bg-bubble overflow-hidden", DOT_GRID)}>
-        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-[clamp(1rem,3vw,2.5rem)] w-[min(100%,56rem)] mx-auto">
-          {items.slice(0, n).map((it, i) => (
+    <div ref={runway} className="relative" style={{ height: `calc(min(84vh, 50rem) + ${N * 22}vh)` }}>
+      <div ref={win} className={cn("sticky top-24 h-[min(84vh,50rem)] rounded-lg bg-bubble overflow-hidden", DOT_GRID)}>
+        <div ref={col} className="absolute inset-x-0 top-0 flex flex-col gap-3 p-[clamp(1rem,3vw,2.5rem)] w-[min(100%,56rem)] mx-auto will-change-transform">
+          {items.map((it, i) => (
             <div
               key={i}
-              className={cn(it.side === "me" ? "self-end origin-bottom-right" : "self-start origin-bottom-left", "fun:animate-chat-pop", it.className)}
-              style={{ ["--tilt" as string]: it.side === "me" ? "7deg" : "-7deg" }}
+              ref={(el) => {
+                rows.current[i] = el;
+              }}
+              className={cn(it.side === "me" ? "self-end origin-bottom-right" : "self-start origin-bottom-left", it.className)}
+              style={{ opacity: 0 }}
             >
               {it.node}
             </div>
@@ -687,33 +692,35 @@ function Wall() {
         desc={
           <>
             Minimal cards — one big number, one thin line — that read back under your finger. Scrub the balance, pull it down to
-            refresh, spin the donut, drag the gauge. Or drop a <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} width={70} height={18} />{" "}
+            refresh, spin the donut, hover a day on the grid. Or drop a <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} width={70} height={18} />{" "}
             straight into a sentence.
           </>
         }
-        code={`import { BalanceChart, DonutChart, GaugeChart, BarsChart, RaceBars, Sparkline } from "rapui";
+        code={`import { BalanceChart, DonutChart, HeatGrid, BarsChart, RaceBars, Sparkline } from "rapui";
 
 <BalanceChart />
 <DonutChart data={sources} />
-<GaugeChart defaultValue={72} />
+<HeatGrid />
 <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} />`}
         stageClass="bg-paper place-items-stretch"
       >
-        {/* A plain grid of 20rem tracks — the width every chart card is drawn at —
-            centred, with one gap both ways, so nothing is squeezed or cut and the
-            spacing is the same between every pair of cards. */}
-        <div className="grid grid-cols-[repeat(3,20rem)] justify-center items-start gap-5 w-full max-[1300px]:grid-cols-[repeat(2,20rem)] max-[860px]:grid-cols-[minmax(0,20rem)]">
+        {/* Scattered, not aligned: the cards wrap freely with a lot of air between
+            them, and each one is dropped a different distance down — a table of
+            printouts rather than a dashboard. On a phone they simply stack. */}
+        <div className="flex flex-wrap justify-center items-start gap-x-[clamp(2rem,5vw,6rem)] gap-y-16 w-full py-6">
           {/* each chart in its own wrapper: BalanceChart cancels its pull-stretch with a
               negative margin, which a margin set on it directly would undo */}
-          {[
-            <BalanceChart key="b" />,
-            <DonutChart key="d" />,
-            <SparkTable key="s" />,
-            <GaugeChart key="g" defaultValue={72} />,
-            <BarsChart key="bars" />,
-            <RaceBars key="r" />,
-          ].map((c) => (
-            <div key={c.key} className="flex justify-center">
+          {(
+            [
+              [<BalanceChart key="b" />, "mt-0"],
+              [<DonutChart key="d" />, "mt-24"],
+              [<SparkTable key="s" />, "mt-8"],
+              [<HeatGrid key="h" />, "mt-4"],
+              [<BarsChart key="bars" />, "mt-20"],
+              [<RaceBars key="r" />, "-mt-6"],
+            ] as const
+          ).map(([c, offset]) => (
+            <div key={c.key} className={cn("flex justify-center max-w-full max-[860px]:mt-0", offset)}>
               {c}
             </div>
           ))}
