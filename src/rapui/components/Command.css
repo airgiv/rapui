@@ -1,0 +1,78 @@
+.rap-command {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  padding: 6px;
+  border-radius: 20px;
+  background: var(--rap-surface);
+  color: var(--rap-ink);
+  box-shadow: 0 0 0 1px var(--rap-line);
+  font-family: var(--rap-font-sans);
+}
+.rap-command--dialog { padding: 0; border-radius: 0; background: none; box-shadow: none; }
+
+.rap-command-input {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: none;
+  height: var(--rap-control-h);
+  padding: 0 1.1rem;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill);
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), box-shadow var(--rap-dur-fast) var(--rap-ease-rm);
+}
+.rap-command-input:focus-within { background: var(--rap-surface); box-shadow: inset 0 0 0 2px var(--rap-ring); }
+.rap-command-input__icon { width: 18px; height: 18px; flex: none; color: var(--rap-mute); }
+.rap-command-input__el {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  outline: none;
+}
+.rap-command-input__el::placeholder { color: var(--rap-mute); }
+
+.rap-command-list {
+  max-height: 320px;
+  margin-top: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding: 4px;
+}
+.rap-command-empty {
+  padding: 1.75rem 1rem;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--rap-mute);
+}
+.rap-command-group [cmdk-group-heading] {
+  padding: 0.6rem 0.9rem 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--rap-mute);
+}
+/* cmdk uses data-selected / data-disabled="true|false" instead of Radix's data-highlighted */
+.rap-command-item[data-disabled="false"] { opacity: 1; pointer-events: auto; }
+.rap-command-item[data-disabled="true"] { opacity: 0.4; pointer-events: none; }
+.rap-command-item[data-selected="true"] { background: var(--rap-fill); }
+.rap-command-item > svg { color: var(--rap-ink-2); }
+.rap-command-item[hidden] { display: none; }
+
+/* palette inside a Dialog */
+.rap-dialog.rap-command-dialog { padding: 10px; gap: 0; border-radius: var(--rap-radius); overflow: hidden; }
+.rap-command-dialog .rap-command-input { height: var(--rap-control-h-lg); }
+.rap-command-dialog .rap-command-list { max-height: min(400px, 60vh); padding: 0 0 2px; }
+/* anchored near the top so the box doesn't jump while the list filters */
+.rap-dialog.rap-command-dialog { top: 18vh; max-height: 72vh; transform: translate(-50%, 0); animation-name: rap-command-in; }
+.rap-dialog.rap-command-dialog[data-state="closed"] { animation-name: rap-command-out; }
+@keyframes rap-command-in { from { opacity: 0; transform: translate(-50%, 12px) scale(0.98); } }
+@keyframes rap-command-out { to { opacity: 0; transform: translate(-50%, 0) scale(0.98); } }

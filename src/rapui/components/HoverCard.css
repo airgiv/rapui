@@ -1,0 +1,7 @@
+.rap-hovercard {
+  width: min(300px, calc(100vw - 24px));
+  padding: 18px;
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  outline: none;
+}

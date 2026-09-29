@@ -1,0 +1,62 @@
+.rap-sheet {
+  --sheet-inset: 8px;
+  --sheet-size: 420px;
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  overflow: hidden;
+  border-radius: var(--rap-radius);
+  background: var(--rap-surface);
+  color: var(--rap-ink);
+  box-shadow: var(--rap-shadow-pop);
+  font-family: var(--rap-font-sans);
+  animation-duration: var(--rap-dur);
+  animation-timing-function: var(--rap-ease-out);
+}
+.rap-sheet:focus { outline: none; }
+.rap-sheet[data-state="closed"] { animation-duration: 260ms; animation-timing-function: var(--rap-ease-rm); animation-fill-mode: forwards; }
+
+.rap-sheet--right,
+.rap-sheet--left {
+  top: var(--sheet-inset);
+  bottom: var(--sheet-inset);
+  width: min(var(--sheet-size), calc(100vw - var(--sheet-inset) * 2));
+}
+.rap-sheet--right { right: var(--sheet-inset); animation-name: rap-sheet-in-right; }
+.rap-sheet--left { left: var(--sheet-inset); animation-name: rap-sheet-in-left; }
+.rap-sheet--top,
+.rap-sheet--bottom {
+  left: var(--sheet-inset);
+  right: var(--sheet-inset);
+  max-height: calc(100vh - var(--sheet-inset) * 2);
+}
+.rap-sheet--top { top: var(--sheet-inset); animation-name: rap-sheet-in-top; }
+.rap-sheet--bottom { bottom: var(--sheet-inset); animation-name: rap-sheet-in-bottom; }
+
+.rap-sheet--right[data-state="closed"] { animation-name: rap-sheet-out-right; }
+.rap-sheet--left[data-state="closed"] { animation-name: rap-sheet-out-left; }
+.rap-sheet--top[data-state="closed"] { animation-name: rap-sheet-out-top; }
+.rap-sheet--bottom[data-state="closed"] { animation-name: rap-sheet-out-bottom; }
+
+@keyframes rap-sheet-in-right { from { transform: translateX(calc(100% + 16px)); } }
+@keyframes rap-sheet-in-left { from { transform: translateX(calc(-100% - 16px)); } }
+@keyframes rap-sheet-in-top { from { transform: translateY(calc(-100% - 16px)); } }
+@keyframes rap-sheet-in-bottom { from { transform: translateY(calc(100% + 16px)); } }
+@keyframes rap-sheet-out-right { to { transform: translateX(calc(100% + 16px)); } }
+@keyframes rap-sheet-out-left { to { transform: translateX(calc(-100% - 16px)); } }
+@keyframes rap-sheet-out-top { to { transform: translateY(calc(-100% - 16px)); } }
+@keyframes rap-sheet-out-bottom { to { transform: translateY(calc(100% + 16px)); } }
+
+.rap-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0 -28px;
+  padding: 0 28px;
+}
+.rap-sheet-footer { margin-top: auto; }
+.rap-sheet--top .rap-sheet-footer,
+.rap-sheet--bottom .rap-sheet-footer { margin-top: 0; }

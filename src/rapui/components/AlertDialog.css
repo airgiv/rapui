@@ -1,0 +1,10 @@
+.rap-alertdialog { gap: 24px; }
+.rap-alertdialog-header { padding-right: 0; }
+
+/* destructive confirm: red pill, ink blob on hover */
+.rap-btn.rap-alertdialog-action--danger {
+  --btn-bg: var(--rap-danger);
+  --btn-fg: #ffffff;
+  --btn-blob: var(--rap-ink);
+  --btn-blob-fg: var(--rap-paper);
+}

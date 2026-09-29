@@ -33,7 +33,7 @@
 }
 .rap-btn:active { transform: scale(0.96); }
 .rap-btn:disabled { opacity: 0.4; pointer-events: none; }
-.rap-btn:focus-visible { outline: 2px solid var(--rap-accent); outline-offset: 4px; }
+.rap-btn:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 3px; }
 
 .rap-btn--has-icon { padding-right: calc(var(--btn-h) * 0.14); }
 .rap-btn--icon-start { flex-direction: row-reverse; padding-right: var(--btn-px); padding-left: calc(var(--btn-h) * 0.14); }
@@ -50,13 +50,13 @@
   transform: translate(-50%, 0) scale(0.2);
   transition: transform var(--rap-dur-slow) var(--rap-ease-out), top var(--rap-dur-slow) var(--rap-ease-out);
 }
-.rap-btn:hover .rap-btn__blob,
-.rap-btn:focus-visible .rap-btn__blob {
+.rap-btn:hover .rap-btn__blob {
   top: 50%;
   transform: translate(-50%, -50%) scale(1);
 }
-.rap-btn:hover,
-.rap-btn:focus-visible { color: var(--btn-blob-fg); }
+.rap-btn:hover { color: var(--btn-blob-fg); }
+/* keyboard focus is a ring only: filling the button on focus made a focused
+   secondary action (e.g. a dialog's Cancel) look like the primary one */
 
 .rap-btn__icon {
   display: grid;

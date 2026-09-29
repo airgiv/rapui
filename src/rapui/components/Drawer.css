@@ -1,0 +1,42 @@
+/* vaul drives the slide; we only style the surface */
+.rap-drawer {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  padding: 12px 24px 28px;
+  border-radius: var(--rap-radius) var(--rap-radius) 0 0;
+  background: var(--rap-surface);
+  color: var(--rap-ink);
+  box-shadow: var(--rap-shadow-pop);
+  font-family: var(--rap-font-sans);
+}
+.rap-drawer:focus { outline: none; }
+.rap-drawer__handle {
+  flex: none;
+  width: 44px;
+  height: 5px;
+  margin: 0 auto 16px;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill-strong);
+  cursor: grab;
+}
+.rap-drawer__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 560px;
+  min-height: 0;
+  margin: 0 auto;
+  overflow: auto;
+}
+.rap-drawer-header { padding-right: 0; }
+.rap-drawer-footer { justify-content: stretch; }
+.rap-drawer-footer > * { flex: 1 1 0; }
+/* vaul fades the overlay itself */
+.rap-drawer-scrim { animation: none; }
