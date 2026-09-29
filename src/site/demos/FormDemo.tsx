@@ -46,18 +46,11 @@ export function FormDemo() {
   const [booking, setBooking] = useState<Booking>(PRESETS[0].value);
   const [state, setState] = useState<StackState>("idle");
   const [error, setError] = useState<{ index: number; message: string } | null>(null);
-  const [row, setRow] = useState(true);
-  const box = useRef<HTMLDivElement>(null);
+  /* a column, always: in a row, submitting sucked the sentence into the button and
+     left a lone pill in a wide empty bar — the stacked form keeps its shape */
+  const row = false;
   const timers = useRef<number[]>([]);
 
-  // a bar when there is room for the sentence, a column on a phone
-  useEffect(() => {
-    const el = box.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([e]) => setRow(e.contentRect.width >= 820));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
@@ -82,7 +75,7 @@ export function FormDemo() {
   const field = (i: number) => ({ size: "hero" as const, invalid: state === "error" && error?.index === i, autoComplete: "off" });
 
   return (
-    <div ref={box} className="flex flex-col items-center gap-6 w-full max-w-[64rem] [contain:inline-size]">
+    <div className="flex flex-col items-center gap-6 w-full max-w-[36rem] [contain:inline-size]">
       <FormStack
         direction={row ? "row" : "column"}
         state={state}
