@@ -232,6 +232,35 @@
 @layer base {
   :root { --rap-playful: 1; }
   [data-rap-motion="calm"] { --rap-playful: 0; }
+
+  /* A scoped reset. `rapui/styles.css` ships without Tailwind's preflight so it never
+     restyles the host app — but the components are drawn assuming it: border-box
+     sizing, borderless transparent buttons, no default margins or list bullets, block
+     svgs. This gives them exactly that, and only inside rapui parts (every part carries
+     data-slot). Everything is wrapped in :where(), so it has zero specificity: the
+     components' own utilities and anything the app sets still win. Apps on Tailwind
+     already have all of this from preflight; here it is a no-op. */
+  :where([data-slot], [data-slot] *, [data-slot]::before, [data-slot]::after, [data-slot] *::before, [data-slot] *::after) {
+    box-sizing: border-box;
+    border: 0 solid;
+  }
+  :where([data-slot]) { font-family: var(--rap-font-sans); }
+  :where(button[data-slot], [data-slot] button, [data-slot] input, [data-slot] textarea, [data-slot] select, input[data-slot], textarea[data-slot]) {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+  }
+  :where(button[data-slot], [data-slot] button) { cursor: pointer; }
+  :where([data-slot] :is(h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, hr, pre), :is(h1, h2, h3, h4, h5, h6, p)[data-slot]) { margin: 0; }
+  :where([data-slot] :is(h1, h2, h3, h4, h5, h6), :is(h1, h2, h3, h4, h5, h6)[data-slot]) { font-size: inherit; font-weight: inherit; }
+  :where([data-slot] :is(ol, ul, menu), :is(ol, ul)[data-slot]) { list-style: none; margin: 0; padding: 0; }
+  :where([data-slot] :is(img, svg, video, canvas), :is(img, svg, video, canvas)[data-slot]) { display: block; vertical-align: middle; }
+  :where([data-slot] :is(img, video)) { max-width: 100%; height: auto; }
+  :where([data-slot] a) { color: inherit; text-decoration: inherit; }
 }
 
 @layer components {

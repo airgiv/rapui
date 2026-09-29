@@ -24,6 +24,27 @@ function PartyScrub({ value, onChange }: { value: number; onChange: (n: number) 
       onChange(n);
     }
   };
+  // Touch goes through native listeners, not pointer events: they are non-passive,
+  // so the very first finger movement is ours (the page does not scroll, even on iOS
+  // Safari, which does not always honour touch-action), and the value follows the
+  // finger from the first touch — no "tap, then drag".
+  const setRef = useRef(set);
+  setRef.current = set;
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const at = (e: TouchEvent) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      if (t) setRef.current(t.clientX);
+    };
+    el.addEventListener("touchstart", at, { passive: false });
+    el.addEventListener("touchmove", at, { passive: false });
+    return () => {
+      el.removeEventListener("touchstart", at);
+      el.removeEventListener("touchmove", at);
+    };
+  }, []);
   return (
     <span
       ref={box}
@@ -34,13 +55,15 @@ function PartyScrub({ value, onChange }: { value: number; onChange: (n: number) 
       aria-valuemax={MAX}
       aria-valuenow={value}
       onPointerDown={(e) => {
+        if (e.pointerType === "touch") return;
         held.current = true;
         e.currentTarget.setPointerCapture(e.pointerId);
         set(e.clientX);
       }}
-      onPointerMove={(e) => held.current && set(e.clientX)}
+      onPointerMove={(e) => e.pointerType !== "touch" && held.current && set(e.clientX)}
       onPointerUp={() => (held.current = false)}
-      className="flex items-center gap-[5px] h-8 px-1 cursor-ew-resize touch-none select-none"
+      // the hit area is the pill's full height and a little past the ends — a finger is not a cursor
+      className="flex items-center gap-[5px] h-8 -my-7 py-7 -mx-3 px-4 cursor-ew-resize touch-none select-none"
     >
       {Array.from({ length: MAX }, (_, i) => (
         <i

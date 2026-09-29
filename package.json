@@ -1,7 +1,7 @@
 {
   "name": "rapui",
   "version": "0.1.0",
-  "description": "Fancy, editorial, designer-grade React UI library. Big type, air, unusual buttons, motion.",
+  "description": "A playful React UI kit on Radix + Tailwind v4: the breadth of shadcn/ui, plus hold buttons, liquid forms, charts you scrub and galleries you throw.",
   "type": "module",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -30,7 +30,8 @@
     "*.css",
     "./src/rapui/index.ts",
     "./src/rapui/fonts.ts",
-    "./dist/fonts.js"
+    "./dist/fonts.js",
+    "./dist/styles.js"
   ],
   "scripts": {
     "dev": "vite",
