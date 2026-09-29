@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Accent,
   BalanceChart,
@@ -6,7 +6,6 @@ import {
   BigLink,
   Button,
   ButtonGroup,
-  Checklist,
   CircleButton,
   ConfirmButton,
   Counter,
@@ -47,10 +46,12 @@ import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
 import { Floaty, HeroScene } from "./HeroScene";
+import { isCalm } from "../rapui/hooks/useGlide";
 import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
 import { DialsDemo } from "./demos/DialsDemo";
 import { StickersDemo } from "./demos/StickersDemo";
+import { ChecklistDemo } from "./demos/ChecklistDemo";
 import gridLines from "./media/grid-lines.wav";
 import voiceNote from "./media/voice-note.wav";
 import reel from "./media/reel.webm";
@@ -62,8 +63,8 @@ const COUNT = 110;
 
 /* ───────────────────────── shared class strings ───────────────────────── */
 
-/* a centred, wrapping row of demo pieces with room to breathe */
-const ROW = "flex flex-wrap items-center justify-center gap-10";
+/* a white stage with a grey dot grid, the canvas feel of an editor */
+const DOTS = "bg-paper-2 [background-image:radial-gradient(circle,var(--rap-line)_1.3px,transparent_1.6px)] [background-size:22px_22px] [background-position:center]";
 /* body copy under a section title */
 const COPY = "m-0 text-ink-2 text-[1.15rem] leading-[1.5] max-w-[46ch] [&_code]:bg-paper-2 [&_code]:py-[0.1em] [&_code]:px-[0.35em] [&_code]:rounded-[6px] [&_code]:text-[0.9em]";
 
@@ -81,17 +82,21 @@ function Header({
   setSound: (v: SoundSettings) => void;
 }) {
   return (
-    // a frosted pill floating over the page, inset by the page gutter
+    // An inverted bar: the header carries the OPPOSITE theme, so its own paper is
+    // the page's ink (black on the light page, near-white on the dark one) and every
+    // control inside — switches, the sound toggle, the button — redraws itself for
+    // that ground with no special cases. Taller and wider than the old pill.
     <header
+      data-rap-theme={dark ? "light" : "dark"}
       className={cn(
-        "fixed top-3 inset-x-(--gutter) z-100 flex items-center justify-between gap-4 py-2 pr-2 pl-[1.4rem] max-[480px]:gap-2 max-[480px]:pl-4",
-        "rounded-pill border border-line bg-[color-mix(in_srgb,var(--rap-paper)_72%,transparent)] backdrop-blur-[16px] backdrop-saturate-[1.4]",
+        "fixed top-2.5 inset-x-[max(0.625rem,calc(var(--gutter)/2))] z-100 flex items-center justify-between gap-6 h-20 pr-3 pl-7 max-[480px]:gap-2 max-[480px]:pl-5 max-[480px]:h-16",
+        "rounded-pill bg-paper text-ink",
       )}
     >
-      <a href="#top" className="text-[1.5rem]" data-rap-cursor="Home" aria-label="rapui, back to top">
+      <a href="#top" className="text-[2.1rem] max-[480px]:text-[1.6rem]" data-rap-cursor="Home" aria-label="rapui, back to top">
         <Wordmark />
       </a>
-      <nav className="flex gap-8 font-medium max-[860px]:hidden">
+      <nav className="flex gap-9 text-[1.05rem] font-medium max-[860px]:hidden">
         <a href="#docs"><RollText>Docs</RollText></a>
         <a href="#wall"><RollText>Components</RollText></a>
         <a href="#tech"><RollText>Under the hood</RollText></a>
@@ -101,7 +106,7 @@ function Header({
       <div className="flex items-center gap-3 max-[480px]:gap-2">
         <SoundControls value={sound} onChange={setSound} tight />
         <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
-        <Button size="sm" icon onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
+        <Button size="md" icon className="max-[480px]:hidden" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
           Get it
         </Button>
       </div>
@@ -109,81 +114,56 @@ function Header({
   );
 }
 
-/* the headline words: huge, each one a loose object */
-const LINE = "flex flex-wrap items-center gap-x-[0.2em] font-display font-medium tracking-[-0.055em] leading-[0.8] text-[clamp(3.2rem,10vw,10.5rem)]";
-/* the small live things scattered around the headline */
-const PROP = "rounded-card bg-surface shadow-[0_18px_50px_-18px_rgb(0_0_0/0.22)] dark:shadow-[0_18px_50px_-18px_rgb(0_0_0/0.7)]";
+/* one line of the headline: huge, and a single loose object */
+const LINE = "flex flex-wrap items-center gap-x-[0.2em] font-display font-medium tracking-[-0.055em] text-[clamp(3.2rem,10.5vw,11rem)] leading-[0.82] whitespace-nowrap max-[700px]:whitespace-normal";
 
+/* Three lines, three objects. The last round had every word and four little
+   cards loose on the table, which read as confetti rather than a headline. Now
+   each LINE is one piece: a degree or two of tilt, a little drift with the
+   pointer, and you can pick a whole line up and it springs back. The tag and the
+   burst belong to their lines and move with them. No shadows: the page is flat. */
 function Hero() {
-  const [fun, setFun] = useState(true);
   return (
     <section className="relative min-h-svh pt-36 px-(--gutter) pb-14 flex flex-col justify-between gap-14 max-[900px]:min-h-0 max-[900px]:pt-28" id="top">
-      <HeroScene className="relative">
-        {/* The pitch as a table of loose words — tilted, drifting with the pointer,
-            draggable. The "boring" tag sits in the MIDDLE of the last line, where it
-            reads as the word the kit refuses rather than a label hung off the end. */}
-        <h1 className="m-0 flex flex-col items-start gap-0 max-w-[min(100%,74rem)]" aria-label="All the components, none of the boring parts">
-          <span className={LINE} aria-hidden>
-            <Floaty depth={10} rotate={-2}>All</Floaty>
-            <Floaty depth={16} rotate={1.5}>the</Floaty>
-          </span>
-          <span className={cn(LINE, "pl-[8vw] max-[900px]:pl-0")} aria-hidden>
-            <Floaty depth={22} rotate={-1.2} className="text-flame">components,</Floaty>
-          </span>
-          <span className={LINE} aria-hidden>
-            <Floaty depth={12} rotate={1}>none of</Floaty>
-            <Floaty depth={34} rotate={-9}>
-              <Sticker color="blue" rotate={0} size="clamp(1.1rem, 3vw, 2.8rem)" className="px-[0.9em] py-[0.35em]">
-                boring
-              </Sticker>
-            </Floaty>
-            <Floaty depth={18} rotate={-1.5}>parts.</Floaty>
-          </span>
-        </h1>
-
-        {/* live props: real components, loose on the table. On a phone they
-            drop into a row under the headline instead of floating over it. */}
-        <div className="pointer-events-none absolute inset-0 max-[1100px]:static max-[1100px]:mt-12 max-[1100px]:flex max-[1100px]:flex-wrap max-[1100px]:gap-6 max-[1100px]:items-center">
-          <Floaty depth={40} rotate={12} className="pointer-events-auto absolute right-[4%] top-[-2%] max-[1100px]:static">
-            <Sticker shape="burst" color="acid" spin={false} size="clamp(0.9rem,1.3vw,1.15rem)" rotate={0} className="w-[clamp(6.5rem,10vw,9.5rem)]">
+      <HeroScene>
+        <h1 className="m-0 flex flex-col items-start" aria-label="All the components, none of the boring bits">
+          <Floaty depth={8} rotate={-1.5} className={LINE}>
+            <span aria-hidden>All the</span>
+          </Floaty>
+          <Floaty depth={16} rotate={1.2} className={cn(LINE, "text-flame ml-[8vw] max-[900px]:ml-0")}>
+            <span aria-hidden>components,</span>
+            <Sticker
+              shape="burst"
+              color="acid"
+              spin={false}
+              size="clamp(0.8rem,1.2vw,1.1rem)"
+              rotate={12}
+              className="absolute -top-[0.35em] left-full -ml-[0.05em] w-[clamp(5.5rem,9vw,8.5rem)] tracking-normal max-[1100px]:hidden"
+            >
               {COUNT}+
               <br />
               inside
             </Sticker>
           </Floaty>
-          <Floaty depth={26} rotate={-5} className="pointer-events-auto absolute right-[2%] top-[34%] max-[1100px]:static">
-            <div className={cn(PROP, "flex items-center gap-5 py-4 px-5")}>
-              <span className="text-[1.05rem] font-medium">Fun mode</span>
-              <Switch checked={fun} onCheckedChange={setFun} />
-            </div>
+          <Floaty depth={11} rotate={-0.8} className={LINE}>
+            <span aria-hidden>none of the</span>
+            <Sticker color="blue" rotate={-7} size="clamp(1.1rem, 3vw, 2.8rem)" className="px-[0.9em] py-[0.35em] tracking-normal">
+              boring
+            </Sticker>
+            <span aria-hidden>bits.</span>
           </Floaty>
-          <Floaty depth={32} rotate={4} className="pointer-events-auto absolute right-[20%] top-[58%] max-[1100px]:static">
-            <div className={cn(PROP, "py-4 px-5 flex flex-col gap-2")}>
-              <span className="text-[1.6rem] font-medium tracking-[-0.03em] tabular-nums leading-none">
-                $58,834<span className="text-[1.1rem] opacity-35">.75</span>
-              </span>
-              <span className="flex items-center gap-2 text-[0.8rem] font-medium text-success">
-                +2.1% <Sparkline data={[12, 14, 13, 17, 16, 19, 18, 22, 25]} width={84} height={20} />
-              </span>
-            </div>
-          </Floaty>
-          <Floaty depth={20} rotate={-3} className="pointer-events-auto absolute right-[3%] top-[80%] max-[1100px]:static">
-            <HoldButton size="md" variant="ink" doneLabel="Shipped">
-              Hold to ship
-            </HoldButton>
-          </Floaty>
-        </div>
+        </h1>
       </HeroScene>
 
       <div className="grid grid-cols-[1.3fr_1fr] items-end gap-10 max-[900px]:grid-cols-1">
         <Lead className="max-w-[46ch]">
-          Everything you would reach for in shadcn/ui — dialogs, forms, tables, calendars — on the same Radix + Tailwind base.
+          Everything you would reach for in shadcn/ui — dialogs, forms, tables, calendars — on the same Radix + Tailwind base.{" "}
           <Highlight>Plus the things it never shipped</Highlight>: hold-to-delete buttons, liquid forms, charts you scrub, galleries
-          you throw, players that dance. {COUNT}+ components, every one with a small joke in it.
+          you throw. Bring a boring screen; we will rapui it.
         </Lead>
         <ButtonGroup className="justify-self-end max-[900px]:justify-self-start">
           <Button size="lg" variant="blue" icon onClick={() => (window.location.hash = "docs")}>
-            Browse components
+            Browse {COUNT}+ components
           </Button>
           <Button size="lg" variant="soft" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
             npm i rapui
@@ -227,129 +207,138 @@ function Bands() {
    change when you flip. */
 
 /* the "sensible default" skin: small, grey, 4px — drawn by hand so it is nobody's in particular */
-const PLAIN_BTN = "h-9 px-4 rounded-[4px] bg-[#18181b] text-white text-[14px] font-medium";
-const PLAIN_INPUT = "h-9 w-full px-3 rounded-[4px] border border-[#e4e4e7] bg-white text-[14px] text-[#18181b] placeholder:text-[#a1a1aa]";
-const PLAIN_LABEL = "text-[13px] font-medium text-[#18181b]";
+const PLAIN_BTN = "h-9 px-4 rounded-[4px] bg-[#18181b] text-white text-[14px] font-medium font-[system-ui,sans-serif]";
+const PLAIN_INPUT = "h-9 w-full px-3 rounded-[4px] border border-[#e4e4e7] bg-white text-[14px] text-[#18181b] placeholder:text-[#a1a1aa] font-[system-ui,sans-serif]";
+const PLAIN_LABEL = "flex items-center gap-2 text-[14px] font-medium text-[#18181b] font-[system-ui,sans-serif]";
 
-/* One card, two skins, one divider you drag. The left of the line is what a
-   sensible default kit renders from these props; the right is rapui from the
-   SAME props. The code under it never changes — which is the argument. */
+/* "rapui" as a verb: one switch turns a sensible default screen into rapui. Four
+   equal tiles, one control each, so the two skins compare like for like — a
+   button, a toggle, a field, a slider held to a short, fixed length. Flipping
+   the switch tosses the tiles over one after another; the code under them never
+   changes, which is the whole argument. */
 function SameApi() {
-  const [at, setAt] = useState(46);
+  const [fun, setFun] = useState(true);
   const [on, setOn] = useState(true);
   const [vol, setVol] = useState(60);
-  const box = useRef<HTMLDivElement>(null);
-  const held = useRef(false);
-  const sound = useSound();
-  const place = (x: number) => {
-    const r = box.current?.getBoundingClientRect();
-    if (!r) return;
-    const v = Math.min(96, Math.max(4, ((x - r.left) / r.width) * 100));
-    if (Math.round(v / 10) !== Math.round(at / 10)) sound.detent(0.4, { pitch: 0.8 + v / 125 });
-    setAt(v);
-  };
-  const plain = (
-    <div className="grid gap-4 content-center h-full p-[clamp(1.5rem,4vw,3rem)] bg-white text-[#18181b] font-[system-ui,sans-serif]">
-      <span className="text-[18px] font-semibold">Publish project</span>
-      <input className={PLAIN_INPUT} defaultValue="Summer zine" aria-hidden tabIndex={-1} />
-      <label className={cn(PLAIN_LABEL, "flex items-center gap-2")}>
-        <input type="checkbox" checked={on} readOnly tabIndex={-1} /> Autosave
-      </label>
-      <input type="range" value={vol} readOnly tabIndex={-1} aria-hidden />
-      <div className="flex gap-2">
-        <button className={PLAIN_BTN} tabIndex={-1}>Publish</button>
-        <button className={cn(PLAIN_BTN, "bg-[#f4f4f5] text-[#18181b]")} tabIndex={-1}>Preview</button>
-      </div>
-    </div>
-  );
-  const rap = (
-    <div className="grid gap-5 content-center h-full p-[clamp(1.5rem,4vw,3rem)] bg-paper-2">
-      <Display size="md">Publish project</Display>
-      <Input size="lg" defaultValue="Summer zine" aria-label="Project name" />
-      <Switch checked={on} onCheckedChange={setOn} label="Autosave" />
-      <ElasticSlider aria-label="Volume" value={vol} onValueChange={setVol} icons={[<Volume1 key="a" />, <Volume2 key="b" />]} />
-      <ButtonGroup>
-        <Button size="lg" icon>Publish</Button>
-        <Button size="lg" variant="soft">Preview</Button>
-      </ButtonGroup>
-    </div>
-  );
+  const tiles: { plain: ReactNode; rap: ReactNode }[] = [
+    {
+      plain: <button className={PLAIN_BTN}>Publish</button>,
+      rap: (
+        <Button size="lg" icon>
+          Publish
+        </Button>
+      ),
+    },
+    {
+      plain: (
+        <label className={PLAIN_LABEL}>
+          <input type="checkbox" checked={on} onChange={(e) => setOn(e.target.checked)} /> Autosave
+        </label>
+      ),
+      rap: <Switch size="lg" checked={on} onCheckedChange={setOn} label="Autosave" />,
+    },
+    {
+      plain: <input className={cn(PLAIN_INPUT, "w-56")} placeholder="Project name" aria-label="Project name" />,
+      rap: <Input size="lg" placeholder="Project name" aria-label="Project name" className="w-64" />,
+    },
+    {
+      plain: <input type="range" className="w-44" aria-label="Volume" value={vol} onChange={(e) => setVol(Number(e.target.value))} />,
+      rap: (
+        <div className="w-60">
+          <ElasticSlider aria-label="Volume" value={vol} onValueChange={setVol} icons={[<Volume1 key="a" />, <Volume2 key="b" />]} />
+        </div>
+      ),
+    },
+  ];
   return (
     <section className="px-(--gutter) pt-10 pb-32 flex flex-col gap-12" id="same-api">
       <div className="grid grid-cols-[1fr_minmax(0,30rem)] gap-10 items-end max-[900px]:grid-cols-1">
         <Display size="xxl">
-          Same API. <Accent tone="mute">Different nerve.</Accent>
+          Same API. <Accent>Just rapui it.</Accent>
         </Display>
-        <p className={COPY}>
-          If you know shadcn/ui you already know rapui: Radix underneath, <code>cn()</code>, <code>cva</code> variants, a{" "}
-          <code>data-slot</code> on every part. Drag the line: same props on both sides.
-        </p>
-      </div>
-      <div
-        ref={box}
-        className="relative grid min-h-[30rem] rounded-lg overflow-hidden shadow-[inset_0_0_0_1px_var(--rap-line)] select-none"
-      >
-        {/* the rapui skin underneath, full width and fully live */}
-        <div className="col-start-1 row-start-1">{rap}</div>
-        {/* the plain skin on top, cut at the line; inert, it is a picture of the other kit */}
-        <div className="col-start-1 row-start-1 pointer-events-none" style={{ clipPath: `inset(0 ${100 - at}% 0 0)` }} aria-hidden>
-          {plain}
+        <div className="flex flex-col gap-6">
+          <p className={COPY}>
+            If you know shadcn/ui you already know rapui: Radix underneath, <code>cn()</code>, <code>cva</code> variants, a{" "}
+            <code>data-slot</code> on every part. Same props — flip the switch and the screen gets rapui’d.
+          </p>
+          <Switch size="lg" checked={fun} onCheckedChange={setFun} label={fun ? "rapui’d" : "rapui it"} />
         </div>
-        <div
-          role="slider"
-          aria-label="Compare a plain kit with rapui"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(at)}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowLeft") setAt((v) => Math.max(4, v - 5));
-            if (e.key === "ArrowRight") setAt((v) => Math.min(96, v + 5));
-          }}
-          onPointerDown={(e) => {
-            held.current = true;
-            e.currentTarget.setPointerCapture(e.pointerId);
-          }}
-          onPointerMove={(e) => held.current && place(e.clientX)}
-          onPointerUp={() => (held.current = false)}
-          className="absolute inset-y-0 z-10 w-12 -ml-6 grid place-items-center cursor-ew-resize touch-none outline-none group/cmp"
-          style={{ left: `${at}%` }}
-        >
-          <span className="absolute inset-y-0 left-1/2 w-[2px] -ml-px bg-ink" />
-          <span className="relative grid place-items-center size-12 rounded-full bg-ink text-paper text-[1.1rem] font-medium shadow-[0_8px_24px_rgb(0_0_0/0.25)] transition-transform duration-200 ease-spring group-active/cmp:scale-110 group-focus-visible/cmp:outline-2 group-focus-visible/cmp:outline-ring group-focus-visible/cmp:outline-offset-2">
-            ↔
-          </span>
-        </div>
-        <Sticker color="paper" rotate={-4} size="0.95rem" className="absolute left-5 top-5 z-5 pointer-events-none">
-          a sensible default
-        </Sticker>
-        <Sticker color="acid" rotate={5} size="0.95rem" className="absolute right-5 top-5 z-5 pointer-events-none">
-          rapui
-        </Sticker>
       </div>
-      <Code>{`<Input defaultValue="Summer zine" />
+      <div className="grid grid-cols-2 gap-tile max-w-[60rem] w-full mx-auto max-[700px]:grid-cols-1">
+        {tiles.map((t, i) => (
+          <div
+            key={`${i}-${fun}`}
+            className={cn(
+              "grid place-items-center min-h-52 p-8 rounded-lg transition-colors duration-300",
+              fun ? "bg-paper-2 fun:animate-toss-in" : "bg-white shadow-[inset_0_0_0_1px_#e4e4e7]",
+            )}
+            style={{ animationDelay: `${i * 70}ms` }}
+          >
+            {fun ? t.rap : t.plain}
+          </div>
+        ))}
+      </div>
+      <div className="max-w-[60rem] w-full mx-auto">
+        <Code>{`<Button icon>Publish</Button>
 <Switch checked={on} onCheckedChange={setOn} label="Autosave" />
-<Button icon>Publish</Button>`}</Code>
+<Input placeholder="Project name" />
+<Slider value={[vol]} onValueChange={([v]) => setVol(v)} />`}</Code>
+      </div>
     </section>
   );
 }
 
-const STAT = "flex flex-col gap-4 pt-6 border-t-[1.5px] border-ink [&>span]:max-w-[24ch] [&>span]:text-ink-2 [&>span]:text-[1.05rem]";
+/* The numbers, huge, each one proven by a live thing under it rather than a
+   slogan: the count, a grey 4px rectangle that rapuis itself when you touch it,
+   and the one attribute that calms the whole page — a real switch that does it. */
+const STAT = "flex flex-col justify-between gap-10 min-h-[30rem] p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg bg-paper-2 overflow-hidden";
+const BIG = "font-display font-medium tracking-[-0.07em] leading-[0.8] tabular-nums text-[clamp(5rem,9.5vw,10rem)]";
+const STAT_TEXT = "m-0 max-w-[26ch] text-[1.15rem] leading-[1.4] text-ink-2";
 
 function Stats() {
+  const [calm, setCalm] = useState(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    if (calm) root.setAttribute("data-rap-motion", "calm");
+    else root.removeAttribute("data-rap-motion");
+    return () => root.removeAttribute("data-rap-motion");
+  }, [calm]);
   return (
-    <section className="grid grid-cols-3 gap-8 pt-8 px-(--gutter) pb-32 max-[760px]:grid-cols-1">
+    <section className="grid grid-cols-3 gap-tile px-(--gutter) pb-32 max-[1000px]:grid-cols-1">
       <div className={STAT}>
-        <Display size="xxl"><Counter to={COUNT} suffix="+" /></Display>
-        <span>components, from Dialog and DataTable to a hold-to-delete button</span>
+        <span className={BIG}>
+          <Counter to={COUNT} />
+          <span className="text-flame">+</span>
+        </span>
+        <p className={STAT_TEXT}>components — from Dialog and DataTable to a button you have to hold.</p>
       </div>
       <div className={STAT}>
-        <Display size="xxl"><Counter to={0} from={99} /></Display>
-        <span>grey rectangles with 4px corners</span>
+        <span className={BIG}>
+          <Counter to={0} from={99} />
+        </span>
+        <div className="flex flex-col gap-6">
+          {/* the thing we don't ship: touch it and it gets rapui'd */}
+          <button
+            type="button"
+            className={cn(
+              "self-start h-11 px-5 rounded-[4px] bg-[#e4e4e7] text-[#52525b] text-[14px] font-medium cursor-pointer",
+              "transition-[border-radius,background-color,color,height,padding,font-size] duration-500 ease-spring",
+              "hover:rounded-[999px] hover:bg-flame hover:text-white hover:h-14 hover:px-8 hover:text-[1.1rem]",
+            )}
+          >
+            Grey rectangle
+          </button>
+          <p className={STAT_TEXT}>grey rectangles with 4px corners. Hover the one above.</p>
+        </div>
       </div>
       <div className={STAT}>
-        <Display size="xxl"><Counter to={1} from={9} /></Display>
-        <span>attribute to turn every joke off — calm mode, for the serious screens</span>
+        <span className={BIG}>
+          <Counter to={1} from={9} />
+        </span>
+        <div className="flex flex-col gap-6">
+          <Switch size="lg" checked={calm} onCheckedChange={setCalm} label={calm ? "Calm — the page stands still" : "Calm mode"} />
+          <p className={STAT_TEXT}>attribute turns every joke off, for the serious screens. That switch really does it.</p>
+        </div>
       </div>
     </section>
   );
@@ -447,13 +436,51 @@ function SparkTable() {
 }
 
 /* ── the players, as a conversation ─────────────────────────
-   Big chat bubbles with the media dropped in between them, the way
-   people actually send video and voice. "them" sits left on white,
-   "me" right on blue; each bubble tosses in as it scrolls into view
-   (the deal utility, --i staggered). */
+   Big chat bubbles with the media dropped in between them, the way people
+   actually send video and voice, on a loud pink ground so the grey video frame
+   and the white bubbles stand off it. Each bubble pops in as it scrolls into
+   view: up from below, tilted toward its own side, over-shooting on the back
+   curve and settling straight — a conversation arriving, not a page loading. */
 const BUBBLE = "max-w-[min(100%,34rem)] px-6 py-4 text-[clamp(1.1rem,1.8vw,1.5rem)] leading-[1.3] tracking-[-0.015em] font-medium";
-const THEM = "self-start rounded-[28px] rounded-bl-[8px] bg-surface";
-const ME = "self-end rounded-[28px] rounded-br-[8px] bg-blue text-white";
+const THEM = "rounded-[28px] rounded-bl-[8px] bg-paper-2 text-ink";
+const ME = "rounded-[28px] rounded-br-[8px] bg-ink text-paper";
+
+function ChatPop({ side, className, children }: { side: "them" | "me"; className?: string; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (isCalm(el)) return setShown(true);
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -12% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const tilt = side === "me" ? 6 : -6;
+  return (
+    <div
+      ref={ref}
+      className={cn(side === "me" ? "self-end origin-bottom-right" : "self-start origin-bottom-left", className)}
+      style={{
+        opacity: shown ? 1 : 0,
+        translate: shown ? "0 0" : "0 48px",
+        rotate: shown ? "0deg" : `${tilt}deg`,
+        scale: shown ? "1" : "0.82",
+        transition: "opacity 260ms linear, translate 700ms var(--rap-ease-back), rotate 700ms var(--rap-ease-back), scale 700ms var(--rap-ease-back)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function MediaChat() {
   const chapters = [
@@ -463,22 +490,24 @@ function MediaChat() {
     { at: 9, title: "Outro" },
   ];
   return (
-    <div className="deal flex flex-col gap-3 w-[min(100%,54rem)] mx-auto">
-      <div className={cn(BUBBLE, THEM, "[--i:0]")}>Cut the reel for Friday. Tell me what you think 👀</div>
-      <div className="self-start w-[min(100%,40rem)] [--i:1]">
+    <div className="flex flex-col gap-3 w-[min(100%,54rem)] mx-auto">
+      <ChatPop side="them" className={cn(BUBBLE, THEM)}>Cut the reel for Friday. Tell me what you think 👀</ChatPop>
+      <ChatPop side="them" className="w-[min(100%,40rem)]">
         <VideoPlayer src={reel} title="Studio reel" chapters={chapters} />
-      </div>
-      <div className={cn(BUBBLE, ME, "[--i:2]")}>wait — the whole frame leans when I scrub?? 😂</div>
-      <VoiceNote src={voiceNote} from="me" sent="14:02" className="self-end [--i:3]" />
-      <div className={cn(BUBBLE, THEM, "[--i:4]")}>It does. And here’s the track for it:</div>
-      <div className="self-start w-[min(100%,30rem)] [--i:5]">
+      </ChatPop>
+      <ChatPop side="me" className={cn(BUBBLE, ME)}>wait — the whole frame leans when I scrub?? 😂</ChatPop>
+      <ChatPop side="me">
+        <VoiceNote src={voiceNote} from="me" sent="14:02" />
+      </ChatPop>
+      <ChatPop side="them" className={cn(BUBBLE, THEM)}>It does. And here’s the track for it:</ChatPop>
+      <ChatPop side="them" className="w-[min(100%,30rem)]">
         <AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" />
-      </div>
-      <div className={cn(THEM, "flex gap-1.5 px-5 py-5 [--i:6]")} aria-label="typing">
+      </ChatPop>
+      <ChatPop side="them" className={cn(THEM, "flex gap-1.5 px-5 py-5")}>
         {[0, 1, 2].map((d) => (
           <span key={d} className="size-2.5 rounded-full bg-ink/35 fun:animate-dot" style={{ animationDelay: `${d * 160}ms` }} />
         ))}
-      </div>
+      </ChatPop>
     </div>
   );
 }
@@ -486,16 +515,6 @@ function MediaChat() {
 function Wall() {
   return (
     <div id="wall" className="px-(--gutter)">
-      <div className="flex flex-col gap-8 pb-20">
-        <Display size="xxl">
-          Every piece <Accent tone="mute">performs</Accent>
-        </Display>
-        <p className={COPY}>
-          Everything below is live. Press it, drag it, throw it — and turn the sound on in the header: every component has its own
-          click, tuned on a scale from muted to toy.
-        </p>
-      </div>
-
       <Showcase
         id="commit"
         title="Buttons"
@@ -506,13 +525,14 @@ function Wall() {
 <HoldButton variant="danger" onConfirm={deleteProject}>Hold to delete</HoldButton>
 <SlideButton label="Slide to publish" doneLabel="Published" onConfirm={publish} />
 <ConfirmButton label="Delete workspace" confirmLabel="Sure?" onConfirm={remove} />`}
+        stageClass={cn(DOTS, "min-h-[44rem]")}
       >
-        <div className="flex flex-col items-center gap-8 w-[min(100%,30rem)]">
-          <HoldButton variant="danger" size="lg">
+        <div className="flex flex-col items-center gap-10 w-[min(100%,36rem)]">
+          <HoldButton variant="danger" size="hero">
             Hold to delete project
           </HoldButton>
-          <SlideButton size="lg" variant="ink" label="Slide to publish" doneLabel="Published" />
-          <ConfirmButton size="lg" label="Delete workspace" confirmLabel="Sure?" doneLabel="Deleted" />
+          <SlideButton size="hero" variant="ink" label="Slide to publish" doneLabel="Published" />
+          <ConfirmButton size="hero" label="Delete workspace" confirmLabel="Sure?" doneLabel="Deleted" />
         </div>
       </Showcase>
 
@@ -552,20 +572,22 @@ function Wall() {
 <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} />`}
         stageClass="bg-paper place-items-stretch"
       >
-        {/* An even bento: six equal white tiles, rows of one height (auto-rows-fr), each
-            chart centred in its tile. The charts are different shapes by nature; the
-            grid is what makes them read as one set. */}
-        <div className="grid grid-cols-3 auto-rows-fr gap-tile w-full max-[1180px]:grid-cols-2 max-[760px]:grid-cols-1">
+        {/* A mosaic, not a grid of equal boxes: each chart keeps its own size and
+            they pack into centred columns with one small gap between neighbours —
+            no empty tile around a small chart. */}
+        <div className="columns-[20rem] gap-tile max-w-[66rem] mx-auto w-full [&>*]:mb-tile [&>*]:break-inside-avoid [&>*]:mx-auto">
+          {/* each chart in its own wrapper: BalanceChart cancels its pull-stretch with a
+              negative margin, which a margin set on it directly would undo */}
           {[
             <BalanceChart key="b" />,
             <DonutChart key="d" />,
+            <SparkTable key="s" />,
             <GaugeChart key="g" defaultValue={72} />,
             <BarsChart key="bars" />,
             <RaceBars key="r" />,
-            <SparkTable key="s" />,
-          ].map((chart) => (
-            <div key={chart.key} className="grid place-items-center min-w-0 p-3 rounded-lg bg-surface">
-              {chart}
+          ].map((c) => (
+            <div key={c.key} className="flex justify-center">
+              {c}
             </div>
           ))}
         </div>
@@ -616,7 +638,7 @@ const lb = useLightbox();
 <VideoPlayer src="/reel.webm" title="Studio reel" chapters={chapters} />
 <AudioPlayer src="/grid-lines.wav" title="Grid Lines" artist="The Baseline Club" />
 <VoiceNote src="/note.wav" from="me" sent="14:02" />`}
-        stageClass="bg-paper"
+        stageClass="bg-bubble"
       >
         <MediaChat />
       </Showcase>
@@ -636,25 +658,23 @@ const lb = useLightbox();
 
       <Showcase
         id="lists"
-        title="Checklist"
-        sub="that falls apart"
+        title="Checklists"
+        sub="that pour"
         stageClass="bg-paper"
-        desc="From Bencho (MIT). Fill, tick, strike-through and fading ink all run on one spring per row — tick the last task and the whole list collapses into a heap."
+        desc="Tick a task and colour pours across its round row, a pen scribbles the words out, and the row rolls down onto the Done pile while the rest close up. Finish the list and the card squashes and throws confetti. The old heap-fall is still there as an option."
         code={`import { Checklist } from "rapui";
 
-<Checklist />`}
+<Checklist title="Launch day" tasks={tasks} />
+<Checklist finish="heap" tone="acid" />`}
       >
-        <div className={ROW}>
-          <Checklist />
-          <Checklist bounce={85} box={20} corner={28} />
-        </div>
+        <ChecklistDemo />
       </Showcase>
 
       <Showcase
         id="loud"
         title="The loud bits"
         sub="for landing pages"
-        desc="Headline links, a board of stickers in sixteen shapes — price tags on strings, seals with running text, tickets, stamps, labels that peel — cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
+        desc="Headline links, a board of stickers in fifteen shapes — punched price tags, seals with running text, stamps, speech bubbles, labels that peel — and cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
         code={`import { BigLink, Sticker, TiltCard, CircleButton } from "rapui";
 
 <BigLink href="/work" meta="24 projects">Work</BigLink>
@@ -822,20 +842,15 @@ function Tech() {
           <article
             key={t.title}
             className={cn(
-              "snap-start shrink-0 w-[min(70vw,64rem)] max-[760px]:w-[86vw] grid grid-cols-[1fr_1.15fr] gap-10 p-[clamp(1.5rem,3.5vw,3.5rem)] rounded-lg min-h-[26rem] max-[900px]:grid-cols-1",
+              "snap-start shrink-0 w-[min(70vw,60rem)] max-[760px]:w-[86vw] flex flex-col gap-10 p-[clamp(1.5rem,3.5vw,3rem)] rounded-lg min-h-[38rem]",
               i % 3 === 0 ? "bg-paper-2" : i % 3 === 1 ? "bg-ink text-paper dark:bg-paper-2 dark:text-ink" : "bg-acid text-[#282828]",
             )}
           >
-            <div className="flex flex-col justify-between gap-8">
-              <span className="text-[clamp(3rem,6vw,5.5rem)] font-display font-medium tracking-[-0.05em] leading-none opacity-25 tabular-nums">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div className="flex flex-col gap-4">
-                <Display size="lg">{t.title}</Display>
-                <p className="m-0 text-[1.1rem] leading-[1.5] opacity-80 max-w-[40ch]">{t.body}</p>
-              </div>
+            <div className="flex flex-col gap-4">
+              <Display size="lg">{t.title}</Display>
+              <p className="m-0 text-[1.15rem] leading-[1.5] opacity-80 max-w-[52ch]">{t.body}</p>
             </div>
-            <Code wrap className="self-end">{t.code}</Code>
+            <Code wrap className="mt-auto text-[1.05rem] [&_pre]:text-[1.05rem] [&_pre]:py-10 [&_pre]:px-10">{t.code}</Code>
           </article>
         ))}
       </div>

@@ -555,14 +555,12 @@ const [date, setDate] = useState("2026-10-02");
           </div>
         ),
         code: `<DateScrubber value={date} onValueChange={setDate} />
-<LensRuler label="Room" unit="°" min={15} max={25} value={temp} onValueChange={setTemp} />
+<LensRuler label="Room" unit="°" min={15} max={25} value={temp} onValueChange={setTemp} hint={zone(temp)} className="w-full max-w-72" />
 <RangeDial />
 <TimeScrubber step="15" format="24h" />
 <TempoDial value={bpm} onValueChange={setBpm} onBeat={pulseLamp} />
 <HueRing value={hue} onValueChange={setHue} />
-<SplitSlider labels={["Rain", "Brown noise"]} value={mix} onValueChange={setMix} />
-<ElasticSlider value={volume} onValueChange={setVolume} />
-<Knob size="sm" label="Fade" min={0} max={60} step={5} value={fade} onValueChange={setFade} />`,
+<SplitSlider labels={["Rain", "Brown noise"]} value={mix} onValueChange={setMix} />`,
       },
       {
         title: "Bounded — the next 90 days, stretches past the ends and springs back",

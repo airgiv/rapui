@@ -28,6 +28,8 @@ import type { SoundName } from "../../rapui";
 import type { AccentTone, FancyIconName, FancyTone, IconComponent, StickerColor, StickerShape } from "../../rapui";
 import type { StickerHover } from "../../rapui";
 import { StickersDemo } from "../../site/demos/StickersDemo";
+import { ChecklistDemo } from "../../site/demos/ChecklistDemo";
+import type { ChecklistFinish, ChecklistTone } from "../../rapui/components/Checklist";
 import { cn } from "../../rapui/utils";
 import { attrs } from "../codegen";
 import type { Control, DocEntry, Props } from "../types";
@@ -47,7 +49,6 @@ const SHAPES = [
   "pill",
   "label",
   "tag",
-  "ticket",
   "stamp",
   "bubble",
   "arch",
@@ -78,8 +79,8 @@ const stickerControls: Control[] = [
   { type: "number", prop: "rotate", min: -30, max: 30, default: -6 },
   { type: "select", prop: "hover", label: "under the hand", options: ["auto", "wobble", "peel", "none"], default: "auto" },
   { type: "boolean", prop: "diecut", label: "die-cut border", default: false },
+  { type: "boolean", prop: "paper", label: "paper (shadow, rim light)", default: false },
   { type: "boolean", prop: "grain", default: false },
-  { type: "boolean", prop: "flat", default: false },
   { type: "text", prop: "ring", label: "ring text (round shapes)", default: "" },
   { type: "select", prop: "spin", options: ["auto", "on", "ring", "off"], default: "auto" },
   { type: "boolean", prop: "slap", label: "slap on mount", default: false },
@@ -102,7 +103,7 @@ function StickerFromProps({ p }: { p: Props }) {
       hover={p.hover === "auto" ? undefined : (p.hover as StickerHover)}
       diecut={Boolean(p.diecut)}
       grain={Boolean(p.grain)}
-      flat={Boolean(p.flat)}
+      paper={Boolean(p.paper)}
       ring={ring}
       spin={SPIN[p.spin as keyof typeof SPIN]}
       slap={Boolean(p.slap)}
@@ -154,9 +155,13 @@ const counterControls: Control[] = [
 ];
 
 const checklistControls: Control[] = [
+  { type: "text", prop: "title", default: "Today" },
+  { type: "select", prop: "finish", options: ["party", "heap", "none"], default: "party" },
+  { type: "select", prop: "tone", options: ["mix", "blue", "flame", "acid", "bubble", "sky", "plum", "ink"], default: "mix" },
+  { type: "boolean", prop: "calm", default: false },
   { type: "number", prop: "bounce", min: 0, max: 100, default: 50 },
   { type: "number", prop: "box", min: 16, max: 28, default: 24 },
-  { type: "number", prop: "corner", min: 0, max: 40, default: 28 },
+  { type: "number", prop: "corner", min: 0, max: 40, default: 34 },
 ];
 
 const toolbarControls: Control[] = [
@@ -347,7 +352,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     name: "Sticker",
     group: "Expressive",
     description:
-      "A printed vinyl sticker in sixteen crisp cut shapes — pill, label, price tag with its string, ticket, perforated stamp, speech bubble, arch, the hot-drop burst, a scalloped seal with running text — in every accent colour plus ink and paper, with a paper finish and an optional white die-cut border. Delight: hover one and its outline morphs as the tilt flips (the circle ruffles into a scallop, the burst puffs its lobes); a label peels its corner back; slap lands it with a thump.",
+      "A printed vinyl sticker in fifteen crisp cut shapes — pill, label, punched price tag, perforated stamp, speech bubble, arch, the hot-drop burst, a scalloped seal with running text — in every accent colour plus ink and paper. Flat print by default; opt in to a paper finish (shadow and rim light), grain or a white die-cut border. Delight: hover one and its outline morphs as the tilt flips (the circle ruffles into a scallop, the burst puffs its lobes); a label peels its corner back; slap lands it with a thump.",
     controls: stickerControls,
     Demo: StickerFromProps,
     code: (p) => {
@@ -418,7 +423,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
 <Sticker shape="circle" color="ink" ring="open for projects • " spin="ring" className="w-40">✳</Sticker>`,
       },
       {
-        title: "Finishes: die-cut vinyl, grain, flat print, peel",
+        title: "Finishes: die-cut vinyl, paper, grain, peel",
         Demo: () => (
           <div className={cn(GROUND, "flex flex-wrap items-center justify-center gap-x-12 gap-y-10")}>
             <Sticker shape="star" color="bubble" diecut size="1.1rem" rotate={-10} className="w-32">
@@ -430,13 +435,13 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
             <Sticker shape="stamp" color="plum" grain size="1.4rem" rotate={-5}>
               air mail
             </Sticker>
-            <Sticker shape="ticket" color="acid" grain size="1.4rem" rotate={4}>
-              admit one
+            <Sticker shape="pill" color="acid" paper size="1.4rem" rotate={4}>
+              on paper
             </Sticker>
             <Sticker shape="label" color="paper" size="1.4rem" rotate={-3}>
               peel me
             </Sticker>
-            <Sticker shape="pill" color="ink" dot flat size="1.4rem" rotate={3}>
+            <Sticker shape="pill" color="ink" dot size="1.4rem" rotate={3}>
               live
             </Sticker>
             <Sticker shape="heart" color="flame" diecut size="1rem" rotate={8} className="w-28">
@@ -446,8 +451,9 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
         ),
         code: `<Sticker shape="star" color="bubble" diecut>fave</Sticker>
 <Sticker shape="stamp" color="plum" grain>air mail</Sticker>
+<Sticker color="acid" paper>on paper</Sticker>  {/* shadow + rim light */}
 <Sticker shape="label" color="paper">peel me</Sticker>  {/* hover="peel" by default */}
-<Sticker color="ink" dot flat>live</Sticker>`,
+<Sticker color="ink" dot>live</Sticker>`,
       },
     ],
   },
@@ -630,18 +636,38 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     slug: "checklist",
     name: "Checklist",
     group: "Expressive",
-    basedOn: "Bencho, MIT",
+    basedOn: "Bencho, MIT (the spring rule and the heap)",
     description:
-      "One spring per row drives the fill, the tick, the strike-through and the fading words. Tick the last task and the list falls into a heap, then resets.",
+      "A card of big round task rows under a liquid progress pill; every row is a real checkbox (Space toggles, arrows walk the list) whose box, tick, colour and strike-through are all read off springs. Delight: tick a task and its box bursts into a splash that pours colour across the pill, a pen scribbles the words out and the row rolls down onto the Done pile while the rest close the gap — tick the last one and the card squashes and throws confetti (or, with finish=\"heap\", the list falls into a heap), then resets.",
     controls: checklistControls,
     Demo: ({ p }) => (
       <div className={GROUND}>
-        <Checklist bounce={Number(p.bounce)} box={Number(p.box)} corner={Number(p.corner)} />
+        <Checklist
+          title={String(p.title)}
+          finish={p.finish as ChecklistFinish}
+          tone={p.tone as ChecklistTone}
+          calm={Boolean(p.calm)}
+          bounce={Number(p.bounce)}
+          box={Number(p.box)}
+          corner={Number(p.corner)}
+        />
       </div>
     ),
     code: (p) => `import { Checklist } from "rapui";
 
 <Checklist${attrs(p, checklistControls)} />`,
+    examples: [
+      {
+        title: "Launch day and groceries — tick the top row again and again",
+        Demo: () => (
+          <div className="w-full">
+            <ChecklistDemo />
+          </div>
+        ),
+        code: `<Checklist title="Launch day" tasks={["Freeze the copy", "Export the hero film", "Swap the favicon", "Press publish"]} />
+<Checklist title="Groceries" tone="acid" tasks={["Oat milk", "Sourdough", "Lemons", "Basil"]} />`,
+      },
+    ],
   },
   {
     slug: "canvas-toolbar",

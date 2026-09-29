@@ -33,13 +33,13 @@ export type ShapeKey =
   | "heart"
   | "squircle"
   | "seal"
-  | "ticket"
   | "bubble"
   | "arch"
   | "stamp"
   | "label"
   /* hover partners, not public shapes */
   | "scallop"
+  | "scallop-soft"
   | "burst-puff"
   | "star-puff"
   | "seal-puff"
@@ -131,6 +131,9 @@ function define(key: ShapeKey, { a, b, m, em }: Box): ShapeDef {
     case "scallop":
       /* ShapeGallery's flower: twelve shallow scallops */
       return { sdf: polar((t) => m * (0.9 + 0.1 * cos(12 * t))) };
+    case "scallop-soft":
+      /* the ring-text circle's partner: a shallow ruffle that stays clear of the ring */
+      return { sdf: polar((t) => m * (0.965 + 0.035 * cos(12 * t))) };
     case "burst":
       /* "hot drop": ten soft lobes, 8% deep — reads as a burst without a single point */
       return { sdf: polar((t) => m * (0.9 + 0.08 * cos(10 * t))) };
@@ -173,19 +176,6 @@ function define(key: ShapeKey, { a, b, m, em }: Box): ShapeDef {
         [-a + k + r * 0.3, b - r],
       ];
       return { sdf: (x, y) => sdPolygon(v, x, y) - r };
-    }
-    case "ticket": {
-      /* bitten corners and two notches where the stub tears off */
-      const c = min(0.5 * em, b * 0.45);
-      const rn = min(0.26 * em, b * 0.25);
-      const xs = a - 2.05 * em;
-      return {
-        sdf: (x, y) => {
-          let d = sdBox(x, y, a, b);
-          d = max(d, c - hypot(abs(x) - a, abs(y) - b));
-          return max(d, rn - hypot(x - xs, abs(y) - b));
-        },
-      };
     }
     case "stamp": {
       /* perforated: a hole every ~0.62em along each edge, corners included */
@@ -290,7 +280,7 @@ function trace(def: ShapeDef, aims: Pt[], reach: number): Pt[] {
    unused points wait on the ends of the fold — so a peel can
    grow on hover by interpolating `d` like any other morph. */
 const U: Pt = [SQRT1_2, -SQRT1_2]; /* toward the top-right corner */
-function peel(pts: Pt[], depth: number): { kept: Pt[]; flap: Pt[] } {
+function peel(pts: Pt[], depth: number): { kept: Pt[]; flap: Pt[]; c: number } {
   const dot = (p: Pt) => p[0] * U[0] + p[1] * U[1];
   const s = pts.map(dot);
   const top = max(...s);
@@ -300,7 +290,7 @@ function peel(pts: Pt[], depth: number): { kept: Pt[]; flap: Pt[] } {
   const start = s.findIndex((v, i) => v > c && s[(i - 1 + n) % n] <= c);
   if (depth <= 0 || start < 0) {
     const tip = pts[s.indexOf(top)];
-    return { kept: pts, flap: pts.map(() => tip) };
+    return { kept: pts, flap: pts.map(() => tip), c: top + 1 };
   }
   let end = start;
   while (s[(end + 1) % n] > c && (end + 1) % n !== start) end = (end + 1) % n;
@@ -320,8 +310,11 @@ function peel(pts: Pt[], depth: number): { kept: Pt[]; flap: Pt[] } {
       flap[i] = [pts[i][0] - 2 * d * U[0], pts[i][1] - 2 * d * U[1]];
     } else flap[i] = k - runLen < rest / 2 ? x2 : x1;
   }
-  return { kept, flap };
+  return { kept, flap, c };
 }
+
+/* the nearest point to the centre (px) */
+const nearest = (pts: Pt[]) => pts.reduce((r, p) => min(r, hypot(p[0], p[1])), Infinity);
 
 /* ── output ─────────────────────────────────────────────── */
 
@@ -332,6 +325,12 @@ export interface StickerGeometry {
   /** The folded-back corner at rest and under the hand, when there is one. */
   flap0?: string;
   flap1?: string;
+  /** Where the fold line sits at rest and under the hand: s = (x − y)/√2 from the box centre, px. */
+  fold0?: number;
+  fold1?: number;
+  /** The nearest the outline comes to the box centre, at rest or anywhere on the way to the
+      hover shape (the spring overshoots the morph by ~15%). Ring text stays inside this. */
+  inner: number;
 }
 
 const toPath = (pts: Pt[], w: number, h: number, extra = "") => {
@@ -355,9 +354,6 @@ export const tagHole = (h: number, em: number) => {
   const b = h / 2;
   return { cx: b * 0.85 * 0.62, cy: b, r: min(b * 0.2, 0.2 * em) };
 };
-
-/** Where the ticket's stub tears off, in viewBox px from the left. */
-export const ticketTear = (w: number, em: number) => w - 2.05 * em;
 
 const cache = new Map<string, StickerGeometry>();
 
@@ -392,11 +388,16 @@ export function stickerGeometry(shape: ShapeKey, w: number, h: number, em: numbe
       d1: toPath(p1.kept, w, h, extra),
       flap0: toPath(p0.flap, w, h),
       flap1: toPath(p1.flap, w, h),
+      fold0: p0.c,
+      fold1: p1.c,
+      inner: nearest(base),
     };
   } else {
     const d0 = toPath(base, w, h, extra);
-    const d1 = opts.morph && opts.morph !== shape ? toPath(trace(define(opts.morph, box), aims, reach), w, h, extra) : d0;
-    out = { d0, d1 };
+    const to = opts.morph && opts.morph !== shape ? trace(define(opts.morph, box), aims, reach) : null;
+    const r0 = nearest(base);
+    const r1 = to ? nearest(to) : r0;
+    out = { d0, d1: to ? toPath(to, w, h, extra) : d0, inner: min(r0, r1 - 0.15 * max(0, r0 - r1)) };
   }
   if (cache.size > 400) cache.clear();
   cache.set(key, out);
