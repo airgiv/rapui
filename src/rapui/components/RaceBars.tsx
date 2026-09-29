@@ -113,7 +113,7 @@ export const RaceBars = forwardRef<HTMLDivElement, RaceBarsProps>(function RaceB
   const shown = hovered ? hovered.value : rolled;
 
   return (
-    <ChartCard ref={ref} corner={corner} data-slot="race-bars" className={cn("w-full max-w-80", className)} {...rest}>
+    <ChartCard ref={ref} corner={corner} data-slot="race-bars" className={cn("w-80 max-w-full", className)} {...rest}>
       <div data-slot="race-bars-readout" aria-live="polite">
         <ChartFigure value={Math.round(shown)} unit={unit} />
         {hovered ? (

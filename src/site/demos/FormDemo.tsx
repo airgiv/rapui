@@ -166,7 +166,7 @@ export function FormDemo() {
       </div>
       {/* the presets: one line, set apart below the form — tap one to fill the sentence */}
       <div
-        className="flex flex-nowrap justify-center gap-3 max-w-full overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[700px]:justify-start"
+        className="flex flex-nowrap justify-center gap-1 max-w-full overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[700px]:justify-start"
         role="group"
         aria-label="Try a booking"
       >
