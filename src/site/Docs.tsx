@@ -115,6 +115,13 @@ function Playground({ entry }: { entry: DocEntry }) {
 
 export function Docs({ slug, dark, setDark }: { slug: string; dark: boolean; setDark: (v: boolean) => void }) {
   const [q, setQ] = useState("");
+  // Calm switches off the playful layer everywhere (data-rap-motion="calm" on <html>, so portals follow)
+  const [calm, setCalm] = useState(false);
+  useEffect(() => {
+    if (calm) document.documentElement.setAttribute("data-rap-motion", "calm");
+    else document.documentElement.removeAttribute("data-rap-motion");
+    return () => document.documentElement.removeAttribute("data-rap-motion");
+  }, [calm]);
   const entry = ENTRIES.find((e) => e.slug === slug) ?? ENTRIES[0];
   const idx = ENTRIES.indexOf(entry);
   const prev = ENTRIES[idx - 1];
@@ -143,6 +150,10 @@ export function Docs({ slug, dark, setDark }: { slug: string; dark: boolean; set
         <span className="docs-top__title">Components</span>
         <span className="docs-top__count">{ENTRIES.length}</span>
         <div className="docs-top__right">
+          <label className="docs-calm">
+            <span>Calm</span>
+            <Switch checked={calm} onCheckedChange={setCalm} onText="" offText="" />
+          </label>
           <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
         </div>
       </header>

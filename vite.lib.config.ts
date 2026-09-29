@@ -9,6 +9,7 @@ export default defineConfig({
       entry: {
         index: "src/rapui/index.ts",
         fonts: "src/rapui/fonts.ts",
+        icons: "src/rapui/icons.tsx",
       },
       formats: ["es"],
       fileName: (_format, name) => `${name}.js`,

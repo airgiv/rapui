@@ -194,3 +194,27 @@
     var(--rap-paper-3);
 }
 .docs-side > .rap-input { flex: none; }
+
+.doc-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: var(--rap-gap-tile);
+  width: 100%;
+  max-height: 32rem;
+  overflow: auto;
+}
+.doc-icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 92px;
+  border-radius: 18px;
+  background: var(--rap-paper);
+  color: var(--rap-ink);
+}
+.doc-icon-cell span { font-size: 0.6875rem; color: var(--rap-mute); max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-icon-grid--fancy { max-height: none; }
+.docs-calm { display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 0.75rem; font-size: 0.875rem; font-weight: 500; color: var(--rap-mute); }
+.docs-calm .rap-switch { --sw-h: 1.75rem; --sw-w: 3rem; --sw-pad: 3px; }

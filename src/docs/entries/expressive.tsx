@@ -1,6 +1,9 @@
 import { useState } from "react";
 import {
   Accent,
+  FANCY_ICONS,
+  FancyIcon,
+  icons,
   CanvasToolbar,
   Checklist,
   Counter,
@@ -18,7 +21,7 @@ import {
   Tabs,
   TiltCard,
 } from "../../rapui";
-import type { AccentTone, StickerColor, StickerShape } from "../../rapui";
+import type { AccentTone, FancyIconName, FancyTone, IconComponent, StickerColor, StickerShape } from "../../rapui";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
 
@@ -88,7 +91,83 @@ const toolbarControls: Control[] = [
   { type: "select", prop: "surface", options: ["flat", "glass"], default: "flat" },
 ];
 
+const TECH = Object.entries(icons).filter(([, v]) => typeof v === "object") as [string, IconComponent][];
+
+const iconControls: Control[] = [
+  { type: "select", prop: "weight", options: ["thin", "light", "regular", "bold"], default: "light", codeDefault: "light" },
+  { type: "number", prop: "size", min: 16, max: 40, default: 24, codeDefault: 24 },
+];
+
+const fancyControls: Control[] = [
+  { type: "select", prop: "icon", options: Object.keys(FANCY_ICONS), default: "rocket", codeDefault: null },
+  { type: "select", prop: "tone", options: ["flame", "blue", "plum", "acid", "bubble", "sky", "ink"], default: "flame", codeDefault: "blue" },
+  { type: "select", prop: "variant", options: ["tint", "duo"], default: "duo", codeDefault: "tint" },
+  { type: "number", prop: "size", min: 24, max: 160, step: 4, default: 96, codeDefault: 32 },
+  { type: "boolean", prop: "badge", default: true, codeDefault: false },
+  { type: "boolean", prop: "float", default: true, codeDefault: false },
+];
+
 export const entries: DocEntry[] = [
+  {
+    slug: "icons",
+    name: "Icons",
+    group: "Expressive",
+    basedOn: "Phosphor, Light",
+    description:
+      "Interface glyphs: thin and technical, one import path for the whole library, so the set can be swapped in one file. Names follow the familiar lucide/shadcn vocabulary.",
+    controls: iconControls,
+    Demo: ({ p }) => (
+      <div className="doc-icon-grid">
+        {TECH.map(([name, I]) => (
+          <div className="doc-icon-cell" key={name} title={name}>
+            <I size={Number(p.size)} weight={p.weight as "light"} />
+            <span>{name}</span>
+          </div>
+        ))}
+      </div>
+    ),
+    code: (p) => `import { Check, ChevronDown, Search } from "rapui/icons"; // or: import { icons } from "rapui"
+
+<Search${attrs(p, iconControls)} />`,
+  },
+  {
+    slug: "fancy-icon",
+    name: "Fancy icon",
+    group: "Expressive",
+    basedOn: "Solar, Bold Duotone",
+    description:
+      "Illustrative icons for empty states, feature tiles, milestones and marketing blocks. Tinted with a rap/ui accent: one colour in two strengths, or ink over a full accent.",
+    controls: fancyControls,
+    Demo: ({ p }) => (
+      <FancyIcon
+        icon={p.icon as FancyIconName}
+        tone={p.tone as FancyTone}
+        variant={p.variant as "tint"}
+        size={Number(p.size)}
+        badge={Boolean(p.badge)}
+        float={Boolean(p.float)}
+      />
+    ),
+    code: (p) => `import { FancyIcon } from "rapui";
+
+<FancyIcon${attrs(p, fancyControls)} />`,
+    examples: [
+      {
+        title: "The curated set",
+        Demo: () => (
+          <div className="doc-icon-grid doc-icon-grid--fancy">
+            {(Object.keys(FANCY_ICONS) as FancyIconName[]).map((n, i) => (
+              <div className="doc-icon-cell" key={n}>
+                <FancyIcon icon={n} tone={(["flame", "blue", "plum", "acid", "bubble", "sky"] as FancyTone[])[i % 6]} size={36} />
+                <span>{n}</span>
+              </div>
+            ))}
+          </div>
+        ),
+        code: `<FancyIcon icon="rocket" />  // any key of FANCY_ICONS, or any Solar icon component`,
+      },
+    ],
+  },
   {
     slug: "typography",
     name: "Typography",

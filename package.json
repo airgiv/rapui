@@ -16,7 +16,11 @@
       "types": "./dist/fonts.d.ts",
       "import": "./dist/fonts.js"
     },
-    "./styles.css": "./dist/rapui.css"
+    "./styles.css": "./dist/rapui.css",
+    "./icons": {
+      "types": "./dist/icons.d.ts",
+      "import": "./dist/icons.js"
+    }
   },
   "files": [
     "dist"
