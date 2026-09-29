@@ -10,6 +10,7 @@ import {
 import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui";
 import { useGlide } from "../hooks/useGlide";
 import { cx } from "../utils";
+import { useSound } from "../sound";
 import "./ToggleGroup.css";
 
 /**
@@ -41,6 +42,16 @@ export const ToggleGroup = forwardRef<
   }, [single]);
 
   const glide = useGlide(root, active);
+  // a tap when the choice moves, pitched by position so the row reads as a scale
+  const sound = useSound();
+  const prevActive = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    if (prevActive.current && active && prevActive.current !== active) {
+      const items = Array.from(root.current?.querySelectorAll(".rap-tgroup__item") ?? []);
+      sound.play("tap", { pitch: 0.9 + items.indexOf(active) * 0.08 });
+    }
+    prevActive.current = active;
+  }, [active, sound]);
 
   return (
     <ToggleGroupPrimitive.Root

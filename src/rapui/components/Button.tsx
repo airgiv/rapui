@@ -2,6 +2,7 @@ import { forwardRef, useImperativeHandle, type ButtonHTMLAttributes, type HTMLAt
 import { useMagnetic } from "../hooks/useMagnetic";
 import { cx } from "../utils";
 import { RollText } from "./RollText";
+import { useSound } from "../sound";
 import "./Button.css";
 
 export type ButtonVariant = "solid" | "accent" | "blue" | "soft" | "outline" | "ghost" | "acid";
@@ -43,6 +44,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 ) {
   const ref = useMagnetic<HTMLButtonElement>(0.25, magnetic);
   useImperativeHandle(forwarded, () => ref.current as HTMLButtonElement);
+  const sound = useSound();
+  const { onPointerDown } = rest;
 
   const iconNode = icon === true ? <Arrow /> : icon;
   const label =
@@ -61,6 +64,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         className,
       )}
       {...rest}
+      onPointerDown={(e) => {
+        onPointerDown?.(e);
+        sound.play("tap");
+      }}
     >
       <span className="rap-btn__blob" aria-hidden />
       {label}
@@ -77,12 +84,18 @@ export interface CircleButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
 /** Big round call-to-action — text around, arrow in the middle. */
 export function CircleButton({ size = 160, variant = "accent", className, children, style, ...rest }: CircleButtonProps) {
   const ref = useMagnetic<HTMLButtonElement>(0.4);
+  const sound = useSound();
+  const { onPointerDown } = rest;
   return (
     <button
       ref={ref}
       className={cx("rap-cbtn", `rap-cbtn--${variant}`, className)}
       style={{ width: size, height: size, ...style }}
       {...rest}
+      onPointerDown={(e) => {
+        onPointerDown?.(e);
+        sound.play("tap", { pitch: 0.8 });
+      }}
     >
       <span className="rap-cbtn__fill" aria-hidden />
       <span className="rap-cbtn__label">{children ?? <Arrow />}</span>

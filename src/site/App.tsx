@@ -27,10 +27,22 @@ import {
   TiltCard,
 } from "../rapui";
 import { Code } from "./Code";
+import { SoundControls } from "./SoundControls";
+import type { SoundSettings } from "../rapui";
 
 /* ───────────────────────── layout pieces ───────────────────────── */
 
-function Header({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => void }) {
+function Header({
+  dark,
+  setDark,
+  sound,
+  setSound,
+}: {
+  dark: boolean;
+  setDark: (v: boolean) => void;
+  sound: SoundSettings;
+  setSound: (v: SoundSettings) => void;
+}) {
   return (
     <header className="site-header">
       <a href="#top" className="site-logo" data-rap-cursor="Home">
@@ -46,6 +58,7 @@ function Header({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => voi
         <a href="#install"><RollText>Install</RollText></a>
       </nav>
       <div className="site-header__right">
+        <SoundControls value={sound} onChange={setSound} />
         <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
         <Button size="sm" icon onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
           Get it
@@ -894,11 +907,21 @@ function Footer() {
 
 /* ───────────────────────── app ───────────────────────── */
 
-export function App({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => void }) {
+export function App({
+  dark,
+  setDark,
+  sound,
+  setSound,
+}: {
+  dark: boolean;
+  setDark: (v: boolean) => void;
+  sound: SoundSettings;
+  setSound: (v: SoundSettings) => void;
+}) {
   return (
     <div className="rap-root site">
       <Cursor />
-      <Header dark={dark} setDark={setDark} />
+      <Header dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
       <main>
         <Hero />
         <Bands />

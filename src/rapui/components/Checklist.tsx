@@ -4,6 +4,7 @@
    its CSS reads are mapped onto rap/ui's in Checklist.css. */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSound } from "../sound";
 import "./Checklist.css";
 
 /* ══ Checklist ════════════════════════════════════════════
@@ -418,6 +419,9 @@ export function Checklist({
   }, []);
 
   const still = stillness();
+  /* rap/ui: opt-in sound, silent without a SoundProvider — a tick
+     for each task crossed out and a thud when the heap lands */
+  const sound = useSound();
 
   const r = clamp(corner, 0, 40);
   const side = clamp(Math.round(box), 14, 28);
@@ -440,6 +444,14 @@ export function Checklist({
      Cleared if `fell` goes false first, so unticking a task
      cancels the reset rather than having it fire later and
      wipe the box you just reopened. */
+  /* rap/ui: the heap lands at the 0.66 keyframe of the furthest
+     fall (see `land` in Row), so the thud is timed to that */
+  useEffect(() => {
+    if (!fell || still) return;
+    const id = window.setTimeout(() => sound.play("drop"), DROP_MS * 1000 * 0.66);
+    return () => window.clearTimeout(id);
+  }, [fell, still, sound]);
+
   useEffect(() => {
     if (!fell) return;
     /* ── ALL THE WAY BACK, tasks included ────────────────
@@ -577,6 +589,7 @@ export function Checklist({
              the bottom row over everything. */
           layer={fell ? items.length - i : undefined}
           onToggle={() => {
+            sound.play(task.done ? "release" : "tick");
             setItems((v) =>
               v.map((t, k) => (k === i ? { ...t, done: !t.done } : t)));
           }}

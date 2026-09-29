@@ -344,3 +344,10 @@ code { font-family: var(--rap-font-mono); font-size: 0.85em; }
 .demo-stickers .rap-sticker--heart,
 .demo-stickers .rap-sticker--blob,
 .demo-stickers .rap-sticker--clover { width: 7.5rem; }
+
+/* site-wide sound controls (header of landing and docs) */
+.site-sound { display: inline-flex; align-items: center; gap: 0.9rem; margin-right: 0.75rem; }
+.site-sound label { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 500; color: var(--rap-mute); }
+.site-sound .rap-switch { --sw-h: 1.75rem; --sw-w: 3rem; --sw-pad: 3px; }
+.site-sound__fun .rap-slider { width: 90px; }
+@media (max-width: 760px) { .site-sound__fun { display: none !important; } }

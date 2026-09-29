@@ -1,5 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { cx } from "../utils";
+import { useSound } from "../sound";
 import "./Accordion.css";
 
 export interface AccordionItem {
@@ -22,9 +23,12 @@ export interface AccordionProps {
 export function Accordion({ items, multiple = false, defaultOpen = [], numbered = true, className }: AccordionProps) {
   const [open, setOpen] = useState<number[]>(defaultOpen);
   const base = useId();
+  const sound = useSound();
 
-  const toggle = (i: number) =>
+  const toggle = (i: number) => {
+    sound.play(open.includes(i) ? "drop" : "pop", { strength: 0.6 });
     setOpen((cur) => (cur.includes(i) ? cur.filter((x) => x !== i) : multiple ? [...cur, i] : [i]));
+  };
 
   return (
     <div className={cx("rap-acc", className)}>

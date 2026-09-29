@@ -1,0 +1,147 @@
+/* Adapted from Bencho — https://bencho.dev — MIT licence, see
+   bencho.dev/licence.
+
+   ── Bencho's tokens, answered in rap/ui's terms ──────────────
+   Scoped to .tms (the component's root) so nothing leaks, and
+   pointing at rap/ui tokens so the scrubber follows the theme.
+
+     --card        the card's ground   → --rap-surface (white card,
+                                          #242424 in dark), the
+                                          ground every rap/ui card uses
+     --ink         digits, ticks       → --rap-ink
+     --font-ui     UI face             → --rap-font-sans (Onest)
+     --pane-edge   the Stroke hairline → --rap-line
+     --signal      the focus ring      → --rap-ring (rap/ui's blue;
+                                          Bencho's fallback was a blue too)
+
+   --fill-slab / --fill-on are Bencho's per-card "Fill" override;
+   rap/ui has no such control, so they alias the card and ink
+   here. Override them on a wrapper to tint the block
+   (`.my-wrap .tms { --fill-slab: var(--rap-acid) }`).
+
+   rap/ui adaptation, outside the token list: the centre mark was
+   a literal red (#e5484d). It is --tms-mark here, set to rap/ui's
+   flame, the same orange the rest of the system uses for "this
+   one". No -rgb tokens are read by this block. */
+.tms {
+  --card: var(--rap-surface);
+  --ink: var(--rap-ink);
+  --font-ui: var(--rap-font-sans);
+  --pane-edge: var(--rap-line);
+  --signal: var(--rap-ring);
+  --fill-slab: var(--card);
+  --fill-on: var(--ink);
+  --tms-mark: var(--rap-flame);}
+
+/* ══ Time scrubber ═══════════════════════════════════════ */
+.tms {
+  width: 300px;
+  padding: 20px 18px 16px;
+  border-radius: var(--tms-r);
+  background: var(--fill-slab, var(--card));
+  color: var(--fill-on, var(--ink));
+  font-family: var(--font-ui);
+  user-select: none;
+  -webkit-user-select: none;}
+
+[data-stroke="on"] .tms { box-shadow: 0 0 0 1px var(--pane-edge); }
+
+.tms-read {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;}
+
+.tms-time {
+  display: inline-flex;
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;}
+
+/* a digit rolls through a window that FADES rather than clips.
+   Each cell is 1.5em for a 1em line, the digit centred in it, so
+   at rest the neighbours sit wholly outside the window; the mask
+   takes the top and bottom quarter-em to nothing, so a digit on
+   the move leaves and arrives through a fade, never an edge. The
+   negative margin keeps the line box at 1em. */
+.tms-col {
+  display: inline-block;
+  height: 1.5em;
+  margin: -0.25em 0;
+  overflow: hidden;
+  mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);}
+
+.tms-strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 220ms cubic-bezier(0.3, 1.15, 0.4, 1);}
+
+.tms-strip > span { height: 1.5em; line-height: 1.5em; }
+
+/* and it smears a little while it rolls */
+.tms-strip[data-flip="a"] { animation: tms-blur-a 260ms ease-out; }
+
+.tms-strip[data-flip="b"] { animation: tms-blur-b 260ms ease-out; }
+
+.tms-colon { padding: 0 0.02em; }
+
+.tms-mer {
+  font-size: 14px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--fill-on, #17181a) 45%, var(--fill-slab, #fff));}
+
+.tms-ruler {
+  position: relative;
+  height: 58px;
+  margin-top: 16px;
+  cursor: grab;
+  touch-action: pan-y;
+  outline: none;
+  /* the ruler fades out at both ends, like a wheel turning away */
+  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);}
+
+.tms-ruler:active { cursor: grabbing; }
+
+.tms-ruler:focus-visible { box-shadow: inset 0 0 0 2px var(--signal, #2231dd); border-radius: 10px; }
+
+.tms-track { position: absolute; left: 50%; top: 0; bottom: 0; }
+
+.tms-tick {
+  position: absolute;
+  left: -1px;
+  top: 8px;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--fill-on, var(--ink));
+  transform-origin: 50% 0;}
+
+.tms-tick[data-kind="quarter"] { height: 17px; }
+
+.tms-tick[data-kind="hour"] { height: 25px; }
+
+.tms-hour {
+  position: absolute;
+  left: 0;
+  top: 38px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--fill-on, #17181a) 55%, var(--fill-slab, #fff));}
+
+/* the fixed mark the ruler runs under */
+.tms-mark {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  width: 3px;
+  height: 32px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--tms-mark, #e5484d);}
+
+@keyframes tms-blur-a { from { filter: blur(2px); } to { filter: blur(0); } }
+
+@keyframes tms-blur-b { from { filter: blur(2px); } to { filter: blur(0); } }

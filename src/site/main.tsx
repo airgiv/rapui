@@ -4,6 +4,7 @@ import "../rapui/fonts";
 import "../rapui";
 import "./site.css";
 import { App } from "./App";
+import { SoundProvider, type SoundSettings } from "../rapui";
 /* the explorer pulls in charts, tables, calendars…: load it only when opened */
 const Docs = lazy(() => import("./Docs").then((m) => ({ default: m.Docs })));
 
@@ -27,17 +28,38 @@ function Root() {
     document.documentElement.setAttribute("data-rap-theme", dark ? "dark" : "light");
   }, [dark]);
 
+  // site-wide opt-in sound, remembered per browser
+  const [sound, setSound] = useState<SoundSettings>(() => {
+    const base = { enabled: false, volume: 0.6, fun: 25, haptics: true };
+    try {
+      return { ...base, ...JSON.parse(localStorage.getItem("rapui-sound") ?? "{}") };
+    } catch {
+      return base;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("rapui-sound", JSON.stringify(sound));
+    } catch {
+      /* storage blocked */
+    }
+  }, [sound]);
+
   const inDocs = hash === "docs" || hash.startsWith("docs.");
   useEffect(() => {
     if (!inDocs) document.title = "rap/ui — interfaces with nerve";
   }, [inDocs]);
 
-  return inDocs ? (
-    <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
-      <Docs slug={hash.slice(5)} dark={dark} setDark={setDark} />
-    </Suspense>
-  ) : (
-    <App dark={dark} setDark={setDark} />
+  return (
+    <SoundProvider {...sound}>
+      {inDocs ? (
+        <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
+          <Docs slug={hash.slice(5)} dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
+        </Suspense>
+      ) : (
+        <App dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
+      )}
+    </SoundProvider>
   );
 }
 

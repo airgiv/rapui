@@ -18,6 +18,8 @@ import { ENTRIES } from "../docs/registry";
 import { defaults } from "../docs/codegen";
 import { GROUPS, type Control, type DocEntry, type Props } from "../docs/types";
 import { Code } from "./Code";
+import { SoundControls } from "./SoundControls";
+import type { SoundSettings } from "../rapui";
 import "./docs.css";
 
 /* ── settings panel ─────────────────────────────────────────── */
@@ -113,7 +115,19 @@ function Playground({ entry }: { entry: DocEntry }) {
 
 /* ── page ───────────────────────────────────────────────────── */
 
-export function Docs({ slug, dark, setDark }: { slug: string; dark: boolean; setDark: (v: boolean) => void }) {
+export function Docs({
+  slug,
+  dark,
+  setDark,
+  sound,
+  setSound,
+}: {
+  slug: string;
+  dark: boolean;
+  setDark: (v: boolean) => void;
+  sound: SoundSettings;
+  setSound: (v: SoundSettings) => void;
+}) {
   const [q, setQ] = useState("");
   // Calm switches off the playful layer everywhere (data-rap-motion="calm" on <html>, so portals follow)
   const [calm, setCalm] = useState(false);
@@ -150,6 +164,7 @@ export function Docs({ slug, dark, setDark }: { slug: string; dark: boolean; set
         <span className="docs-top__title">Components</span>
         <span className="docs-top__count">{ENTRIES.length}</span>
         <div className="docs-top__right">
+          <SoundControls value={sound} onChange={setSound} />
           <label className="docs-calm">
             <span>Calm</span>
             <Switch checked={calm} onCheckedChange={setCalm} onText="" offText="" />

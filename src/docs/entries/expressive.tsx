@@ -4,6 +4,9 @@ import {
   FANCY_ICONS,
   FancyIcon,
   icons,
+  synth,
+  Button,
+  ButtonGroup,
   CanvasToolbar,
   Checklist,
   Counter,
@@ -21,6 +24,7 @@ import {
   Tabs,
   TiltCard,
 } from "../../rapui";
+import type { SoundName } from "../../rapui";
 import type { AccentTone, FancyIconName, FancyTone, IconComponent, StickerColor, StickerShape } from "../../rapui";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
@@ -91,6 +95,26 @@ const toolbarControls: Control[] = [
   { type: "select", prop: "surface", options: ["flat", "glass"], default: "flat" },
 ];
 
+const SOUNDS: { name: SoundName; hint: string }[] = [
+  { name: "tap", hint: "button press" },
+  { name: "release", hint: "lift off" },
+  { name: "toggleOn", hint: "switch on" },
+  { name: "toggleOff", hint: "switch off" },
+  { name: "tick", hint: "checkbox" },
+  { name: "detent", hint: "slider notch" },
+  { name: "pop", hint: "dialog opens" },
+  { name: "drop", hint: "something lands" },
+  { name: "whoosh", hint: "sheet slides" },
+  { name: "success", hint: "done" },
+  { name: "error", hint: "nope" },
+  { name: "type", hint: "keystroke" },
+];
+
+const soundControls: Control[] = [
+  { type: "number", prop: "fun", label: "fun: dull → toy", min: 0, max: 100, step: 5, default: 25 },
+  { type: "number", prop: "volume", min: 0, max: 1, step: 0.05, default: 0.6 },
+];
+
 const TECH = Object.entries(icons).filter(([, v]) => typeof v === "object") as [string, IconComponent][];
 
 const iconControls: Control[] = [
@@ -108,6 +132,60 @@ const fancyControls: Control[] = [
 ];
 
 export const entries: DocEntry[] = [
+  {
+    slug: "sound",
+    name: "Sound",
+    group: "Expressive",
+    basedOn: "Web Audio, no files",
+    description:
+      "Optional interface sounds, synthesised in the browser so there are no audio files or licences. One knob, fun, runs from a dull felt click (0) through wood and plastic (50) to toy bloops and boings (100). Components are silent unless the app is wrapped in <SoundProvider enabled>; the Sound switch in the header turns it on for this site.",
+    controls: soundControls,
+    Demo: ({ p }) => {
+      const [ratchet, setRatchet] = useState(0);
+      return (
+        <div className="doc-stack" style={{ width: "100%", alignItems: "center", gap: "1.5rem" }}>
+          <div className="doc-sound-grid">
+            {SOUNDS.map((x) => (
+              <button
+                key={x.name}
+                type="button"
+                className="doc-sound"
+                onPointerDown={() => synth(x.name, Number(p.fun), Number(p.volume))}
+              >
+                <span className="doc-sound__name">{x.name}</span>
+                <span className="doc-sound__hint">{x.hint}</span>
+              </button>
+            ))}
+          </div>
+          <ButtonGroup>
+            <Button
+              variant="soft"
+              size="md"
+              onClick={() => {
+                // twelve notches, the hour one firmer, like a flick of the time scrubber
+                for (let i = 0; i < 12; i++)
+                  window.setTimeout(() => synth("detent", Number(p.fun), Number(p.volume), { strength: i % 4 === 0 ? 1 : 0.55 }), i * 45);
+                setRatchet((r) => r + 1);
+              }}
+            >
+              {`Ratchet ×12${ratchet ? " ✓" : ""}`}
+            </Button>
+          </ButtonGroup>
+        </div>
+      );
+    },
+    code: (p) => `import { SoundProvider, useSound } from "rapui";
+
+// once, around the app (off by default — nothing plays without it)
+<SoundProvider enabled volume={${p.volume}} fun={${p.fun}} haptics>
+  <App />
+</SoundProvider>
+
+// inside any component
+const sound = useSound();
+sound.play("pop");      // tap · release · toggleOn · toggleOff · tick · detent
+sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
+  },
   {
     slug: "icons",
     name: "Icons",

@@ -6,6 +6,7 @@
    CanvasToolbar.css. */
 import { useState } from "react";
 import { Circle, Code, Frame, MousePointer2, Slash, Spline, Square, Star, Type } from "../icons";
+import { useSound } from "../sound";
 import "./CanvasToolbar.css";
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -84,11 +85,12 @@ function Btn({
   tool: string;
   setTool: (k: string) => void;
 }) {
+  const sound = useSound();
   return (
     <button
       className="bar-tool"
       data-on={tool === k}
-      onClick={() => { setTool(k); }}
+      onClick={() => { if (tool !== k) sound.play("tap"); setTool(k); }}
       onPointerDown={hold}
       aria-label={k}
     >
@@ -102,7 +104,11 @@ export function CanvasToolbar({ corner = BAR_CORNER }: { corner?: number } = {})
   const [shape, setShape] = useState(SHAPES[0]);
   const [open, setOpen] = useState(false);
 
+  /* rap/ui: opt-in sound — a tick for a picked shape, a pop for
+     the palette opening; silent without a SoundProvider */
+  const sound = useSound();
   const pick = (s: (typeof SHAPES)[number]) => {
+    sound.play("tick");
     setShape(s);
     setTool("shape");
     setOpen(false);
@@ -151,7 +157,7 @@ export function CanvasToolbar({ corner = BAR_CORNER }: { corner?: number } = {})
           <button
             className="bar-notch"
             data-open={open}
-            onClick={() => { setOpen((o) => !o); }}
+            onClick={() => { sound.play(open ? "drop" : "pop", { strength: 0.6 }); setOpen((o) => !o); }}
             onPointerDown={hold}
             aria-label="More shapes"
           />

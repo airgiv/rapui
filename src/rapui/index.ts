@@ -10,6 +10,10 @@ export { useSpring, useSpringLag } from "./hooks/useSpring";
 export { useGlide } from "./hooks/useGlide";
 export { useReplay } from "./hooks/useReplay";
 
+// opt-in interface sound
+export { SoundProvider, useSound, synth } from "./sound";
+export type { SoundApi, SoundSettings, SoundName, PlayOptions } from "./sound";
+
 export { Display, Accent, Eyebrow, Lead, Highlight } from "./components/Typography";
 export type { DisplayProps, AccentTone } from "./components/Typography";
 export { RollText } from "./components/RollText";
@@ -31,6 +35,7 @@ export type { TabItem } from "./components/Tabs";
 export { Counter } from "./components/Counter";
 export { Cursor } from "./components/Cursor";
 export { Grain } from "./components/Grain";
+export { TimeScrubber } from "./components/TimeScrubber";
 
 // icons: thin technical set (Phosphor Light) as a namespace, fancy Solar duotone
 export * as icons from "./icons";
@@ -47,3 +52,4 @@ export * from "./groups/forms";
 export * from "./groups/overlays";
 export * from "./groups/display";
 export * from "./groups/navigation";
+export * from "./groups/scrubbers";

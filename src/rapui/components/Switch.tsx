@@ -1,5 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { cx } from "../utils";
+import { useSound } from "../sound";
 import "./Switch.css";
 
 export interface SwitchProps {
@@ -30,10 +31,12 @@ export function Switch({
   const [inner, setInner] = useState(defaultChecked);
   const isOn = checked ?? inner;
   const id = useId();
+  const sound = useSound();
 
   const toggle = () => {
     if (disabled) return;
     const next = !isOn;
+    sound.play(next ? "toggleOn" : "toggleOff");
     if (checked === undefined) setInner(next);
     onCheckedChange?.(next);
   };

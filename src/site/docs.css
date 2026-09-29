@@ -218,3 +218,25 @@
 .doc-icon-grid--fancy { max-height: none; }
 .docs-calm { display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 0.75rem; font-size: 0.875rem; font-weight: 500; color: var(--rap-mute); }
 .docs-calm .rap-switch { --sw-h: 1.75rem; --sw-w: 3rem; --sw-pad: 3px; }
+
+.doc-sound-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--rap-gap-tile); width: min(100%, 40rem); }
+.doc-sound {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 1rem 1.1rem;
+  border: 0;
+  border-radius: 18px;
+  background: var(--rap-paper);
+  color: var(--rap-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--rap-dur-fast) var(--rap-ease-rm), scale 120ms var(--rap-ease-out);
+}
+.doc-sound:hover { background: var(--rap-fill-hover); }
+.doc-sound:active { scale: 0.95; }
+.doc-sound__name { font-weight: 500; }
+.doc-sound__hint { font-size: 0.8125rem; color: var(--rap-mute); }
+@media (max-width: 700px) { .doc-sound-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
