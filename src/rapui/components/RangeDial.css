@@ -1,0 +1,202 @@
+/* Adapted from Bencho — https://bencho.dev — MIT licence, see
+   bencho.dev/licence.
+
+   ── Bencho's tokens, answered in rap/ui's terms ──────────────
+   Everything is set on .slp, the component's own root, so
+   nothing leaks.
+
+     --ink         ticks, the figure     → --rap-ink
+     --ink-rgb     the same, as numbers  → 40, 40, 40 / 245, 245, 245.
+                                            rap/ui has no -rgb tokens
+                                            (it writes its washes as
+                                            rgb(40 40 40 / a)), so the
+                                            ink's channels are written
+                                            here, light and dark
+     --font-ui     UI face               → --rap-font-sans (Onest)
+
+   Two more are read by the component rather than the CSS — they
+   are props on <Liquid>, and resolve here because its layer sits
+   inside .slp:
+
+     --board       the handles' fill     → --rap-surface: white on the
+                                            light ground — the same raised
+                                            surface every rap/ui card is.
+                                            Lifted in dark, see below.
+                                            It must be OPAQUE (see the
+                                            note on <Liquid>), which the
+                                            surface is and --rap-fill is not
+     --shadow-rgb  the handles' shadow   → 0, 0, 0. rap/ui is flat and has
+                                            no shadow colour; black, as in
+                                            CanvasToolbar
+
+   Left undefined, on purpose:
+
+     --fill-on / --fill-on-rgb (and --fill-slab, in the component)
+         Bencho's per-card "Fill" control. rap/ui has no such
+         control, and every read carries the ink (or the board)
+         as its fallback, so undefined IS the design. Set them on
+         a wrapper to recolour the dial
+         (`.night .slp { --fill-on: var(--rap-paper) }`).
+     --d
+         Not a token: the component writes it on each tick — how
+         many ticks in from the nearer handle it is — and the
+         wave's delay is read from it.
+
+   rap/ui adaptations outside the token list: none. The
+   reduced-motion rule is Bencho's own. */
+/* rap/ui on Tailwind: Bencho's CSS is kept as written (its comments are the
+   point), inside the components layer so Tailwind utilities can still override it. */
+@layer theme, base, components, utilities;
+
+@layer components {
+.slp {
+  --ink: var(--rap-ink);
+  --ink-rgb: 40, 40, 40;
+  --font-ui: var(--rap-font-sans);
+  --board: var(--rap-surface);
+  --shadow-rgb: 0, 0, 0;}
+
+/* dark: the surface is only a step off the page there (#242424
+   on #161616), and a handle that is a step off the ground is a
+   handle you cannot find. An opaque mix — 18% of the ink into
+   the surface — lifts it the way white lifts off the light page. */
+[data-rap-theme="dark"] .slp {
+  --ink-rgb: 245, 245, 245;
+  --board: color-mix(in srgb, var(--rap-ink) 18%, var(--rap-surface));}
+
+
+/* ── sleep arc ─────────────────────────────────────────── */
+/* ── sleep dial ─────────────────────────────────────────────
+   No pane. The wheel and its pill, stacked, standing directly
+   on whatever the section is made of. */
+.slp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-ui);
+  color: var(--fill-on, var(--ink));}
+
+.slp-dial { position: relative; width: 288px; height: 288px; }
+
+.g-arc {
+  position: absolute;
+  inset: 0;
+  width: 288px; height: 288px;
+  cursor: grab;
+  touch-action: none;
+  outline: none;}
+
+/* ── a tick draws itself as it is taken into the range ──────
+   The wave. Each newly-lit tick grows out from the inner ring
+   rather than appearing at full length, and each waits a
+   little longer than the one before it — so the range fills
+   along its own length instead of switching on all at once.
+
+   `--d` is how many ticks in from the nearer handle it is, set
+   per line in GlassSet.tsx. Measuring from the NEARER end is
+   what makes the ripple start where your finger is without the
+   component being told which handle moved: the ticks beside it
+   are the ones with the small numbers.
+
+   `both`, so the tick is at dashoffset 1 — invisible — for the
+   whole of its delay rather than sitting at full length until
+   its turn comes. Without it the wave is a set of ticks
+   blinking off and back on. */
+.g-arc line[data-on] {
+  animation: dial-fill 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--d, 0) * 16ms);}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-arc line[data-on] { animation-duration: 1ms; animation-delay: 0ms; }
+}
+
+.g-arc[data-dragging="true"] { cursor: grabbing; }
+
+/* ── the handles ────────────────────────────────────────────
+   A grid with both in one cell, moved off it by transform.
+   That is the shape liquid-gooey can measure: in flow, with a
+   real box. The group is centred on the dial and the offsets
+   are computed from the same angle the ticks use. */
+.slp-knobs {
+  position: absolute;
+  left: 50%; top: 50%;
+  margin: -144px 0 0 -144px;
+  width: 288px; height: 288px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;}
+
+/* undo the library's double-applied scale — see Gooey.tsx */
+.slp-knobs > svg {
+  transform: scale(calc(1 / var(--k, 1)));
+  transform-origin: 0 0;}
+
+/* no background: <Liquid> paints the disc behind it, and a
+   fill here would sit as a hard circle on the liquid edge */
+/* 20, up from 17. It is the thing you grab and it was the
+   smallest object on a 288px dial — and it just lost the ring
+   that was standing in for a couple of pixels of size. */
+.slp-knob {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  width: 20px; height: 20px;
+  border-radius: 999px;}
+
+/* the fill's ink, not the theme's — same reason as the knob's
+   ring: a dark fill in a light theme left this dark on dark */
+.slp-pip {
+  width: 5px; height: 5px;
+  border-radius: 999px;
+  background: rgba(var(--fill-on-rgb, var(--ink-rgb)), 0.5);}
+
+.slp-mid {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  translate: 0 -50%;
+  text-align: center;
+  pointer-events: none;}
+
+/* INTER, NOT DM MONO. Same reasoning as Balance: the only
+   thing the monospaced face was buying is a stable digit
+   advance so the figure does not jitter as it counts, and
+   tabular-nums gives that in the proportional face. */
+/* -0.045, the same tracking the wheel's readout took. At 34px
+   the figures carry more than body copy wants, and this one
+   has units set between them — the tighter the numerals sit,
+   the more "7h 30m" reads as one measurement rather than as
+   four things in a row. */
+.slp-figure {
+  font-family: var(--font-ui);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;}
+
+/* ── ONE SIZE, TWO WEIGHTS OF ATTENTION ─────────────────────
+   The units were 14px against a 34px figure — a two-and-a-half
+   to one jump that made them read as footnotes stuck to the
+   numbers rather than as part of the same reading. 24 is close
+   enough that the line scans as one thing and still clearly
+   subordinate, and the GREY is what keeps them subordinate:
+   size was doing a job colour was already doing. */
+.slp-unit {
+  font-family: var(--font-ui);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  /* 0.35 was tuned for type small enough to need the help; at
+     this size it reads as almost absent */
+  opacity: 0.42;
+  margin-left: 3px;}
+
+.slp-unit[data-pair="true"] { margin-right: 6px; }
+}
+
+@keyframes dial-fill {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }}

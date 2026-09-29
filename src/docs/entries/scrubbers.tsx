@@ -1,12 +1,29 @@
 import { useState } from "react";
-import { TimeScrubber } from "../../rapui";
+import { ProgressTicks, PullToRefresh, RangeDial, TimeScrubber } from "../../rapui";
 import { ElasticSlider, Knob, ScrubNumber, TimeWheel, WheelPicker } from "../../rapui/groups/scrubbers";
 import { Eye, Moon, RefreshCw, Sun, Volume1, Volume2 } from "../../rapui/icons";
+import { cn } from "../../rapui/utils";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
 
 /* a paper ground inside the white stage, for demos drawn on the page colour */
 const GROUND = "grid place-items-center w-full min-h-80 p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
+
+const pullControls: Control[] = [
+  { type: "number", prop: "resistance", min: 0, max: 100, default: 50 },
+  { type: "number", prop: "threshold", min: 30, max: 120, default: 58 },
+  { type: "number", prop: "spin", min: 0, max: 100, default: 50 },
+  { type: "number", prop: "dots", min: 3, max: 10, default: 6 },
+  { type: "number", prop: "corner", min: 0, max: 40, default: 26 },
+];
+
+const ticksControls: Control[] = [{ type: "number", prop: "value", min: 0, max: 100, default: 66 }];
+
+const dialControls: Control[] = [
+  { type: "select", prop: "snap", options: ["5", "15", "30", "60"], default: "15" },
+  { type: "number", prop: "density", min: 24, max: 96, step: 4, default: 48 },
+  { type: "number", prop: "reach", min: 44, max: 66, default: 56 },
+];
 
 const timeControls: Control[] = [
   { type: "select", prop: "step", options: ["1", "5", "15", "30", "60"], default: "15" },
@@ -194,6 +211,64 @@ export const entries: DocEntry[] = [
     code: (p) => `import { TimeScrubber } from "rapui";
 
 <TimeScrubber${attrs(p, timeControls)} />`,
+  },
+  {
+    slug: "pull-to-refresh",
+    name: "Pull to refresh",
+    group: "Scrubbers",
+    basedOn: "Bencho, MIT",
+    description:
+      "A portfolio card: pull it down to refresh, run along the line to read the day back. Delight: the card stretches with your finger and squashes on the rebound, scattered dots are drawn together as you pull and touch at the exact distance that commits, then turn while it works. With sound on you hear the commit before you let go, and the scrub counts off the readings, pitched by the value.",
+    controls: pullControls,
+    Demo: ({ p }) => (
+      /* room below the card: it stretches with the pull and paints past its own box */
+      <div className={cn(GROUND, "place-items-start justify-center pt-10 pb-36")}>
+        <PullToRefresh
+          resistance={Number(p.resistance)}
+          threshold={Number(p.threshold)}
+          spin={Number(p.spin)}
+          dots={Number(p.dots)}
+          corner={Number(p.corner)}
+        />
+      </div>
+    ),
+    code: (p) => `import { PullToRefresh } from "rapui";
+
+<PullToRefresh${attrs(p, pullControls)} />`,
+  },
+  {
+    slug: "progress-ticks",
+    name: "Progress ticks",
+    group: "Scrubbers",
+    basedOn: "Bencho, MIT",
+    description:
+      "Two numbers and a row of ticks. Hover (or drag a finger) along the row to preview another value; the delta appears only while you scrub. Delight: lit ticks stand taller and the row breathes on a sine; with sound on each tick clicks up a rising scale, firmer on the lit side.",
+    controls: ticksControls,
+    Demo: ({ p }) => (
+      <div className={GROUND}>
+        <ProgressTicks value={Number(p.value)} />
+      </div>
+    ),
+    code: (p) => `import { ProgressTicks } from "rapui";
+
+<ProgressTicks${attrs(p, ticksControls)} />`,
+  },
+  {
+    slug: "range-dial",
+    name: "Range dial",
+    group: "Scrubbers",
+    basedOn: "Bencho, MIT",
+    description:
+      "A range on a 24-hour dial — bedtime to wake-up — with two handles; the drag picks whichever is nearer. Delight: newly lit ticks draw themselves outward in a wave that starts at your finger, and the handles are liquid: as the window closes they neck and fuse into one drop. With sound on, each snap step clicks, pitched by the hour.",
+    controls: dialControls,
+    Demo: ({ p }) => (
+      <div className={GROUND}>
+        <RangeDial snap={String(p.snap)} density={Number(p.density)} reach={Number(p.reach)} />
+      </div>
+    ),
+    code: (p) => `import { RangeDial } from "rapui";
+
+<RangeDial${attrs(p, dialControls)} />`,
   },
   {
     slug: "knob",

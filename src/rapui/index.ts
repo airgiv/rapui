@@ -38,6 +38,9 @@ export { Counter } from "./components/Counter";
 export { Cursor } from "./components/Cursor";
 export { Grain } from "./components/Grain";
 export { TimeScrubber } from "./components/TimeScrubber";
+export { PullToRefresh } from "./components/PullToRefresh";
+export { ProgressTicks } from "./components/ProgressTicks";
+export { RangeDial } from "./components/RangeDial";
 
 // icons: thin technical set (Phosphor Light) as a namespace, fancy Solar duotone
 export * as icons from "./icons";

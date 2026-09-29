@@ -1,0 +1,345 @@
+/* Adapted from Bencho — https://bencho.dev — MIT licence, see
+   bencho.dev/licence.
+
+   ── what came across, and what did not ──────────────────────
+   Bencho ships this block inside its shared glass stylesheet,
+   whose selector lists also style a dozen other Bencho blocks
+   (.gcard, .gpane, .gnav, .gdock, .cmd, .bal-sheet, .nod-card,
+   the .gtry test board…). None of those are drawn by this
+   component, so only the rules that land on what it renders are
+   kept — .lab, .tik, .tick-row, .tick — each with its original
+   comment. The .lab-eyebrow / -figure / -chip / -dot rules went
+   too: nothing here uses them. That is also why --nod-r and
+   --try-edge are not defined below — every rule that read them
+   styled a block that is not here (the node card, the flat-rim
+   test board).
+
+   ── Bencho's tokens, answered in rap/ui's terms ──────────────
+   Scoped to .lab (the component's root) so nothing leaks.
+
+     --ink         the figure, lit ticks → --rap-ink
+     --ink-3       secondary text        → --rap-ink-2
+     --ink-4       the quietest text     → --rap-mute (the delta at rest)
+     --font-ui     UI face               → --rap-font-sans (Onest)
+     --font-num    figures               → --rap-font-sans too: rap/ui has
+                                            one face and sets figures in it
+                                            with tabular-nums, which is the
+                                            argument .tik-fig makes below
+     --font-mono   chips                 → --rap-font-mono
+     --ok          the tick under you,   → --rap-success
+                   a rise
+     --pane        the card              → --rap-surface: solid, because
+                                            rap/ui is flat. Under
+                                            [data-surface="glass"] it is 60%
+                                            of that, Bencho's own recipe, so
+                                            the frost has something to show
+     --pane-edge   the Stroke hairline   → --rap-line
+     --solid /     the dark-tone card    → --rap-ink / --rap-paper — the
+     --solid-ink                            inverted card rap/ui already
+                                            uses for its ink buttons
+
+   No rap/ui equivalent, so defined here:
+     --ink-rgb     --rap-ink as a comma triplet, 40, 40, 40 (and
+                   245, 245, 245 in dark), because the CSS builds
+                   rgba(var(--ink-rgb), a). rap/ui writes its own
+                   washes as rgb(40 40 40 / a) and has no -rgb token.
+     --shadow-rgb  rap/ui is flat and has no shadow colour; black,
+                   the same as CanvasToolbar
+     --g-blur / --g-sat / --g-bright
+                   2px / 150% / 100% — the var() fallbacks, stated
+                   so the mapping is explicit
+     --g-edge-* / --g-spec / --g-lift
+                   only read under [data-surface="glass"] on an
+                   ancestor. rap/ui never sets it; the values are
+                   CanvasToolbar's, so the two panes agree when you
+                   opt in.
+
+   --g-shadow is deliberately NOT defined: it is read as
+   var(--g-shadow, <the whole recipe>), so it is an override
+   hook, and setting it would throw the recipe away. */
+/* rap/ui on Tailwind: Bencho's CSS is kept as written (its comments are the
+   point), inside the components layer so Tailwind utilities can still override it. */
+@layer theme, base, components, utilities;
+
+@layer components {
+.lab {
+  --ink: var(--rap-ink);
+  --ink-3: var(--rap-ink-2);
+  --ink-4: var(--rap-mute);
+  --ink-rgb: 40, 40, 40;
+  --font-ui: var(--rap-font-sans);
+  --font-num: var(--rap-font-sans);
+  --font-mono: var(--rap-font-mono);
+  --ok: var(--rap-success);
+  --pane: var(--rap-surface);
+  --pane-edge: var(--rap-line);
+  --solid: var(--rap-ink);
+  --solid-ink: var(--rap-paper);
+  --shadow-rgb: 0, 0, 0;
+  --g-blur: 2px;
+  --g-sat: 150%;
+  --g-bright: 100%;
+  --g-edge-hi: 0.9;
+  --g-edge-lo: 0.12;
+  --g-edge-far: 0.35;
+  --g-spec: 0.6;
+  --g-lift: 0.12;}
+
+[data-surface="glass"] .lab {
+  --pane: color-mix(in srgb, var(--rap-surface) 60%, transparent);}
+
+[data-rap-theme="dark"] .lab {
+  --ink-rgb: 245, 245, 245;
+  --g-edge-hi: 0.28;
+  --g-edge-lo: 0.04;
+  --g-edge-far: 0.12;
+  --g-spec: 0.16;
+  --g-lift: 0.4;}
+
+/* same glass as .gcard, just a different footprint and radius */
+.lab {
+  position: relative;
+  --lab-fg: var(--ink);
+  --lab-fg-2: var(--ink-3);
+  --lab-line: rgba(var(--ink-rgb),0.09);
+  --lab-edge: var(--pane-edge);
+  background: var(--pane);
+  -webkit-backdrop-filter:
+    blur(var(--g-blur, 2px)) saturate(var(--g-sat, 150%)) brightness(var(--g-bright, 100%));
+  backdrop-filter:
+    blur(var(--g-blur, 2px)) saturate(var(--g-sat, 150%)) brightness(var(--g-bright, 100%));
+  color: var(--lab-fg);
+  border-radius: 20px;
+  /* 12, the wall's own gap between cards. The inset inside a
+     component and the space between two of them were 22 and
+     12, so the page had two spacing values doing the same job
+     at different sizes. One number, and the rhythm carries
+     from the wall straight into the component. */
+  padding: 12px;
+  overflow: hidden;
+  isolation: isolate;
+  font-family: var(--font-ui);}
+
+.lab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid transparent;
+  pointer-events: none;
+  z-index: 3;}
+
+/* dark cards stay solid, no glass */
+.lab[data-tone="dark"] {
+  --lab-fg: var(--solid-ink);
+  --lab-fg-2: rgba(244,243,241,0.45);
+  --lab-line: rgba(255,255,255,0.1);
+  background: var(--solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;}
+
+.lab[data-tone="dark"]::before { display: none; }
+
+/* C — tick chart */
+.tick-row {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 92px; margin-top: 18px;
+  border-radius: 6px; overflow: hidden;
+  /* ── pan-y, and deliberately not `none` ──────────────────
+     The scrub is horizontal, so the browser may keep the
+     vertical: a finger that starts on this row and moves down
+     is somebody scrolling the wall, and taking that gesture
+     would trap them on a block they were only passing. `none`
+     would have done that. Sideways is ours, up and down is
+     theirs. */
+  touch-action: pan-y;}
+
+/* on a pane now, so the bars are ink at two strengths rather
+   than white at two — the whole component used to be a dark
+   card and every colour in it was picked against that */
+.tick {
+  flex: 1;
+  background: rgba(var(--ink-rgb), 0.16);
+  border-radius: 2px;
+  transition: background 160ms ease, height 320ms cubic-bezier(0.22,1,0.36,1);
+  cursor: crosshair;}
+
+.tick[data-on="true"] { background: var(--ink); }
+
+.tick[data-cursor="true"] { background: var(--ok); }
+
+/* ── flat panes ────────────────────────────────────────────
+   Set data-surface="flat" on any ancestor and every glass
+   surface under it becomes a solid fill with a hairline. The
+   inner buttons already sit on rgba(var(--ink-rgb), 0.05)
+   with no border, which is what flat wants anyway, so they
+   need nothing.
+
+   The frost is switched off at the element rather than through
+   a token. A var() holding a url() filter cannot be validated
+   at parse time, so the browser would treat it as invalid at
+   computed-value time and drop the property outright — which
+   breaks the two-declaration fallback the glass depends on. */
+/* ══ stroke ═════════════════════════════════════════════════
+   Whether a component draws a hairline round itself. OFF by
+   default, which is the change: every glass surface carried
+   one unconditionally, and a grey line round everything makes
+   a wall of components look like a wall of boxes rather than
+   a wall of things.
+
+   The line is not load-bearing. A flat pane is a fill against
+   a different fill and reads on its own; the ring was there
+   to sharpen an edge that was already there.
+
+   Placed ABOVE the glass rules on purpose. Glass draws its
+   own lit rim, and that rim is the material rather than a
+   stroke — it is what gives a pane thickness. So glass wins
+   the border wherever the two meet, and Stroke governs the
+   drawn line that flat surfaces would otherwise have. */
+/* rap/ui: of Bencho's list, only the two entries that are this
+   block — its pane's ::before, and the row, which in Bencho
+   carried the spread-shadow ring described just below. There
+   the list ran on into the node card's rule, which also set
+   `border-radius: var(--nod-r, 20px)` and so rounded the row
+   from 6 to 20 whenever Stroke was on — the ring is kept, the
+   corner stays the row's. */
+[data-stroke="on"] .lab::before {
+  border-color: var(--pane-edge);}
+
+/* ── the rest of them ────────────────────────────────────────
+   Not every block has a ::before to hang a border on, and
+   giving each one a pseudo-element it does not otherwise need
+   is a lot of stylesheet for a hairline. A 1px spread shadow
+   is the same mark by another means — the create menu has
+   used exactly this since it was written, for exactly this
+   reason — and it composites without touching layout.
+
+   This is what makes Stroke honest on every entry rather than
+   on the dozen that happened to be built on a glass pane. */
+[data-stroke="on"] .tick-row { box-shadow: 0 0 0 1px var(--pane-edge); }
+
+/* ── the rim ─────────────────────────────────────────────────
+   Every glass surface already drew a 1px ring in one flat
+   colour. A flat rim is the single clearest tell that a thing
+   is a rectangle with a border rather than a pane with
+   thickness: real edges are lit unevenly, and evenly lit ones
+   read as ink.
+
+   So the ring becomes a gradient — bright at the corner
+   facing the light, almost nothing along the sides that run
+   edge-on to it, and a second weaker catch at the far corner
+   where the light has come through the pane and out again.
+
+   Painting a gradient in a border needs the border box filled
+   and the padding box punched out of it, which is what the
+   two masks do: one covers the whole element, one covers only
+   the inside, and compositing them apart leaves the rim. It
+   is the only way to get a gradient into a border without a
+   second element to draw it on.
+
+   Only under glass. Flat keeps its honest hairline, which is
+   what a solid pane should have. */
+[data-surface="glass"] .lab::before {
+  border-color: transparent;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(255, 255, 255, var(--g-edge-hi, 0)) 0%,
+      rgba(255, 255, 255, var(--g-edge-lo, 0)) 26%,
+      rgba(255, 255, 255, var(--g-edge-lo, 0)) 62%,
+      rgba(255, 255, 255, var(--g-edge-far, 0)) 100%
+    ) border-box;
+  -webkit-mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;}
+
+/* ── thickness ───────────────────────────────────────────────
+   Three marks, and between them they are the difference
+   between a pane and a wash.
+
+   The lit line along the top is where light enters the edge of
+   a real sheet. The ring is the sheet's own thickness seen
+   from straight on. The shadow underneath says the pane is
+   ABOVE the page rather than painted onto it — which is the
+   one thing a backdrop-filter alone can never say, because a
+   filter has no depth.
+
+   All three ride on --glass and are gone at zero, where the
+   fallbacks take over and the surface is flat. */
+[data-surface="glass"] .lab {
+  box-shadow: var(--g-shadow,
+    /* the top face, catching light through the thickness of
+       the pane — inside the rim, not on it */
+    inset 0 1px 0 rgba(255, 255, 255, var(--g-spec, 0)),
+    /* And what it casts on the page below — wide and soft
+       rather than tight and close. It is a different claim
+       about how far the pane floats, and the softer one is
+       what reads as a sheet resting above the page instead of
+       a card stuck to it. */
+    0 10px 40px rgba(var(--shadow-rgb), var(--g-lift, 0)));}
+
+[data-surface="flat"] .lab {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;}
+
+[data-surface="flat"] .lab::before { display: none; }
+
+/* ── progress ticks ─────────────────────────────────────────
+   The block is the ticks. Everything above them is the one
+   number they cannot spell out, set large enough to be the
+   thing you read first. */
+/* the wall's gap — see .lab, whose padding this was overriding */
+.tik { padding: 12px; }
+
+.tik-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 20px;}
+
+/* Inter, not DM Mono — the same swap the wheel and the sleep
+   dial made, and for the same reason: the only thing the mono
+   face was buying here is a digit that does not jump as the
+   number counts under the pointer, and tabular-nums gives that
+   in the proportional face. What the mono face COSTS is a
+   readout that looks like console output in a block whose
+   other type is Inter. */
+.tik-fig {
+  font-family: var(--font-ui);
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;}
+
+/* the unit at a third of the weight — a percentage is one
+   reading, not a number with a word after it */
+.tik-fig i {
+  font-style: normal;
+  font-size: 19px;
+  margin-left: 2px;
+  opacity: 0.35;}
+
+/* Present only while scrubbing. It holds its slot rather than
+   appearing and reflowing the row it is in, because a number
+   that shoves the figure sideways every time you move the
+   pointer is worse than no number. */
+.tik-delta {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: var(--ink-4);
+  opacity: 0;
+  transition: opacity 140ms ease, color 140ms ease;
+  font-variant-numeric: tabular-nums;}
+
+.tik-delta[data-show="true"] { opacity: 1; }
+
+.tik-delta[data-up="true"] { color: var(--ok); }
+
+}
