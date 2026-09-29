@@ -5,7 +5,14 @@ import { cx } from "../utils";
 import "./Breadcrumb.css";
 
 /* Composable, shadcn-style:
-   <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink/></BreadcrumbItem><BreadcrumbSeparator/>… */
+   <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink/></BreadcrumbItem><BreadcrumbSeparator/>…
+
+   Delight: the separators are signposts. Point at (or tab to) a crumb and every chevron
+   after it turns round to point back at it — "the way back is here" — one after the
+   other, 45ms apart, like a row of dominoes, on a springy ease; slashes flip to lean the
+   other way. Move off and they turn back. Pure CSS (sibling selectors, so no props and
+   no JS); the separators are aria-hidden, so nothing changes for assistive tech.
+   Calm / reduced motion: the signposts stay put. */
 
 export const Breadcrumb = forwardRef<HTMLElement, ComponentPropsWithoutRef<"nav"> & { size?: "sm" | "md" | "lg" }>(
   function Breadcrumb({ className, size = "md", ...rest }, ref) {

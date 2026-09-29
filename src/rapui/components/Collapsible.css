@@ -49,3 +49,23 @@
   from { height: var(--radix-collapsible-content-height); opacity: 1; }
   to { height: 0; opacity: 0; }
 }
+
+/* dealt in on a real open (data-deal is set by CollapsibleContent) */
+.rap-collapsible__content[data-deal][data-state="open"] > :not(:only-child),
+.rap-collapsible__content[data-deal][data-state="open"] > :only-child > * {
+  animation: rap-deal-in 300ms var(--rap-ease-out) both;
+  animation-delay: calc(var(--co-i, 0) * 35ms + 30ms);
+}
+.rap-collapsible__content > :nth-child(2), .rap-collapsible__content > :only-child > :nth-child(2) { --co-i: 1; }
+.rap-collapsible__content > :nth-child(3), .rap-collapsible__content > :only-child > :nth-child(3) { --co-i: 2; }
+.rap-collapsible__content > :nth-child(4), .rap-collapsible__content > :only-child > :nth-child(4) { --co-i: 3; }
+.rap-collapsible__content > :nth-child(5), .rap-collapsible__content > :only-child > :nth-child(5) { --co-i: 4; }
+.rap-collapsible__content > :nth-child(6), .rap-collapsible__content > :only-child > :nth-child(6) { --co-i: 5; }
+.rap-collapsible__content > :nth-child(7), .rap-collapsible__content > :only-child > :nth-child(7) { --co-i: 6; }
+.rap-collapsible__content > :nth-child(n + 8), .rap-collapsible__content > :only-child > :nth-child(n + 8) { --co-i: 7; }
+[data-rap-motion="calm"] .rap-collapsible__content[data-deal] > *,
+[data-rap-motion="calm"] .rap-collapsible__content[data-deal] > * > * { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-collapsible__content[data-deal] > *,
+  .rap-collapsible__content[data-deal] > * > * { animation: none !important; }
+}

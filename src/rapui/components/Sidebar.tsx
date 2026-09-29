@@ -6,7 +6,9 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useImperativeHandle,
   useMemo,
+  useRef,
   useState,
   type ButtonHTMLAttributes,
   type ComponentPropsWithoutRef,
@@ -15,7 +17,10 @@ import {
 } from "react";
 import { Slot } from "radix-ui";
 import { PanelLeft } from "../icons";
+import { useSpring } from "../hooks/useSpring";
 import { cx } from "../utils";
+import { useSound } from "../sound";
+import { Glider, useActiveElement, useActiveTap, useCalm } from "./ProductTabs";
 import "./Sidebar.css";
 
 /*
@@ -28,6 +33,21 @@ import "./Sidebar.css";
  *   </SidebarMenu> </SidebarGroup> </SidebarContent> <SidebarFooter/> </Sidebar>
  *   <SidebarInset> <SidebarTrigger/> … </SidebarInset>
  * </SidebarProvider>
+ *
+ * Delight, one idea in two places — the rail is a physical thing on a spring:
+ *  - The ink "you are here" row is ONE pill that crawls between rows like a caterpillar
+ *    (useGlide, axis y): pick a row far down and the pill stretches toward it, then its
+ *    tail catches up. SidebarContent owns it and follows `isActive` (data-active) through a
+ *    MutationObserver; rows in the header/footer keep their own ink.
+ *  - Collapsing/expanding runs the width on useSpring (tune 20: one overshoot of ~8%,
+ *    settled in ~0.5s) instead of an ease. Opening, the panel swings a few px past its
+ *    width and settles; shutting, the undershoot is clamped to 4px under the rail (CSS
+ *    max()), so the rail bumps its stop like a drawer instead of clipping its icons. The spring drives a 0..100 progress (`--sb-p`) that CSS maps onto
+ *    --sb-rail..--sb-w, so custom widths keep working and nothing re-renders per frame
+ *    except the <aside> itself (its children are the same elements, React skips them).
+ * The collapsed state flips immediately (labels fade, aria updates); only the width is late.
+ * Calm / reduced motion: the old eased width transition and a plain slide.
+ * Sound (opt-in via SoundProvider): tap when the active row changes, whoosh on collapse.
  */
 
 interface SidebarContextValue {
@@ -87,13 +107,27 @@ export const SidebarProvider = forwardRef<HTMLDivElement, SidebarProviderProps>(
   );
 });
 
-export const Sidebar = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(function Sidebar({ className, ...rest }, ref) {
+export const Sidebar = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(function Sidebar({ className, style, ...rest }, ref) {
   const { collapsed } = useSidebar();
+  const local = useRef<HTMLElement>(null);
+  useImperativeHandle(ref, () => local.current as HTMLElement);
+  const calm = useCalm(local);
+  const p = useSpring(collapsed ? 0 : 100, 20, calm);
+  // sound: a whoosh when the rail opens or shuts (not on mount)
+  const sound = useSound();
+  const was = useRef(collapsed);
+  useEffect(() => {
+    if (was.current === collapsed) return;
+    was.current = collapsed;
+    sound.play("whoosh", { strength: 0.6, pitch: collapsed ? 0.9 : 1.1 });
+  }, [collapsed, sound]);
   return (
     <aside
-      ref={ref}
+      ref={local}
       data-state={collapsed ? "collapsed" : "expanded"}
+      data-spring={calm ? undefined : ""}
       className={cx("rap-sidebar", className)}
+      style={calm ? style : { ["--sb-p" as string]: (p / 100).toFixed(4), ...style }}
       {...rest}
     />
   );
@@ -103,8 +137,20 @@ export const SidebarHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEl
   return <div ref={ref} className={cx("rap-sidebar__header", className)} {...rest} />;
 });
 
-export const SidebarContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function SidebarContent({ className, ...rest }, ref) {
-  return <div ref={ref} className={cx("rap-sidebar__content", className)} {...rest} />;
+export const SidebarContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function SidebarContent(
+  { className, children, ...rest },
+  ref,
+) {
+  const local = useRef<HTMLDivElement>(null);
+  useImperativeHandle(ref, () => local.current as HTMLDivElement);
+  const active = useActiveElement(local, ".rap-sidebar__button[data-active]", ["data-active"]);
+  useActiveTap(local, active, ".rap-sidebar__button");
+  return (
+    <div ref={local} className={cx("rap-sidebar__content", className)} data-glide={active ? "" : undefined} {...rest}>
+      <Glider container={local} target={active} axis="y" className="rap-sidebar__glider" />
+      {children}
+    </div>
+  );
 });
 
 export const SidebarFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function SidebarFooter({ className, ...rest }, ref) {

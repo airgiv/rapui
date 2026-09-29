@@ -27,6 +27,12 @@
   transition: width var(--rap-dur) var(--rap-ease-rm), padding var(--rap-dur) var(--rap-ease-rm);
 }
 .rap-shell[data-collapsed] .rap-sidebar { width: var(--sb-rail); }
+/* sprung width: --sb-p runs 0 (rail) .. 1 (open) and may overshoot a hair either way */
+.rap-sidebar[data-spring],
+.rap-shell[data-collapsed] .rap-sidebar[data-spring] {
+  width: max(calc(var(--sb-rail) - 4px), calc(var(--sb-rail) + (var(--sb-w) - var(--sb-rail)) * var(--sb-p, 1)));
+  transition: padding var(--rap-dur) var(--rap-ease-rm);
+}
 
 .rap-sidebar__header,
 .rap-sidebar__footer { display: flex; flex-direction: column; gap: var(--rap-gap-tight); flex: none; }
@@ -41,7 +47,16 @@
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
+  position: relative;
+  isolation: isolate;
 }
+/* the travelling ink row (see Sidebar.tsx) */
+.rap-sidebar__glider {
+  z-index: -1;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-ink);
+}
+.rap-sidebar__content[data-glide] .rap-sidebar__button[data-active] { background: transparent; }
 .rap-sidebar__content::-webkit-scrollbar { display: none; }
 .rap-sidebar__group { display: flex; flex-direction: column; gap: 0.25rem; }
 .rap-sidebar__label {

@@ -1,11 +1,30 @@
-import { forwardRef, type ComponentPropsWithoutRef, type ElementRef, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ElementRef,
+  type ReactNode,
+} from "react";
 import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui";
 import { ChevronDown } from "../icons";
+import { useSound } from "../sound";
 import { cx } from "../utils";
+import { Glider, useActiveElement } from "./ProductTabs";
 import "./NavigationMenu.css";
 
 /* Site/app header menu (Radix NavigationMenu).
-   <NavigationMenu><NavigationMenuList><NavigationMenuItem><NavigationMenuTrigger/><NavigationMenuContent/>… */
+   <NavigationMenu><NavigationMenuList><NavigationMenuItem><NavigationMenuTrigger/><NavigationMenuContent/>…
+
+   Delight: one soft fill travels along the bar like a caterpillar (useGlide) to whatever
+   the pointer is over — or, when it isn't over the bar, to the trigger whose panel is
+   open — instead of each pill lighting up by itself. Sweep across the bar and it
+   stretches and gathers behind you; leave, and it fades where it was. When a panel
+   opens, its cards/rows are dealt in (rap-deal-in, 22ms apart) like a hand of cards.
+   Opening stays immediate; the fill and the dealing ride on top. Calm / reduced motion:
+   plain slide, no dealing. Sound (opt-in via SoundProvider): a pop when a panel opens. */
 
 export const NavigationMenu = forwardRef<
   ElementRef<typeof NavigationMenuPrimitive.Root>,
@@ -26,8 +45,52 @@ export const NavigationMenu = forwardRef<
 export const NavigationMenuList = forwardRef<
   ElementRef<typeof NavigationMenuPrimitive.List>,
   ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
->(function NavigationMenuList({ className, ...rest }, ref) {
-  return <NavigationMenuPrimitive.List ref={ref} className={cx("rap-nav__list", className)} {...rest} />;
+>(function NavigationMenuList({ className, children, onPointerMove, onPointerLeave, ...rest }, ref) {
+  const list = useRef<HTMLUListElement>(null);
+  useImperativeHandle(ref, () => list.current as HTMLUListElement);
+  const open = useActiveElement(list, '.rap-nav__trigger[data-state="open"]');
+  const [hover, setHover] = useState<HTMLElement | null>(null);
+  const sound = useSound();
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (open && !wasOpen.current) sound.play("pop", { strength: 0.6 });
+    wasOpen.current = !!open;
+  }, [open, sound]);
+  const target = hover ?? open;
+  // keep the last place while hidden, and start a fresh glider (no slide-in) when it reappears
+  const [last, setLast] = useState<HTMLElement | null>(null);
+  const [epoch, setEpoch] = useState(0);
+  if (target && target !== last) {
+    if (!last || !last.isConnected) setEpoch((n) => n + 1);
+    setLast(target);
+  }
+  const hidden = !target;
+  const [wasHidden, setWasHidden] = useState(true);
+  if (hidden !== wasHidden) {
+    if (!hidden && wasHidden && last) setEpoch((n) => n + 1);
+    setWasHidden(hidden);
+  }
+  return (
+    <NavigationMenuPrimitive.List
+      ref={list}
+      className={cx("rap-nav__list", className)}
+      data-glide=""
+      onPointerMove={(e) => {
+        onPointerMove?.(e);
+        if (e.pointerType !== "mouse") return;
+        const t = (e.target as HTMLElement).closest<HTMLElement>(".rap-nav__trigger");
+        if (t && list.current?.contains(t) && t !== hover) setHover(t);
+      }}
+      onPointerLeave={(e) => {
+        onPointerLeave?.(e);
+        setHover(null);
+      }}
+      {...rest}
+    >
+      <Glider key={epoch} as="li" container={list} target={target ?? last} hidden={hidden} className="rap-nav__glider" />
+      {children}
+    </NavigationMenuPrimitive.List>
+  );
 });
 
 export const NavigationMenuItem = NavigationMenuPrimitive.Item;

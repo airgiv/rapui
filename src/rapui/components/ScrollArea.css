@@ -22,11 +22,28 @@
   position: relative;
   flex: 1;
   border-radius: var(--rap-radius-pill);
+}
+/* the bead you see; it squashes against the end it is pushed into (ScrollArea.tsx) */
+.rap-scroll__thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background: var(--rap-fill-strong);
   transition: background var(--rap-dur-fast) var(--rap-ease-rm);
 }
-.rap-scroll__bar:hover .rap-scroll__thumb { background: var(--rap-mute); }
-.rap-scroll__thumb:active { background: var(--rap-ink-2); }
+.rap-scroll__bar[data-orientation="vertical"] .rap-scroll__thumb::after {
+  scale: calc(1 + var(--sc-sq-y, 0) * 0.6) calc(1 - var(--sc-sq-y, 0));
+  transform-origin: center top;
+}
+.rap-scroll[data-squash-y="end"] .rap-scroll__bar[data-orientation="vertical"] .rap-scroll__thumb::after { transform-origin: center bottom; }
+.rap-scroll__bar[data-orientation="horizontal"] .rap-scroll__thumb::after {
+  scale: calc(1 - var(--sc-sq-x, 0)) calc(1 + var(--sc-sq-x, 0) * 0.6);
+  transform-origin: left center;
+}
+.rap-scroll[data-squash-x="end"] .rap-scroll__bar[data-orientation="horizontal"] .rap-scroll__thumb::after { transform-origin: right center; }
+.rap-scroll__bar:hover .rap-scroll__thumb::after { background: var(--rap-mute); }
+.rap-scroll__thumb:active::after { background: var(--rap-ink-2); }
 /* bigger hit area than the visible thumb */
 .rap-scroll__thumb::before {
   content: "";

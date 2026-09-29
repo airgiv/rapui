@@ -286,7 +286,7 @@ export const entries: DocEntry[] = [
     slug: "breadcrumb",
     name: "Breadcrumb",
     group: "Navigation",
-    description: "Shows where a page sits in the hierarchy. Links are muted; the current page is ink.",
+    description: "Shows where a page sits in the hierarchy. Links are muted; the current page is ink. Delight: point at a crumb and the chevrons after it turn round, one after another, to point back at it.",
     controls: breadcrumbControls,
     Demo: ({ p }) => {
       const sep = <BreadcrumbSeparator variant={p.separator as "chevron" | "slash"} />;
@@ -391,7 +391,7 @@ ${middle}
     name: "Pagination",
     group: "Navigation",
     description:
-      "Moves through pages of a list. Use <Paginator> for the usual case; the composable parts are there when you need a custom row.",
+      "Moves through pages of a list. Use <Paginator> for the usual case; the composable parts are there when you need a custom row. Delight: jump from page 1 to the last one — the ink pill crawls there like a caterpillar, stretching ahead and pulling its tail in.",
     controls: paginationControls,
     Demo: ({ p }) => {
       const total = Number(p.total);
@@ -468,7 +468,7 @@ const [page, setPage] = useState(1);
     group: "Navigation",
     basedOn: "Radix NavigationMenu",
     description:
-      "A site header menu. Pill triggers open one shared panel that morphs between sections; arrow keys and Escape work.",
+      "A site header menu. Pill triggers open one shared panel that morphs between sections; arrow keys and Escape work. Delight: sweep the pointer along the bar — one soft fill crawls after it — and open a panel to see its cards dealt in.",
     controls: navControls,
     Demo: ({ p }) => {
       const cols = Number(p.columns) as 1 | 2 | 3;
@@ -551,7 +551,7 @@ const [page, setPage] = useState(1);
     group: "Navigation",
     basedOn: "Radix Tabs",
     description:
-      "Switches between views of the same object. “pill” is a segmented control with a sliding ink pill; “line” is text tabs with a sliding underline.",
+      "Switches between views of the same object. “pill” is a segmented control with an ink pill; “line” is text tabs with an underline. Delight: click from the first tab to the last — the pill (or underline) travels like a caterpillar, front edge first, tail catching up.",
     controls: tabsControls,
     Demo: ({ p }) => {
       const vertical = p.orientation === "vertical";
@@ -629,7 +629,7 @@ const [page, setPage] = useState(1);
     name: "Stepper",
     group: "Navigation",
     description:
-      "Progress through a multi-step flow. Done steps turn blue with a check, the current one is ink, the rest wait in grey.",
+      "Progress through a multi-step flow. Done steps turn blue with a check, the current one is ink, the rest wait in grey. Delight: press Next — the check draws itself, blue pours down the connector like liquid and the next circle splats as it arrives.",
     controls: stepperControls,
     Demo: ({ p }) => {
       const [current, setCurrent] = useSynced(Number(p.current), p.current);
@@ -674,7 +674,7 @@ const steps = [
     name: "Sidebar",
     group: "Navigation",
     description:
-      "App shell for admin pages: a sidebar that collapses to a 56px icon rail (⌘B) next to a rounded main area. Plain flex layout, so it fits any box.",
+      "App shell for admin pages: a sidebar that collapses to a 56px icon rail (⌘B) next to a rounded main area. Plain flex layout, so it fits any box. Delight: pick a row far down — the ink pill crawls to it — then press ⌘B and the rail snaps shut on a spring, bumping its stop.",
     controls: sidebarControls,
     Demo: ({ p }) => {
       const [collapsed, setCollapsed] = useSynced(Boolean(p.collapsed), p.collapsed);
@@ -832,7 +832,7 @@ const steps = [
     name: "Scroll area",
     group: "Layout",
     basedOn: "Radix ScrollArea",
-    description: "Native scrolling with a thin round thumb instead of the system scrollbar. Vertical, horizontal or both.",
+    description: "Native scrolling with a thin round thumb instead of the system scrollbar. Vertical, horizontal or both. Delight: keep scrolling past the end — the thumb squashes against it like a soft bead and springs back when you stop.",
     controls: scrollControls,
     Demo: ({ p }) => {
       const h = Number(p.height);
@@ -913,7 +913,7 @@ const steps = [
     group: "Layout",
     basedOn: "react-resizable-panels",
     description:
-      "Panels you can resize by dragging the gap between them, or with arrow keys on a focused handle. Numbers are pixels, strings are percentages.",
+      "Panels you can resize by dragging the gap between them, or with arrow keys on a focused handle. Numbers are pixels, strings are percentages. Delight: grab the grip and drag fast — it stretches like a rubber tab with your speed, jolts at a panel's limit and snaps back when you let go.",
     controls: resizableControls,
     Demo: ({ p }) => {
       const vertical = p.orientation === "vertical";
@@ -1027,7 +1027,7 @@ const steps = [
     name: "Collapsible",
     group: "Layout",
     basedOn: "Radix Collapsible",
-    description: "Shows and hides one region with a smooth height animation. For a list of sections use Accordion.",
+    description: "Shows and hides one region with a smooth height animation. For a list of sections use Accordion. Delight: open it — the rows are dealt in one after another like cards onto a table.",
     controls: collapsibleControls,
     Demo: ({ p }) => {
       const [open, setOpen] = useSynced(Boolean(p.defaultOpen), p.defaultOpen);
@@ -1111,7 +1111,7 @@ const steps = [
     name: "Carousel",
     group: "Layout",
     basedOn: "embla-carousel-react",
-    description: "Swipeable slides with round prev/next buttons and a dot indicator. Drag, click or use the arrow keys.",
+    description: "Swipeable slides with round prev/next buttons and a dot indicator. Drag, click or use the arrow keys. Delight: fling it — the slides lean with the speed and swing upright when they stop, and the dot pill crawls to its new place.",
     controls: carouselControls,
     Demo: ({ p }) => {
       const vertical = p.orientation === "vertical";

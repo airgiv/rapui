@@ -12,18 +12,22 @@
 .rap-ptabs__list { position: relative; display: inline-flex; align-self: flex-start; max-width: 100%; }
 .rap-ptabs[data-orientation="vertical"] .rap-ptabs__list { flex-direction: column; align-self: flex-start; }
 
-.rap-ptabs__indicator {
+/* shared by every travelling highlight in the navigation group (see Glider in ProductTabs.tsx) */
+.rap-glider {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 0;
   pointer-events: none;
-  opacity: 0;
+  transition: opacity var(--rap-dur-fast) var(--rap-ease-rm);
 }
-.rap-ptabs__list[data-ready] .rap-ptabs__indicator {
+.rap-glider[data-hidden] { opacity: 0; }
+/* calm / reduced motion: no caterpillar, just an eased slide (durations drop to 0 under reduced motion) */
+.rap-glider[data-calm][data-settled] {
   transition: transform var(--rap-dur-fast) var(--rap-ease-rm), width var(--rap-dur-fast) var(--rap-ease-rm),
     height var(--rap-dur-fast) var(--rap-ease-rm), opacity var(--rap-dur-fast) var(--rap-ease-rm);
 }
+
+.rap-ptabs__indicator { z-index: 0; }
 
 .rap-ptabs__trigger {
   position: relative;

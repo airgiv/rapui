@@ -9,7 +9,16 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  position: relative;
+  isolation: isolate;
 }
+/* the travelling ink pill; the active link goes clear and lets it show through */
+.rap-pager__glider {
+  z-index: -1;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-ink);
+}
+.rap-pager__list[data-glide] .rap-pager__link[data-active] { background: transparent; }
 .rap-pager__item { display: inline-flex; }
 .rap-pager__link {
   display: inline-flex;

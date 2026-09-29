@@ -47,8 +47,7 @@
   transition: background var(--rap-dur-fast) var(--rap-ease-rm), color var(--rap-dur-fast) var(--rap-ease-rm),
     transform var(--rap-dur-fast) var(--rap-ease-spring);
 }
-.rap-stepper__dot svg { width: 55%; height: 55%; animation: rap-stepper-pop 320ms var(--rap-ease-spring); }
-@keyframes rap-stepper-pop { from { transform: scale(0.3); opacity: 0; } }
+.rap-stepper__dot svg { width: 55%; height: 55%; }
 .rap-stepper__step[data-state="done"] .rap-stepper__dot { background: var(--rap-select); color: var(--rap-select-ink); }
 .rap-stepper__step[data-state="current"] .rap-stepper__dot { background: var(--rap-ink); color: var(--rap-paper); }
 button.rap-stepper__dot { cursor: pointer; }
@@ -56,12 +55,88 @@ button.rap-stepper__dot:hover { transform: scale(1.08); }
 button.rap-stepper__dot:focus-visible { outline: 2px solid var(--rap-ring); outline-offset: 2px; }
 
 .rap-stepper__line {
+  position: relative;
   display: block;
   border-radius: var(--rap-radius-pill);
   background: var(--rap-fill-strong);
-  transition: background var(--rap-dur) var(--rap-ease-rm);
 }
-.rap-stepper__step[data-state="done"] .rap-stepper__line { background: var(--rap-select); }
+/* the liquid: a blue fill inside the track, full on done steps */
+.rap-stepper__line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rap-select);
+  scale: 0 1;
+  transform-origin: left center;
+}
+.rap-stepper--vertical .rap-stepper__line::after { scale: 1 0; transform-origin: center top; }
+.rap-stepper__step[data-state="done"] .rap-stepper__line::after { scale: 1; }
+
+/* ── the pour (see Stepper.tsx) ── */
+.rap-stepper__step[data-pour] .rap-stepper__dot svg {
+  animation: rap-stepper-draw calc(var(--st-pour) * 0.7) var(--rap-ease-out) both;
+  animation-delay: calc(var(--st-k, 0) * var(--st-pour));
+}
+.rap-stepper__step[data-pour] .rap-stepper__dot {
+  animation: rap-stepper-fill var(--rap-dur-fast) var(--rap-ease-rm) both;
+  animation-delay: calc(var(--st-k, 0) * var(--st-pour));
+}
+.rap-stepper__step[data-pour="first"] .rap-stepper__dot { animation-name: rap-stepper-fill-first; }
+.rap-stepper__step[data-pour] .rap-stepper__line::after {
+  animation: rap-stepper-pour-x var(--st-pour) cubic-bezier(0.55, 0, 0.35, 1) both;
+  animation-delay: calc(var(--st-k, 0) * var(--st-pour) + 60ms);
+}
+.rap-stepper--vertical .rap-stepper__step[data-pour] .rap-stepper__line::after { animation-name: rap-stepper-pour-y; }
+.rap-stepper__step[data-arrive] .rap-stepper__dot {
+  animation: rap-stepper-wait calc(var(--st-k, 0) * var(--st-pour) + 60ms + var(--st-pour) * 0.8) step-end both,
+    rap-stepper-splat 520ms var(--rap-ease-out) calc(var(--st-k, 0) * var(--st-pour) + 60ms + var(--st-pour) * 0.8);
+}
+/* the liquid lands: squish flat, spring tall, settle (rap-splat, but from full size) */
+@keyframes rap-stepper-splat {
+  0% { scale: 1; }
+  18% { scale: 1.22 0.78; }
+  45% { scale: 0.9 1.12; }
+  70% { scale: 1.05 0.96; }
+  100% { scale: 1; }
+}
+/* the check is drawn: a wipe from the short stroke to the long one */
+@keyframes rap-stepper-draw {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+/* the finished circle keeps what it was (ink if it was current, grey if it was skipped
+   over) until its turn in a multi-step pour */
+@keyframes rap-stepper-fill {
+  from { background: var(--rap-fill); color: var(--rap-ink-2); }
+}
+@keyframes rap-stepper-fill-first {
+  from { background: var(--rap-ink); color: var(--rap-paper); }
+}
+/* the next circle waits grey until the liquid reaches it */
+@keyframes rap-stepper-wait {
+  from { background: var(--rap-fill); color: var(--rap-ink-2); }
+  to { background: var(--rap-ink); color: var(--rap-paper); }
+}
+/* liquid: slow start, rush, and the line swells mid-pour like a slug through a hose */
+@keyframes rap-stepper-pour-x {
+  0% { scale: 0 1; }
+  55% { scale: 0.7 2; }
+  100% { scale: 1 1; }
+}
+@keyframes rap-stepper-pour-y {
+  0% { scale: 1 0; }
+  55% { scale: 2 0.7; }
+  100% { scale: 1 1; }
+}
+[data-rap-motion="calm"] .rap-stepper__dot,
+[data-rap-motion="calm"] .rap-stepper__dot svg,
+[data-rap-motion="calm"] .rap-stepper__line::after { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-stepper__dot,
+  .rap-stepper__dot svg,
+  .rap-stepper__line::after { animation: none !important; }
+}
 
 .rap-stepper__text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; line-height: 1.4; }
 .rap-stepper__title { font-size: 0.9375rem; font-weight: 500; color: var(--rap-ink); }

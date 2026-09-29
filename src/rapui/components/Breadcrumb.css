@@ -30,6 +30,27 @@
 .rap-crumbs__page { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--rap-ink); font-weight: 500; }
 .rap-crumbs__sep { display: inline-flex; align-items: center; color: var(--rap-mute); opacity: 0.7; }
 .rap-crumbs__sep svg { width: 1em; height: 1em; }
+
+/* signposts: separators after the crumb you point at turn to point back at it */
+.rap-crumbs__sep > * {
+  display: inline-block;
+  transition: rotate 420ms var(--rap-ease-back), scale 420ms var(--rap-ease-back);
+}
+.rap-crumbs__sep--slash { transition: scale 420ms var(--rap-ease-back); }
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep--chevron > * { rotate: 180deg; }
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep--slash { scale: -1 1; }
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep ~ .rap-crumbs__sep,
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep ~ .rap-crumbs__sep > * { transition-delay: 45ms; }
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep ~ .rap-crumbs__sep ~ .rap-crumbs__sep,
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep ~ .rap-crumbs__sep ~ .rap-crumbs__sep > * { transition-delay: 90ms; }
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep ~ .rap-crumbs__sep ~ .rap-crumbs__sep ~ .rap-crumbs__sep,
+.rap-crumbs__item:has(:is(.rap-crumbs__link, .rap-crumbs__ellipsis):is(:hover, :focus-visible)) ~ .rap-crumbs__sep ~ .rap-crumbs__sep ~ .rap-crumbs__sep ~ .rap-crumbs__sep > * { transition-delay: 135ms; }
+[data-rap-motion="calm"] .rap-crumbs__sep,
+[data-rap-motion="calm"] .rap-crumbs__sep > * { rotate: none !important; scale: none !important; transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-crumbs__sep,
+  .rap-crumbs__sep > * { rotate: none !important; scale: none !important; }
+}
 .rap-crumbs__sep--slash { opacity: 0.5; padding: 0 0.1rem; }
 .rap-crumbs__ellipsis {
   display: inline-grid;

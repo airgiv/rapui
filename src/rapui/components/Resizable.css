@@ -39,8 +39,13 @@
 }
 .rap-resizable--horizontal .rap-resizable__grip { width: 4px; height: 32px; }
 .rap-resizable--vertical .rap-resizable__grip { width: 32px; height: 4px; }
+/* rubber: --grip-s (0 rest … ~1 at a hard stop) is sprung from Resizable.tsx */
+.rap-resizable--horizontal .rap-resizable__grip { scale: calc(1 - var(--grip-s, 0) * 0.3) calc(1 + var(--grip-s, 0)); }
+.rap-resizable--vertical .rap-resizable__grip { scale: calc(1 + var(--grip-s, 0)) calc(1 - var(--grip-s, 0) * 0.3); }
 .rap-resizable__handle[data-separator="hover"] .rap-resizable__grip { background: var(--rap-ink-2); }
 .rap-resizable__handle[data-separator="active"] .rap-resizable__grip,
 .rap-resizable__handle[data-separator="focus"] .rap-resizable__grip { background: var(--rap-select); }
-.rap-resizable--horizontal .rap-resizable__handle[data-separator="active"] .rap-resizable__grip { transform: scaleY(1.25); }
-.rap-resizable--vertical .rap-resizable__handle[data-separator="active"] .rap-resizable__grip { transform: scaleX(1.25); }
+/* calm / reduced motion: the old fixed stretch while dragging, no rubber */
+[data-rap-motion="calm"] .rap-resizable__grip { scale: none; }
+[data-rap-motion="calm"] .rap-resizable--horizontal .rap-resizable__handle[data-separator="active"] .rap-resizable__grip { transform: scaleY(1.25); }
+[data-rap-motion="calm"] .rap-resizable--vertical .rap-resizable__handle[data-separator="active"] .rap-resizable__grip { transform: scaleX(1.25); }

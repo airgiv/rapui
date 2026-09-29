@@ -43,7 +43,18 @@
 .rap-carousel__nav:disabled { opacity: 0.35; pointer-events: none; }
 .rap-carousel__nav svg { width: 20px; height: 20px; }
 
-.rap-carousel__dots { display: flex; align-items: center; justify-content: center; gap: 6px; }
+/* the lean (Carousel.tsx): only while the strip moves */
+.rap-carousel--horizontal[data-leaning] .rap-carousel__item > * { transform: skewX(var(--car-lean, 0deg)); }
+.rap-carousel--vertical[data-leaning] .rap-carousel__item > * { transform: skewY(calc(var(--car-lean, 0deg) * -1)); }
+[data-rap-motion="calm"] .rap-carousel__item > * { transform: none !important; }
+
+.rap-carousel__dots { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: center; gap: 6px; }
+/* the travelling ink pill; the active dot goes clear under it */
+.rap-carousel__glider { z-index: 1; border-radius: var(--rap-radius-pill); background: var(--rap-ink); }
+.rap-carousel__dots[data-glide] .rap-carousel__dot[data-active] { background: transparent; }
+/* with the glider the dots re-lay out at once (the pill does the moving); a dot that
+   eased its width would drag the target along mid-flight and pinch the caterpillar */
+.rap-carousel__dots[data-glide] .rap-carousel__dot { transition: background var(--rap-dur-fast) var(--rap-ease-rm); }
 .rap-carousel__dots--vertical { flex-direction: column; }
 .rap-carousel__dot {
   width: 8px;

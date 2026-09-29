@@ -15,6 +15,14 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  position: relative;
+  isolation: isolate;
+}
+/* the travelling fill (hover / open); triggers go clear and let it show through */
+.rap-nav__glider {
+  z-index: -1;
+  border-radius: var(--rap-radius-pill);
+  background: var(--rap-fill);
 }
 .rap-nav__trigger {
   display: inline-flex;
@@ -41,7 +49,9 @@
 .rap-nav__trigger:has(.rap-nav__chevron) { padding-right: calc(var(--nav-h) * 0.3); }
 .rap-nav__trigger:hover,
 .rap-nav__trigger[data-state="open"] { background: var(--rap-fill); }
-.rap-nav__trigger[data-active] { background: var(--rap-ink); color: var(--rap-paper); }
+.rap-nav__list[data-glide] .rap-nav__trigger:is(:hover, [data-state="open"]) { background: transparent; }
+.rap-nav__trigger[data-active],
+.rap-nav__list[data-glide] .rap-nav__trigger[data-active] { background: var(--rap-ink); color: var(--rap-paper); }
 .rap-nav__trigger:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--rap-ring); }
 .rap-nav__chevron {
   width: 16px;
@@ -147,6 +157,22 @@
   font-size: 0.9375rem;
   text-decoration: none;
   outline: none;
+}
+/* panel contents are dealt in, 22ms apart */
+.rap-nav__content:not([data-motion^="to-"]) :is(.rap-nav__grid > li, .rap-nav__content > ul:not(.rap-nav__grid) > li) {
+  animation: rap-deal-in 260ms var(--rap-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 22ms + 40ms);
+}
+:is(.rap-nav__grid, .rap-nav__content > ul) > li:nth-child(2) { --i: 1; }
+:is(.rap-nav__grid, .rap-nav__content > ul) > li:nth-child(3) { --i: 2; }
+:is(.rap-nav__grid, .rap-nav__content > ul) > li:nth-child(4) { --i: 3; }
+:is(.rap-nav__grid, .rap-nav__content > ul) > li:nth-child(5) { --i: 4; }
+:is(.rap-nav__grid, .rap-nav__content > ul) > li:nth-child(6) { --i: 5; }
+:is(.rap-nav__grid, .rap-nav__content > ul) > li:nth-child(7) { --i: 6; }
+:is(.rap-nav__grid, .rap-nav__content > ul) > li:nth-child(n + 8) { --i: 7; }
+[data-rap-motion="calm"] .rap-nav__content li { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .rap-nav__content li { animation: none !important; }
 }
 .rap-nav__row:hover,
 .rap-nav__row:focus-visible { background: var(--rap-fill); }

@@ -1,11 +1,21 @@
-import { forwardRef, type ComponentPropsWithoutRef, type HTMLAttributes } from "react";
+import { forwardRef, useImperativeHandle, useRef, type ComponentPropsWithoutRef, type HTMLAttributes } from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "../icons";
 import { cx } from "../utils";
+import { Glider, useActiveElement, useActiveTap } from "./ProductTabs";
 import "./Pagination.css";
 
 type Size = "sm" | "md" | "lg";
 
-/* Composable parts (shadcn-style) plus a ready-made <Paginator/>. */
+/* Composable parts (shadcn-style) plus a ready-made <Paginator/>.
+
+   Delight: the ink "you are here" pill is one object that crawls between page numbers
+   like a caterpillar (useGlide via the navigation Glider): jump from 2 to 7 and it
+   stretches across the row, then pulls its tail in. PaginationContent owns it and finds
+   the link marked `isActive` (data-active) with a MutationObserver, so the composable
+   parts glide too, with no new props. The page change is immediate; the ink follows.
+   When the window of numbers shifts under a fixed middle slot the pill stays put —
+   the numbers move, not the reader's place. Calm / reduced motion: a plain slide.
+   Sound (opt-in via SoundProvider): a tap on page change, pitched up per slot. */
 
 export const Pagination = forwardRef<HTMLElement, ComponentPropsWithoutRef<"nav"> & { size?: Size }>(function Pagination(
   { className, size = "md", ...rest },
@@ -15,10 +25,19 @@ export const Pagination = forwardRef<HTMLElement, ComponentPropsWithoutRef<"nav"
 });
 
 export const PaginationContent = forwardRef<HTMLUListElement, ComponentPropsWithoutRef<"ul">>(function PaginationContent(
-  { className, ...rest },
+  { className, children, ...rest },
   ref,
 ) {
-  return <ul ref={ref} className={cx("rap-pager__list", className)} {...rest} />;
+  const list = useRef<HTMLUListElement>(null);
+  useImperativeHandle(ref, () => list.current as HTMLUListElement);
+  const active = useActiveElement(list, ".rap-pager__link[data-active]", ["data-active"]);
+  useActiveTap(list, active, ".rap-pager__link:not(.rap-pager__step)");
+  return (
+    <ul ref={list} className={cx("rap-pager__list", className)} data-glide={active ? "" : undefined} {...rest}>
+      <Glider as="li" container={list} target={active} className="rap-pager__glider" />
+      {children}
+    </ul>
+  );
 });
 
 export const PaginationItem = forwardRef<HTMLLIElement, ComponentPropsWithoutRef<"li">>(function PaginationItem(
