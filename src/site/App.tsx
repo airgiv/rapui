@@ -6,7 +6,6 @@ import {
   BigLink,
   Button,
   ButtonGroup,
-  CanvasToolbar,
   Checklist,
   CircleButton,
   ConfirmButton,
@@ -52,6 +51,7 @@ import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
 import { Floaty, HeroScene } from "./HeroScene";
 import { FormDemo } from "./demos/FormDemo";
+import { ToolbarDemo } from "./demos/ToolbarDemo";
 import gridLines from "./media/grid-lines.wav";
 import voiceNote from "./media/voice-note.wav";
 import reel from "./media/reel.webm";
@@ -65,9 +65,6 @@ const COUNT = 110;
 
 /* a centred, wrapping row of demo pieces with room to breathe */
 const ROW = "flex flex-wrap items-center justify-center gap-10";
-/* the lit backdrop the glass toolbar refracts: three accent dots on grey paper */
-const GLASS_GROUND =
-  "[background:radial-gradient(circle_at_28%_60%,var(--rap-flame)_0_14%,transparent_15%),radial-gradient(circle_at_70%_42%,var(--rap-blue)_0_18%,transparent_19%),radial-gradient(circle_at_52%_78%,var(--rap-acid)_0_10%,transparent_11%),var(--rap-paper-3)]";
 /* body copy under a section title */
 const COPY = "m-0 text-ink-2 text-[1.15rem] leading-[1.5] max-w-[46ch] [&_code]:bg-paper-2 [&_code]:py-[0.1em] [&_code]:px-[0.35em] [&_code]:rounded-[6px] [&_code]:text-[0.9em]";
 
@@ -631,23 +628,31 @@ const lb = useLightbox();
       </Showcase>
 
       <Showcase
-        id="lists"
-        title="Lists & tools"
-        sub="with a spring each"
-        stageClass="bg-paper"
-        desc="From Bencho (MIT). Tick the last task and the whole checklist collapses into a heap; the canvas rail remembers your last shape and goes glass on request."
-        code={`import { Checklist, CanvasToolbar } from "rapui";
+        id="tools"
+        title="Tools"
+        sub="that feel like toys"
+        desc="A big editor bar in the Readymag spirit: chunky round slots, one pad that glides to the tool you pick, and sixteen hand-drawn icons that each do a little something — the cursor clicks, the ball bounces, the sticker peels. Press 1–9 to pick, + for widgets."
+        code={`import { EditorToolbar } from "rapui";
 
-<Checklist />
-<div data-surface="glass">
-  <CanvasToolbar />
-</div>`}
+<EditorToolbar size="hero" tone="blue" onValueChange={setTool} />`}
+        stageClass="p-0 place-items-stretch"
       >
-        <div className={cn(ROW, "w-full")}>
+        <ToolbarDemo />
+      </Showcase>
+
+      <Showcase
+        id="lists"
+        title="Checklist"
+        sub="that falls apart"
+        stageClass="bg-paper"
+        desc="From Bencho (MIT). Fill, tick, strike-through and fading ink all run on one spring per row — tick the last task and the whole list collapses into a heap."
+        code={`import { Checklist } from "rapui";
+
+<Checklist />`}
+      >
+        <div className={ROW}>
           <Checklist />
-          <div className={cn("grid place-items-center min-h-64 w-[min(100%,24rem)] rounded-card overflow-hidden", GLASS_GROUND)} data-surface="glass">
-            <CanvasToolbar corner={20} />
-          </div>
+          <Checklist bounce={85} box={20} corner={28} />
         </div>
       </Showcase>
 
