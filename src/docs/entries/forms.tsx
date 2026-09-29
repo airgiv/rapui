@@ -40,7 +40,8 @@ import type { Control, DocEntry } from "../types";
 
 /* ── Input ─────────────────────────────────────────── */
 const inputControls: Control[] = [
-  { type: "select", prop: "size", options: ["sm", "md", "lg"], default: "md" },
+  { type: "select", prop: "size", options: ["sm", "md", "lg", "hero"], default: "md" },
+  { type: "select", prop: "status", options: ["none", "loading", "valid"], default: "none", codeDefault: "none" },
   { type: "text", prop: "placeholder", default: "you@studio.com", codeDefault: null },
   { type: "boolean", prop: "invalid", default: false },
   { type: "boolean", prop: "disabled", default: false },
@@ -264,7 +265,8 @@ export const entries: DocEntry[] = [
         <Label htmlFor="doc-input">Email</Label>
         <Input
           id="doc-input"
-          size={p.size as "sm" | "md" | "lg"}
+          size={p.size as "sm" | "md" | "lg" | "hero"}
+          status={p.status === "none" ? undefined : (p.status as "loading" | "valid")}
           placeholder={String(p.placeholder)}
           invalid={Boolean(p.invalid)}
           disabled={Boolean(p.disabled)}

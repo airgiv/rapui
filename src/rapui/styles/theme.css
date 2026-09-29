@@ -111,6 +111,10 @@
   --animate-fade-in: rap-fade-in 200ms var(--rap-ease-rm);
   --animate-fade-out: rap-fade-out 160ms var(--rap-ease-rm) forwards;
   --animate-spin-slow: spin 18s linear infinite;
+  --animate-stripes: rap-stripes 700ms linear infinite;
+  --animate-dot: rap-dot 900ms var(--rap-ease-in-out) infinite;
+  --animate-label-in: rap-label-in 360ms var(--rap-ease-spring) both;
+  --animate-draw: rap-draw 420ms var(--rap-ease-out) 120ms both;
 }
 
 /* ── keyframes: the shared physical vocabulary ─────────────── */
@@ -153,6 +157,14 @@
   50% { rotate: 6deg; }
   75% { rotate: -3deg; }
 }
+/* loading stripes slide one period (40px) so the loop is seamless */
+@keyframes rap-stripes { to { background-position: 40px 0; } }
+/* a dot that hops; three with staggered delays read as "working" */
+@keyframes rap-dot { 0%, 60%, 100% { translate: 0 0; opacity: 0.55; } 30% { translate: 0 -0.35em; opacity: 1; } }
+/* a new label rolls up into place */
+@keyframes rap-label-in { from { opacity: 0; translate: 0 70%; } }
+/* stroke drawing: pair with pathLength="1" stroke-dasharray="1" */
+@keyframes rap-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes rap-pop-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
 @keyframes rap-pop-out { to { opacity: 0; transform: scale(0.97); } }
 @keyframes rap-fade-in { from { opacity: 0; } }

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Accordion, BigLink, Button, ButtonGroup, CircleButton, Field, Switch } from "../../rapui";
+import { Accent, Accordion, BigLink, Button, ButtonGroup, CircleButton, Display, Field, FormStack, Input, Switch } from "../../rapui";
+import type { StackState } from "../../rapui";
 import type { ButtonSize, ButtonVariant } from "../../rapui";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
@@ -8,13 +9,68 @@ const VARIANTS = ["solid", "blue", "accent", "soft", "acid", "outline", "ghost"]
 
 const buttonControls: Control[] = [
   { type: "select", prop: "variant", options: VARIANTS, default: "solid" },
-  { type: "select", prop: "size", options: ["sm", "md", "lg", "xl"], default: "lg" },
+  { type: "select", prop: "size", options: ["sm", "md", "lg", "xl", "hero"], default: "lg" },
+  { type: "select", prop: "state", options: ["idle", "loading", "success", "error"], default: "idle" },
   { type: "text", prop: "label", default: "Start a project" },
   { type: "boolean", prop: "icon", default: true },
   { type: "boolean", prop: "roll", label: "rolling letters", default: true },
   { type: "boolean", prop: "magnetic", default: false },
   { type: "boolean", prop: "disabled", default: false },
 ];
+
+const stackControls: Control[] = [
+  { type: "select", prop: "outcome", label: "on submit", options: ["success", "wrong password"], default: "success" },
+  { type: "boolean", prop: "liquid", default: true },
+];
+
+/* The Readymag login, made liquid: submit sucks the fields into the button. */
+function LoginDemo({ p }: { p: Record<string, string | number | boolean> }) {
+  const [state, setState] = useState<StackState>("idle");
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const fail = p.outcome === "wrong password";
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setState("loading");
+    window.setTimeout(() => {
+      setState(fail ? "error" : "success");
+      if (!fail) window.setTimeout(() => setState("idle"), 2200);
+    }, 1500);
+  };
+  return (
+    <div className="flex flex-col gap-6 w-[min(100%,34rem)]">
+      <Display size="xl">
+        Log in <Accent className="text-[0.5em] tracking-[-0.02em] align-[0.35em]">or join</Accent>
+      </Display>
+      <FormStack state={state} errorIndex={1} liquid={Boolean(p.liquid)} onSubmit={submit}>
+        <Input
+          size="hero"
+          type="email"
+          placeholder="Email"
+          aria-label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          status={/.+@.+\..+/.test(email) ? "valid" : undefined}
+        />
+        <Input
+          size="hero"
+          type="password"
+          placeholder="Password"
+          aria-label="Password"
+          value={pw}
+          invalid={state === "error"}
+          onChange={(e) => {
+            setPw(e.target.value);
+            if (state === "error") setState("idle");
+          }}
+        />
+        <Button size="hero" variant="accent" align="start" block type="submit" successLabel="Welcome back" errorLabel="Wrong password">
+          Log in
+        </Button>
+      </FormStack>
+    </div>
+  );
+}
 
 const groupControls: Control[] = [
   { type: "select", prop: "size", options: ["sm", "md", "lg"], default: "lg" },
@@ -55,6 +111,25 @@ const accordionControls: Control[] = [
 
 export const entries: DocEntry[] = [
   {
+    slug: "form-stack",
+    name: "Form stack",
+    group: "Actions",
+    description:
+      "Readymag's big form: 88px pills stacked edge to edge, fields then the button, reading as one object. Delight: the pills are one liquid shape (a goo filter pools the notches into necks), focus swells a field, submitting sucks the fields into the button, and an error spits them back out with the wrong one shaking.",
+    controls: stackControls,
+    Demo: LoginDemo,
+    code: (p) => `import { FormStack, Input, Button } from "rapui";
+
+<FormStack state={state} errorIndex={1}${p.liquid ? "" : " liquid={false}"} onSubmit={submit}>
+  <Input size="hero" type="email" placeholder="Email" />
+  <Input size="hero" type="password" placeholder="Password" invalid={state === "error"} />
+  <Button size="hero" variant="accent" align="start" block type="submit"
+    successLabel="Welcome back" errorLabel="Wrong password">
+    Log in
+  </Button>
+</FormStack>`,
+  },
+  {
     slug: "button",
     name: "Button",
     group: "Actions",
@@ -69,6 +144,8 @@ export const entries: DocEntry[] = [
         roll={Boolean(p.roll)}
         magnetic={Boolean(p.magnetic)}
         disabled={Boolean(p.disabled)}
+        state={p.state as StackState}
+        successLabel="Sent"
       >
         {String(p.label)}
       </Button>

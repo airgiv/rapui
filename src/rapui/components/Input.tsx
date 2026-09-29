@@ -29,7 +29,13 @@ import { cn } from "../utils";
 import "./Input.css";
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size" | "prefix"> {
-  size?: "sm" | "md" | "lg";
+  /** `hero` is Readymag's form scale: an 88px pill with 20px text. */
+  size?: "sm" | "md" | "lg" | "hero";
+  /**
+   * loading — a small orbiting dot at the end (e.g. checking a username);
+   * valid — a check draws itself in the success colour.
+   */
+  status?: "loading" | "valid";
   /** Marks the field as invalid (red ring + aria-invalid). The field shakes each time it turns on. */
   invalid?: boolean;
   /** Icon or text inside the field, before the value. */
@@ -40,7 +46,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 
 /** Filled pill text field — the everyday input. For a giant editorial field see `Field`. */
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { size = "md", invalid, prefix, suffix, className, disabled, ...rest },
+  { size = "md", invalid, status, prefix, suffix, className, disabled, ...rest },
   ref,
 ) {
   // count rising edges of `invalid`; the parity picks one of two identical keyframes so a
@@ -71,6 +77,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         size === "sm" && "[--in-h:var(--rap-control-h-sm)] text-sm",
         size === "md" && "[--in-h:var(--rap-control-h)]",
         size === "lg" && "[--in-h:var(--rap-control-h-lg)] text-[1.0625rem]",
+        size === "hero" && "[--in-h:5.5rem] text-[1.25rem]",
         invalid && "[--in-pen:var(--rap-danger)] shadow-[inset_0_0_0_2px_var(--rap-danger)]",
         disabled && "opacity-50 pointer-events-none",
         // the "no": two names for one shake so a new one restarts a running one
@@ -90,6 +97,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         {...rest}
       />
       {suffix != null && <span className="inline-flex flex-none items-center text-mute [&_svg]:size-[1.1em]">{suffix}</span>}
+      {status === "loading" && (
+        // one dot running laps around a faint track: "checking…"
+        <span aria-label="Checking" className="relative flex-none size-[1.1em] rounded-full border-2 border-fill-strong">
+          <span className="absolute -top-[3px] left-1/2 -ml-[3px] size-[6px] rounded-full bg-ink origin-[3px_calc(0.55em+1px)] fun:animate-spin" />
+        </span>
+      )}
+      {status === "valid" && !invalid && (
+        <svg viewBox="0 0 24 24" className="flex-none size-[1.2em] text-success" fill="none" aria-label="Valid">
+          <path
+            d="M5 12.5 10 17.5 19.5 7"
+            pathLength={1}
+            strokeDasharray={1}
+            stroke="currentColor"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="animate-draw calm:animate-none"
+          />
+        </svg>
+      )}
     </span>
   );
 });

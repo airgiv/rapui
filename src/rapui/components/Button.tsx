@@ -1,9 +1,10 @@
-import { forwardRef, useImperativeHandle, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useMagnetic } from "../hooks/useMagnetic";
 import { cn } from "../utils";
 import { RollText } from "./RollText";
 import { useSound } from "../sound";
+import { useStack, type StackState } from "./stackContext";
 
 /* ── Button, on Tailwind ────────────────────────────────────
    Each variant only sets a handful of local custom properties
@@ -52,7 +53,14 @@ const buttonVariants = cva(
         md: "[--btn-h:3.25rem] [--btn-px:1.6rem] [--btn-fs:1rem]",
         lg: "[--btn-h:4.25rem] [--btn-px:2.2rem] [--btn-fs:1.25rem]",
         xl: "[--btn-h:6rem] [--btn-px:3rem] [--btn-fs:clamp(1.4rem,2.2vw,2rem)] font-display font-medium tracking-[-0.04em]",
+        /* Readymag's form scale: a pill as tall as a line of body text is wide
+           (88px), sans at 20px, regular weight — big because it is the only
+           thing to press, not because it shouts */
+        hero: "[--btn-h:5.5rem] [--btn-px:2.2rem] [--btn-fs:1.25rem] font-normal",
       },
+      block: { true: "w-full", false: "" },
+      /* start: the label sits at the left edge like a form row; an icon goes to the far right */
+      align: { center: "", start: "justify-between text-left" },
       hasIcon: {
         true: "gap-[calc(var(--btn-h)*0.36)] pr-[calc(var(--btn-h)*0.14)]",
         false: "",
@@ -63,7 +71,7 @@ const buttonVariants = cva(
       },
     },
     compoundVariants: [{ variant: "ghost", hasIcon: true, className: "pr-[0.2rem]" }],
-    defaultVariants: { variant: "solid", size: "md", hasIcon: false, iconStart: false },
+    defaultVariants: { variant: "solid", size: "md", hasIcon: false, iconStart: false, block: false, align: "center" },
   },
 );
 
@@ -81,7 +89,51 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   magnetic?: boolean;
   /** Letters roll on hover (only when children is a string). */
   roll?: boolean;
+  /** Stretch to the full width of the container. */
+  block?: boolean;
+  /** `start` puts the label at the left edge (Readymag form rows). */
+  align?: "center" | "start";
+  /**
+   * loading — stripes run across the pill and three dots hop where the label was;
+   * success — the pill splats green and a check draws itself;
+   * error — it turns red and shakes "no". Inside a FormStack a submit button
+   * follows the stack's state unless you set this.
+   */
+  state?: StackState;
+  /** Label for the success / error / loading states (default: a check, "Try again", dots). */
+  successLabel?: ReactNode;
+  errorLabel?: ReactNode;
+  loadingLabel?: ReactNode;
 }
+
+/* three dots that hop in turn */
+const Dots = () => (
+  <span className="inline-flex gap-[0.28em]" aria-label="Loading">
+    {[0, 1, 2].map((i) => (
+      <span
+        key={i}
+        className="size-[0.34em] rounded-full bg-current fun:animate-dot"
+        style={{ animationDelay: `${i * 120}ms` }}
+      />
+    ))}
+  </span>
+);
+
+/* a check that draws itself (pathLength 1 → the dash offset is a fraction) */
+const Check = () => (
+  <svg viewBox="0 0 24 24" width="1.1em" height="1.1em" fill="none" aria-hidden>
+    <path
+      d="M5 12.5 10 17.5 19.5 7"
+      pathLength={1}
+      strokeDasharray={1}
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="animate-draw calm:animate-none"
+    />
+  </svg>
+);
 
 /* One continuous stroke — head and shaft meet at a single round join, so
    there is no overlap seam where two square-capped lines used to cross. */
@@ -102,24 +154,79 @@ export const Arrow = () => (
  * the icon bubble spins. Optional magnetic pull.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "solid", size = "md", icon, iconPosition = "end", magnetic = false, roll = true, className, children, ...rest },
+  {
+    variant = "solid",
+    size = "md",
+    icon,
+    iconPosition = "end",
+    magnetic = false,
+    roll = true,
+    block = false,
+    align = "center",
+    state: stateProp,
+    successLabel,
+    errorLabel = "Try again",
+    loadingLabel,
+    className,
+    children,
+    ...rest
+  },
   forwarded,
 ) {
   const ref = useMagnetic<HTMLButtonElement>(0.25, magnetic);
   useImperativeHandle(forwarded, () => ref.current as HTMLButtonElement);
   const sound = useSound();
   const { onPointerDown } = rest;
+  // a submit button inside a FormStack takes the stack's state
+  const stack = useStack();
+  const state: StackState = stateProp ?? (stack && rest.type === "submit" ? stack.state : "idle");
+
+  // sound and the "no" shake on the rising edge of a state
+  const was = useRef<StackState>(state);
+  useEffect(() => {
+    if (state !== was.current) {
+      if (state === "success") sound.play("success");
+      if (state === "error") sound.play("error");
+    }
+    was.current = state;
+  }, [state, sound]);
 
   const iconNode = icon === true ? <Arrow /> : icon;
-  const hasIcon = iconNode != null;
-  const label = typeof children === "string" && roll ? <RollText>{children}</RollText> : <span>{children}</span>;
+  const hasIcon = iconNode != null && state === "idle";
+  const idleLabel = typeof children === "string" && roll ? <RollText>{children}</RollText> : <span>{children}</span>;
+  const label =
+    state === "idle" ? (
+      idleLabel
+    ) : (
+      // keyed by state so each new label rolls up into place
+      <span key={state} className="inline-flex items-center gap-[0.5em] animate-label-in calm:animate-none">
+        {state === "loading" && (loadingLabel ?? <Dots />)}
+        {state === "success" && (
+          <>
+            <Check />
+            {successLabel}
+          </>
+        )}
+        {state === "error" && errorLabel}
+      </span>
+    );
 
   return (
     <button
       ref={ref}
       data-slot="button"
       data-variant={variant}
-      className={cn(buttonVariants({ variant, size, hasIcon, iconStart: hasIcon && iconPosition === "start" }), className)}
+      data-state={state}
+      aria-busy={state === "loading" || undefined}
+      className={cn(
+        buttonVariants({ variant, size, hasIcon, iconStart: hasIcon && iconPosition === "start", block, align }),
+        // states repaint the pill through the same custom properties the variants use
+        state === "loading" && "pointer-events-none",
+        state === "success" && "[--btn-bg:var(--rap-success)] [--btn-fg:#fff] [--btn-blob:var(--rap-success)] [--btn-blob-fg:#fff] fun:animate-splat",
+        state === "error" && "[--btn-bg:var(--rap-danger)] [--btn-fg:#fff] [--btn-blob:var(--rap-danger)] [--btn-blob-fg:#fff] fun:animate-shake",
+        "transition-[color,border-color,transform,background-color]",
+        className,
+      )}
       {...rest}
       onPointerDown={(e) => {
         onPointerDown?.(e);
@@ -135,6 +242,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
           "group-hover/btn:top-1/2 group-hover/btn:-translate-y-1/2 group-hover/btn:scale-100",
         )}
       />
+      {/* loading: diagonal stripes run across the pill, a barber pole for "working" */}
+      {state === "loading" && (
+        <span
+          aria-hidden
+          className={cn(
+            "absolute inset-0 -z-1 pointer-events-none opacity-100",
+            "bg-[repeating-linear-gradient(-45deg,transparent_0_14px,color-mix(in_srgb,var(--btn-fg)_16%,transparent)_14px_28px)] [background-size:40px_40px]",
+            "fun:animate-stripes",
+          )}
+        />
+      )}
       {label}
       {hasIcon && (
         <span
