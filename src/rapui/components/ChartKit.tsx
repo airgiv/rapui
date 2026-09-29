@@ -100,7 +100,12 @@ export function ChartFigure({ value, digits = 0, prefix, unit, className, ...res
         // 24 against 33: the same number, quieter — grey does the subordinating, not size
         <span className="text-[24px] opacity-[0.34]">
           {frac}
-          {unit != null && <span className={frac ? "ml-0.5" : "ml-[3px]"}>{unit}</span>}
+          {unit != null && (
+            // a symbol (%, h) hugs the number; a word ("pages") needs a real space
+            <span className={typeof unit === "string" && unit.trim().length > 1 ? "ml-[0.2em]" : frac ? "ml-0.5" : "ml-[3px]"}>
+              {typeof unit === "string" ? unit.trim() : unit}
+            </span>
+          )}
         </span>
       )}
     </p>

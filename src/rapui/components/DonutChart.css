@@ -1,0 +1,14 @@
+/* DonutChart — only the sweep's keyframes; everything else is utilities in DonutChart.tsx.
+   It runs behind `fun:` there, so calm and reduced motion get the ring already drawn. */
+@layer theme, base, components, utilities;
+
+/* ── the sweep ───────────────────────────────────────────────
+   Only a `from`: the dash grows from nothing to the element's own
+   stroke-dasharray, whatever that segment's share is, so one
+   keyframe serves every segment. Transparent at the start because a
+   zero-length dash with round caps is still a dot — without it every
+   segment would sit there as a bead, waiting for the pen. */
+@keyframes rap-donut-sweep {
+  from { stroke-dasharray: 0 360; opacity: 0; }
+  12% { opacity: 1; }
+}
