@@ -251,7 +251,10 @@ function RaceRow({
         <div data-slot="race-bars-track" className="relative h-1.5 rounded-pill bg-ink/7">
           <i
             data-slot="race-bars-bar"
-            className={cn("absolute inset-y-0 left-0 rounded-pill", on ? "bg-ink" : "bg-ink/86")}
+            /* grey pills with one in colour, the BarsChart way: solid ink bars
+               were the loudest thing on a page of thin lines. The leader carries
+               the colour; the row you point at takes it. */
+            className={cn("absolute inset-y-0 left-0 rounded-pill transition-colors duration-200", on ? "bg-chart-up" : rank === 0 ? "bg-chart-up/75" : "bg-ink/18")}
             style={{
               /* clamped: the spring may overshoot, the bar may not leave its track */
               width: `${Math.min(100, Math.max(1.5, w)).toFixed(2)}%`,

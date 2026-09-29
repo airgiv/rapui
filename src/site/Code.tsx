@@ -23,7 +23,7 @@ function highlight(src: string) {
   return out + esc(src.slice(last));
 }
 
-export function Code({ children, className }: { children: string; className?: string }) {
+export function Code({ children, className, wrap = false }: { children: string; className?: string; wrap?: boolean }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -48,7 +48,7 @@ export function Code({ children, className }: { children: string; className?: st
       >
         {copied ? "Copied ✓" : "Copy"}
       </button>
-      <pre className="m-0 py-7 px-8 overflow-x-auto font-mono text-[0.9rem] leading-[1.7]">
+      <pre className={cn("m-0 py-7 px-8 font-mono text-[0.9rem] leading-[1.7]", wrap ? "whitespace-pre-wrap break-words pr-20" : "overflow-x-auto")}>
         <code dangerouslySetInnerHTML={{ __html: highlight(children.trim()) }} />
       </pre>
     </div>
