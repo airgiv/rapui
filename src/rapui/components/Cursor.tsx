@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { prefersReducedMotion } from "../utils";
+import { cn, prefersReducedMotion } from "../utils";
 import "./Cursor.css";
 
 export interface CursorProps {
@@ -50,8 +50,34 @@ export function Cursor({ blend = true, size = 18 }: CursorProps) {
   if (!enabled) return null;
   const state = label ? "label" : hover ? "hover" : "idle";
   return (
-    <div ref={dot} className={`rap-cursor ${blend && !label ? "rap-cursor--blend" : ""}`} data-state={state} style={{ ["--c-size" as string]: `${size}px` }} aria-hidden>
-      <div className="rap-cursor__dot">{label && <span className="rap-cursor__label">{label}</span>}</div>
+    <div
+      ref={dot}
+      data-slot="cursor"
+      data-state={state}
+      /* difference-blended white inverts whatever it passes over; a label
+         turns the blend off so the acid disc and its words read as they are */
+      className={cn("group/cursor fixed left-0 top-0 z-9999 pointer-events-none", blend && !label && "mix-blend-difference")}
+      style={{ ["--c-size" as string]: `${size}px` }}
+      aria-hidden
+    >
+      <div
+        data-slot="cursor-dot"
+        className={cn(
+          "grid place-items-center size-(--c-size) rounded-full bg-white -translate-x-1/2 -translate-y-1/2",
+          "[transition:width_var(--rap-dur)_var(--rap-ease-out),height_var(--rap-dur)_var(--rap-ease-out),background_var(--rap-dur-fast)]",
+          "group-data-[state=hover]/cursor:size-[calc(var(--c-size)*3.4)]",
+          "group-data-[state=label]/cursor:size-28 group-data-[state=label]/cursor:bg-acid",
+        )}
+      >
+        {label && (
+          <span
+            data-slot="cursor-label"
+            className="font-display text-[0.85rem] font-medium tracking-[-0.02em] text-[#282828] text-center animate-[rap-cursor-in_300ms_var(--rap-ease-out)]"
+          >
+            {label}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

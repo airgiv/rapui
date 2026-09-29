@@ -12,9 +12,8 @@ import {
   type ReactNode,
 } from "react";
 import { useSound } from "../sound";
-import { clamp, cx } from "../utils";
+import { clamp, cn } from "../utils";
 import { RollingNumber, isCalm } from "./ScrubNumber";
-import "./ElasticSlider.css";
 
 /* ══ Elastic slider ═══════════════════════════════════════
    A slider whose track is a rubber band. Inside the range it is
@@ -48,7 +47,19 @@ import "./ElasticSlider.css";
    (px a frame, smoothed over two frames) stretches it along the
    direction of travel and narrows it across, keeping its area,
    so a fast drag smears it into a lozenge and a slow one leaves
-   it round. */
+   it round.
+
+   ── THE LOOK ────────────────────────────────────────────
+   Blue range, like rap/ui's Slider: the filled part is the amount
+   you have selected, and selection is --rap-select. The thumb is
+   --rap-select-ink (white in both themes) because it rides on the
+   blue, and it is the one gripped thing here, so it keeps the
+   Slider thumb's shadow pair — the only shadow in the component.
+
+   Nothing here transitions transform, translate or scale: all
+   three are written every frame by the component's spring, and a
+   CSS transition on top would drag a second, slower curve behind
+   it. */
 
 /* the stretch's ceiling, px: how far the band will ever give */
 const STRETCH = 40;
@@ -64,6 +75,8 @@ const DROP_AT = 6;
 /* a key press against the stop kicks the band this hard (px a
    frame): a 3–4px give and a recoil — "that's the end" */
 const KICK = 3;
+
+const ICON = "grid place-items-center flex-none text-mute [&_svg]:size-5";
 
 const rubber = (o: number) => Math.sign(o) * STRETCH * (1 - 1 / ((Math.abs(o) * 0.55) / STRETCH + 1));
 const decimals = (n: number) => (String(n).split(".")[1] ?? "").length;
@@ -364,32 +377,45 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
   return (
     <div
       ref={ref}
-      className={cx("rap-elastic", disabled && "is-disabled", `rap-elastic--bubble-${bubble}`, className)}
+      data-slot="elastic-slider"
+      data-bubble={bubble}
+      data-disabled={disabled || undefined}
+      className={cn(
+        "flex items-center gap-2.5 w-full min-w-48 font-sans text-ink select-none",
+        disabled && "opacity-50 pointer-events-none",
+        className,
+      )}
       style={style}
       {...rest}
     >
       {icons && (
-        <span className="rap-elastic__icon" data-end="start" aria-hidden="true" style={iconStyle(-1)}>
+        <span data-slot="elastic-slider-icon" className={ICON} data-end="start" aria-hidden="true" style={iconStyle(-1)}>
           {icons[0]}
         </span>
       )}
+      {/* the hit area is a full control height; the 11px side padding is
+          the thumb's radius, so the thumb's centre reaches both ends
+          without the thumb leaving the area */}
       <div
-        className="rap-elastic__area"
+        data-slot="elastic-slider-area"
+        className="group/area flex flex-1 items-center h-control px-[11px] cursor-pointer touch-none"
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
       >
-        <div ref={track} className="rap-elastic__rail">
+        <div ref={track} data-slot="elastic-slider-rail" className="relative w-full h-2">
           <div
-            className="rap-elastic__track"
+            data-slot="elastic-slider-track"
+            className="absolute top-0 h-full rounded-pill bg-fill-strong overflow-hidden"
             style={{ left: trackLeft, width: trackWidth || "100%", transform: `scaleY(${thin.toFixed(3)})` }}
           >
-            <div className="rap-elastic__range" style={{ width: Math.max(0, thumbX - trackLeft) }} />
+            <div data-slot="elastic-slider-range" className="absolute left-0 inset-y-0 rounded-[inherit] bg-select" style={{ width: Math.max(0, thumbX - trackLeft) }} />
           </div>
           <div
             ref={thumbEl}
-            className="rap-elastic__thumb"
+            data-slot="elastic-slider-thumb"
+            className="group/thumb absolute left-0 top-1/2 size-[22px] -mt-[11px] -ml-[11px] outline-none focus-visible:outline-none cursor-grab group-active/area:cursor-grabbing"
             role="slider"
             tabIndex={disabled ? -1 : 0}
             aria-label={ariaLabel}
@@ -402,12 +428,28 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
             onKeyDown={onKey}
             style={{ translate: `${thumbX.toFixed(2)}px 0` }}
           >
+            {/* the keyboard ring only for keys: a thumb the hand took hold of is marked data-pointer */}
             <span
-              className="rap-elastic__knob"
+              data-slot="elastic-slider-knob"
+              className={cn(
+                "absolute inset-0 rounded-pill bg-select-ink shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_2px_8px_rgb(0_0_0/0.18)]",
+                "group-[:focus-visible:not([data-pointer])]/thumb:shadow-[0_0_0_2px_var(--rap-ring),0_2px_8px_rgb(0_0_0/0.18)]",
+              )}
               style={{ transform: `scale(${long.toFixed(3)}, ${(1 / Math.sqrt(long)).toFixed(3)})` }}
             />
             {bubble !== "never" && (
-              <span className="rap-elastic__bubble" aria-hidden="true">
+              /* the value sits on the thumb: an ink pill 8px above it; in
+                 "active" mode it pops (spring scale) while the thumb has focus */
+              <span
+                data-slot="elastic-slider-bubble"
+                className={cn(
+                  "absolute left-1/2 bottom-[calc(100%+8px)] -translate-x-1/2 px-[9px] py-[5px] rounded-pill bg-ink text-paper",
+                  "text-[0.8125rem] font-medium tracking-[-0.01em] whitespace-nowrap pointer-events-none origin-bottom",
+                  "[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-rm),scale_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+                  bubble === "active" && "opacity-0 scale-70 group-focus/thumb:opacity-100 group-focus/thumb:scale-100",
+                )}
+                aria-hidden="true"
+              >
                 <RollingNumber text={text} />
               </span>
             )}
@@ -415,7 +457,7 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
         </div>
       </div>
       {icons && (
-        <span className="rap-elastic__icon" data-end="end" aria-hidden="true" style={iconStyle(1)}>
+        <span data-slot="elastic-slider-icon" className={ICON} data-end="end" aria-hidden="true" style={iconStyle(1)}>
           {icons[1]}
         </span>
       )}

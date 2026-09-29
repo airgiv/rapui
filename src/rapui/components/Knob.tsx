@@ -9,9 +9,8 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { useSound } from "../sound";
-import { clamp, cx } from "../utils";
+import { clamp, cn } from "../utils";
 import { RollingNumber, isCalm } from "./ScrubNumber";
-import "./Knob.css";
 
 /* ══ Knob ═════════════════════════════════════════════════
    A rotary dial off a synth or an amp. Drag up (or right) to
@@ -73,6 +72,20 @@ const D = 0.72;
 const MAX_TICKS = 40;
 
 const SIZES = { sm: 64, md: 88, lg: 120 } as const;
+/* the readout in the middle, px, per size */
+const VALUE_TEXT = { sm: "text-[12px]", md: "text-[15px]", lg: "text-[20px]" } as const;
+
+/* ── the look ──────────────────────────────────────────────
+   Flame is the accent here, not the selection blue: the lit
+   ticks are a LEVEL glowing on a panel, the orange of an amp's
+   pilot light, and the same flame the TimeScrubber uses for its
+   "you are here" mark — the scrubber family shares it. Blue in
+   rap/ui means "selected", and nothing on a knob is selected.
+
+   The one shadow is under the cap, because the cap is the one
+   thing on the page that physically stands proud of it: it is
+   what you would grip. It uses the Slider thumb's pair so every
+   gripped thing in rap/ui casts the same shade. */
 
 const magnet = (t: number) => {
   const n = Math.round(t);
@@ -320,13 +333,21 @@ export const Knob = forwardRef<HTMLDivElement, KnobProps>(function Knob(
   return (
     <div
       ref={ref}
-      className={cx("rap-knob", `rap-knob--${size}`, disabled && "is-disabled", className)}
+      data-slot="knob"
+      data-size={size}
+      data-disabled={disabled || undefined}
+      className={cn(
+        "inline-flex flex-col items-center gap-1.5 font-sans text-ink select-none",
+        disabled && "opacity-50 pointer-events-none",
+        className,
+      )}
       style={{ ...style, ["--knob-size" as string]: `${px}px` }}
       {...rest}
     >
       <div
         ref={dial}
-        className="rap-knob__dial"
+        data-slot="knob-dial"
+        className="group/dial relative size-(--knob-size) rounded-full cursor-ns-resize touch-none outline-none focus-visible:outline-none"
         role="slider"
         tabIndex={disabled ? -1 : 0}
         aria-label={ariaLabel ?? label}
@@ -342,20 +363,57 @@ export const Knob = forwardRef<HTMLDivElement, KnobProps>(function Knob(
         onPointerCancel={onUp}
         onKeyDown={onKey}
       >
-        <svg className="rap-knob__ring" viewBox="0 0 100 100" aria-hidden="true">
+        <svg data-slot="knob-ring" className="absolute inset-0 size-full overflow-visible" viewBox="0 0 100 100" aria-hidden="true">
           {ticks.map((t) => (
-            <line key={t.i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} data-on={t.on || undefined} />
+            <line
+              key={t.i}
+              x1={t.x1}
+              y1={t.y1}
+              x2={t.x2}
+              y2={t.y2}
+              data-on={t.on || undefined}
+              className={cn(
+                "stroke-fill-strong [stroke-width:2.6] [stroke-linecap:round] data-[on]:stroke-flame",
+                size === "lg" && "[stroke-width:2]",
+              )}
+            />
           ))}
         </svg>
-        <span className="rap-knob__well" aria-hidden="true" />
-        <span className="rap-knob__cap" aria-hidden="true" style={{ transform: `rotate(${angle.toFixed(2)}deg)` }}>
-          <span className="rap-knob__notch" />
+        {/* the well the cap sits in: 76% of the dial, a flat filled disc
+            (rap/ui draws depressions as fills, never inset shadows) */}
+        <span data-slot="knob-well" className="absolute inset-[12%] rounded-full bg-fill" aria-hidden="true" />
+        {/* the cap: 64% of the dial, so the well shows as a 6% rim. The
+            keyboard ring goes on the cap, and only for keys: a dial the hand
+            took hold of is marked data-pointer */}
+        <span
+          data-slot="knob-cap"
+          className={cn(
+            "absolute inset-[18%] rounded-full bg-surface shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_2px_8px_rgb(0_0_0/0.18)]",
+            "transition-[box-shadow] duration-(--rap-dur-fast) ease-rm",
+            "group-[:focus-visible:not([data-pointer])]/dial:shadow-[0_0_0_2px_var(--rap-ring),0_2px_8px_rgb(0_0_0/0.18)]",
+          )}
+          aria-hidden="true"
+          style={{ transform: `rotate(${angle.toFixed(2)}deg)` }}
+        >
+          {/* the pointer line on the cap's rim, turning with it */}
+          <span data-slot="knob-notch" className="absolute left-1/2 top-[7%] w-[3px] h-[17%] -ml-[1.5px] rounded-[2px] bg-flame" />
         </span>
-        <span className="rap-knob__value" aria-hidden="true">
+        <span
+          data-slot="knob-value"
+          className={cn(
+            "absolute inset-0 grid place-items-center pointer-events-none font-medium tracking-[-0.02em] tabular-nums",
+            VALUE_TEXT[size],
+          )}
+          aria-hidden="true"
+        >
           <RollingNumber text={text} />
         </span>
       </div>
-      {label && <span className="rap-knob__label">{label}</span>}
+      {label && (
+        <span data-slot="knob-label" className="text-[0.8125rem] font-medium tracking-[-0.01em] text-mute">
+          {label}
+        </span>
+      )}
     </div>
   );
 });

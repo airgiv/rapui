@@ -9,9 +9,10 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
+import { cva } from "class-variance-authority";
 import { useSound } from "../sound";
 import { useReplay } from "../hooks/useReplay";
-import { clamp, cx, prefersReducedMotion } from "../utils";
+import { clamp, cn, prefersReducedMotion } from "../utils";
 import "./ScrubNumber.css";
 
 /* ══ Scrub number ═════════════════════════════════════════
@@ -67,9 +68,22 @@ function Digit({ d }: { d: string }) {
     flip.current = !flip.current;
   }
   return (
-    <span className="rap-rollnum__col">
+    <span
+      data-slot="rolling-number-col"
+      /* a 1.5em cell for a 1em line (the negative margin keeps the line box
+         at 1em), masked to fade the top and bottom quarter-em */
+      className="inline-block h-[1.5em] -my-[0.25em] overflow-hidden [mask-image:linear-gradient(transparent,#000_30%,#000_70%,transparent)]"
+    >
       <span
-        className="rap-rollnum__strip"
+        data-slot="rolling-number-strip"
+        /* the roll uses TimeScrubber's own curve (a hair of overshoot) and
+           length (220ms = --rap-dur-fast), so every scrubber rolls alike; the
+           blur-in (ScrubNumber.css) takes two names so it replays */
+        className={cn(
+          "flex flex-col *:h-[1.5em] *:leading-[1.5em]",
+          "transition-transform duration-(--rap-dur-fast) ease-[cubic-bezier(0.3,1.15,0.4,1)] calm:transition-none motion-reduce:transition-none",
+          "fun:data-[flip=a]:animate-[rap-rollnum-a_260ms_ease-out] fun:data-[flip=b]:animate-[rap-rollnum-b_260ms_ease-out]",
+        )}
         data-flip={flip.current === null ? undefined : flip.current ? "a" : "b"}
         style={{ transform: `translateY(${-Number(d) * 1.5}em)` }}
       >
@@ -88,12 +102,12 @@ function Digit({ d }: { d: string }) {
 export function RollingNumber({ text, className }: { text: string; className?: string }) {
   const chars = text.split("");
   return (
-    <span className={cx("rap-rollnum", className)} aria-hidden="true">
+    <span data-slot="rolling-number" className={cn("inline-flex tabular-nums leading-none", className)} aria-hidden="true">
       {chars.map((c, i) =>
         c >= "0" && c <= "9" ? (
           <Digit key={chars.length - i} d={c} />
         ) : (
-          <span key={`s${chars.length - i}`} className="rap-rollnum__sym">
+          <span key={`s${chars.length - i}`} data-slot="rolling-number-sym" className="h-[1.5em] leading-[1.5em] -my-[0.25em]">
             {c}
           </span>
         ),
@@ -125,6 +139,28 @@ const LEAN_MAX = 7;
    one friendly overshoot as the pill rights itself. */
 const K = 0.16;
 const D = 0.72;
+
+/* The pill. The lean is written inline every frame by the spring; nothing
+   here transitions `transform`, so the two never fight. Hover only when not
+   focused: the focused pill is the surface with the ring. */
+const scrubVariants = cva(
+  [
+    "inline-flex items-center gap-[2px] min-w-[6.5rem] h-(--scrub-h) pl-1 rounded-pill bg-fill text-ink",
+    "font-sans font-medium tracking-[-0.01em] select-none",
+    "transition-[background-color,box-shadow] duration-(--rap-dur-fast) ease-rm",
+    "hover:not-focus-within:bg-fill-hover focus-within:bg-surface focus-within:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
+  ],
+  {
+    variants: {
+      size: {
+        sm: "[--scrub-h:var(--rap-control-h-sm)] text-[0.8125rem] pr-3",
+        md: "[--scrub-h:var(--rap-control-h)] text-[0.9375rem] pr-[14px]",
+        lg: "[--scrub-h:var(--rap-control-h-lg)] text-[1.0625rem] pr-[18px]",
+      },
+    },
+    defaultVariants: { size: "md" },
+  },
+);
 
 export interface ScrubNumberProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange" | "children"> {
@@ -259,7 +295,7 @@ export const ScrubNumber = forwardRef<HTMLDivElement, ScrubNumberProps>(function
        the label — which it does within the first centimetre */
     html.style.cursor = "ew-resize";
     setScrubbing(true);
-    root.current?.querySelector<HTMLElement>(".rap-scrub__value")?.focus({ preventScroll: true });
+    root.current?.querySelector<HTMLElement>('[data-slot="scrub-number-value"]')?.focus({ preventScroll: true });
   };
 
   const onMove = (e: ReactPointerEvent<HTMLSpanElement>) => {
@@ -348,7 +384,9 @@ export const ScrubNumber = forwardRef<HTMLDivElement, ScrubNumberProps>(function
         onValueCommit?.(next);
       }
     }
-    requestAnimationFrame(() => root.current?.querySelector<HTMLElement>(".rap-scrub__value")?.focus({ preventScroll: true }));
+    requestAnimationFrame(() =>
+      root.current?.querySelector<HTMLElement>('[data-slot="scrub-number-value"]')?.focus({ preventScroll: true }),
+    );
   };
 
   const nudge = (dir: 1 | -1, mult: number) => {
@@ -421,15 +459,12 @@ export const ScrubNumber = forwardRef<HTMLDivElement, ScrubNumberProps>(function
         if (typeof ref === "function") ref(n);
         else if (ref) ref.current = n;
       }}
-      className={cx(
-        "rap-scrub",
-        `rap-scrub--${size}`,
-        scrubbing && "is-scrubbing",
-        editing && "is-editing",
-        disabled && "is-disabled",
-        bump.cls("rap-anim-shake"),
-        className,
-      )}
+      data-slot="scrub-number"
+      data-size={size}
+      data-scrubbing={scrubbing || undefined}
+      data-editing={editing || undefined}
+      data-disabled={disabled || undefined}
+      className={cn(scrubVariants({ size }), disabled && "opacity-50 pointer-events-none", bump.cls("fun:animate-shake"), className)}
       style={{ ...style, transform: lean ? `skewX(${(-lean).toFixed(2)}deg)` : undefined }}
       /* the digits' blur animations bubble up here too; only the
          pill's own shake ending should clear it */
@@ -437,7 +472,17 @@ export const ScrubNumber = forwardRef<HTMLDivElement, ScrubNumberProps>(function
       {...rest}
     >
       <span
-        className="rap-scrub__label"
+        data-slot="scrub-number-label"
+        /* the handle: a round well at the left end, as tall as the pill less
+           4px of air each side (the same inset NumberField's buttons use), so
+           it reads as the thing you take hold of. Blue while held: this is the
+           selection you have hold of, the same blue as the focus ring the pill
+           wears at the same moment. */
+        className={cn(
+          "inline-grid place-items-center flex-none min-w-[calc(var(--scrub-h)-8px)] h-[calc(var(--scrub-h)-8px)] px-2 rounded-pill",
+          "cursor-ew-resize touch-none transition-[background-color,color] duration-(--rap-dur-fast) ease-rm [&_svg]:size-[1.1em]",
+          scrubbing ? "bg-select text-select-ink" : "text-mute hover:text-ink hover:bg-fill",
+        )}
         aria-hidden="true"
         onPointerDown={onDown}
         onPointerMove={onMove}
@@ -449,7 +494,11 @@ export const ScrubNumber = forwardRef<HTMLDivElement, ScrubNumberProps>(function
       {editing ? (
         <input
           ref={input}
-          className="rap-scrub__input"
+          data-slot="scrub-number-input"
+          className={cn(
+            "flex-1 min-w-0 w-full h-full p-0 pl-1 border-0 bg-transparent text-inherit [font-family:inherit] text-[length:inherit] font-[number:inherit] tracking-[inherit] leading-[inherit] tabular-nums outline-none",
+            "selection:bg-select selection:text-select-ink",
+          )}
           inputMode="decimal"
           aria-label={name}
           value={text}
@@ -467,7 +516,8 @@ export const ScrubNumber = forwardRef<HTMLDivElement, ScrubNumberProps>(function
         />
       ) : (
         <div
-          className="rap-scrub__value"
+          data-slot="scrub-number-value"
+          className="inline-flex items-center gap-[0.25em] flex-1 min-w-0 h-full pl-1 cursor-text outline-none focus-visible:outline-none tabular-nums"
           role="spinbutton"
           tabIndex={disabled ? -1 : 0}
           aria-label={name}
@@ -480,7 +530,11 @@ export const ScrubNumber = forwardRef<HTMLDivElement, ScrubNumberProps>(function
           onKeyDown={onKey}
         >
           <RollingNumber text={shown} />
-          {unit && <span className="rap-scrub__unit">{unit}</span>}
+          {unit && (
+            <span data-slot="scrub-number-unit" className="text-mute">
+              {unit}
+            </span>
+          )}
         </div>
       )}
     </div>

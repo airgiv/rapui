@@ -1,68 +1,10 @@
-.rap-display {
-  font-family: var(--rap-font-display);
-  font-weight: 500;
-  line-height: 0.92;
-  letter-spacing: -0.02em;
-  margin: 0;
-  text-wrap: balance;
-}
-.rap-display--tight { letter-spacing: -0.045em; }
-.rap-display--mega { font-size: var(--rap-size-mega); line-height: 0.86; font-weight: 450; letter-spacing: -0.06em; }
-.rap-display--xxl { font-size: var(--rap-size-xxl); line-height: 0.88; }
-.rap-display--xl { font-size: var(--rap-size-xl); }
-.rap-display--lg { font-size: var(--rap-size-lg); line-height: 1; }
-.rap-display--md { font-size: var(--rap-size-md); line-height: 1.1; letter-spacing: -0.02em; }
+/* Typography — only the eyebrow's live-dot pulse lives here (a keyframe
+   utilities cannot declare). Everything else is Tailwind in Typography.tsx.
+   A ring of the accent at 60% grows out to 0.7em and fades by 70% of the
+   cycle, then rests: a heartbeat, not a strobe. */
+@layer theme, base, components, utilities;
 
-.rap-accent { color: var(--rap-flame); }
-.rap-accent--blue { color: var(--rap-blue); }
-.rap-accent--plum { color: var(--rap-plum); }
-.rap-accent--mute { color: var(--rap-mute); }
-
-.rap-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6em;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--rap-ink);
-}
-.rap-eyebrow__dot {
-  width: 0.55em;
-  height: 0.55em;
-  border-radius: 50%;
-  background: var(--rap-accent);
-  box-shadow: 0 0 0 0 var(--rap-accent);
-  animation: rap-pulse 2.2s var(--rap-ease-out) infinite;
-}
-@keyframes rap-pulse {
+@keyframes rap-eyebrow-pulse {
   0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--rap-accent) 60%, transparent); }
   70%, 100% { box-shadow: 0 0 0 0.7em transparent; }
 }
-
-.rap-lead {
-  font-size: var(--rap-size-md);
-  line-height: 1.35;
-  letter-spacing: -0.015em;
-  max-width: 32ch;
-  margin: 0;
-  color: var(--rap-ink-2);
-}
-
-.rap-highlight {
-  --rap-hl: var(--rap-acid);
-  background: linear-gradient(100deg, transparent 1%, var(--rap-hl) 3%, var(--rap-hl) 97%, transparent 99%);
-  background-size: 100% 70%;
-  background-position: 0 70%;
-  background-repeat: no-repeat;
-  padding: 0 0.15em;
-  margin: 0 -0.05em;
-  color: #282828;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
-.rap-highlight--flame { --rap-hl: var(--rap-flame); color: #fff; }
-.rap-highlight--blue { --rap-hl: var(--rap-blue); color: #fff; }
-.rap-highlight--plum { --rap-hl: var(--rap-plum); color: #fff; }
-.rap-highlight--bubble { --rap-hl: var(--rap-bubble); }
-.rap-highlight--sky { --rap-hl: var(--rap-sky); }

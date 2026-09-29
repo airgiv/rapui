@@ -12,9 +12,8 @@ import {
   type ReactNode,
 } from "react";
 import { useSound } from "../sound";
-import { clamp, cx } from "../utils";
+import { clamp, cn } from "../utils";
 import { isCalm } from "./ScrubNumber";
-import "./WheelPicker.css";
 
 /* ══ Wheel picker ═════════════════════════════════════════
    The drum from a phone's alarm clock: a column of options on a
@@ -48,7 +47,9 @@ import "./WheelPicker.css";
    changes colour exactly at the edge, letter by letter, the way
    a label slides under a tinted glass — no fade to time, no
    moment where it is neither. Blue because the band IS the
-   selection; rap/ui's "this is chosen" colour. */
+   selection; rap/ui's "this is chosen" colour, as a Select's chosen
+   row or a checked Checkbox. Flat: the drum's depth comes from the
+   rows' projection, never from a shadow. */
 
 /* px per row. 36 = --rap-control-h-sm, the smallest pill in
    rap/ui, so the band is a standard control height. */
@@ -364,7 +365,11 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
   const row = (d: (typeof drawn)[number], lens: boolean) => (
     <span
       key={d.k}
-      className="rap-wheel__row"
+      data-slot="wheel-picker-row"
+      className={cn(
+        "absolute inset-x-0 top-[calc(50%_-_var(--wheel-row)_/_2)] h-(--wheel-row) px-5 leading-(--wheel-row) whitespace-nowrap backface-hidden",
+        align === "start" ? "text-left" : align === "end" ? "text-right" : "text-center",
+      )}
       style={{
         /* turned about the drum's axis, R behind the band, so the
            row lands at y = R·sin θ and recedes by R·(1 − cos θ):
@@ -388,7 +393,19 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
         if (typeof ref === "function") ref(node);
         else if (ref) ref.current = node;
       }}
-      className={cx("rap-wheel", `rap-wheel--${align}`, disabled && "is-disabled", className)}
+      data-slot="wheel-picker"
+      data-align={align}
+      data-disabled={disabled || undefined}
+      className={cn(
+        /* the band's corners, overridable per side: TimeWheel squares the inner ones */
+        "[--wheel-r-start:var(--rap-radius-pill)] [--wheel-r-end:var(--rap-radius-pill)]",
+        "relative inline-grid h-[calc(var(--wheel-row)*var(--wheel-rows))] rounded-pop",
+        "font-sans text-[1.0625rem] font-medium tracking-[-0.01em] tabular-nums text-ink",
+        "cursor-grab active:cursor-grabbing touch-none select-none outline-none",
+        "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--rap-ring)]",
+        disabled && "opacity-50 pointer-events-none",
+        className,
+      )}
       style={{ ...style, "--wheel-row": `${ROW}px`, "--wheel-rows": rows } as CSSProperties}
       role="spinbutton"
       tabIndex={disabled ? -1 : 0}
@@ -406,16 +423,37 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
       {...rest}
     >
       {/* sets the width: every label, stacked in one cell, unseen */}
-      <span className="rap-wheel__sizer" aria-hidden="true">
+      <span
+        data-slot="wheel-picker-sizer"
+        className="grid h-0 px-5 overflow-hidden invisible *:[grid-area:1/1] *:whitespace-nowrap"
+        aria-hidden="true"
+      >
         {opts.map((o) => (
           <span key={o.value}>{o.label}</span>
         ))}
       </span>
-      <span className="rap-wheel__band" aria-hidden="true" />
-      <span className="rap-wheel__drum" aria-hidden="true">
+      <span
+        data-slot="wheel-picker-band"
+        className="absolute inset-x-0 top-[calc(50%_-_var(--wheel-row)_/_2)] h-(--wheel-row) rounded-[var(--wheel-r-start)_var(--wheel-r-end)_var(--wheel-r-end)_var(--wheel-r-start)] bg-select"
+        aria-hidden="true"
+      />
+      {/* perspective 600px: close enough that the rim rows visibly lean away,
+          far enough that the band row is flat and crisp. The drum turns away
+          into nothing at top and bottom, like the TimeScrubber's ruler at its
+          ends. */}
+      <span
+        data-slot="wheel-picker-drum"
+        className="absolute inset-0 perspective-[600px] [mask-image:linear-gradient(transparent,#000_22%,#000_78%,transparent)]"
+        aria-hidden="true"
+      >
         {drawn.map((d) => row(d, false))}
       </span>
-      <span className="rap-wheel__drum rap-wheel__drum--lens" aria-hidden="true">
+      {/* the lens: the same rows in the blue's own ink, clipped to the band */}
+      <span
+        data-slot="wheel-picker-lens"
+        className="absolute inset-0 perspective-[600px] text-select-ink [clip-path:inset(calc(50%_-_var(--wheel-row)_/_2)_0_calc(50%_-_var(--wheel-row)_/_2)_0_round_var(--wheel-r-start)_var(--wheel-r-end)_var(--wheel-r-end)_var(--wheel-r-start))]"
+        aria-hidden="true"
+      >
         {drawn.filter((d) => Math.abs(d.th) < A * 1.5).map((d) => row(d, true))}
       </span>
     </div>
@@ -477,7 +515,20 @@ export const TimeWheel = forwardRef<HTMLDivElement, TimeWheelProps>(function Tim
   };
 
   return (
-    <div ref={ref} className={cx("rap-timewheel", className)} role="group" {...rest}>
+    <div
+      ref={ref}
+      data-slot="time-wheel"
+      /* one pill cut into segments: inner corners squared to the small
+         radius, 2px apart; equal segments, two digits and the band's 20px
+         padding each side */
+      className={cn(
+        "inline-flex gap-tight *:min-w-[4.25rem]",
+        "*:not-first:[--wheel-r-start:var(--rap-radius-xs)] *:not-last:[--wheel-r-end:var(--rap-radius-xs)]",
+        className,
+      )}
+      role="group"
+      {...rest}
+    >
       <WheelPicker
         aria-label="Hours"
         options={hours}
