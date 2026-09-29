@@ -31,8 +31,8 @@ export interface SoundSettings {
 
 export interface SoundApi extends SoundSettings {
   play: (name: SoundName, opts?: PlayOptions) => void;
-  /** A notch for sliders, dials and scrubbers — rate-limited. */
-  detent: (strength?: number) => void;
+  /** A notch for sliders, dials and scrubbers — rate-limited. `pitch` bends it (e.g. with a value). */
+  detent: (strength?: number, opts?: { pitch?: number }) => void;
 }
 
 const OFF: SoundApi = {
@@ -74,13 +74,13 @@ export function SoundProvider({
   }, []);
 
   const detent = useCallback(
-    (strength = 0.7) => {
+    (strength = 0.7, opts?: { pitch?: number }) => {
       const now = performance.now();
       const gap = now - last.current;
       if (gap < 28) return;
       last.current = now;
       // back-to-back notches are quieter: a ratchet, not a buzz
-      play("detent", { strength: strength * (gap < 70 ? 0.6 : 1) });
+      play("detent", { strength: strength * (gap < 70 ? 0.6 : 1), pitch: opts?.pitch });
     },
     [play],
   );
