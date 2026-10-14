@@ -36,7 +36,17 @@ import { Button, ButtonGroup, Display, Accent, SoundProvider } from "@rapui/reac
 </SoundProvider>
 ```
 
-Put `className="rap-root"` on `<body>` (or your app's root) for rapui's paper background, ink colour and font on the whole page. Dark theme: `data-rap-theme="dark"` on `<html>`. Calmer motion everywhere: `data-rap-motion="calm"`.
+Put `className="rap-root"` on `<body>` (or your app's root) for rapui's paper background, ink colour and font on the whole page. Dark theme: `data-rap-theme="dark"` on `<html>`. Calmer motion everywhere: `data-rap-motion="calm"` (or `"still"` for none).
+
+**Style presets** — the same components in five characters: `fun` (the default), `civic`, `signal`, `product`, `minimal`. A preset sets palette, typefaces, shape, spacing, the page grid and how much things move; the landing blocks re-lay themselves for it.
+
+```tsx
+import { RapStyle } from "@rapui/react";
+import "@rapui/react/fonts/civic"; // each preset's typefaces are opt-in (or fonts/all)
+
+<RapStyle preset="civic" />                     // on <html>: the whole app, portals included
+<RapStyle preset="signal" scope="local">…</RapStyle>  // just this part of the page
+```
 
 **App already on Tailwind v4** — use the rapui theme in your own build instead:
 
@@ -48,11 +58,11 @@ Put `className="rap-root"` on `<body>` (or your app's root) for rapui's paper ba
 
 Then `bg-surface`, `text-ink`, `rounded-pill`, `h-control`, `ease-rm`, `animate-hop`, `fun:`/`calm:` are available in your own components too.
 
-`npm run build:lib` writes `dist/index.js`, `dist/icons.js`, `dist/fonts.js`, `dist/rapui.css`, `dist/theme.css` and the type declarations.
+`npm run build:lib` writes `dist/index.js`, `dist/icons.js`, `dist/fonts.js`, `dist/fonts/*.js`, `dist/rapui.css`, `dist/theme.css` (+ `tokens.css`, `presets.css`) and the type declarations.
 
 ## What's inside
 
-110 components, browsable with live settings at **[rapui.dev/#docs](https://rapui.dev/#docs)** (sidebar on the left, component with its settings panel on the right, generated code below).
+150+ components and landing blocks, browsable with live settings at **[rapui.dev/#docs](https://rapui.dev/#docs)** (sidebar on the left, component with its settings panel on the right, generated code below).
 
 | Group | Components |
 | --- | --- |
@@ -67,6 +77,12 @@ Then `bg-surface`, `text-ink`, `rounded-pill`, `h-control`, `ease-rm`, `animate-
 | Media | AudioPlayer, Playlist, VideoPlayer, VoiceNote |
 | Feedback | Alert, Toast, Progress, Skeleton, Spinner |
 | Layout | Pattern (dots, grid, lines, cross, checker, stripes, waves), Accordion, Collapsible, Resizable, ScrollArea, Carousel |
+| AI | AIOrb, AILoader, StreamingText, PromptInput, ChatMessage, ChatThread, MessageActions, Reasoning, ToolCall, ToolChips, Sources & Citation |
+| Finance | Money, MoneyDelta, AmountInput, CurrencyConverter, TickerTape, PaymentCard, Transactions, Receipt, TransferStatus, StockChart, BudgetBar, Holdings |
+| Signal set | DotMatrix, MatrixStatus, DotText, Redact, MediaFrame |
+| Page layout | Container, Section, Grid, GridItem, Stack, SectionHeader, GridOverlay |
+| Landing blocks | SiteHeader, Hero, LogoCloud, Features, FeatureSplit, Stats, Testimonials, Pricing, FAQ, CTA, Statement, SiteFooter — each re-laid per preset |
+| Figures | Figure (thin-line 3D solids) |
 | Expressive | Typography, Sticker, Marquee, RotatingBadge, SplitReveal, RollText, TiltCard, FeatureCard, Counter, Magnetic, Animated tabs, Checklist, CanvasToolbar |
 
 ### Stack
@@ -80,7 +96,7 @@ Tokens live in `src/rapui/styles/tokens.css`. That file holds the colours (`--ra
 ```
 src/rapui/components/  the library (one .tsx per component; a small layered .css only for keyframes/@property)
 src/rapui/groups/      barrels per docs group
-src/rapui/styles/      tokens.css (CSS variables), theme.css (Tailwind @theme, variants, shared utilities)
+src/rapui/styles/      tokens.css (CSS variables), presets.css (the style presets), theme.css (Tailwind @theme, variants, shared utilities)
 src/docs/              docs entries (one file per group), types, code generator
 src/site/              the preview site: landing (#top) and the explorer (#docs)
 ```

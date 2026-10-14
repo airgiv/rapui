@@ -1,6 +1,6 @@
 {
   "name": "@rapui/react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A playful React UI kit on Radix + Tailwind v4: the breadth of shadcn/ui, plus hold buttons, liquid forms, charts you scrub and galleries you throw.",
   "keywords": [
     "react",
@@ -62,7 +62,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css dist/",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css src/rapui/styles/presets.css dist/",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build:lib"
