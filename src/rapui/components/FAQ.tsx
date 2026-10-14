@@ -14,8 +14,7 @@
      fun      bold rounded rows packed 4px apart; an open row turns
               acid and its + spins into an ×
      civic    centred: the heading on the centre line over a narrow
-              list of soft white cards, serif questions, a chevron in a
-              tinted circle
+              list of soft white cards, serif questions, a plain chevron
      signal   ruled rows with mono "Q." and "A." markers in rust
      product  one centred narrow column: a hairline card, divided
      minimal  numbered questions between hairlines, a plain + / −
@@ -112,7 +111,7 @@ const ROW: Record<BlockLook, { list: string; item: string; trigger: string; q: s
   },
   civic: {
     list: "flex flex-col gap-(--rap-space-xs)",
-    item: "rounded-card bg-surface text-ink shadow-[inset_0_0_0_1px_var(--rap-edge)]",
+    item: "rounded-card bg-surface text-ink",
     trigger: "gap-(--rap-space-md) px-(--rap-space-lg) py-(--rap-space-md) rounded-card",
     q: "font-display text-[1.25rem] font-medium leading-[1.3] tracking-[-0.01em]",
     a: "px-(--rap-space-lg) pb-(--rap-space-lg) text-[1rem] leading-[1.65] text-ink-2 max-w-[62ch]",
@@ -213,9 +212,7 @@ function Marker({ look, open }: { look: BlockLook; open: boolean }) {
     );
   if (look === "civic")
     return (
-      <span aria-hidden className="grid flex-none place-items-center size-9 rounded-full text-accent bg-[color-mix(in_srgb,var(--rap-accent)_9%,var(--rap-surface))]">
-        <ChevronDown size={18} className={cn("transition-transform duration-(--rap-dur-fast)", open && "rotate-180")} />
-      </span>
+      <ChevronDown aria-hidden size={20} className={cn("flex-none text-ink-2 transition-transform duration-(--rap-dur-fast)", open && "rotate-180")} />
     );
   if (look === "signal")
     return (

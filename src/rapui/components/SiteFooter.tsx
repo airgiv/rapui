@@ -136,7 +136,7 @@ function CivicFooter({ logo, tagline, columns = [], bottom, social, mark }: Part
           <Columns
             columns={columns}
             look="civic"
-            heading="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-flame"
+            heading="text-[0.75rem] font-medium uppercase tracking-[0.08em] text-mute"
             link="text-[0.9375rem] text-ink-2 hover:text-ink hover:underline underline-offset-4"
           />
         </GridItem>

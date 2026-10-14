@@ -158,7 +158,7 @@ function FunTiles({ items, cols }: BodyProps) {
   );
 }
 
-/* civic: soft white cards, an icon in a tinted circle, serif titles */
+/* civic: soft white cards, nothing but an icon, a serif title and the words */
 function CivicCards({ items, cols }: BodyProps) {
   return (
     <Grid cols={cols} gap="tile" role="list">
@@ -167,16 +167,13 @@ function CivicCards({ items, cols }: BodyProps) {
           key={i}
           role="listitem"
           data-slot="feature"
-          className="group/card relative flex flex-col gap-(--rap-space-md) p-(--rap-space-lg) rounded-card bg-surface text-ink shadow-[inset_0_0_0_1px_var(--rap-edge)]"
+          className="group/card relative flex flex-col gap-(--rap-space-sm) p-(--rap-space-lg) rounded-lg bg-surface text-ink"
         >
           {item.media ? (
             <div className="overflow-hidden rounded-sm -mx-(--rap-space-xs) -mt-(--rap-space-xs)">{item.media}</div>
           ) : (
-            <span
-              aria-hidden
-              className="grid place-items-center size-14 rounded-full text-accent bg-[color-mix(in_srgb,var(--rap-accent)_9%,var(--rap-surface))] [&_svg]:size-6"
-            >
-              <FeatureIcon icon={item.icon ?? "star"} tone="ink" size={28} />
+            <span aria-hidden className="text-accent [&_svg]:size-7">
+              <FeatureIcon icon={item.icon ?? "star"} tone="ink" size={32} />
             </span>
           )}
           <ItemTitle item={item} className="font-display text-[1.5rem] font-medium leading-[1.15] tracking-[-0.02em]" />
@@ -381,7 +378,7 @@ function SplitPoints({ points, look }: { points: ReactNode[]; look: BlockLook })
     );
   const mark = {
     fun: "size-7 rounded-full bg-acid text-ink [&_svg]:size-4",
-    civic: "size-7 rounded-full text-accent bg-[color-mix(in_srgb,var(--rap-accent)_9%,var(--rap-surface))] [&_svg]:size-4",
+    civic: "size-5 text-ink-2 [&_svg]:size-4",
     product: "size-5 text-mute [&_svg]:size-4",
   }[look as "fun" | "civic" | "product"];
   return (
@@ -405,7 +402,7 @@ function SplitMedia({ look, caption, reverse, children }: { look: BlockLook; cap
       <div data-slot="feature-media" className="relative rounded-lg bg-bubble p-[clamp(1rem,4cqi,3rem)] @container">
         <div
           className={cn(
-            "overflow-hidden rounded-card bg-surface aspect-[4/3] shadow-(--rap-shadow-pop)",
+            "overflow-hidden rounded-card bg-surface aspect-[3/4] @md:aspect-[4/3] shadow-(--rap-shadow-pop)",
             "transition-[rotate] duration-(--rap-dur) ease-(--rap-ease-spring)",
             reverse ? "fun:hover:rotate-[1.5deg]" : "fun:hover:rotate-[-1.5deg]",
             fill,
@@ -417,10 +414,10 @@ function SplitMedia({ look, caption, reverse, children }: { look: BlockLook; cap
     );
   if (look === "civic")
     return (
-      <div data-slot="feature-media" className="rounded-lg bg-surface p-(--rap-space-sm) shadow-[inset_0_0_0_1px_var(--rap-edge)]">
-        <div className={cn("overflow-hidden rounded-card aspect-[4/3]", fill)}>{children}</div>
-        {caption && <p className="m-0 px-(--rap-space-xs) pt-(--rap-space-sm) pb-(--rap-space-2xs) text-[0.875rem] text-ink-2">{caption}</p>}
-      </div>
+      <figure data-slot="feature-media" className="m-0 flex flex-col gap-(--rap-space-sm)">
+        <div className={cn("overflow-hidden rounded-lg aspect-[3/4] @md:aspect-[4/3]", fill)}>{children}</div>
+        {caption && <figcaption className="text-[0.875rem] text-ink-2">{caption}</figcaption>}
+      </figure>
     );
   if (look === "signal")
     return (

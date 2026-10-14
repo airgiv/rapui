@@ -36,6 +36,8 @@
   /* light: a public-service serif reads refined at size, not heavy */
   --rap-display-weight: 340;
   --rap-display-weight-mega: 300;
+  /* section titles a step larger than the default: a light serif needs size to carry */
+  --rap-size-lg: clamp(2.125rem, 4.2vw, 3.75rem);
   --rap-display-tracking: -0.025em;
 
   --rap-radius-xs: 8px;

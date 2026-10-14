@@ -213,7 +213,7 @@ function BillingSwitch({
             data-slot="pricing-billing-note"
             className={cn(
               "text-[0.875rem]",
-              look === "civic" && "font-semibold text-flame",
+              look === "civic" && "text-ink-2",
               look === "signal" && "font-mono text-[0.75rem] uppercase tracking-[0.06em] text-flame",
               look === "product" && "text-plum",
               look === "minimal" && "text-ink-2",
@@ -229,7 +229,12 @@ function BillingSwitch({
 /* ── the looks ── */
 
 type LookProps = { plans: PricingPlan[]; billing: PricingBilling; caption?: ReactNode };
-const cols = (n: number) => Math.max(1, Math.min(n, 4));
+/* columns per step [narrow, medium, wide]: three plans go straight from one to three
+   (two-and-an-orphan reads as a mistake), four go 1 → 2 → 4 */
+const cols = (n: number): [number, number, number] => {
+  const k = Math.max(1, Math.min(n, 4));
+  return [1, k === 3 ? 3 : Math.min(k, 2), k];
+};
 
 /* fun: light tiles (a light island, so their ink stays dark on acid in dark mode too) */
 const FUN_TILES = ["bg-sky", "bg-acid", "bg-bubble", "bg-paper-2"];
@@ -299,22 +304,21 @@ function CivicPlans({ plans, billing, caption }: LookProps) {
             {...(featured ? { "data-rap-theme": "dark" } : {})}
             className={cn(
               "flex flex-col gap-(--rap-space-lg) p-(--rap-space-xl) rounded-lg text-ink",
-              featured ? "bg-paper-2" : "bg-surface shadow-[0_1px_2px_var(--rap-line)]",
+              featured ? "bg-paper-2" : "bg-surface",
             )}
           >
             <header className="flex flex-col gap-(--rap-space-sm)">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="m-0 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-flame">{plan.name}</h3>
+                <h3 className="m-0 font-display text-[1.5rem] font-normal leading-[1.2] tracking-[-0.015em]">{plan.name}</h3>
                 {featured && <Badge variant="outline">{plan.badge ?? "Most popular"}</Badge>}
               </div>
               {plan.description && <p className="m-0 text-ink-2 leading-relaxed">{plan.description}</p>}
             </header>
             <Price plan={plan} billing={billing} caption={caption} className="font-display text-display-lg tracking-[-0.03em]" periodClassName="text-ink-2 opacity-100" />
-            <hr className="m-0 border-0 h-px bg-line" />
             <Features
               items={plan.features}
               className="text-ink-2"
-              mark={<Check aria-hidden className="flex-none size-5 text-blue mt-px" />}
+              mark={<Check aria-hidden className="flex-none size-4 text-mute mt-[3px]" />}
             />
             <PlanAction action={plan.cta} variant={featured ? "accent" : "solid"} className="mt-auto" />
           </article>

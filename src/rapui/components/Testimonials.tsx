@@ -108,8 +108,8 @@ function FunQuotes({ items }: BodyProps) {
         <Sticker shape="burst" color="acid" rotate={-10} size="2.6rem" slap aria-hidden className="absolute -top-3 -right-2 w-[5.5rem] font-display z-1">
           “
         </Sticker>
-        <blockquote className="m-0 font-display text-display-lg font-medium leading-[1.02] tracking-[-0.04em] text-balance pr-(--rap-space-xl)">
-          {first.quote}
+        <blockquote className="m-0 font-display text-display-lg font-medium leading-[1.02] tracking-[-0.04em] text-balance pr-[4.5rem]">
+          “{first.quote}”
         </blockquote>
         <Byline item={first} size="lg" />
       </figure>
@@ -137,7 +137,6 @@ function CivicQuotes({ items }: BodyProps) {
   return (
     <Stack gap="xl">
       <figure data-slot="testimonial" className="m-0 mx-auto flex flex-col items-center gap-(--rap-space-lg) max-w-[52rem] text-center text-ink">
-        <span aria-hidden className="font-display text-[5rem] leading-[0.5] h-[2.2rem] text-flame">“</span>
         <blockquote className="m-0 font-display text-display-md @min-[48rem]:text-[2.25rem] font-normal leading-[1.3] tracking-[-0.015em] text-balance">
           {first.quote}
         </blockquote>
@@ -146,7 +145,7 @@ function CivicQuotes({ items }: BodyProps) {
       {rest.length > 0 && (
         <Grid cols={Math.min(rest.length, 3)} gap="tile">
           {rest.map((item, i) => (
-            <figure key={i} data-slot="testimonial" className="m-0 flex flex-col justify-between gap-(--rap-space-lg) p-(--rap-space-lg) rounded-card bg-surface text-ink shadow-[inset_0_0_0_1px_var(--rap-edge)]">
+            <figure key={i} data-slot="testimonial" className="m-0 flex flex-col justify-between gap-(--rap-space-lg) p-(--rap-space-lg) rounded-lg bg-surface text-ink">
               <blockquote className="m-0 font-display text-[1.25rem] leading-[1.45] tracking-[-0.01em]">“{item.quote}”</blockquote>
               <Byline item={item} />
             </figure>

@@ -47,7 +47,7 @@ export function BlockKicker({ look, index, className, children }: { look: BlockL
   if (look === "fun") return <Eyebrow className={className}>{children}</Eyebrow>;
   if (look === "civic")
     return (
-      <span data-slot="kicker" className={cn("text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-flame", className)}>
+      <span data-slot="kicker" className={cn("text-[0.8125rem] font-medium uppercase tracking-[0.08em] text-ink-2", className)}>
         {children}
       </span>
     );
@@ -211,7 +211,7 @@ function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
       </Stack>
       {media && (
         <div data-slot="hero-media" className="w-full max-w-5xl text-left">
-          <div className="aspect-[4/3] @3xl:aspect-[16/9] overflow-hidden rounded-lg bg-paper-3 shadow-pop">
+          <div className="aspect-[3/4] @md:aspect-[4/3] @3xl:aspect-[16/9] overflow-hidden rounded-lg bg-paper-3">
             <div className={fill}>{media}</div>
           </div>
         </div>

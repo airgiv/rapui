@@ -79,10 +79,10 @@ export function LogoCloud({ title, logos, look: lookProp, size, className, ...re
       )}
 
       {look === "civic" && (
-        <div className="rounded-lg bg-surface px-(--rap-space-lg) py-(--rap-space-xl) shadow-[inset_0_0_0_1px_var(--rap-edge)]">
+        <div className="@container rounded-lg bg-surface px-(--rap-space-md) py-(--rap-space-xl)">
           <Stack gap="lg" align="center">
             {title && <BlockKicker look="civic">{title}</BlockKicker>}
-            <ul className="m-0 flex list-none flex-wrap items-center justify-center gap-x-(--rap-space-xl) gap-y-(--rap-space-md) p-0 text-[1.5rem] text-ink-2">
+            <ul className="m-0 flex list-none flex-wrap items-center justify-center gap-x-(--rap-space-lg) gap-y-(--rap-space-sm) p-0 text-[1.125rem] text-ink-2 @xl:gap-x-(--rap-space-xl) @xl:text-[1.5rem]">
               {logos.map((l, i) => (
                 <li key={l.name}>
                   <Mark logo={l} i={i} />

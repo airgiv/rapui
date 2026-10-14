@@ -5,7 +5,7 @@
      <Stats title="Kestrel in numbers" items={[{ value: 1.2, suffix: "M", label: "Sightings logged" }]} />
 
    fun      colourful tiles packed 4px apart, each a huge number
-   civic    soft white cards, a short red rule, serif numbers
+   civic    soft white cards, centred light serif numbers
    signal   hairline-ruled cells with mono labels; the first figure
             is drawn in dots (DotText) beside a dot-matrix bar chart
    product  the numbers in a row, hairlines between them
@@ -60,7 +60,8 @@ const ruled = "overflow-hidden [&>*]:shadow-[-1px_0_0_var(--rap-line),0_-1px_0_v
 export function Stats({ eyebrow, index, title, lead, items, look: lookProp, className, ...rest }: StatsProps) {
   const { ref, look } = useBlockLook<HTMLElement>(lookProp);
   const n = Math.max(1, Math.min(items.length, 4));
-  const cols: [number, number, number] = [1, Math.min(n, 2), n];
+  // two up even on a phone: a number and its label are short, four stacked cards are a long scroll
+  const cols: [number, number, number] = [Math.min(n, 2), Math.min(n, 2), n];
   const header = title ? (
     <SectionHeader eyebrow={eyebrow} index={index} title={title} lead={lead} align={look === "product" || look === "civic" ? "center" : "start"} size={look === "fun" ? "xl" : "lg"} />
   ) : null;
@@ -96,9 +97,8 @@ export function Stats({ eyebrow, index, title, lead, items, look: lookProp, clas
         {look === "civic" && (
           <Grid cols={cols} role="list">
             {items.map((it) => (
-              <div key={it.label} role="listitem" className="flex flex-col gap-(--rap-space-sm) rounded-lg bg-surface p-(--rap-space-lg) shadow-[inset_0_0_0_1px_var(--rap-edge)]">
-                <span aria-hidden className="h-[3px] w-8 bg-flame" />
-                <Display as="p" size="xl" className="pt-(--rap-space-xs) text-plum">
+              <div key={it.label} role="listitem" className="flex flex-col items-center gap-(--rap-space-xs) rounded-lg bg-surface px-(--rap-space-md) py-(--rap-space-xl) text-center">
+                <Display as="p" size="xl" className="text-plum">
                   {show(it)}
                 </Display>
                 <p className="m-0 text-base font-semibold text-ink">{it.label}</p>
