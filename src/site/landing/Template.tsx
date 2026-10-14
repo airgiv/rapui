@@ -3,8 +3,9 @@
    talks about itself in that preset's voice — and its own hero picture made of
    live components. What changes between them is the preset on <html> and the
    words; the layout is the blocks' own doing. */
-import { isValidElement, useRef, type ReactNode } from "react";
+import { isValidElement, useRef, useState, type ReactNode } from "react";
 import { usePreset } from "../../rapui/hooks/usePreset";
+import { cn } from "../../rapui/utils";
 import {
   AILoader,
   BudgetBar,
@@ -20,7 +21,6 @@ import {
   LogoCloud,
   MatrixStatus,
   Pricing,
-  PromptInput,
   Rating,
   Receipt,
   Redact,
@@ -38,7 +38,7 @@ import {
   type RapPreset,
 } from "../../rapui";
 import { Foliage } from "./foliage";
-import { Courthouse } from "./courthouse";
+import house from "./house.webp";
 import { CONTENT, type LandingContent } from "./content";
 
 /* a UI shot as a picture: centred on a soft wash of the preset's own colours,
@@ -108,20 +108,25 @@ const CIVIC_SOURCES: CitationSource[] = [
   { url: "https://www.w3.org/TR/WCAG22/", title: "WCAG 2.2, 1.4.3 Contrast (Minimum)", site: "W3C", snippet: "Text has a contrast ratio of at least 4.5:1." },
   { url: "https://rapui.dev/#landing", title: "This page", site: "rapui", snippet: "A landing page, respectfully submitted." },
 ];
-/* civic: a front-page photograph with the question box laid over it, the way a
-   public service puts "ask anything" on its first screen; the page's answer above */
+/* civic: a photograph on the front page, hung like an exhibit — a museum label in
+   its corner, and on the label a switch that calls an evening session (the light drops) */
 function Counsel() {
+  const [evening, setEvening] = useState(false);
   return (
-    <div className="relative grid size-full grid-cols-[minmax(0,1fr)] content-end justify-items-center p-[clamp(12px,5%,56px)]">
-      <div className="absolute inset-0 [&>svg]:size-full">
-        <Courthouse />
-      </div>
-      <PromptInput
-        className="relative w-full max-w-[40rem] shadow-pop"
-        placeholder={["Ask the record anything", "Is this page legally binding?", "Who drafted this preset?"]}
-        label="Ask the record"
-        onMicClick={() => {}}
+    <div className="relative grid size-full grid-cols-[minmax(0,1fr)] content-start @md:content-end justify-items-start p-[clamp(12px,4%,40px)]">
+      <img
+        src={house}
+        alt="A white house with a red roof on a green field by a fjord"
+        className={cn("absolute inset-0 size-full object-cover object-[68%_50%] transition-[filter] duration-(--rap-dur-slow)", evening && "brightness-[0.55] saturate-[0.8] hue-rotate-[12deg]")}
       />
+      <figure className="relative m-0 flex w-full max-w-[17rem] @md:max-w-[19rem] flex-col gap-2 rounded-card bg-surface/95 p-(--rap-space-md) text-left shadow-pop backdrop-blur-sm">
+        <span className="text-[0.75rem] font-medium uppercase tracking-[0.08em] text-ink-2">Exhibit B · Plate I</span>
+        <figcaption className="font-display text-[1.375rem] @md:text-[1.625rem] leading-[1.1] text-ink">A house, entered into evidence</figcaption>
+        <p className="m-0 hidden text-[0.875rem] leading-snug text-ink-2 @md:block">Photograph on landing page. On loan from the record; please do not touch, except the switch.</p>
+        <div className="mt-1 border-t border-line pt-3">
+          <Switch checked={evening} onCheckedChange={setEvening} label="Evening session" />
+        </div>
+      </figure>
     </div>
   );
 }
