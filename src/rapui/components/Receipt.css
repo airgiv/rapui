@@ -1,0 +1,44 @@
+/* Receipt + TransferStatus — the paper edge, the print-in and the pulse.
+
+   The perforated edge is a mask: a conic gradient tiled along the
+   bottom cuts a row of teeth (--rc-tooth wide, half as tall), so the
+   paper keeps whatever background the preset gives it. The shadow is a
+   drop-shadow on the wrapper, which follows the teeth.
+   Fun: the receipt feeds out of a slot (it unrolls top-down, a hair of
+   overshoot) and the transfer's current step pulses. Calm: the receipt
+   fades in and the step is a still dot. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .rap-receipt {
+    filter: drop-shadow(0 0 0.5px var(--rap-line)) drop-shadow(0 6px 14px rgb(0 0 0 / 0.08));
+  }
+  .rap-receipt-paper {
+    --rc-tooth: 14px;
+    padding-bottom: calc(var(--rc-tooth) * 0.5 + 1.25rem);
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--rc-tooth) 100%;
+    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--rc-tooth) 100%;
+  }
+
+  /* fun: feeds out of the printer */
+  .rap-receipt[data-print] .rap-receipt-paper { animation: rap-receipt-print 1100ms cubic-bezier(0.3, 0.9, 0.35, 1.02) both; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-receipt[data-print] .rap-receipt-paper { animation: rap-fade-in 360ms var(--rap-ease-out) both; }
+  @media (prefers-reduced-motion: reduce) {
+    .rap-receipt[data-print] .rap-receipt-paper { animation: none; }
+  }
+  @keyframes rap-receipt-print {
+    from { clip-path: inset(0 0 100% 0); translate: 0 -18px; }
+    to { clip-path: inset(0 0 0 0); translate: 0 0; }
+  }
+
+  /* transfer: the current step's halo */
+  .rap-transfer-pulse { animation: rap-transfer-pulse 1.8s var(--rap-ease-out) infinite; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-transfer-pulse { animation: none; opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .rap-transfer-pulse { animation: none; opacity: 0; }
+  }
+  @keyframes rap-transfer-pulse {
+    from { scale: 1; opacity: 0.55; }
+    70%, to { scale: 2.1; opacity: 0; }
+  }
+}
