@@ -21,8 +21,9 @@ import { entries as aiPrompt } from "./entries/ai-prompt";
 import { entries as aiChat } from "./entries/ai-chat";
 import { entries as aiAgent } from "./entries/ai-agent";
 import { entries as layout } from "./entries/layout";
+import { entries as blocksFeatures } from "./entries/blocks-features";
 
 /** Every documented component, sorted by sidebar group then name. */
-export const ENTRIES: DocEntry[] = [...actions, ...aiCore, ...aiSources, ...aiPrompt, ...aiChat, ...aiAgent, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...charts, ...chartsA, ...chartsB, ...galleries, ...players, ...tools, ...patterns, ...signal, ...navigation, ...expressive, ...layout].sort(
+export const ENTRIES: DocEntry[] = [...actions, ...aiCore, ...aiSources, ...aiPrompt, ...aiChat, ...aiAgent, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...charts, ...chartsA, ...chartsB, ...galleries, ...players, ...tools, ...patterns, ...signal, ...navigation, ...expressive, ...layout, ...blocksFeatures].sort(
   (a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || a.name.localeCompare(b.name),
 );
