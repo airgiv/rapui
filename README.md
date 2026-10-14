@@ -105,5 +105,5 @@ src/site/              the preview site: landing (#top) and the explorer (#docs)
 ## Credits
 
 - `Checklist` and `CanvasToolbar` are adapted from [Bencho](https://bencho.dev), MIT licence (bencho.dev/licence). Their stylesheets map Bencho's design tokens onto rapui's; see the header of each `.css` file.
-- The figures lab (`#figures`) shows the watch from [Anatomy](https://skills.wheresryan.sh/anatomy) by Ryan, via the `anatomy-figures` package, MIT licence; the site only, not part of `@rapui/react`.
+- The figures on `#figures` are drawn with the [Anatomy](https://skills.wheresryan.sh/anatomy) skill by Ryan (MIT; its kit is copied into `src/site/figures/iso`); the site only, not part of `@rapui/react`.
 - Fonts via Fontsource (OFL).
