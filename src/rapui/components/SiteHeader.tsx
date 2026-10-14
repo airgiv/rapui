@@ -79,7 +79,7 @@ function Clock() {
 
 /* per look: the bar, its links, and the menu button */
 const BAR: Record<BlockLook, string> = {
-  fun: "h-16 @3xl:h-20 pl-6 pr-2.5 @3xl:pl-7 gap-(--rap-space-md) rounded-pill bg-paper text-ink",
+  fun: "h-16 @3xl:h-20 pl-6 pr-2.5 @3xl:pl-7 @3xl:pr-3.5 gap-(--rap-space-md) rounded-pill bg-paper text-ink",
   civic: "h-20 gap-(--rap-space-xl)",
   signal: "h-14 gap-(--rap-space-lg)",
   product: "h-16 gap-(--rap-space-md) @3xl:grid @3xl:grid-cols-[1fr_auto_1fr]",

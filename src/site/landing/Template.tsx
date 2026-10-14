@@ -243,7 +243,9 @@ export function LandingTemplate() {
           { label: lFaq, href: "#faq" },
         ]}
         actions={
-          <Button size="sm" variant="accent">
+          // fun's bar is a tall pill: a full-size button with the arrow, inset as far from the
+          // right end as from the top and bottom; the slimmer bars take a small one
+          <Button size={preset === "fun" ? "md" : "sm"} variant="accent" icon={preset === "fun" || undefined}>
             {c.hero.primary}
           </Button>
         }
