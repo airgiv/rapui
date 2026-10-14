@@ -29,7 +29,10 @@
    straight from the click (react-day-picker owns their classes,
    and a re-render must not cancel a wave that is running). The
    selection is immediate. Reduced motion / data-rap-motion="calm":
-   no splat, ripple or turn. Sound: "tap" on pick. */
+   no splat, ripple or turn. Calm keeps the wave as colour only — a
+   faint tint passes outward through the neighbours, nothing pushed
+   — and a new month fades in from 4px on the side you are heading
+   to. Sound: "tap" on pick. */
 import { useEffect, useRef, useState, type ComponentType, type CSSProperties, type MouseEvent } from "react";
 import {
   DayPicker,
@@ -58,7 +61,6 @@ import {
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "../icons";
 import { useSound } from "../sound";
 import { cn } from "../utils";
-import { isMotionCalm } from "./FormField";
 import "./Calendar.css";
 
 export type CalendarProps = DayPickerProps & {
@@ -70,8 +72,11 @@ export type CalendarProps = DayPickerProps & {
    with a 3° turn that straightens as it lands; the grid pivots on a point below
    itself so the turn reads as a page, not a spin. Two names so a quick second
    turn restarts it. */
-const turnClass =
-  "group-data-[turn=a]/cal:fun:animate-[rap-cal-turn-a_460ms_var(--rap-ease-spring)] group-data-[turn=b]/cal:fun:animate-[rap-cal-turn-b_460ms_var(--rap-ease-spring)]";
+const turnClass = cn(
+  "group-data-[turn=a]/cal:fun:animate-[rap-cal-turn-a_460ms_var(--rap-ease-spring)] group-data-[turn=b]/cal:fun:animate-[rap-cal-turn-b_460ms_var(--rap-ease-spring)]",
+  // calm: no turn — the new month fades in from 4px on the side you are heading to
+  "group-data-[turn=a]/cal:calm:animate-[rap-cal-slide-a_var(--rap-dur)_var(--rap-ease-out)] group-data-[turn=b]/cal:calm:animate-[rap-cal-slide-b_var(--rap-dur)_var(--rap-ease-out)]",
+);
 
 const CLASSES: Partial<ClassNames> = {
   root: "group/cal relative inline-block text-ink font-sans text-[0.9375rem] tracking-[-0.01em] [--cal-pen:var(--rap-flame)]",
@@ -121,8 +126,8 @@ const CLASSES: Partial<ClassNames> = {
 
 function navButton() {
   return cn(
-    "grid place-items-center size-(--cal-cell) p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
-    "transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-92",
+    "grid place-items-center size-(--cal-cell) p-0 border-0 rounded-pill bg-fill text-ink cursor-pointer",
+    "transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-92 calm:active:scale-98",
     "focus-visible:outline-2! focus-visible:outline-offset-2! focus-visible:outline-ring!",
     "aria-disabled:opacity-35 aria-disabled:pointer-events-none [&_svg]:size-[18px]",
   );
@@ -211,7 +216,11 @@ function RapDayButton({ day: _day, modifiers, children, className, ...rest }: Da
         "data-[splat]:not-data-[ripple]:fun:animate-splat",
         tone === "selected"
           ? "data-[ripple]:fun:animate-[rap-cal-ripple-still_520ms_var(--rap-ease-out)_var(--rip-delay,0ms)_both]"
-          : "data-[ripple]:fun:animate-[rap-cal-ripple_520ms_var(--rap-ease-out)_var(--rip-delay,0ms)_both]",
+          : cn(
+              "data-[ripple]:fun:animate-[rap-cal-ripple_520ms_var(--rap-ease-out)_var(--rip-delay,0ms)_both]",
+              // calm: the wave as colour only, nothing pushed
+              "data-[ripple]:calm:animate-[rap-cal-tint_var(--rap-dur)_var(--rap-ease-out)_var(--rip-delay,0ms)_both]",
+            ),
         className,
       )}
       {...rest}
@@ -333,8 +342,9 @@ export function Calendar({
   const handleDayClick: DayPickerProps["onDayClick"] = (date, modifiers, e: MouseEvent) => {
     if (!modifiers.disabled) {
       sound.play("tap");
-      const btn = e.currentTarget as HTMLElement;
-      if (!isMotionCalm(btn)) drop(btn);
+      // the attributes are harmless under reduced motion (no fun:/calm: class matches);
+      // calm reads them as the tint wave
+      drop(e.currentTarget as HTMLElement);
     }
     onDayClick?.(date, modifiers, e);
   };

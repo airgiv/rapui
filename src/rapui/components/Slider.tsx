@@ -24,7 +24,9 @@
 
    Values are immediate; the stretch and swing only paint them.
    Reduced motion / data-rap-motion="calm": no stretch, no swing
-   (the bubble still shows the value). Sound: a detent per step,
+   (the bubble still shows the value). Calm also swaps the
+   balloon's pop for a fade with a 4px rise, and the thumb's grab
+   swell for a hair (1.02) on an ease-out. Sound: a detent per step,
    firmer at the ends. */
 import {
   forwardRef,
@@ -78,6 +80,14 @@ function Thumb({
     return () => window.clearTimeout(id);
   }, [value, span]);
 
+  // no room above (a slider in a header at the top of the window)? the balloon hangs below instead
+  const thumbRef = useRef<HTMLSpanElement>(null);
+  const [below, setBelow] = useState(false);
+  const place = () => {
+    const r = thumbRef.current?.getBoundingClientRect();
+    if (r) setBelow(r.top < 52);
+  };
+
   const stretch = useSpring(calm ? 0 : Math.abs(impulse), 60, calm);
   const swing = useSpring(calm ? 0 : -impulse, 78, calm);
   const s = clamp(stretch * 0.012, -0.2, 0.35);
@@ -93,14 +103,19 @@ function Thumb({
        stretch (--sq-x/--sq-y, from the spring) never distorts the bubble. --hold
        (registered in Slider.css so it can transition) swells it on hover and grab. */
     <SliderPrimitive.Thumb
+      ref={thumbRef}
+      onPointerDown={place}
+      onFocus={place}
       data-slot="slider-thumb"
       className={cn(
-        "group/thumb relative block size-[22px] rounded-full cursor-grab outline-none [--hold:1] hover:[--hold:1.1] active:[--hold:1.18] active:cursor-grabbing",
-        "before:absolute before:inset-0 before:rounded-full before:bg-white",
+        "group/thumb relative block size-[22px] rounded-pill cursor-grab outline-none [--hold:1] hover:[--hold:1.1] active:[--hold:1.18] active:cursor-grabbing",
+        "before:absolute before:inset-0 before:rounded-pill before:bg-white",
         "before:shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_2px_8px_rgb(0_0_0/0.18)]",
         "focus-visible:before:shadow-[0_0_0_2px_var(--rap-surface),0_0_0_4px_var(--rap-ring),0_2px_8px_rgb(0_0_0/0.18)]",
         "before:[scale:calc(var(--sq-x,1)*var(--hold))_calc(var(--sq-y,1)*var(--hold))]",
         "before:[transition:--hold_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+        // calm: a hair of swell, eased out — no spring past it
+        "calm:hover:[--hold:1.02] calm:active:[--hold:1.02] calm:before:[transition:--hold_var(--rap-dur-fast)_var(--rap-ease-out)]",
       )}
       style={style}
     >
@@ -110,16 +125,22 @@ function Thumb({
            10px gap + half the thumb, hence the origin at 100% + 21px. Calm: no swing. */
         <span
           data-slot="slider-bubble"
+          data-side={below ? "bottom" : "top"}
           className={cn(
-            "absolute left-1/2 bottom-[calc(100%+10px)] min-w-[34px] py-[5px] px-[9px] rounded-pill bg-ink text-paper",
+            "absolute left-1/2 bottom-[calc(100%+10px)] data-[side=bottom]:bottom-auto data-[side=bottom]:top-[calc(100%+10px)] data-[side=bottom]:origin-[50%_-21px] min-w-[34px] py-[5px] px-[9px] rounded-pill bg-ink text-paper",
             "font-sans text-[0.8125rem] font-medium leading-[1.2] tracking-[-0.01em] tabular-nums text-center whitespace-nowrap",
             "pointer-events-none -translate-x-1/2 origin-[50%_calc(100%+21px)] scale-0 opacity-0",
             "[transition:scale_240ms_cubic-bezier(0.34,1.8,0.64,1),opacity_120ms_var(--rap-ease-rm)]",
             "group-data-[held]/slider:group-focus/thumb:scale-100 group-data-[held]/slider:group-focus/thumb:opacity-100",
             "calm:rotate-none! calm:[transition:opacity_120ms_var(--rap-ease-rm)] motion-reduce:rotate-none!",
+            // calm: no pop — the balloon is full size and fades in with a 4px rise
+            "calm:scale-100 calm:translate-y-1 calm:group-data-[held]/slider:group-focus/thumb:translate-y-0",
+            "calm:[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-out),translate_var(--rap-dur-fast)_var(--rap-ease-out)]",
             // the string's knot: a small triangle under the balloon, in its colour
             "after:absolute after:left-1/2 after:top-[calc(100%-1px)] after:w-2 after:h-[5px] after:-translate-x-1/2",
             "after:bg-inherit after:[clip-path:polygon(0_0,100%_0,50%_100%)]",
+            // hanging below: the knot points up, the calm rise comes from underneath
+            "data-[side=bottom]:after:top-auto data-[side=bottom]:after:bottom-[calc(100%-1px)] data-[side=bottom]:after:[clip-path:polygon(50%_0,100%_100%,0_100%)]",
           )}
           style={{ rotate: `${clamp(swing * 1.6, -28, 28)}deg` }}
           aria-hidden

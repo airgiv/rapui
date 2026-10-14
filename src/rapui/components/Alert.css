@@ -1,6 +1,7 @@
 /* Alert — only the ghost's fall; everything else is utilities in Alert.tsx.
    160ms swing on the out-ease to 6° on the remaining pin, then 480ms of gravity
-   (starts at nothing and gains): 150px and a further 10°, fading over the last half. */
+   (starts at nothing and gains): 150px and a further 10°, fading over the last half.
+   Calm: the ghost only fades, lifting 4px. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-alert-fall {
@@ -9,3 +10,4 @@
   60% { opacity: 1; }
   100% { rotate: 16deg; translate: 0 150px; opacity: 0; }
 }
+@keyframes rap-alert-calm-out { to { opacity: 0; translate: 0 -4px; } }

@@ -49,7 +49,12 @@ import { isCalm } from "./ScrubNumber";
    moment where it is neither. Blue because the band IS the
    selection; rap/ui's "this is chosen" colour, as a Select's chosen
    row or a checked Checkbox. Flat: the drum's depth comes from the
-   rows' projection, never from a shadow. */
+   rows' projection, never from a shadow.
+   ── CALM ────────────────────────────────────────────────
+   The drum stays under the finger 1:1 and stops dead at the ends
+   (no rubber band); a release does not spin — it settles on the
+   nearest row, and keys and taps turn it there, on a stiffer,
+   overdamped glide that never passes the row. */
 
 /* px per row. 36 = --rap-control-h-sm, the smallest pill in
    rap/ui, so the band is a standard control height. */
@@ -83,6 +88,16 @@ const OVER = 1;
 const rubber = (o: number) => OVER * (1 - 1 / ((o * 0.55) / OVER + 1));
 const unrubber = (r: number) => (OVER / 0.55) * (1 / (1 - Math.min(r, OVER * 0.999) / OVER) - 1);
 const wrapIndex = (i: number, n: number) => ((i % n) + n) % n;
+
+/* calm's glide: stiffer and just past critical (0.46 / 2·√0.05 ≈
+   1.03), so it arrives a little sooner than the spring and never
+   passes the row */
+const CALM_PULL = 0.05;
+const CALM_DRAG = 0.46;
+/* reduced motion, or a tree whose durations are zero: no glide at all */
+const instantAt = (el: Element | null) =>
+  (typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) ||
+  (!!el && parseFloat(getComputedStyle(el).getPropertyValue("--rap-dur")) === 0);
 
 export type WheelOption = string | { value: string; label?: ReactNode; text?: string };
 type Norm = { value: string; label: ReactNode; text: string };
@@ -138,7 +153,7 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
   const sound = useSound();
   const el = useRef<HTMLDivElement | null>(null);
   const [pos, setPos] = useState(index);
-  const p = useRef({ x: index, v: 0, to: index, raf: 0 });
+  const p = useRef({ x: index, v: 0, to: index, raf: 0, pull: PULL, drag: DRAG });
   const heard = useRef(index);
   const knobs = useRef({ n, loop });
   knobs.current = { n, loop };
@@ -167,7 +182,7 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
     const tick = (t: number) => {
       const dt = prev ? clamp((t - prev) / 16.67, 0, 2.5) : 1;
       prev = t;
-      c.v += ((c.to - c.x) * PULL - c.v * DRAG) * dt;
+      c.v += ((c.to - c.x) * c.pull - c.v * c.drag) * dt;
       const x = c.x + c.v * dt;
       if (Math.abs(c.to - x) < 0.01 && Math.abs(c.v) < 0.01) {
         c.v = 0;
@@ -192,12 +207,17 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
     const c = p.current;
     c.to = to;
     c.v = v;
-    if (isCalm(el.current)) {
+    const calm = isCalm(el.current);
+    if (calm && instantAt(el.current)) {
       stop();
       c.v = 0;
       set(to);
       return;
     }
+    /* calm: no carried speed, and the overdamped pair */
+    if (calm) c.v = 0;
+    c.pull = calm ? CALM_PULL : PULL;
+    c.drag = calm ? CALM_DRAG : DRAG;
     run();
   };
 
@@ -230,6 +250,8 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
 
   const show = (raw: number) => {
     if (loop) return raw;
+    /* calm: a hard stop at the ends */
+    if (isCalm(el.current)) return clamp(raw, 0, n - 1);
     if (raw < 0) return -rubber(-raw);
     if (raw > n - 1) return n - 1 + rubber(raw - (n - 1));
     return raw;
@@ -285,7 +307,8 @@ export const WheelPicker = forwardRef<HTMLDivElement, WheelPickerProps>(function
       return;
     }
     /* a hand that stopped before letting go threw nothing */
-    const v = performance.now() - g.t > 80 ? 0 : clamp(g.v, -VMAX, VMAX);
+    /* calm throws nothing: it settles on the row under the band */
+    const v = performance.now() - g.t > 80 || isCalm(el.current) ? 0 : clamp(g.v, -VMAX, VMAX);
     /* the landing already includes the throw, so the spring starts
        with only part of the hand's speed (TimeScrubber's 0.6) */
     land(Math.round(p.current.x + v * CARRY), v * 0.6);

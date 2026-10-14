@@ -16,7 +16,8 @@ import "./Spinner.css";
 
    A faint track shows the orbit. Spinning is information, so
    reduced motion keeps it turning — slowly, as a plain arc — and
-   calm does the same. */
+   calm does the same.
+   Calm: a steady quarter arc on a linear 1.2s turn; no squish. */
 
 export interface SpinnerProps extends SVGAttributes<SVGSVGElement> {
   size?: "sm" | "md" | "lg" | number;

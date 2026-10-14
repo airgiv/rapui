@@ -1,7 +1,8 @@
 /* Typography — only the eyebrow's live-dot pulse lives here (a keyframe
    utilities cannot declare). Everything else is Tailwind in Typography.tsx.
    A ring of the accent at 60% grows out to 0.7em and fades by 70% of the
-   cycle, then rests: a heartbeat, not a strobe. */
+   cycle, then rests: a heartbeat, not a strobe. Applied behind `fun:`, so
+   calm and reduced motion keep a steady dot. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-eyebrow-pulse {

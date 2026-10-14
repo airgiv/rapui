@@ -1,0 +1,25 @@
+/* Hero — the one thing CSS has to do: in the minimal look, buttons passed as
+   `actions` are set as text links (an underline, no pill), whatever variant
+   they came in. The Button paints itself from --btn-* custom properties set
+   by utilities, so these rules are deliberately left OUTSIDE any layer:
+   unlayered rules win over every layer, utilities included. */
+.rap-hero[data-look="minimal"] [data-slot="hero-actions"] [data-slot="button"] {
+  --btn-bg: transparent;
+  --btn-fg: var(--rap-ink);
+  --btn-border: transparent;
+  --btn-blob: transparent;
+  --btn-blob-fg: var(--rap-ink);
+  --btn-icon-bg: transparent;
+  --btn-icon-fg: currentColor;
+  height: auto;
+  padding-inline: 0;
+  padding-block: 0.25em;
+  gap: 0.5em;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  transition: text-decoration-thickness var(--rap-dur-fast) var(--rap-ease-out);
+}
+.rap-hero[data-look="minimal"] [data-slot="hero-actions"] [data-slot="button"]:hover { text-decoration-thickness: 2px; }
+.rap-hero[data-look="minimal"] [data-slot="hero-actions"] [data-slot="button"]::after { display: none; }
+.rap-hero[data-look="minimal"] [data-slot="hero-actions"] [data-slot="button-icon"] { width: auto; height: auto; }

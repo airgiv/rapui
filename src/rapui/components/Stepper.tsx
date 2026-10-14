@@ -34,6 +34,8 @@ export interface StepperProps extends Omit<HTMLAttributes<HTMLOListElement>, "on
  *     circle is already there; rap-splat's 0.4 start is for things that appear.
  * The state (colours, aria-current) changes at once; the pour only re-reveals it.
  * Going back is instant: nothing pours uphill. Calm / reduced motion: no pour.
+ * Calm: the circles recolour with a fade, the connector fills on a plain ease-out,
+ * and the finished step's check is still drawn in — the one detail kept.
  * Sound (opt-in via SoundProvider): `success` as the step completes.
  */
 const POUR_MS = 380;
@@ -46,6 +48,8 @@ const POUR_DOT_FIRST = "fun:animate-[rap-stepper-fill-first_var(--rap-dur-fast)_
 const POUR_CHECK = "fun:[&_svg]:animate-[rap-stepper-draw_calc(var(--st-pour)*0.7)_var(--rap-ease-out)_calc(var(--st-k,0)*var(--st-pour))_both]";
 const POUR_LINE_X = "fun:after:animate-[rap-stepper-pour-x_var(--st-pour)_cubic-bezier(0.55,0,0.35,1)_calc(var(--st-k,0)*var(--st-pour)+60ms)_both]";
 const POUR_LINE_Y = "fun:after:animate-[rap-stepper-pour-y_var(--st-pour)_cubic-bezier(0.55,0,0.35,1)_calc(var(--st-k,0)*var(--st-pour)+60ms)_both]";
+/* calm: no liquid, no splat — the check is still drawn (quickly), the line simply eases full */
+const CALM_CHECK = "calm:[&_svg]:animate-[rap-stepper-draw_var(--rap-dur-fast)_var(--rap-ease-out)_both]";
 const ARRIVE_DOT =
   "fun:[animation:rap-stepper-wait_calc(var(--st-k,0)*var(--st-pour)+60ms+var(--st-pour)*0.8)_step-end_both,rap-stepper-splat_520ms_var(--rap-ease-out)_calc(var(--st-k,0)*var(--st-pour)+60ms+var(--st-pour)*0.8)]";
 
@@ -114,12 +118,13 @@ export const Stepper = forwardRef<HTMLOListElement, StepperProps>(function Stepp
                   "inline-grid place-items-center flex-none size-(--st-dot) p-0 border-0 rounded-full",
                   "font-[inherit] text-[length:calc(var(--st-dot)*0.42)] font-medium tabular-nums [&_svg]:size-[55%]",
                   "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),color_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+                  "calm:[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),color_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-out)]",
                   state === "done" && "bg-select text-select-ink",
                   state === "current" && "bg-ink text-paper",
                   state === "upcoming" && "bg-fill text-ink-2",
                   clickable &&
-                    "cursor-pointer hover:[transform:scale(1.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-                  pouring && cn(k === 0 ? POUR_DOT_FIRST : POUR_DOT, POUR_CHECK),
+                    "cursor-pointer fun:hover:[transform:scale(1.08)] calm:hover:[transform:scale(1.02)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                  pouring && cn(k === 0 ? POUR_DOT_FIRST : POUR_DOT, POUR_CHECK, CALM_CHECK),
                   arriving && ARRIVE_DOT,
                 )}
                 {...(clickable ? { type: "button" as const, onClick: () => onStepClick(i), "aria-label": `Back to step ${i + 1}` } : {})}
@@ -136,6 +141,7 @@ export const Stepper = forwardRef<HTMLOListElement, StepperProps>(function Stepp
                     // the liquid: a blue fill inside the track, full on done steps
                     "after:absolute after:inset-0 after:rounded-[inherit] after:bg-select",
                     horizontal ? "after:origin-left" : "after:origin-top",
+                    "calm:after:transition-[scale] calm:after:duration-(--rap-dur) calm:after:ease-soft",
                     state === "done" ? "after:[scale:1]" : horizontal ? "after:[scale:0_1]" : "after:[scale:1_0]",
                     pouring && (horizontal ? POUR_LINE_X : POUR_LINE_Y),
                   )}

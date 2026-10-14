@@ -4,8 +4,9 @@
    Layout, chrome colours, tooltip and legend are utilities in Chart.tsx.
 
    The intro plays only while the container has data-intro (set from Chart.tsx,
-   never under calm or reduced motion); the calm / reduced-motion rules below
-   also stop it if the mode changes mid-intro. */
+   never under reduced motion). Calm swaps in its own quiet version below — a
+   plain ease-out draw and an unstaggered rise, no overshoot — which also takes
+   over if the mode changes mid-intro. */
 @layer theme, base, components, utilities;
 
 @layer components {
@@ -63,8 +64,19 @@
   /* the tooltip follows on a spring instead of a plain slide */
   [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform 420ms var(--rap-ease-spring) !important; }
 
-  [data-rap-motion="calm"] [data-slot="chart"][data-intro] * { animation: none !important; stroke-dasharray: none; }
-  [data-rap-motion="calm"] [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform var(--rap-dur-fast) var(--rap-ease-rm) !important; }
+  /* calm: the same pen, but quick and on a plain ease-out; the fill and the bars
+     simply fade/rise in together — no hand, no springs, no stagger */
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="chart"][data-intro] :is(.recharts-area-curve, .recharts-line-curve)[data-pen] {
+    animation: rap-chart-draw 600ms var(--rap-ease-out) both;
+  }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="chart"][data-intro] :is(.recharts-area-area, .recharts-area-dots, .recharts-line-dots, .recharts-label-list) {
+    animation: rap-chart-fade 500ms var(--rap-ease-out) both;
+  }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="chart"][data-intro] .recharts-bar-rectangle path {
+    animation: rap-chart-rise 500ms var(--rap-ease-out) both;
+    animation-delay: 0ms;
+  }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform var(--rap-dur-fast) var(--rap-ease-rm) !important; }
   @media (prefers-reduced-motion: reduce) {
     [data-slot="chart"][data-intro] * { animation: none !important; stroke-dasharray: none; }
     [data-slot="chart"] .recharts-tooltip-wrapper { transition: none !important; }
@@ -73,6 +85,8 @@
 
 @keyframes rap-chart-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes rap-chart-fill { from { opacity: 0; translate: 0 6px; } }
+@keyframes rap-chart-rise { from { scale: 1 0; } }
+@keyframes rap-chart-fade { from { opacity: 0; } }
 @keyframes rap-chart-grow {
   0% { scale: 1 0; }
   55% { scale: 1 1.1; }

@@ -54,7 +54,10 @@
 
    The state change itself is instant (the button's label, ARIA);
    everything above rides on top, and under reduced motion or
-   data-rap-motion="calm" the fields simply stay put. */
+   data-rap-motion="calm" the fields simply stay put: they fade to
+   half strength while the button works (and back on error), so
+   "these are being sent" still reads without anything travelling.
+   No shake, no splat. */
 import {
   forwardRef,
   useCallback,
@@ -163,7 +166,14 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
     const n = els.length;
     els.forEach((el, i) => {
       const o = offsets[i];
-      if (o) {
+      if (calm && i !== sink) {
+        // calm: nothing travels — the fields dim in place while the button works
+        el.style.transition = "opacity var(--rap-dur) var(--rap-ease-out)";
+        el.style.translate = "";
+        el.style.scale = "";
+        el.style.opacity = absorbed ? "0.5" : "";
+        el.style.pointerEvents = absorbed ? "none" : "";
+      } else if (o) {
         el.style.transition = `translate 520ms var(--rap-ease-gravity) ${i * 70}ms, scale 520ms var(--rap-ease-gravity) ${i * 70}ms, opacity 260ms linear ${i * 70 + 260}ms`;
         el.style.translate = `${o.dx}px ${o.dy}px`;
         el.style.scale = "0.3";
@@ -266,7 +276,7 @@ export const FormStack = forwardRef<HTMLFormElement, FormStackProps>(function Fo
       scale: o ? "0.3" : swell,
       transition: o
         ? `translate 520ms var(--rap-ease-gravity) ${i * 70}ms, scale 520ms var(--rap-ease-gravity) ${i * 70}ms, background-color 300ms`
-        : `translate 620ms var(--rap-ease-back) ${(blobs.length - i) * 60}ms, scale 420ms var(--rap-ease-spring), background-color 300ms`,
+        : `translate 620ms var(--rap-ease-back) ${(blobs.length - i) * 60}ms, scale 420ms var(--rap-swell-ease, var(--rap-ease-spring)), background-color 300ms`,
     };
   };
 

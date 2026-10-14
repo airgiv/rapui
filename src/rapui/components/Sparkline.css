@@ -1,5 +1,6 @@
 /* Sparkline — only its keyframes; everything else is utilities in Sparkline.tsx.
-   All three run behind `fun:` there, so calm and reduced motion never see them. */
+   The land and the breath run behind `fun:` there; calm reuses the pen (quicker,
+   plain ease-out) and fades the dot in with rap-spark-fade. */
 @layer theme, base, components, utilities;
 
 /* the pen: pathLength=1, so the offset is a fraction of the line, whatever its shape */
@@ -20,4 +21,9 @@
 @keyframes rap-spark-breathe {
   0% { scale: 1; opacity: 0.45; }
   60%, 100% { scale: 2.6; opacity: 0; }
+}
+
+/* calm: the end dot arrives without the pop */
+@keyframes rap-spark-fade {
+  from { opacity: 0; }
 }

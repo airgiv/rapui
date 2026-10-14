@@ -1,6 +1,6 @@
 /* Badge — only the live dot's own keyframes; everything else is utilities in
    Badge.tsx. The dot swells a hair and a ring expands off it every 2.4s —
-   slow enough to read as "on air", not "error". */
+   slow enough to read as "on air", not "error". Calm: only the label's fade-in. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-badge-breathe {
@@ -11,3 +11,4 @@
   0% { scale: 1; opacity: 0.55; }
   70%, 100% { scale: 2.8; opacity: 0; }
 }
+@keyframes rap-badge-calm-in { from { opacity: 0; } }

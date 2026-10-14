@@ -25,8 +25,11 @@
 
    Radix owns the state; the chosen socket and the card's ring
    change immediately. Reduced motion / data-rap-motion="calm":
-   the marble moves at once, no hop. Before JS has measured, each
-   checked item paints its own dot, so nothing is ever missing. */
+   no marble at all — each socket paints its own dot, as before JS
+   has measured, so the old one fades out while the new one fades
+   in: a crossfade between sockets, nothing travelling. Before JS
+   has measured, each checked item paints its own dot, so nothing
+   is ever missing. */
 import {
   createContext,
   forwardRef,
@@ -118,7 +121,14 @@ export const RadioGroup = forwardRef<ElementRef<typeof RadioGroupPrimitive.Root>
       const moved = !!(next && last && (Math.abs(next.x - last.x) > 0.5 || Math.abs(next.y - last.y) > 0.5));
       if (next && last && !moved && !resize) return; // same socket (an indicator mounting, focus…)
       if (!next) setTo(null);
-      else if (!last || resize || isMotionCalm(el)) {
+      else if (isMotionCalm(el)) {
+        // calm: the sockets paint their own dots and crossfade; forget the marble's
+        // last place so a later switch back to fun lands without a hop from nowhere
+        setTo(null);
+        setFrom(null);
+        last = null;
+        return;
+      } else if (!last || resize) {
         setInstant(true);
         setFrom(null);
         setTo(next);
@@ -257,7 +267,7 @@ const socketStates = cn(
 const socketSize = { sm: "[--rd:18px]", md: "[--rd:22px]", lg: "[--rd:28px]" } as const;
 /* the dot Radix mounts in the chosen socket (pops in on the spring); hidden once the marble has measured */
 const dotClass =
-  "size-[calc(var(--rd)*0.38)] rounded-full bg-select-ink animate-[rap-radio-pop_360ms_var(--rap-ease-spring)] group-data-[marbled]/radio:invisible";
+  "size-[calc(var(--rd)*0.38)] rounded-full bg-select-ink animate-[rap-radio-pop_360ms_var(--rap-ease-spring)] calm:animate-[rap-fade-in_var(--rap-dur-fast)_var(--rap-ease-out)] motion-reduce:animate-none group-data-[marbled]/radio:invisible";
 const focusRing = "focus-visible:outline-2! focus-visible:outline-offset-2! focus-visible:outline-ring! disabled:opacity-45 disabled:pointer-events-none";
 
 export interface RadioGroupItemProps extends ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item> {
@@ -310,7 +320,7 @@ export const RadioGroupItem = forwardRef<ElementRef<typeof RadioGroupPrimitive.I
         ref={ref}
         data-slot="radio-group-item"
         data-size={size}
-        className={cn(socketClass, socketSize[size], socketStates, "cursor-pointer active:scale-92", focusRing, className)}
+        className={cn(socketClass, socketSize[size], socketStates, "cursor-pointer active:scale-92 calm:active:scale-98", focusRing, className)}
         {...rest}
       >
         <RadioGroupPrimitive.Indicator data-slot="radio-group-indicator" className={dotClass} />

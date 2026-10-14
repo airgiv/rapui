@@ -18,7 +18,11 @@ const badgeColors = {
   blue: "[--rb-bg:var(--rap-blue)] [--rb-fg:#fff]",
 } as const;
 
-/** Circular running text with something in the middle — classic editorial stamp. */
+/**
+ * Circular running text with something in the middle — classic editorial stamp.
+ * Calm: the ring holds still (a loop that is not loading has no place there); on hover
+ * a hairline draws itself once round inside the text instead.
+ */
 export function RotatingBadge({ text, size = 140, duration = 14, center, color = "ink", className, style, ...rest }: RotatingBadgeProps) {
   const id = useId().replace(/:/g, "");
   return (
@@ -50,6 +54,19 @@ export function RotatingBadge({ text, size = 140, duration = 14, center, color =
         <defs>
           <path id={`rb-${id}`} d="M50 50m-38 0a38 38 0 1 1 76 0a38 38 0 1 1 -76 0" />
         </defs>
+        {/* calm only: the hairline, drawn from 12 o'clock by its dash offset */}
+        <circle
+          cx="50"
+          cy="50"
+          r="29"
+          pathLength={1}
+          strokeDasharray={1}
+          transform="rotate(-90 50 50)"
+          className={cn(
+            "hidden calm:block fill-none stroke-current [stroke-width:0.6] [stroke-dashoffset:1]",
+            "transition-[stroke-dashoffset] duration-(--rap-dur-slow) ease-soft group-hover/rbadge:[stroke-dashoffset:0]",
+          )}
+        />
         <text>
           <textPath href={`#rb-${id}`} textLength={238} lengthAdjust="spacing">
             {text}

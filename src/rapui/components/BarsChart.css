@@ -1,5 +1,5 @@
 /* BarsChart — only its keyframes; everything else is utilities in BarsChart.tsx.
-   Both run behind `fun:` there, so calm and reduced motion see the bars standing. */
+   The drop and the jelly run behind `fun:` there; calm gets the plain rise below. */
 @layer theme, base, components, utilities;
 
 /* ── the drop ────────────────────────────────────────────────
@@ -47,4 +47,11 @@
   64% { scale: 1.05 0.96; }
   82% { scale: 0.99 1.01; }
   100% { scale: 1 1; }
+}
+
+/* ── calm: the rise ──────────────────────────────────────────
+   The whole row grows out of the baseline at once, eased out,
+   no overshoot: the new window simply arrives. */
+@keyframes rap-bars-rise {
+  from { scale: 1 0; }
 }

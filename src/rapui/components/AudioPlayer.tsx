@@ -30,7 +30,10 @@
    and a whole-card pulse is avoided — that reads as a VU meter,
    not a waveform. Level is smoothed (fast attack 0.5, slow
    release 0.12) so a kick lifts the bars and they sink back.
-   Calm and reduced motion: still bars, no lens, the glyph swaps.
+   Calm and reduced motion: still bars, no lens. Calm keeps the
+   functional motion — the played layer follows the playhead —
+   eases the play glyph's morph (MediaKit) instead of springing
+   it, dips the button 2% on a press and fades the time pill in.
 
    ── SOUND ───────────────────────────────────────────────
    Only presses click (play, speed). Scrubbing and the volume
@@ -179,6 +182,7 @@ export const AudioPlayer = forwardRef<HTMLDivElement, AudioPlayerProps>(function
           className={cn(
             "grid place-items-center size-14 flex-none rounded-pill bg-ink text-paper cursor-pointer [&_svg]:size-6",
             "transition-[scale,background-color] duration-(--rap-dur-fast) ease-spring hover:bg-ink-2 active:scale-92",
+            "calm:ease-soft calm:active:scale-98",
             "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
           )}
         >
@@ -232,7 +236,7 @@ export const AudioPlayer = forwardRef<HTMLDivElement, AudioPlayerProps>(function
               data-slot="audio-player-readout"
               className={cn(
                 "absolute bottom-[calc(100%+6px)] px-2 py-1 rounded-pill bg-ink text-paper pointer-events-none",
-                "text-[0.75rem] font-medium tabular-nums leading-none whitespace-nowrap -translate-x-1/2 fun:animate-pop-in",
+                "text-[0.75rem] font-medium tabular-nums leading-none whitespace-nowrap -translate-x-1/2 fun:animate-pop-in calm:animate-fade-in",
               )}
               style={{ left: clamp(scrub.hover.x, 22, Math.max(22, w - 22)) }}
             >

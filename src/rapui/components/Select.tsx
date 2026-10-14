@@ -20,7 +20,9 @@
 
    The value and the list are immediate — the roll and the deal
    are decoration riding on the state change, and both are off
-   under reduced motion / data-rap-motion="calm".
+   under reduced motion / data-rap-motion="calm". In calm the list
+   simply arrives with its popover and the value CROSSFADES in its
+   window (old out, new in, same place) instead of rolling.
    Sound (with a <SoundProvider enabled>): "pop" on open, "tick"
    on pick. */
 import {
@@ -39,8 +41,7 @@ import { Select as SelectPrimitive } from "radix-ui";
 import { Check, ChevronDown } from "../icons";
 import { useSound } from "../sound";
 import { cva } from "class-variance-authority";
-import { cn } from "../utils";
-import { isMotionCalm } from "./FormField";
+import { cn, prefersReducedMotion } from "../utils";
 import "./Select.css";
 
 /** Radix Select root, plus the pop / tick sounds. Same props. */
@@ -77,7 +78,8 @@ export function useRoll(watch: RefObject<HTMLElement | null>, opts: { observe?: 
       const prev = last.current;
       last.current = { text, muted };
       if (!prev || prev.text === text) return;
-      if (performance.now() - born.current < 250 || isMotionCalm(watch.current)) return;
+      // calm still crossfades (below); only reduced motion swaps with no ghost at all
+      if (performance.now() - born.current < 250 || prefersReducedMotion()) return;
       setGhost({ text: prev.text, muted: prev.muted, n: performance.now() });
       setRolls((r) => r + 1);
     },
@@ -107,8 +109,8 @@ export function useRoll(watch: RefObject<HTMLElement | null>, opts: { observe?: 
   const valueClass =
     rolls > 0
       ? rolls % 2
-        ? "fun:animate-[rap-roll-in-a_420ms_var(--rap-ease-spring)]"
-        : "fun:animate-[rap-roll-in-b_420ms_var(--rap-ease-spring)]"
+        ? "fun:animate-[rap-roll-in-a_420ms_var(--rap-ease-spring)] calm:animate-[rap-roll-fade-a_var(--rap-dur-fast)_var(--rap-ease-out)]"
+        : "fun:animate-[rap-roll-in-b_420ms_var(--rap-ease-spring)] calm:animate-[rap-roll-fade-b_var(--rap-dur-fast)_var(--rap-ease-out)]"
       : undefined;
   const ghostEl: ReactNode = ghost ? (
     <span
@@ -116,7 +118,7 @@ export function useRoll(watch: RefObject<HTMLElement | null>, opts: { observe?: 
       data-slot="select-ghost"
       className={cn(
         "overflow-hidden text-ellipsis whitespace-nowrap pointer-events-none",
-        "fun:animate-[rap-roll-out_300ms_var(--rap-ease-rm)_forwards] calm:hidden motion-reduce:hidden",
+        "fun:animate-[rap-roll-out_300ms_var(--rap-ease-rm)_forwards] calm:animate-[rap-fade-out_var(--rap-dur-fast)_var(--rap-ease-out)_forwards] motion-reduce:hidden",
         ghost.muted && "text-mute",
       )}
       aria-hidden

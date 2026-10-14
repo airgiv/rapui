@@ -28,7 +28,8 @@ import { Glider, createSpring, isCalm, useActiveElement } from "./ProductTabs";
  *    corners) and only while moving (data-leaning), so at rest slides are untouched.
  *  - The dots follow the same weight: the active dot is one ink pill that crawls to the
  *    next dot like a caterpillar (useGlide) rather than a dot that swells in place.
- * Selection stays immediate. Calm / reduced motion: no lean, the pill just slides.
+ * Selection stays immediate. Calm / reduced motion: no lean, the pill just slides;
+ * calm keeps Embla's own slide (it is the carousel's job) and the arrows dip 2% on a press.
  * Sound (opt-in via SoundProvider): a detent for each slide passed while dragging or
  * flinging, a tap on the arrows.
  */
@@ -261,8 +262,11 @@ export const CarouselItem = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
 type NavProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
 const carouselNavClass = cn(
-  "inline-grid place-items-center flex-none size-control p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
+  "inline-grid place-items-center flex-none size-control p-0 border-0 rounded-pill bg-fill text-ink cursor-pointer",
   "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),opacity_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+  /* calm: no spring on the press, and a 2% dip instead of 8% */
+  "calm:[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),opacity_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-out)]",
+  "calm:active:[transform:scale(0.98)]",
   "hover:bg-fill-hover active:[transform:scale(0.92)] focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
   "disabled:opacity-35 disabled:pointer-events-none [&_svg]:size-5",
 );

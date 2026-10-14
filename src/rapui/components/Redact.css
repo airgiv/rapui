@@ -1,0 +1,42 @@
+/* Redact — the bars are a background gradient sized 0% → 100% wide, so a
+   bar that wraps lines wipes each line (box-decoration-break: clone gives
+   every line its own bar). A marked word turns paper-coloured as its bar
+   arrives; a blacked-out word stays ink on ink. Hover/focus on a blacked
+   word shrinks its bar to a hairline at the baseline: declassified.
+   Fun: a quick wipe on a slight overshoot; calm: an even, slower wipe;
+   still / reduced motion: the bars are simply there. */
+@layer theme, base, components, utilities;
+
+.rap-redact-bar {
+  padding: 0.04em 0.14em;
+  margin: 0 -0.02em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-image: linear-gradient(var(--rap-ink), var(--rap-ink));
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 0% 100%;
+  transition:
+    background-size 420ms var(--rap-ease-back) calc(var(--k) * var(--stagger)),
+    color 200ms var(--rap-ease-out) calc(var(--k) * var(--stagger) + 120ms);
+}
+.rap-redact[data-on] .rap-redact-bar { background-size: 100% 100%; }
+.rap-redact[data-on] .rap-redact-bar[data-kind="mark"] { color: var(--rap-paper); }
+.rap-redact[data-on] .rap-redact-bar[data-kind="black"] { color: var(--rap-ink); cursor: help; }
+
+/* declassify on hover / focus: the bar sinks to a hairline, the word shows */
+.rap-redact[data-on] .rap-redact-bar[data-kind="black"]:is(:hover, :focus-visible) {
+  background-size: 100% 0.08em;
+  color: inherit;
+  transition: background-size 260ms var(--rap-ease-out), color 200ms var(--rap-ease-out);
+  outline: none;
+}
+
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-redact-bar {
+  transition:
+    background-size 640ms var(--rap-ease-out) calc(var(--k) * var(--stagger) * 1.4),
+    color 300ms var(--rap-ease-out) calc(var(--k) * var(--stagger) * 1.4 + 200ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rap-redact-bar { transition: none; }
+}

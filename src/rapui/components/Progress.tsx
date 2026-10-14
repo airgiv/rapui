@@ -42,7 +42,9 @@ import "./Progress.css";
 
    Calm / reduced motion: no spring, no blob, no splat — the fill
    eases to each value with a plain transition, as before. With a
-   SoundProvider on, reaching 100 plays "success". */
+   SoundProvider on, reaching 100 plays "success".
+   Calm: the ease-out fill above; the indeterminate sweep keeps going,
+   a little slower (2s a pass). */
 
 export type ProgressTone = "blue" | "flame" | "ink" | "success";
 
@@ -68,7 +70,7 @@ const progressVariants = cva(
 function useCalm(ref: RefObject<Element | null>) {
   const [calm, setCalm] = useState(false);
   useLayoutEffect(() => {
-    const check = () => setCalm(prefersReducedMotion() || !!ref.current?.closest('[data-rap-motion="calm"]'));
+    const check = () => setCalm(prefersReducedMotion() || !!ref.current?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]'));
     check();
     const mo = new MutationObserver(check);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-rap-motion"], subtree: true });
@@ -159,7 +161,7 @@ export const Progress = forwardRef<ElementRef<typeof ProgressPrimitive.Root>, Pr
         data-slot="progress-indicator"
         className={cn(
           "h-full w-0 rounded-[inherit] bg-(--pg-color) transition-[width] duration-(--rap-dur) ease-soft",
-          pct == null && "w-[40%] animate-[rap-progress-sweep_1.4s_var(--rap-ease-in-out)_infinite]",
+          pct == null && "w-[40%] animate-[rap-progress-sweep_1.4s_var(--rap-ease-in-out)_infinite] calm:[animation-duration:2s]",
           // the spring drives width every frame, so no CSS transition on top of it
           !calm && pct != null && "transition-none",
         )}

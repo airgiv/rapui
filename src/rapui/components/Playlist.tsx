@@ -24,7 +24,12 @@
    that dances while playing and lies down (not vanishes) on
    pause — the row still says "this one". The equaliser is CSS
    (Playlist.css: three phase-shifted keyframes, so the bars never
-   move in step). */
+   move in step).
+
+   Calm: a still cover, an equaliser that does not dance but stands
+   up while playing and lies down on pause (eased, Playlist.css),
+   one row highlight that slides on a plain ease-out, a scrub thumb
+   that fades in rather than growing, and presses that dip 2%. */
 import {
   forwardRef,
   useEffect,
@@ -200,6 +205,19 @@ export const Playlist = forwardRef<HTMLDivElement, PlaylistProps>(function Playl
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
   useEffect(() => setRows([...rowRefs.current]), [tracks.length]);
   const glide = useGlide(list, rows[at], { axis: "y" });
+  /* calm: the highlight is placed at its row and CSS eases it there; the
+     transition switches on only once it has been placed, so it never flies in */
+  const calm = isCalm(list.current);
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!glide.ready || settled) return;
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setSettled(true)));
+    return () => cancelAnimationFrame(id);
+  }, [glide.ready, settled]);
+  const glideStyle =
+    calm && glide.box
+      ? { transform: `translate(${glide.box.x}px, ${glide.box.y}px)`, width: glide.box.w, height: glide.box.h }
+      : glide.style;
 
   const d = s.duration || (track ? durationOf(track) ?? 0 : 0);
   const t = scrub.drag ?? s.time;
@@ -219,6 +237,7 @@ export const Playlist = forwardRef<HTMLDivElement, PlaylistProps>(function Playl
   const ctrl = cn(
     "grid place-items-center flex-none rounded-pill cursor-pointer [&_svg]:size-5",
     "transition-[scale,background-color] duration-(--rap-dur-fast) ease-spring active:scale-90",
+    "calm:ease-soft calm:active:scale-98",
     "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
   );
 
@@ -299,7 +318,12 @@ export const Playlist = forwardRef<HTMLDivElement, PlaylistProps>(function Playl
           <span className="absolute inset-x-0 top-1/2 h-1 -mt-0.5 rounded-pill bg-fill-strong" />
           <span className="absolute left-0 top-1/2 h-1 -mt-0.5 rounded-pill bg-ink" style={{ width: `${p * 100}%` }} />
           <span
-            className="absolute top-1/2 size-3 -mt-1.5 -ml-1.5 rounded-full bg-ink scale-0 transition-[scale] duration-(--rap-dur-fast) ease-spring group-hover/bar:scale-100 group-focus-visible/bar:scale-100 group-data-scrub/bar:scale-125"
+            className={cn(
+              "absolute top-1/2 size-3 -mt-1.5 -ml-1.5 rounded-full bg-ink scale-0 transition-[scale] duration-(--rap-dur-fast) ease-spring group-hover/bar:scale-100 group-focus-visible/bar:scale-100 group-data-scrub/bar:scale-125",
+              /* calm: the play-head fades in at full size instead of growing out of nothing */
+              "calm:scale-100 calm:opacity-0 calm:transition-opacity calm:ease-soft calm:group-data-scrub/bar:scale-100",
+              "calm:group-hover/bar:opacity-100 calm:group-focus-visible/bar:opacity-100 calm:group-data-scrub/bar:opacity-100",
+            )}
             style={{ left: `${p * 100}%` }}
           />
         </div>
@@ -308,7 +332,13 @@ export const Playlist = forwardRef<HTMLDivElement, PlaylistProps>(function Playl
 
       {label && <div data-slot="playlist-label" className="px-3 pt-1 pb-1.5 text-[0.8125rem] font-medium tracking-[-0.01em] text-mute">{label}</div>}
       <div ref={list} data-slot="playlist-list" role="list" className="relative flex flex-col gap-tight">
-        <span aria-hidden data-slot="playlist-glider" className="absolute left-0 top-0 rounded-row bg-fill pointer-events-none" style={glide.style} />
+        <span
+          aria-hidden
+          data-slot="playlist-glider"
+          data-settled={settled || undefined}
+          className="absolute left-0 top-0 rounded-row bg-fill pointer-events-none calm:data-settled:transition-[transform,width,height] calm:data-settled:duration-(--rap-dur) calm:data-settled:ease-soft"
+          style={glideStyle}
+        />
         {tracks.map((tr, i) => {
           const on = i === at;
           const dur = durationOf(tr);

@@ -20,7 +20,8 @@ import {
    Delight: the same as DropdownMenu (see useRowGlide there) — rows are dealt
    onto the panel as it opens at the pointer, and ONE highlight glides between
    rows like a caterpillar instead of each row lighting up. Sound: pop on open,
-   a soft detent per row, tick on choose. */
+   a soft detent per row, tick on choose.
+   Calm: DropdownMenu's calm — the panel fades up from 0.98, rows tint on their own. */
 
 export const ContextMenu = ContextMenuPrimitive.Root;
 export const ContextMenuTrigger = ContextMenuPrimitive.Trigger;

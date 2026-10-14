@@ -46,6 +46,9 @@ import { cn } from "../rapui/utils";
 import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
+import { PresetPicker, PresetScope, PresetsSection } from "./PresetsShowcase";
+import "../rapui/fonts/all";
+import type { RapPreset } from "../rapui";
 import { isCalm } from "../rapui/hooks/useGlide";
 import { FormDemo } from "./demos/FormDemo";
 import { ToolbarDemo } from "./demos/ToolbarDemo";
@@ -59,7 +62,7 @@ import { ART } from "../docs/entries/galleries";
 
 /* How many components the docs list. Kept by hand so the landing does not pull
    the docs registry (and every demo in it) into the first bundle. */
-const COUNT = 110;
+const COUNT = 156;
 
 /* ───────────────────────── shared class strings ───────────────────────── */
 
@@ -236,7 +239,7 @@ function Hero() {
     <section className="relative min-h-svh pt-32 px-(--gutter) pb-14 flex flex-col gap-10 max-[900px]:pt-28" id="top">
       <h1 className={cn("m-0", HEAD)}>
         <span className="block">
-          All the <span className="text-flame">components,</span>
+          All the <span className="text-flame">UI components,</span>
         </span>
         <span className="flex flex-wrap items-center gap-x-[0.22em]">
           none of the
@@ -453,7 +456,7 @@ const STAT_TEXT = "m-0 max-w-[24ch] text-[1.2rem] leading-[1.35] opacity-80";
 
 function Stats() {
   const cards = [
-    { n: COUNT, from: 0, text: "components, from Dialog and DataTable to a button you have to hold.", tone: "bg-flame text-white" },
+    { n: COUNT, from: 0, text: "UI components, from Dialog and DataTable to a button you have to hold.", tone: "bg-flame text-white" },
     { n: 0, from: 100, text: "grey rectangles with 4px corners.", tone: "bg-paper-2" },
     { n: 1, from: 10, text: "attribute to turn every joke off, for the serious screens.", tone: "bg-ink text-paper" },
   ];
@@ -480,6 +483,7 @@ function Showcase({
   code,
   children,
   stageClass,
+  presets,
 }: {
   id: string;
   title: string;
@@ -488,14 +492,25 @@ function Showcase({
   code: string;
   children: ReactNode;
   stageClass?: string;
+  /** Offer the style presets: the stage (and only the stage) restyles in place. */
+  presets?: boolean;
 }) {
+  const [preset, setPreset] = useState<RapPreset>("fun");
+  const stage = (
+    <div className={cn("relative grid place-items-center min-h-[26rem] p-[clamp(1.25rem,5vw,5rem)] rounded-lg bg-paper-2 overflow-hidden transition-colors duration-500", stageClass)}>
+      {children}
+    </div>
+  );
   return (
     <section className="pt-20 pb-24 border-t-[1.5px] border-line" id={id}>
       <div className="grid grid-cols-[1fr_minmax(0,28rem)] gap-x-10 gap-y-6 items-end mb-10 max-[900px]:grid-cols-1">
         <Display size="xl">
           <SplitReveal>{title}</SplitReveal> {sub && <Accent tone="mute">{sub}</Accent>}
         </Display>
-        <p className={COPY}>{desc}</p>
+        <div className="flex flex-col gap-5">
+          <p className={COPY}>{desc}</p>
+          {presets && <PresetPicker size="sm" value={preset} onChange={setPreset} />}
+        </div>
       </div>
       <Tabs
         className="[&_[data-slot=animated-tabs-panel]]:pt-5"
@@ -503,11 +518,7 @@ function Showcase({
           {
             value: "preview",
             label: "Preview",
-            content: (
-              <div className={cn("relative grid place-items-center min-h-[26rem] p-[clamp(1.25rem,5vw,5rem)] rounded-lg bg-paper-2 overflow-hidden", stageClass)}>
-                {children}
-              </div>
-            ),
+            content: presets ? <PresetScope preset={preset}>{stage}</PresetScope> : stage,
           },
           { value: "code", label: "Code", content: <Code>{code}</Code> },
         ]}
@@ -719,6 +730,7 @@ function Wall() {
     <div id="wall" className="px-(--gutter)">
       <Showcase
         id="commit"
+        presets
         title="Buttons"
         sub="that make you mean it"
         desc="For the actions you should not do by accident. Hold until the liquid reaches the top, slide the thumb to the rim, or click twice before the ring runs out. Each one with its own springs and sounds."
@@ -740,6 +752,7 @@ function Wall() {
 
       <Showcase
         id="forms"
+        presets
         title="Forms"
         sub="that melt"
         desc="A booking you fill in like a sentence. The pills melt into one bar, the one you are typing in swells, booking sucks the whole sentence into the button — and Monday, a party of forty or a 3 am snack get spat back out, the guilty pill shaking its head."
@@ -757,6 +770,7 @@ function Wall() {
 
       <Showcase
         id="charts"
+        presets
         title="Charts"
         sub="you want to touch"
         desc={
@@ -1203,6 +1217,7 @@ export function App({
       <main>
         <Hero />
         <Bands />
+        <PresetsSection copyClass={COPY} />
         <SameApi />
         <Stats />
         <Wall />

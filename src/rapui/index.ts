@@ -37,6 +37,8 @@ export type { TabItem } from "./components/Tabs";
 export { Counter } from "./components/Counter";
 export { Cursor } from "./components/Cursor";
 export { Grain } from "./components/Grain";
+export { RapStyle, RAP_PRESETS, PRESET_MOTION, paletteStyle, rapStyleAttributes } from "./components/RapStyle";
+export type { RapStyleProps, RapPreset, RapMotion, RapTheme, RapPalette } from "./components/RapStyle";
 export { TimeScrubber } from "./components/TimeScrubber";
 export { RangeDial } from "./components/RangeDial";
 
@@ -62,3 +64,6 @@ export * from "./groups/charts";
 export * from "./groups/galleries";
 export * from "./groups/players";
 export * from "./groups/tools";
+export * from "./groups/ai";
+export * from "./groups/blocks";
+export * from "./groups/finance";

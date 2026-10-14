@@ -38,7 +38,11 @@ import { rubber, useCarry, useThrow } from "./tickKit";
    Every day crossed clicks; the first of a month is the firmest,
    week-ends the softest, and the pitch climbs through the month
    (×0.8 on the 1st to ×1.5 on the 31st), so a long fling is a
-   run of rising scales, each one resetting at a month's edge. */
+   run of rising scales, each one resetting at a month's edge.
+   ── CALM ────────────────────────────────────────────────
+   The ruler stays under the hand 1:1 but stops dead at min/max (no
+   rubber), a release does not coast — it lands on the nearest day —
+   and the day's figure is replaced rather than rolled. */
 
 const DAY_MS = 86_400_000;
 /* px per day along the ruler, see above */
@@ -198,7 +202,8 @@ export const DateScrubber = forwardRef<HTMLDivElement, DateScrubberProps>(functi
     g.raw += dd;
     hand.feed(dd);
     const b = bounds.current;
-    set(rubber(g.raw, b.lo, b.hi));
+    /* calm: a hard stop at the ends, no stretch past them */
+    set(isCalm(ruler.current) ? clamp(g.raw, b.lo, b.hi) : rubber(g.raw, b.lo, b.hi));
   };
 
   const onUp = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -211,7 +216,8 @@ export const DateScrubber = forwardRef<HTMLDivElement, DateScrubberProps>(functi
     }
     if (!g) return;
     /* capped at 1.2 days a frame: a flick spins a month, not a year */
-    const v = hand.release(1.2);
+    /* calm throws nothing: it lands on the day under the mark */
+    const v = isCalm(ruler.current) ? 0 : hand.release(1.2);
     const reach = 6 + (clamp(momentum, 0, 100) / 100) * 30;
     /* the landing includes the throw, so the spring starts with
        only part of the hand's speed — all of it on top would carry
@@ -230,7 +236,8 @@ export const DateScrubber = forwardRef<HTMLDivElement, DateScrubberProps>(functi
       e.preventDefault();
       stop();
       const b = bounds.current;
-      set(rubber(state.current.x + e.deltaX / PX, b.lo, b.hi));
+      const x = state.current.x + e.deltaX / PX;
+      set(isCalm(el) ? clamp(x, b.lo, b.hi) : rubber(x, b.lo, b.hi));
       clearTimeout(idle);
       idle = window.setTimeout(() => land(state.current.x), 120);
     };

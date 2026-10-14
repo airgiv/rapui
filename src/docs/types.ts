@@ -3,6 +3,8 @@ import type { ComponentType } from "react";
 /** Sidebar sections, in display order. */
 export const GROUPS = [
   "Actions",
+  "AI",
+  "Finance",
   "Forms",
   "Scrubbers",
   "Overlays",
@@ -13,7 +15,9 @@ export const GROUPS = [
   "Media",
   "Feedback",
   "Layout",
+  "Blocks",
   "Expressive",
+  "Figures",
 ] as const;
 export type Group = (typeof GROUPS)[number];
 

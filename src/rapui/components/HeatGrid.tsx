@@ -11,6 +11,8 @@
    pointer along a row leaves a wake. Switching the metric
    re-colours the grid in a diagonal wave from the top-left, so
    the new picture is laid down rather than swapped in.
+   Calm: no ripple and no wave — a new metric crossfades every day
+   at once, and the day you are on simply takes its ring.
 
    The numbers, and why:
    - five steps (none + four): enough to see a busy week from a
@@ -281,7 +283,9 @@ export const HeatGrid = forwardRef<HTMLDivElement, HeatGridProps>(function HeatG
               /* the re-colour wave: only background eases, so hover
                  and the ripple are untouched by the delay */
               "transition-[background-color] duration-300 ease-soft",
-              "fun:[transition-delay:calc((var(--c)+var(--r))*11ms)] motion-reduce:transition-none calm:transition-none",
+              "fun:[transition-delay:calc((var(--c)+var(--r))*11ms)] motion-reduce:transition-none",
+              // calm: the same fade, all days together
+              "calm:duration-(--rap-dur) calm:ease-soft",
               /* the day you are on: a ring in the card's colour inside
                  an ink ring, so it reads on the empty and the full step */
               "data-at:shadow-[0_0_0_1.5px_var(--rap-surface),0_0_0_3px_var(--rap-ink)] data-at:z-1 relative",

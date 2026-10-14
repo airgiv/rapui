@@ -22,12 +22,13 @@
    ─────────────────────────────────────────────────────────── */
 
 @import "./tokens.css";
+@import "./presets.css";
 
 @custom-variant dark (&:where([data-rap-theme="dark"], [data-rap-theme="dark"] *));
-@custom-variant calm (&:where([data-rap-motion="calm"], [data-rap-motion="calm"] *));
+@custom-variant calm (&:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]), :is([data-rap-motion="calm"], [data-rap-motion="still"]) *));
 @custom-variant fun {
   @media (prefers-reduced-motion: no-preference) {
-    &:not(:where([data-rap-motion="calm"], [data-rap-motion="calm"] *)) {
+    &:not(:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]), :is([data-rap-motion="calm"], [data-rap-motion="still"]) *)) {
       @slot;
     }
   }
@@ -63,6 +64,7 @@
   --color-chart-down: var(--rap-chart-down);
   --color-warning: var(--rap-warning);
   --color-scrim: var(--rap-scrim);
+  --color-edge: var(--rap-edge);
 
   /* type */
   --font-sans: var(--rap-font-sans);
@@ -225,13 +227,13 @@
 @utility deal {
   & > * { animation: rap-deal-in 260ms var(--rap-ease-out) both; animation-delay: calc(var(--i, 0) * 22ms); }
   @media (prefers-reduced-motion: reduce) { & > * { animation: none; } }
-  &:where([data-rap-motion="calm"] *) > * { animation: none; }
+  &:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]) *) > * { animation: none; }
 }
 
 /* ── base ──────────────────────────────────────────────────── */
 @layer base {
   :root { --rap-playful: 1; }
-  [data-rap-motion="calm"] { --rap-playful: 0; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) { --rap-playful: 0; }
 
   /* A scoped reset. `@rapui/react/styles.css` ships without Tailwind's preflight so it never
      restyles the host app — but the components are drawn assuming it: border-box
@@ -244,7 +246,12 @@
     box-sizing: border-box;
     border: 0 solid;
   }
-  :where([data-slot]) { font-family: var(--rap-font-sans); }
+  /* every part starts in the text face — except the inline ones that live inside a
+     headline (a coloured word, a marker swipe, rolling letters, a word split to reveal):
+     those take the face of the line they sit in */
+  :where([data-slot]:not([data-slot="accent"], [data-slot="highlight"], [data-slot^="roll-text"], [data-slot^="rolling-number"], [data-slot^="split-reveal"])) {
+    font-family: var(--rap-font-sans);
+  }
   :where(button[data-slot], [data-slot] button, [data-slot] input, [data-slot] textarea, [data-slot] select, input[data-slot], textarea[data-slot]) {
     font: inherit;
     letter-spacing: inherit;
@@ -285,7 +292,7 @@
   .rap-anim-hop { animation: rap-hop 360ms var(--rap-ease-out); }
   .rap-anim-splat { animation: rap-splat 480ms var(--rap-ease-out); }
   .rap-anim-wiggle { animation: rap-wiggle 500ms var(--rap-ease-out); }
-  :where([data-rap-motion="calm"]) :is(.rap-anim-shake, .rap-anim-hop, .rap-anim-splat, .rap-anim-wiggle) { animation: none; }
+  :where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) :is(.rap-anim-shake, .rap-anim-hop, .rap-anim-splat, .rap-anim-wiggle) { animation: none; }
   @media (prefers-reduced-motion: reduce) {
     :is(.rap-anim-shake, .rap-anim-hop, .rap-anim-splat, .rap-anim-wiggle) { animation: none !important; }
   }

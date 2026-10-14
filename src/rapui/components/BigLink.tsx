@@ -23,6 +23,8 @@ const ink = "text-ink transition-[color] duration-(--rap-dur) ease-rm group-hove
 /**
  * Giant text link: a headline-sized word that turns
  * orange on hover while an arrow slides in and the row shifts.
+ * (calm: the word stays put and only fades to orange; a flame hairline
+ * draws along the bottom rule instead of the arrow)
  */
 export function BigLink({ children, meta, size = "xl", className, ...rest }: BigLinkProps) {
   return (
@@ -34,6 +36,10 @@ export function BigLink({ children, meta, size = "xl", className, ...rest }: Big
         "font-display font-normal text-(length:--bl-fs) leading-none tracking-[-0.05em]",
         ink,
         "focus-visible:text-flame",
+        /* calm: the row does not shift; a flame hairline draws over the rule, left to right */
+        "after:hidden calm:after:block after:absolute after:inset-x-0 after:-bottom-px after:h-px after:bg-flame",
+        "after:origin-left after:scale-x-0 after:transition-[scale] after:duration-(--rap-dur) after:ease-soft",
+        "hover:after:scale-x-100 focus-visible:after:scale-x-100",
         sizes[size],
         className,
       )}
@@ -49,6 +55,8 @@ export function BigLink({ children, meta, size = "xl", className, ...rest }: Big
           "transition-[width,opacity,rotate,scale] duration-(--rap-dur) ease-rm",
           "group-hover/biglink:w-[0.9em] group-hover/biglink:opacity-100 group-hover/biglink:rotate-0 group-hover/biglink:scale-100",
           "group-focus-visible/biglink:w-[0.9em] group-focus-visible/biglink:opacity-100 group-focus-visible/biglink:rotate-0 group-focus-visible/biglink:scale-100",
+          /* calm: no arrow — opening it would push a headline-sized word along */
+          "calm:hidden",
           ink,
           "group-focus-visible/biglink:text-flame",
         )}

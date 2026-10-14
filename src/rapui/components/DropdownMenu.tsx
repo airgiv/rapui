@@ -15,6 +15,7 @@ import { Check, ChevronRight } from "../icons";
 import { useSound } from "../sound";
 import { cn } from "../utils";
 import { useMergedRef } from "./Dialog";
+import { popCalm } from "./Popover";
 
 /* Composable, shadcn-style: <DropdownMenu><DropdownMenuTrigger/><DropdownMenuContent><DropdownMenuItem/>…
 
@@ -30,6 +31,8 @@ import { useMergedRef } from "./Dialog";
    when the pointer leaves the menu it fades where it is, so the next row it
    visits is reached by a glide rather than a pop. The per-row highlight comes
    back under calm (the glider is hidden) and reduced motion (springs snap).
+   Calm: no deal, no glide — the panel fades up from 0.98 (Popover's calm pair)
+   and each row's tint fades in and out quickly on its own.
    Sound (inside an enabled <SoundProvider>): pop on open, a very soft detent
    as the highlight moves row to row, a tick when a row is chosen. */
 
@@ -45,8 +48,9 @@ export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 /** Rows dealt onto the panel, top to bottom (--i is set in document order by useRowGlide). */
 export const menuRowDeal = "fun:animate-[rap-deal-in_240ms_var(--rap-ease-out)_calc(var(--i,0)*22ms)_both]";
 
-/** The panel: a `pop` surface; relative + isolate so the glider can sit under the rows. */
-export const menuContentClass = "pop relative isolate min-w-[220px] p-1 overflow-y-auto outline-none";
+/** The panel: a `pop` surface; relative + isolate so the glider can sit under the rows.
+    Calm swaps the pop for Popover's quieter fade (0.98 + a 4px drift off the trigger). */
+export const menuContentClass = cn("pop relative isolate min-w-[220px] p-1 overflow-y-auto outline-none", popCalm);
 
 /* A row. The glider paints the highlight, not the row (transparent), except
    under calm, where the glider is hidden and rows light up on their own again.
@@ -59,6 +63,8 @@ export const menuItemClass = cn(
   "data-[variant=danger]:text-danger data-[variant=danger]:[&>svg:not([data-slot=menu-chevron])]:text-danger",
   "data-[variant=danger]:data-[highlighted]:[&>svg:not([data-slot=menu-chevron])]:text-danger",
   "data-[highlighted]:bg-transparent calm:data-[highlighted]:bg-fill",
+  // calm: the row's own tint fades rather than snapping
+  "calm:[transition:background-color_120ms_var(--rap-ease-rm)]",
   "calm:data-[variant=danger]:data-[highlighted]:bg-[color-mix(in_srgb,var(--rap-danger)_12%,transparent)]",
   // a sub-menu trigger stays lit while its sub-menu is open (the glider does it outside calm)
   "calm:data-[state=open]:bg-fill",

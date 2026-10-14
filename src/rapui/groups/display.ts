@@ -48,3 +48,17 @@ export { EmptyState } from "../components/EmptyState";
 export type { EmptyStateProps } from "../components/EmptyState";
 export { Pattern, patternStyle } from "../components/Pattern";
 export type { PatternProps, PatternOptions, PatternVariant, PatternFade } from "../components/Pattern";
+// the signal set: dot matrices, dotted type, redaction bars, screen-textured media
+export { DotMatrix } from "../components/DotMatrix";
+export type { DotMatrixProps, DotMatrixAnimation, DotMatrixPattern } from "../components/DotMatrix";
+export { MatrixStatus } from "../components/MatrixStatus";
+export type { MatrixStatusProps } from "../components/MatrixStatus";
+export { DotText } from "../components/DotText";
+export type { DotTextProps } from "../components/DotText";
+export { Redact } from "../components/Redact";
+export type { RedactProps } from "../components/Redact";
+export { MediaFrame } from "../components/MediaFrame";
+export type { MediaFrameProps } from "../components/MediaFrame";
+// thin-line 3D figures
+export { Figure, FIGURE_SHAPES } from "../components/Figure";
+export type { FigureProps, FigureShape, FigureHidden, FigureLook } from "../components/Figure";

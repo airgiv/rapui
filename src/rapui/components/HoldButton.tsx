@@ -72,8 +72,10 @@ import { isCalm } from "./ScrubNumber";
    drains more than 5%; "success" at the top.
 
    Calm / reduced motion: the fill still tracks the hold (it is
-   the information), but the edge is straight, there is no
-   splat and a release empties it at once. */
+   the information), but the edge is straight and there is no
+   splat. A release does not drain: the liquid stays where it
+   was and fades out, so letting go reads as "cancelled", not
+   as a flicker; the drawn check is the one detail kept. */
 
 /* the drain's spring (see above), and Bencho's at tune 70 for
    the slosh and the splat — livelier, two rebounds, jelly */
@@ -257,7 +259,11 @@ export const HoldButton = forwardRef<HTMLButtonElement, HoldButtonProps>(functio
       c.phase = (c.phase + ((2 * Math.PI * 16.67) / PERIOD) * dt) % (2 * Math.PI);
       if (calm) {
         c.S = c.vS = 0;
-        if (c.drain) c.L = c.vL = 0;
+        /* no drain: the level stays put and the liquid fades out in CSS */
+        if (c.drain) {
+          c.vL = 0;
+          c.drain = false;
+        }
       }
       const settled =
         !c.held && Math.abs(c.S) < 0.002 && Math.abs(c.vS) < 0.002 && (c.drain ? Math.abs(c.L) < 0.02 && Math.abs(c.vL) < 0.02 : true);
@@ -296,7 +302,9 @@ export const HoldButton = forwardRef<HTMLButtonElement, HoldButtonProps>(functio
     if (c.held) return;
     c.held = true;
     c.drain = false;
-    /* pick up from wherever the drain had got to */
+    /* pick up from wherever the drain had got to (calm: a faded-out
+       level is not there any more, so a new hold starts from empty) */
+    if (isCalm(ref.current)) c.L = c.vL = 0;
     c.t0 = performance.now() - (c.L / 100) * holdMs;
     c.notch = Math.floor(c.L / (100 / NOTCHES));
     /* a small slosh on grabbing: the liquid is poured, not placed */
@@ -428,6 +436,10 @@ export const HoldButton = forwardRef<HTMLButtonElement, HoldButtonProps>(functio
         data-slot="hold-button-liquid"
         className={cn(
           "absolute inset-0 flex bg-(--hb-fill) text-(--hb-fill-fg) pointer-events-none",
+          /* calm (flat): let go, or reset from done, and the liquid fades where it stands.
+             Read from the motor rather than calm:, which reduced motion does not match */
+          flat && "transition-opacity duration-(--rap-dur-fast) ease-soft",
+          flat && state === "idle" && "opacity-0 duration-(--rap-dur)",
           hidden && "invisible",
         )}
         style={{ clipPath: clip }}

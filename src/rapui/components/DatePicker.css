@@ -6,3 +6,7 @@
 @layer theme, base, components, utilities;
 
 @keyframes rap-dp-out { to { opacity: 0; translate: 0 6px; } }
+
+/* calm: the note settles in from 0.98 about its sticky edge (the origin set in
+   DatePicker.tsx), no turn */
+@keyframes rap-dp-calm-in { from { opacity: 0; scale: 0.98; } }

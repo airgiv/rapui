@@ -30,6 +30,9 @@
   --rap-font-display: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
   --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
   --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  /* display headlines: weight and the tight tracking — presets retune both for their face */
+  --rap-display-weight: 500;
+  --rap-display-tracking: -0.045em;
 
   /* fluid scale */
   --rap-size-mega: clamp(3.5rem, 13vw, 15rem);
@@ -43,6 +46,22 @@
   /* spacing — Readymag packs controls edge to edge */
   --rap-gap-tight: 2px;
   --rap-gap-tile: 4px;
+
+  /* page layout — the grid a landing page sits on. Presets retune all of it:
+     how wide the content runs, the side gutters, the space between sections,
+     and how a section looks as a whole (fun tiles toned sections as rounded
+     cards a few px apart; signal and minimal rule a hairline above each). */
+  --rap-container: 1440px;
+  --rap-container-narrow: 760px;
+  --rap-gutter: clamp(16px, 3vw, 40px);
+  --rap-columns: 12;
+  --rap-column-gap: clamp(16px, 2vw, 28px);
+  --rap-section-y: clamp(4rem, 9vw, 8.5rem);
+  --rap-section-inset: 6px;
+  --rap-section-radius: var(--rap-radius-lg);
+  --rap-section-rule: transparent;
+  /* one knob for the --rap-space-* steps (below): 1.2 airier, 0.85 denser */
+  --rap-density: 1;
 
   /* controls — inputs, selects, menus. Filled, not outlined (Readymag). */
   --rap-control-h-sm: 36px;
@@ -66,6 +85,9 @@
 
   /* floating surfaces: popovers, menus, dialogs */
   --rap-surface: var(--rap-paper-2);
+  /* the outline of a card — none here (cards are set off by colour); presets
+     whose cards sit on a same-colour page draw a hairline instead */
+  --rap-edge: transparent;
   --rap-shadow-pop: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 40px rgb(0 0 0 / 0.12);
   --rap-scrim: rgb(20 20 20 / 0.32);
 
@@ -89,6 +111,20 @@
   --rap-dur-slow: 900ms;
 
   color-scheme: light;
+}
+
+/* the spacing steps, recomputed wherever a preset changes the density
+   (a calc on :root alone would keep :root's density everywhere) */
+:root,
+[data-rap-preset],
+[data-rap-density] {
+  --rap-space-2xs: calc(4px * var(--rap-density));
+  --rap-space-xs: calc(8px * var(--rap-density));
+  --rap-space-sm: calc(12px * var(--rap-density));
+  --rap-space-md: calc(20px * var(--rap-density));
+  --rap-space-lg: calc(32px * var(--rap-density));
+  --rap-space-xl: calc(52px * var(--rap-density));
+  --rap-space-2xl: calc(80px * var(--rap-density));
 }
 
 [data-rap-theme="dark"] {

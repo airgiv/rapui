@@ -22,12 +22,14 @@
    when it is clamped on commit.
 
    The value itself is immediate. Reduced motion /
-   data-rap-motion="calm": no reels, no bonk.
+   data-rap-motion="calm": no turning reels and no bonk; each
+   changed digit fades up 3px into place instead (still carried
+   right to left), so a step is seen without anything spinning.
    Sound: a detent per step, "error" on a bonk. */
 import { forwardRef, useEffect, useRef, useState, type CSSProperties, type InputHTMLAttributes, type KeyboardEvent, type ReactNode } from "react";
 import { Minus, Plus } from "../icons";
 import { useSound } from "../sound";
-import { clamp, cn } from "../utils";
+import { clamp, cn, prefersReducedMotion } from "../utils";
 import { isMotionCalm } from "./FormField";
 import "./NumberField.css";
 
@@ -64,8 +66,8 @@ interface Roll {
    left waits 30ms more (--carry) — the carry. A digit that disappears (100 → 99)
    folds its width away as it turns. */
 const reelTurn = {
-  up: "fun:animate-[rap-nf-reel-up_460ms_var(--rap-ease-spring)_calc(var(--carry,0)*30ms)_both]",
-  down: "fun:animate-[rap-nf-reel-down_460ms_var(--rap-ease-spring)_calc(var(--carry,0)*30ms)_both]",
+  up: "fun:animate-[rap-nf-reel-up_460ms_var(--rap-ease-spring)_calc(var(--carry,0)*30ms)_both] calm:animate-[rap-nf-calm-up_var(--rap-dur-fast)_var(--rap-ease-out)_calc(var(--carry,0)*30ms)_both]",
+  down: "fun:animate-[rap-nf-reel-down_460ms_var(--rap-ease-spring)_calc(var(--carry,0)*30ms)_both] calm:animate-[rap-nf-calm-down_var(--rap-dur-fast)_var(--rap-ease-out)_calc(var(--carry,0)*30ms)_both]",
 };
 
 /** The reels: old and new text right-aligned, every changed character turning over. */
@@ -95,7 +97,7 @@ function Odometer({ roll }: { roll: Roll }) {
             data-slot="number-field-reel"
             className={cn(
               "inline-block leading-[1.3] h-[1.3em] overflow-hidden align-middle",
-              ch === " " && "fun:animate-[rap-nf-fold_460ms_var(--rap-ease-rm)_both]",
+              ch === " " && "fun:animate-[rap-nf-fold_460ms_var(--rap-ease-rm)_both] calm:animate-[rap-nf-fold_var(--rap-dur-fast)_var(--rap-ease-out)_both]",
             )}
             style={{ "--carry": fromRight } as CSSProperties}
           >
@@ -170,7 +172,9 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
     } else if (stepped && next !== current) {
       sound.detent(next === min || next === max ? 1 : 0.7);
     }
-    if (stepped && !calm && next != null && current != null && next !== current) {
+    // calm runs the reels too: they only fade (see reelTurn). Reduced motion matches
+    // neither fun: nor calm:, so there the strip would sit still on the wrong digit
+    if (stepped && !prefersReducedMotion() && next != null && current != null && next !== current) {
       setRoll((r) => ({ from: String(current), to: String(next), dir: next > current ? 1 : -1, n: (r?.n ?? 0) + 1 }));
     }
     if (!controlled) setInner(next);
@@ -335,9 +339,9 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
    hover. At a limit the button looks spent but still answers — with a bonk — so it keeps
    its resting colour under the pointer. */
 const buttonClass = cn(
-  "grid place-items-center flex-none size-[calc(var(--nf-h)-var(--nf-inset)*2)] p-0 border-0 rounded-full",
+  "grid place-items-center flex-none size-[calc(var(--nf-h)-var(--nf-inset)*2)] p-0 border-0 rounded-pill",
   "bg-surface text-ink cursor-pointer group-focus-within/nf:bg-fill",
   "transition-[background-color,color,scale] duration-(--rap-dur-fast) ease-rm",
-  "not-aria-disabled:hover:bg-ink not-aria-disabled:hover:text-paper active:scale-90",
+  "not-aria-disabled:hover:bg-ink not-aria-disabled:hover:text-paper active:scale-90 calm:active:scale-98",
   "disabled:opacity-35 disabled:pointer-events-none aria-disabled:opacity-35 [&_svg]:size-4",
 );

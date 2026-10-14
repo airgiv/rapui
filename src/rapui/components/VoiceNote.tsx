@@ -15,7 +15,9 @@
    bar by 55%, its neighbours falling off on a Gaussian two bars
    wide — as if a finger were following the line of sound. It
    rides the playhead continuously (not bar to bar), so it glides.
-   The speed chip's digits roll. Calm / reduced motion: flat bars.
+   The speed chip's digits roll. Calm / reduced motion: flat bars;
+   calm still fills the bars as it plays and eases the play glyph
+   (MediaKit), and a press dips 2% rather than squashing.
 
    The waveform is decoded from the file like the AudioPlayer's
    (MediaKit.usePeaks) and is a slider: drag to seek, arrows ±2 s
@@ -91,7 +93,7 @@ export const VoiceNote = forwardRef<HTMLDivElement, VoiceNoteProps>(function Voi
         className={cn(
           "grid place-items-center size-10 flex-none rounded-pill cursor-pointer [&_svg]:size-5",
           me ? "bg-select-ink text-select" : "bg-ink text-paper",
-          "transition-[scale] duration-(--rap-dur-fast) ease-spring active:scale-90",
+          "transition-[scale] duration-(--rap-dur-fast) ease-spring active:scale-90 calm:ease-soft calm:active:scale-98",
           me ? "focus-visible:outline-2 focus-visible:outline-select-ink focus-visible:outline-offset-2" : "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
         )}
       >
@@ -147,6 +149,7 @@ export const VoiceNote = forwardRef<HTMLDivElement, VoiceNoteProps>(function Voi
           className={cn(
             "flex-none h-7 min-w-11 px-2 rounded-pill cursor-pointer text-[0.75rem] font-semibold tabular-nums",
             "bg-current/15 hover:bg-current/25 transition-[background-color,scale] duration-(--rap-dur-fast) ease-spring active:scale-90",
+            "calm:ease-soft calm:active:scale-98",
             me ? "focus-visible:outline-2 focus-visible:outline-select-ink focus-visible:outline-offset-2" : "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
           )}
         >

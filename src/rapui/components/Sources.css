@@ -1,0 +1,13 @@
+/* Sources / Citation — the hover card's arrow pops out of the card's edge
+   once the card has nearly arrived (fun only; calm keeps it still). */
+@keyframes rap-cite-arrow-pop {
+  0% { scale: 0 0; }
+  55% { scale: 1.25 1.35; }
+  80% { scale: 0.95 0.92; }
+  100% { scale: 1 1; }
+}
+
+/* a "+N more" reveal: the newly shown cards are dealt in one after another */
+@keyframes rap-cite-deal {
+  from { opacity: 0; transform: translateY(8px) rotate(-2deg) scale(0.96); }
+}

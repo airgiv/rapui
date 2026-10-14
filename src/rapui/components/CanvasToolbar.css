@@ -366,6 +366,42 @@
 }
 }
 
+/* ── calm ────────────────────────────────────────────────────
+   rap/ui: under data-rap-motion="calm" (or "still") every curve
+   above that overshoots is swapped for the plain ease-out. The
+   pad no longer opens from 0.72 — it is simply there, faded in
+   over the state-change duration; the glyph keeps its size on
+   the pad and yields only 2% under the press; the notch's wedge
+   brightens without growing; the palette fades up 4px. */
+@layer components {
+:where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-tool::before {
+  scale: 1;
+  transition: opacity var(--rap-dur) var(--rap-ease-out);}
+
+:where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-tool > svg {
+  transition: scale var(--rap-dur-fast) var(--rap-ease-out);}
+
+:where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-tool[data-on="true"] > svg { scale: 1; }
+
+:where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-tool:active > svg { scale: 0.98; }
+
+:where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-notch::after {
+  transition: opacity var(--rap-dur-fast) var(--rap-ease-out);}
+
+:where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-notch[data-open="true"]::after { transform: none; }
+
+:where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-flyout {
+  animation: bar-rise-calm var(--rap-dur-fast) var(--rap-ease-out) both;}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-rap-motion="calm"], [data-rap-motion="still"]) .bar-flyout { animation-duration: 1ms; }
+}
+}
+
+@keyframes bar-rise-calm {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }}
+
 @keyframes bar-rise {
   from { opacity: 0; transform: translateX(-50%) translateY(9px) scale(0.965); }
   55%  { opacity: 1; }

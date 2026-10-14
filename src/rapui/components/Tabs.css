@@ -1,5 +1,6 @@
 /* Tabs (animated) — the one thing utilities cannot say: the panel's entrance
-   keyframes (it rises out of a slight blur). Everything else lives in Tabs.tsx. */
+   keyframes (it rises out of a slight blur; calm: a 4px fade-up, no blur). Everything else lives in Tabs.tsx. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-tab-in { from { opacity: 0; transform: translateY(0.75rem); filter: blur(4px); } }
+@keyframes rap-tab-calm-in { from { opacity: 0; transform: translateY(4px); } }

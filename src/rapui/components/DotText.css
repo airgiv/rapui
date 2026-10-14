@@ -1,0 +1,24 @@
+/* DotText — the arrival. Fun: every dot pops from nothing at its own random
+   moment (--d, 0..1) within ~0.9s, so the word condenses. Calm: a single
+   fade that travels left → right (--d is the dot's x). The hover lens
+   changes r, which eases on its own transition. Still / reduced motion:
+   no arrival. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-dot-pop { from { opacity: 0; scale: 0; } }
+@keyframes rap-dot-fade { from { opacity: 0; } }
+
+.rap-dot-text circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: r 180ms var(--rap-ease-out);
+  animation: rap-dot-pop 420ms var(--rap-ease-back) both;
+  animation-delay: calc(var(--d) * 900ms);
+}
+.rap-dot-text.rap-dot-text-calm circle {
+  animation: rap-dot-fade var(--rap-dur) var(--rap-ease-out) both;
+  animation-delay: calc(var(--d) * 600ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rap-dot-text circle { animation: none; }
+}

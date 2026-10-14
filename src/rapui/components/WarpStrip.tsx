@@ -12,7 +12,7 @@ import {
 import { isCalm } from "../hooks/useGlide";
 import { useSound } from "../sound";
 import { clamp, cn } from "../utils";
-import { GalleryMedia, createLoop, galleryItemKey, setSpring, spring, stepSpring, type GalleryItem, type GalleryOpen } from "./galleryKit";
+import { GalleryMedia, createLoop, galleryItemKey, instantMotion, setSpring, spring, stepSpring, type GalleryItem, type GalleryOpen } from "./galleryKit";
 
 /* ══ Warp strip ═══════════════════════════════════════════
    A strip of prints you can throw sideways. The faster it
@@ -49,7 +49,9 @@ import { GalleryMedia, createLoop, galleryItemKey, setSpring, spring, stepSpring
    it, not be dragged back to a grid.
 
    Calm / reduced motion: no warp and no mouse momentum — the
-   strip is a plain scroller (drag, wheel, keys still work).
+   strip is a plain scroller (drag, wheel, keys still work). In
+   calm the arrow keys still slide it a card along smoothly; with
+   reduced motion (or still) they jump.
    Sound (opt-in): a notch for each card that passes, firmer
    the faster it goes. */
 
@@ -227,7 +229,7 @@ export const WarpStrip = forwardRef<HTMLDivElement, WarpStripProps>(function War
     if (e.key !== fwd && e.key !== back) return;
     e.preventDefault();
     const by = (e.key === fwd ? 1 : -1) * (size * 0.8 + gap) * (e.shiftKey ? 3 : 1);
-    scroller.current?.scrollBy({ [vertical ? "top" : "left"]: by, behavior: isCalm(scroller.current) ? "auto" : "smooth" });
+    scroller.current?.scrollBy({ [vertical ? "top" : "left"]: by, behavior: instantMotion(scroller.current) ? "auto" : "smooth" });
   };
 
   return (

@@ -13,7 +13,9 @@ import { cn } from "../utils";
    `[<item that holds the hovered/focused crumb>~…~&]` variants on BreadcrumbSeparator —
    so no props and no JS); the separators are aria-hidden, so nothing changes for
    assistive tech.
-   Calm / reduced motion: the signposts stay put. */
+   Calm / reduced motion: the signposts stay put.
+   Calm: instead of turning, the separators past the crumb you point at fade back,
+   one after the other, so the way back is what stays lit. */
 
 export const Breadcrumb = forwardRef<HTMLElement, ComponentPropsWithoutRef<"nav"> & { size?: "sm" | "md" | "lg" }>(
   function Breadcrumb({ className, size = "md", ...rest }, ref) {
@@ -118,7 +120,9 @@ export function BreadcrumbSeparator({
         "[[data-slot=breadcrumb-item]:has(:is([data-slot=breadcrumb-link],[data-slot=breadcrumb-ellipsis]):is(:hover,:focus-visible))~[data-slot=breadcrumb-separator]~&]:delay-45 [[data-slot=breadcrumb-item]:has(:is([data-slot=breadcrumb-link],[data-slot=breadcrumb-ellipsis]):is(:hover,:focus-visible))~[data-slot=breadcrumb-separator]~&]:*:delay-45",
         "[[data-slot=breadcrumb-item]:has(:is([data-slot=breadcrumb-link],[data-slot=breadcrumb-ellipsis]):is(:hover,:focus-visible))~[data-slot=breadcrumb-separator]~[data-slot=breadcrumb-separator]~&]:delay-90 [[data-slot=breadcrumb-item]:has(:is([data-slot=breadcrumb-link],[data-slot=breadcrumb-ellipsis]):is(:hover,:focus-visible))~[data-slot=breadcrumb-separator]~[data-slot=breadcrumb-separator]~&]:*:delay-90",
         "[[data-slot=breadcrumb-item]:has(:is([data-slot=breadcrumb-link],[data-slot=breadcrumb-ellipsis]):is(:hover,:focus-visible))~[data-slot=breadcrumb-separator]~[data-slot=breadcrumb-separator]~[data-slot=breadcrumb-separator]~&]:delay-135 [[data-slot=breadcrumb-item]:has(:is([data-slot=breadcrumb-link],[data-slot=breadcrumb-ellipsis]):is(:hover,:focus-visible))~[data-slot=breadcrumb-separator]~[data-slot=breadcrumb-separator]~[data-slot=breadcrumb-separator]~&]:*:delay-135",
-        "calm:transition-none calm:*:transition-none",
+        // calm: no turning; the separators past the pointed crumb just fade back (same 45ms stagger)
+        "calm:[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-rm)] calm:*:transition-none",
+        "calm:[[data-slot=breadcrumb-item]:has(:is([data-slot=breadcrumb-link],[data-slot=breadcrumb-ellipsis]):is(:hover,:focus-visible))~&]:opacity-25",
         className,
       )}
       {...rest}

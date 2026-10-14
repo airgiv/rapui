@@ -12,11 +12,13 @@ type DisplaySize = "mega" | "xxl" | "xl" | "lg" | "md";
    the size grows: giant lines need less air between them. */
 /* (leading sits after the size in every variant: tailwind-merge lets a
    later `text-*` size drop an earlier `leading-*`) */
-const displayVariants = cva("m-0 font-display font-medium tracking-[-0.02em] text-balance", {
+/* weight and tight tracking are tokens, so a preset can retune them for its face
+   (a serif wants less negative tracking than a grotesk, Plex a lighter weight) */
+const displayVariants = cva("m-0 font-display [font-weight:var(--rap-display-weight,500)] tracking-[-0.02em] text-balance", {
   variants: {
-    tight: { true: "tracking-[-0.045em]", false: "" },
+    tight: { true: "tracking-[var(--rap-display-tracking,-0.045em)]", false: "" },
     size: {
-      mega: "text-display-mega leading-[0.86] font-[450] tracking-[-0.06em]",
+      mega: "text-display-mega leading-[0.86] [font-weight:var(--rap-display-weight-mega,450)] tracking-[-0.06em]",
       xxl: "text-display-xxl leading-[0.88]",
       xl: "text-display-xl leading-[0.92]",
       lg: "text-display-lg leading-none",
@@ -61,7 +63,7 @@ export function Accent({ className, tone = "flame", ...rest }: HTMLAttributes<HT
   return <span data-slot="accent" data-tone={tone} className={cn(accentTones[tone], className)} {...rest} />;
 }
 
-/** Small label with a live dot. */
+/** Small label with a live dot. Calm: the dot holds steady — a ring that breathes forever is a loop with no job. */
 export function Eyebrow({ className, dot = true, children, ...rest }: HTMLAttributes<HTMLSpanElement> & { dot?: boolean }) {
   return (
     <span
@@ -70,11 +72,11 @@ export function Eyebrow({ className, dot = true, children, ...rest }: HTMLAttrib
       {...rest}
     >
       {dot && (
-        /* the live dot: a ring of accent breathes out of it every 2.2s (Typography.css) */
+        /* the live dot: a ring of accent breathes out of it every 2.2s (Typography.css), fun only */
         <span
           data-slot="eyebrow-dot"
           aria-hidden
-          className="size-[0.55em] rounded-full bg-accent shadow-[0_0_0_0_var(--rap-accent)] animate-[rap-eyebrow-pulse_2.2s_var(--rap-ease-out)_infinite]"
+          className="size-[0.55em] rounded-full bg-accent shadow-[0_0_0_0_var(--rap-accent)] fun:animate-[rap-eyebrow-pulse_2.2s_var(--rap-ease-out)_infinite]"
         />
       )}
       {children}

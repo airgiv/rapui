@@ -2,7 +2,8 @@
    the calm/reduced switches live in Sheet.tsx as Tailwind classes.
 
    1. The per-side slide keyframes (off-screen by the panel's own size plus
-      16px, so the 8px inset and the shadow are fully out of view).
+      16px, so the 8px inset and the shadow are fully out of view), and the
+      calm per-side fade-and-drift.
    2. The deal: once the panel has (nearly) stopped, its contents are dealt in
       with the shared `rap-deal-in` — header, body rows, footer — 45ms apart.
       These are the caller's children, so the stagger index comes from their
@@ -20,6 +21,15 @@
 @keyframes rap-sheet-out-left { to { transform: translateX(calc(-100% - 16px)); } }
 @keyframes rap-sheet-out-top { to { transform: translateY(calc(-100% - 16px)); } }
 @keyframes rap-sheet-out-bottom { to { transform: translateY(calc(100% + 16px)); } }
+/* calm: a fade that drifts 6px off the panel's own edge, in and out */
+@keyframes rap-sheet-calm-in-right { from { opacity: 0; transform: translateX(6px); } }
+@keyframes rap-sheet-calm-in-left { from { opacity: 0; transform: translateX(-6px); } }
+@keyframes rap-sheet-calm-in-top { from { opacity: 0; transform: translateY(-6px); } }
+@keyframes rap-sheet-calm-in-bottom { from { opacity: 0; transform: translateY(6px); } }
+@keyframes rap-sheet-calm-out-right { to { opacity: 0; transform: translateX(6px); } }
+@keyframes rap-sheet-calm-out-left { to { opacity: 0; transform: translateX(-6px); } }
+@keyframes rap-sheet-calm-out-top { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes rap-sheet-calm-out-bottom { to { opacity: 0; transform: translateY(6px); } }
 
 @layer components {
   [data-slot="sheet-content"][data-state="open"] > :not([data-slot="sheet-body"]),
@@ -43,9 +53,9 @@
   [data-slot="sheet-content"][data-state="open"] > [data-slot="sheet-close"] { animation-delay: 60ms; }
 
   /* calm and reduced motion: no deal */
-  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] > *,
-  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,
-  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * { animation: none; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="sheet-content"][data-state="open"] > *,
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * { animation: none; }
   @media (prefers-reduced-motion: reduce) {
     [data-slot="sheet-content"][data-state="open"] > *,
     [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,

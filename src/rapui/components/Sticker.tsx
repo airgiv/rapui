@@ -85,8 +85,11 @@ import "./Sticker.css";
    `slap`: lands from 1.55× with a 10° twist and a big blurred
    shadow that snaps in to the contact shadow — 560ms, the squash
    (0.95) at 45% is the thumb pressing it down. `spin`: 24s per
-   turn, words included (or just the ring, for seals). Calm and
-   reduced motion: every sticker holds still, fully drawn. */
+   turn, words included (or just the ring, for seals). Reduced
+   motion: every sticker holds still, fully drawn. Calm: no
+   wobble, morph, peel, slap or spin — under the hand it lifts 2%
+   on an ease-out, keeping its tilt, and a slapped sticker simply
+   fades in where it lands. */
 
 export type StickerColor = "flame" | "acid" | "blue" | "plum" | "bubble" | "sky" | "green" | "ink" | "paper";
 export type StickerShape =
@@ -210,6 +213,8 @@ const stickerVariants = cva(
     "[--st-shadow:drop-shadow(0_0_0_transparent)_drop-shadow(0_0_0_transparent)]",
     /* the tilt lives on `transform`; the slap uses the individual scale/rotate/translate so they stack */
     "[transform:rotate(var(--rap-st-rot))] [transition:transform_var(--st-dur)_var(--st-ease)]",
+    /* calm: the lift below runs on the plain ease-out, never the spring */
+    "calm:[transition:transform_var(--rap-dur)_var(--rap-ease-out)]",
   ],
   {
     variants: {
@@ -242,12 +247,17 @@ const stickerVariants = cva(
         ring: "aspect-square p-[2.6em] whitespace-normal text-center leading-[1.05]",
       },
       hover: {
-        wobble: "fun:hover:[transform:rotate(calc(var(--rap-st-rot)*-1))_scale(1.08)]",
+        /* calm (both): same angle, 2% up — the vinyl acknowledges the hand and stays put */
+        wobble: "fun:hover:[transform:rotate(calc(var(--rap-st-rot)*-1))_scale(1.08)] calm:hover:[transform:rotate(var(--rap-st-rot))_scale(1.02)]",
         /* a peel keeps its angle and just lifts a little off the page */
-        peel: "fun:hover:[transform:rotate(var(--rap-st-rot))_scale(1.03)]",
+        peel: "fun:hover:[transform:rotate(var(--rap-st-rot))_scale(1.03)] calm:hover:[transform:rotate(var(--rap-st-rot))_scale(1.02)]",
         none: "",
       },
-      slap: { true: "fun:animate-[rap-sticker-slap_560ms_var(--rap-ease-out)_var(--st-delay)_both]", false: "" },
+      /* calm: no slap — a fade on the same delay, so a staggered pile still arrives in turn */
+      slap: {
+        true: "fun:animate-[rap-sticker-slap_560ms_var(--rap-ease-out)_var(--st-delay)_both] calm:animate-[rap-fade-in_var(--rap-dur)_var(--rap-ease-out)_var(--st-delay)_both]",
+        false: "",
+      },
       /* paper: a contact shadow and a soft lift, stronger on the dark page */
       paper: {
         true: [

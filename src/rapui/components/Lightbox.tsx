@@ -13,7 +13,19 @@ import { isCalm, useGlide } from "../hooks/useGlide";
 import { ArrowLeft, ArrowRight, X } from "../icons";
 import { useSound } from "../sound";
 import { clamp, cn } from "../utils";
-import { GalleryMedia, createLoop, galleryItemKey, rubber, setSpring, spring, stepSpring, type GalleryItem, type GalleryOpen } from "./galleryKit";
+import {
+  GalleryMedia,
+  createLoop,
+  galleryItemKey,
+  instantMotion,
+  rubber,
+  setSpring,
+  spring,
+  stepEase,
+  stepSpring,
+  type GalleryItem,
+  type GalleryOpen,
+} from "./galleryKit";
 
 /* ══ Lightbox ═════════════════════════════════════════════
    Pick a print up off the table and hold it to the light.
@@ -58,8 +70,11 @@ import { GalleryMedia, createLoop, galleryItemKey, rubber, setSpring, spring, st
    Radix Dialog does the focus trap, Escape, scroll lock and
    gives focus back to the thumbnail. ←/→ step, Home/End jump.
    Calm / reduced motion: it opens and closes in place with no
-   flight, swipes switch instantly, no pull-down (use Escape or
-   the close button). Sound (opt-in): a pop as it opens, a
+   flight and no pull-down (use Escape or the close button), and
+   the ends do not give. Calm still moves, quietly: the picture
+   fades in rising from 0.98 as the room darkens and fades out on
+   close, and a swipe or a step slides the track on a plain
+   ease-out. Reduced motion (and still) switch at once. Sound (opt-in): a pop as it opens, a
    whoosh per swipe, a soft bonk at either end, a drop on close. */
 
 const OPEN_TUNE = 12;
@@ -140,6 +155,8 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
     opener: null as HTMLElement | null,
     W: 0,
     H: 0,
+    /* calm: eased, never sprung — see the tick */
+    calm: false,
   });
 
   const findOrigin = useCallback(
@@ -201,7 +218,9 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
       f.style.opacity = "1";
     } else {
       // nowhere to fly from (or to): grow and fade in place
-      f.style.transform = `translate3d(0, ${s.dy.x.toFixed(2)}px, 0) scale(${((0.86 + 0.14 * t) * shrink).toFixed(4)})`;
+      // calm rises from 0.98, not 0.86: a dialog's entrance, not a zoom
+      const s0 = s.calm ? 0.98 : 0.86;
+      f.style.transform = `translate3d(0, ${s.dy.x.toFixed(2)}px, 0) scale(${((s0 + (1 - s0) * t) * shrink).toFixed(4)})`;
       f.style.clipPath = "none";
       f.style.opacity = String(tc);
     }
@@ -221,9 +240,9 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
 
   tickRef.current = (dt) => {
     const s = S.current;
-    const a = stepSpring(s.p, s.pTune, dt);
-    const b = stepSpring(s.off, TRACK_TUNE, dt);
-    const c = stepSpring(s.dy, s.closing ? CLOSE_TUNE : 55, dt);
+    const a = s.calm ? stepEase(s.p, dt, 0.2) : stepSpring(s.p, s.pTune, dt);
+    const b = s.calm ? stepEase(s.off, dt) : stepSpring(s.off, TRACK_TUNE, dt);
+    const c = s.calm ? stepEase(s.dy, dt) : stepSpring(s.dy, s.closing ? CLOSE_TUNE : 55, dt);
     paint();
     if (s.closing && s.p.x <= 0.6) {
       finishClose.current();
@@ -238,13 +257,15 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
     if (s.closing) return;
     s.closing = true;
     const calm = isCalm(stage.current);
+    s.calm = calm;
     soundRef.current.play("drop", { strength: 0.4 });
-    if (calm) {
+    if (calm && instantMotion(stage.current)) {
       finishClose.current();
       return;
     }
     const el = findOrigin(s.cur);
-    s.from = visible(el) ? rectOf(el) : null;
+    // calm: no flight home — it fades out where it is
+    s.from = !calm && visible(el) ? rectOf(el) : null;
     s.measure = true; // the picture may have been swiped; lay it out again before flying home
     s.pTune = CLOSE_TUNE;
     s.p.to = 0;
@@ -265,15 +286,21 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
       s.opener = document.activeElement as HTMLElement | null;
       s.cur = index;
       setCur(index);
-      s.from = visible(el) ? rectOf(el) : null;
+      const calm = isCalm(document.documentElement) || (!!origin && isCalm(origin));
+      s.calm = calm;
+      // calm: no flight out of the thumbnail — it fades up in place
+      s.from = !calm && visible(el) ? rectOf(el) : null;
       s.to = null;
       s.measure = true;
       setSpring(s.off, 0);
       setSpring(s.dy, 0);
       s.drag = 0;
       s.pTune = OPEN_TUNE;
-      if (isCalm(document.documentElement) || (origin && isCalm(origin))) {
+      if (calm && instantMotion(origin ?? document.documentElement)) {
         setSpring(s.p, 100);
+      } else if (calm) {
+        setSpring(s.p, 0);
+        s.p.to = 100;
       } else {
         setSpring(s.p, 0);
         s.p.to = 100;
@@ -296,8 +323,10 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
       return;
     }
     const calm = isCalm(stage.current);
+    s.calm = calm;
     // keep what is on screen where it is: the new track offset starts one slide (per step) back
-    s.off.x = calm ? 0 : s.off.x + s.drag + (next - s.cur) * (s.W + GAP);
+    // (calm slides too, eased; only reduced motion / still cut straight to it)
+    s.off.x = calm && instantMotion(stage.current) ? 0 : s.off.x + s.drag + (next - s.cur) * (s.W + GAP);
     s.off.to = 0;
     s.off.v = 0;
     s.drag = 0;
@@ -346,7 +375,8 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
     if (d.samples.length > 6) d.samples.shift();
     if (d.axis === "x") {
       const atEnd = (s.cur === 0 && dx > 0) || (s.cur === n - 1 && dx < 0);
-      s.drag = atEnd ? rubber(dx, s.W) : dx;
+      // calm: the ends do not give
+      s.drag = atEnd ? (s.calm ? 0 : rubber(dx, s.W)) : dx;
     } else {
       setSpring(s.dy, dy > 0 ? dy : rubber(dy, s.H * 0.5));
     }
@@ -406,7 +436,7 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
     const r = railRef.current;
     if (!r || !activeThumb) return;
     const target = activeThumb.offsetLeft + activeThumb.offsetWidth / 2 - r.clientWidth / 2;
-    r.scrollTo({ left: target, behavior: isCalm(r) ? "auto" : "smooth" });
+    r.scrollTo({ left: target, behavior: instantMotion(r) ? "auto" : "smooth" });
   }, [activeThumb]);
 
   const item = items[cur];
@@ -459,8 +489,8 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
               data-slot="lightbox-close"
               aria-label="Close"
               className={cn(
-                "grid place-items-center size-control p-0 border-0 rounded-full bg-white/10 text-white cursor-pointer",
-                "transition-[background-color,rotate] duration-(--rap-dur-fast) ease-spring hover:bg-white/20 fun:hover:rotate-90",
+                "grid place-items-center size-control p-0 border-0 rounded-pill bg-white/10 text-white cursor-pointer",
+                "transition-[background-color,rotate] duration-(--rap-dur-fast) ease-spring hover:bg-white/20 fun:hover:rotate-90 calm:ease-soft",
                 "outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring [&_svg]:size-5",
               )}
             >
@@ -604,7 +634,7 @@ export function Lightbox({ items, index, onIndexChange, onClose, origin, getOrig
 }
 
 const navClass = cn(
-  "absolute top-1/2 -translate-y-1/2 z-2 grid place-items-center size-control-lg p-0 border-0 rounded-full bg-white/10 text-white cursor-pointer",
+  "absolute top-1/2 -translate-y-1/2 z-2 grid place-items-center size-control-lg p-0 border-0 rounded-pill bg-white/10 text-white cursor-pointer",
   "transition-[background-color,opacity] duration-(--rap-dur-fast) ease-rm hover:bg-white/20 disabled:opacity-0 disabled:pointer-events-none",
   "outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring [&_svg]:size-5",
 );

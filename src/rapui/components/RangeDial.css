@@ -112,6 +112,15 @@
   .g-arc line[data-on] { animation-duration: 1ms; animation-delay: 0ms; }
 }
 
+/* rap/ui calm: the same draw, quicker and on the plain ease-out;
+   the wave's step follows --rap-dur, so it closes up with it */
+@media (prefers-reduced-motion: no-preference) {
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .g-arc line[data-on] {
+    animation: dial-fill var(--rap-dur-fast) var(--rap-ease-out) both;
+    animation-delay: calc(var(--d, 0) * var(--rap-dur) / 90);
+  }
+}
+
 .g-arc[data-dragging="true"] { cursor: grabbing; }
 
 /* ── the handles ────────────────────────────────────────────

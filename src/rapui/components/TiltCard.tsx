@@ -1,5 +1,6 @@
 import { useRef, type HTMLAttributes, type PointerEvent } from "react";
 import { cva } from "class-variance-authority";
+import { isCalm } from "../hooks/useGlide";
 import { cn, prefersReducedMotion } from "../utils";
 
 export interface TiltCardProps extends HTMLAttributes<HTMLDivElement> {
@@ -19,6 +20,8 @@ const tiltVariants = cva(
     "relative overflow-hidden p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg bg-(--tc-bg) text-(--tc-fg)",
     "[transform:rotateX(var(--rx))_rotateY(var(--ry))] transform-3d will-change-transform",
     "transition-transform duration-(--rap-dur) ease-rm hover:duration-150",
+    /* calm: the card stays flat — only the spotlight answers the hand */
+    "calm:transform-none",
   ],
   {
     variants: {
@@ -47,7 +50,10 @@ const tiltVariants = cva(
   },
 );
 
-/** 3D-tilting card with a spotlight glow that follows the pointer. */
+/**
+ * 3D-tilting card with a spotlight glow that follows the pointer.
+ * Calm: no tilt; the card holds flat and the soft spotlight is the one thing that moves.
+ */
 export function TiltCard({ max = 10, tone = "paper", spotlight = true, className, children, onPointerMove, onPointerLeave, ...rest }: TiltCardProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -58,8 +64,11 @@ export function TiltCard({ max = 10, tone = "paper", spotlight = true, className
     const r = el.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width;
     const py = (e.clientY - r.top) / r.height;
-    el.style.setProperty("--rx", `${(0.5 - py) * max * 2}deg`);
-    el.style.setProperty("--ry", `${(px - 0.5) * max * 2}deg`);
+    /* calm: the glow still follows, the tilt does not */
+    if (!isCalm(el)) {
+      el.style.setProperty("--rx", `${(0.5 - py) * max * 2}deg`);
+      el.style.setProperty("--ry", `${(px - 0.5) * max * 2}deg`);
+    }
     el.style.setProperty("--mx", `${px * 100}%`);
     el.style.setProperty("--my", `${py * 100}%`);
   };

@@ -1,0 +1,23 @@
+/* MatrixStatus — the label's passing light. The text is painted with a
+   gradient (mute → ink → mute) clipped to the letters, and the gradient
+   slides across. Calm slides it at half speed; still and reduced motion
+   show plain ink-2 text. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-shimmer-text {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+.rap-shimmer-text {
+  color: transparent;
+  background-image: linear-gradient(90deg, var(--rap-mute) 35%, var(--rap-ink) 50%, var(--rap-mute) 65%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: rap-shimmer-text 1.4s linear infinite;
+}
+:where([data-rap-motion="calm"]) .rap-shimmer-text { animation-duration: 2.8s; }
+:where([data-rap-motion="still"]) .rap-shimmer-text { animation: none; background: none; color: var(--rap-ink-2); }
+@media (prefers-reduced-motion: reduce) {
+  .rap-shimmer-text { animation: none; background: none; color: var(--rap-ink-2); }
+}

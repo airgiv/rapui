@@ -34,7 +34,9 @@ import {
    menu (hover or ←/→ while open) and it travels there like a caterpillar
    (useGlide, axis x — the ToggleGroup glider), instead of one trigger going
    dark as another goes light. When every menu closes it fades where it is.
-   Under calm the pill is hidden and the triggers paint their own state. */
+   Under calm the pill is hidden and the triggers paint their own state.
+   Calm: the open trigger's ink crossfades in place (no travel); the menus
+   use DropdownMenu's calm fade-up and per-row tint. */
 
 export const Menubar = forwardRef<
   ElementRef<typeof MenubarPrimitive.Root>,

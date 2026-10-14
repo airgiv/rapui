@@ -26,7 +26,10 @@
 
    Radix still owns the state (aria-checked, keyboard, forms); the
    state is immediate and the spring only paints it. Reduced
-   motion / data-rap-motion="calm": the spring snaps, no squash.
+   motion / data-rap-motion="calm": the spring snaps, no squash;
+   the fill fades in at full size instead of swelling, and the tick
+   still draws itself (a CSS ease-out, no overshoot) — the one
+   detail. Unticking fades the fill out.
    Sound: "tick" on check, "release" on uncheck. */
 import { forwardRef, useCallback, useRef, useState, type ComponentPropsWithoutRef, type ElementRef } from "react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
@@ -121,10 +124,14 @@ export const Checkbox = forwardRef<ElementRef<typeof CheckboxPrimitive.Root>, Ch
       {...rest}
     >
       {/* the fill: scaled from the centre by the spring (inline `scale`), swells past the box */}
+      {/* calm: no swell — the fill stays full size and only fades */}
       <span
         data-slot="checkbox-fill"
-        className="absolute inset-0 rounded-[inherit] bg-select pointer-events-none"
-        style={{ scale: String(fill), opacity: fill > 0.01 ? 1 : 0 }}
+        className={cn(
+          "absolute inset-0 rounded-[inherit] bg-select pointer-events-none",
+          calm && "transition-opacity duration-(--rap-dur-fast) ease-soft",
+        )}
+        style={calm ? { opacity: on ? 1 : 0 } : { scale: String(fill), opacity: fill > 0.01 ? 1 : 0 }}
         aria-hidden
       />
       {/* the tick: a stroked path drawn by the same spring (inline dash offset) */}
@@ -138,8 +145,9 @@ export const Checkbox = forwardRef<ElementRef<typeof CheckboxPrimitive.Root>, Ch
           d={shape === "dash" ? "M6.5 12h11" : "M5.6 12.6l4.1 4.1 8.7-9.1"}
           pathLength={1}
           strokeDasharray="1 1"
-          strokeDashoffset={1 - draw}
-          style={{ opacity: draw > 0 ? 1 : 0 }}
+          // calm: the snapped spring jumps the offset, and this transition draws it instead
+          className={cn(calm && on && "transition-[stroke-dashoffset] duration-(--rap-dur) ease-soft delay-60")}
+          style={{ strokeDashoffset: 1 - draw, opacity: draw > 0 ? 1 : 0 }}
         />
       </svg>
     </CheckboxPrimitive.Root>

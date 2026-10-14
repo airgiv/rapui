@@ -1,5 +1,6 @@
 import { useEffect, useState, type HTMLAttributes } from "react";
 import { useInView } from "../hooks/useInView";
+import { isCalm } from "../hooks/useGlide";
 import { cn, prefersReducedMotion } from "../utils";
 
 export interface CounterProps extends HTMLAttributes<HTMLSpanElement> {
@@ -12,14 +13,18 @@ export interface CounterProps extends HTMLAttributes<HTMLSpanElement> {
   suffix?: string;
 }
 
-/** Number that counts up with an expo ease once it scrolls into view. */
+/**
+ * Number that counts up with an expo ease once it scrolls into view.
+ * Calm: no ticking digits — the final figure fades in and settles up 4px.
+ */
 export function Counter({ to, from = 0, duration = 1800, decimals = 0, prefix = "", suffix = "", className, style, ...rest }: CounterProps) {
   const [ref, inView] = useInView<HTMLSpanElement>({ threshold: 0.5 });
   const [val, setVal] = useState(from);
 
   useEffect(() => {
     if (!inView) return;
-    if (prefersReducedMotion()) {
+    /* calm: the value is simply there; the fade-in below is the arrival */
+    if (prefersReducedMotion() || isCalm(ref.current)) {
       setVal(to);
       return;
     }
@@ -36,7 +41,19 @@ export function Counter({ to, from = 0, duration = 1800, decimals = 0, prefix = 
   }, [inView, to, from, duration]);
 
   return (
-    <span ref={ref} className={cn("rap-counter", className)} style={{ fontVariantNumeric: "tabular-nums", ...style }} {...rest}>
+    <span
+      ref={ref}
+      data-state={inView ? "in" : "out"}
+      className={cn(
+        "rap-counter",
+        /* calm: held back (invisible, 4px low) until it is in view, then eases up */
+        "calm:inline-block calm:transition-[opacity,translate] calm:duration-(--rap-dur-slow) calm:ease-soft",
+        "calm:data-[state=out]:opacity-0 calm:data-[state=out]:translate-y-1",
+        className,
+      )}
+      style={{ fontVariantNumeric: "tabular-nums", ...style }}
+      {...rest}
+    >
       {prefix}
       {val.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}
       {suffix}

@@ -11,6 +11,7 @@ import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui";
 import { useGlide } from "../hooks/useGlide";
 import { cn } from "../utils";
 import { useSound } from "../sound";
+import { useMotionCalm } from "./FormField";
 
 /**
  * Segmented control (Radix ToggleGroup). `type="single"` for one choice,
@@ -19,6 +20,8 @@ import { useSound } from "../sound";
  * Delight: in single mode one ink pill travels between options like a
  * caterpillar (useGlide) — its leading edge reaches the new option first and
  * the tail catches up — instead of each option lighting up on its own.
+ * Calm / reduced motion: no glider (its slide is a spring); each option paints
+ * its own ink pill, so the choice crossfades from one segment to the next.
  */
 export const ToggleGroup = forwardRef<
   ElementRef<typeof ToggleGroupPrimitive.Root>,
@@ -26,7 +29,10 @@ export const ToggleGroup = forwardRef<
 >(function ToggleGroup({ className, size = "md", children, ...rest }, ref) {
   const root = useRef<HTMLDivElement>(null);
   useImperativeHandle(ref, () => root.current as HTMLDivElement);
+  const calm = useMotionCalm(root);
+  // the glider only in fun: calm lets the items' own backgrounds crossfade
   const single = rest.type === "single";
+  const glides = single && !calm;
   const [active, setActive] = useState<HTMLElement | null>(null);
 
   // follow Radix's data-state="on" wherever the value comes from
@@ -57,7 +63,7 @@ export const ToggleGroup = forwardRef<
       ref={root}
       data-slot="toggle-group"
       data-size={size}
-      data-glide={single || undefined}
+      data-glide={glides || undefined}
       className={cn(
         "group/tg relative isolate inline-flex gap-tight p-[3px] rounded-pill bg-fill",
         size === "sm" && "[--tg-h:var(--rap-control-h-sm)]",
@@ -67,7 +73,7 @@ export const ToggleGroup = forwardRef<
       )}
       {...(rest as ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root>)}
     >
-      {single && (
+      {glides && (
         <span className="absolute top-0 left-0 -z-1 rounded-pill bg-ink pointer-events-none" style={glide.style} aria-hidden />
       )}
       {children}

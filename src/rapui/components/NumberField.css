@@ -21,3 +21,7 @@
   30% { translate: calc(var(--bonk, 1) * 5px) 0; scale: 0.9 1.06; }
   60% { translate: calc(var(--bonk, 1) * -2px) 0; scale: 1.03 0.98; }
 }
+
+/* calm: no reel turning — the strip rests on the new digit and fades up 3px into it */
+@keyframes rap-nf-calm-up { from { translate: 0 calc(-1.3em + 3px); opacity: 0; } to { translate: 0 -1.3em; } }
+@keyframes rap-nf-calm-down { from { translate: 0 3px; opacity: 0; } to { translate: 0 0; } }

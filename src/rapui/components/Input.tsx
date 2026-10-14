@@ -20,9 +20,10 @@
    stays wrong while you retype does not keep nagging. The red
    ring itself is immediate; the shake rides on top.
 
-   Both switch off under reduced motion and data-rap-motion="calm"
-   (the ring then simply appears). With a <SoundProvider enabled>
-   the "no" is also heard ("error"). */
+   Both switch off under reduced motion and data-rap-motion="calm":
+   there the whole ring fades in, the loading dot laps slowly and
+   the valid check still draws itself — the one detail kept. With
+   a <SoundProvider enabled> the "no" is also heard ("error"). */
 import { forwardRef, useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { useSound } from "../sound";
 import { cn } from "../utils";
@@ -100,7 +101,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {status === "loading" && (
         // one dot running laps around a faint track: "checking…"
         <span aria-label="Checking" className="relative flex-none size-[1.1em] rounded-full border-2 border-fill-strong">
-          <span className="absolute -top-[3px] left-1/2 -ml-[3px] size-[6px] rounded-full bg-ink origin-[3px_calc(0.55em+1px)] fun:animate-spin" />
+          <span className="absolute -top-[3px] left-1/2 -ml-[3px] size-[6px] rounded-full bg-ink origin-[3px_calc(0.55em+1px)] fun:animate-spin calm:animate-[spin_1.6s_linear_infinite]" />
         </span>
       )}
       {status === "valid" && !invalid && (
@@ -113,7 +114,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             strokeWidth="2.6"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="animate-draw calm:animate-none"
+            className="animate-draw"
           />
         </svg>
       )}

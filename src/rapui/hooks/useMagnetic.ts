@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import { prefersReducedMotion } from "../utils";
+import { isCalm } from "./useGlide";
 
-/** Pulls the element toward the pointer while hovered, springs back on leave. */
+/** Pulls the element toward the pointer while hovered, springs back on leave.
+ *  Calm / still: no pull (checked on every move, so a live switch applies at once). */
 export function useMagnetic<T extends HTMLElement>(strength = 0.35, enabled = true) {
   const ref = useRef<T | null>(null);
 
@@ -11,6 +13,7 @@ export function useMagnetic<T extends HTMLElement>(strength = 0.35, enabled = tr
     let frame = 0;
 
     const move = (e: PointerEvent) => {
+      if (isCalm(el)) return;
       const r = el.getBoundingClientRect();
       const x = (e.clientX - (r.left + r.width / 2)) * strength;
       const y = (e.clientY - (r.top + r.height / 2)) * strength;

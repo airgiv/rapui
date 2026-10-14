@@ -1,0 +1,408 @@
+/* PaymentCard — faces, looks, sheen, frost.
+
+   Everything is sized in cqw of the card (the root is an inline-size
+   container), so a 240px card and a 380px card are the same drawing.
+   The flip turns each face on its own (front 0 → 180°, back −180 → 0°)
+   while the body carries the pointer tilt, so the two never fight.
+   Calm: the faces cross-fade instead of turning, no tilt, the sheen only
+   on hover. Still: no sheen, nothing moves (global rule kills durations). */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .rap-payment-card {
+    --mx: 50%;
+    --my: 50%;
+    --rx: 0deg;
+    --ry: 0deg;
+    --pc-ink: #fff;
+    --pc-soft: rgb(255 255 255 / 0.72);
+    --pc-btn: rgb(255 255 255 / 0.16);
+    --pc-btn-hover: rgb(255 255 255 / 0.28);
+    --pc-radius: 4.2cqw;
+    --pc-shadow: 0 1.6cqw 5cqw rgb(0 0 0 / 0.22), 0 0.4cqw 1cqw rgb(0 0 0 / 0.12);
+    --pc-num-font: var(--rap-font-sans);
+    --pc-chip: color-mix(in oklab, var(--rap-warning) 55%, white);
+    --pc-chip-line: color-mix(in oklab, var(--rap-warning) 45%, black);
+    --pc-mc-a: var(--rap-flame);
+    --pc-mc-b: var(--rap-warning);
+    container-type: inline-size;
+    perspective: 1100px;
+    font-family: var(--rap-font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .rap-pc-body {
+    position: relative;
+    aspect-ratio: 85.6 / 54;
+    transform-style: preserve-3d;
+    transition: transform 380ms var(--rap-ease-out);
+  }
+
+  .rap-pc-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 6cqw 6.4cqw;
+    overflow: hidden;
+    border-radius: var(--pc-radius);
+    color: var(--pc-ink);
+    background: var(--pc-bg);
+    box-shadow: var(--pc-edge, 0 0 #0000), var(--pc-shadow);
+    backface-visibility: hidden;
+    isolation: isolate;
+    transition:
+      transform 700ms var(--rap-ease-spring),
+      opacity 260ms var(--rap-ease-out);
+  }
+  .rap-pc-back { transform: rotateY(-180deg); }
+  .rap-pc-face[inert] { pointer-events: none; }
+  .rap-payment-card[data-flipped] .rap-pc-front { transform: rotateY(180deg); }
+  .rap-payment-card[data-flipped] .rap-pc-back { transform: rotateY(0deg); }
+
+  .rap-pc-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--pc-texture, none);
+  }
+  .rap-pc-face > :not(.rap-pc-bg, .rap-pc-sheen, .rap-pc-frost) { position: relative; }
+
+  /* ── front layout ── */
+  .rap-pc-top,
+  .rap-pc-bottom,
+  .rap-pc-back-foot {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 3cqw;
+  }
+  .rap-pc-issuer {
+    font-family: var(--pc-issuer-font, var(--rap-font-display));
+    font-size: 4.4cqw;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  .rap-pc-mid {
+    display: flex;
+    align-items: center;
+    gap: 3cqw;
+    margin-top: 5cqw;
+  }
+  .rap-pc-chip { width: 11.5cqw; height: auto; }
+  .rap-pc-chip-body { fill: var(--pc-chip); stroke: var(--pc-chip-line); stroke-opacity: 0.4; stroke-width: 1; }
+  .rap-pc-chip-lines { fill: none; stroke: var(--pc-chip-line); stroke-opacity: 0.55; stroke-width: 1.2; }
+  .rap-pc-nfc { width: 5.4cqw; height: auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; opacity: 0.85; }
+
+  .rap-pc-number-row {
+    display: flex;
+    align-items: center;
+    gap: 2.4cqw;
+    margin-top: auto;
+    margin-bottom: 3.4cqw;
+  }
+  .rap-pc-number {
+    font-family: var(--pc-num-font);
+    font-size: 6.2cqw;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    white-space: pre;
+    line-height: 1;
+    text-shadow: var(--pc-text-shadow, none);
+  }
+  .rap-pc-meta { display: flex; gap: 6cqw; align-items: flex-end; min-width: 0; }
+  .rap-pc-holder,
+  .rap-pc-expiry {
+    font-size: 3.4cqw;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    line-height: 1.1;
+    font-family: var(--pc-meta-font, inherit);
+  }
+  .rap-pc-holder { overflow: hidden; text-overflow: ellipsis; }
+  .rap-pc-expiry small {
+    display: block;
+    font-size: 1.9cqw;
+    letter-spacing: 0.12em;
+    color: var(--pc-soft);
+    margin-bottom: 0.6cqw;
+  }
+  .rap-pc-bottom { align-items: flex-end; }
+
+  /* ── buttons on the card ── */
+  .rap-pc-btn {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: max(28px, 8.4cqw);
+    height: max(28px, 8.4cqw);
+    margin: -1cqw;
+    border-radius: 999px;
+    color: inherit;
+    font-size: max(14px, 4cqw);
+    background: var(--pc-btn);
+    cursor: pointer;
+    transition: background-color var(--rap-dur-fast) var(--rap-ease-out), scale var(--rap-dur-fast) var(--rap-ease-out);
+  }
+  .rap-pc-btn:hover { background: var(--pc-btn-hover); }
+  .rap-pc-btn:active { scale: 0.92; }
+  .rap-pc-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .rap-pc-slash {
+    position: absolute;
+    width: 1.25em;
+    height: 1.5px;
+    background: currentColor;
+    rotate: -45deg;
+    box-shadow: 0 0 0 1px var(--pc-btn);
+    border-radius: 2px;
+  }
+
+  /* ── network marks ── */
+  .rap-pc-visa {
+    font-size: 6.6cqw;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.03em;
+    line-height: 0.9;
+  }
+  .rap-pc-mc { width: 13cqw; height: auto; }
+  .rap-pc-mc-a { fill: var(--pc-mc-a); }
+  .rap-pc-mc-b { fill: var(--pc-mc-b); fill-opacity: 0.88; }
+  .rap-pc-amex {
+    font-size: 2.8cqw;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 1cqw 1.4cqw;
+    border: 0.35cqw solid currentColor;
+    border-radius: 0.6cqw;
+    line-height: 1;
+  }
+  .rap-pc-generic { width: 11cqw; height: auto; }
+
+  /* ── sheen: a light over the face that follows the pointer ── */
+  .rap-pc-sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    background: radial-gradient(circle at var(--mx) var(--my), rgb(255 255 255 / 0.2), transparent 50%);
+    transition: opacity var(--rap-dur) var(--rap-ease-out);
+  }
+  .rap-payment-card:hover .rap-pc-sheen { opacity: 1; }
+
+  /* ── frost ── */
+  .rap-pc-frost {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    color: color-mix(in oklab, var(--rap-blue) 45%, black);
+    background:
+      radial-gradient(circle at 0% 100%, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.2) 70%),
+      radial-gradient(circle at 80% 10%, rgb(255 255 255 / 0.35), transparent 40%);
+    backdrop-filter: blur(1.4cqw) saturate(0.55) brightness(1.08);
+    -webkit-backdrop-filter: blur(1.4cqw) saturate(0.55) brightness(1.08);
+  }
+  .rap-pc-flake {
+    position: absolute;
+    right: -5cqw;
+    top: -6cqw;
+    width: 40cqw;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    opacity: 0.75;
+  }
+  .rap-pc-frozen-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.4cqw;
+    padding: 1.6cqw 3.4cqw;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.86);
+    font-size: max(12px, 3.6cqw);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── back ── */
+  .rap-pc-back { padding-top: 5cqw; }
+  .rap-pc-stripe {
+    margin-inline: -6.4cqw;
+    height: 12cqw;
+    background: var(--pc-stripe, rgb(0 0 0 / 0.82));
+  }
+  .rap-pc-sig-row { display: flex; align-items: flex-end; gap: 3cqw; margin-top: 5cqw; }
+  .rap-pc-sig {
+    flex: 1;
+    height: 9cqw;
+    padding: 0 3cqw;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    border-radius: 0.8cqw;
+    color: color-mix(in oklab, var(--rap-blue) 40%, black);
+    font-family: var(--rap-font-display);
+    font-style: italic;
+    font-size: 4cqw;
+    background: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.92) 0 1.2cqw, rgb(235 235 235 / 0.92) 1.2cqw 2.4cqw);
+  }
+  .rap-pc-cvv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 14cqw;
+    height: 9cqw;
+    padding: 0 2.4cqw;
+    border-radius: 0.8cqw;
+    background: #fff;
+    color: #111;
+    font-family: var(--rap-font-mono);
+    font-size: 3.8cqw;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    line-height: 1;
+  }
+  .rap-pc-cvv small { font-family: var(--rap-font-sans); font-size: 1.8cqw; letter-spacing: 0.1em; opacity: 0.6; margin-bottom: 0.6cqw; }
+  .rap-pc-fine {
+    margin-top: 3.4cqw;
+    font-size: 2cqw;
+    line-height: 1.4;
+    color: var(--pc-soft);
+    max-width: 80%;
+  }
+  .rap-pc-back-foot { margin-top: auto; align-items: flex-end; }
+
+  /* ══ looks ══════════════════════════════════════════════ */
+
+  /* fun: colour blobs on plum, a holographic sheen, tilt toward the pointer */
+  .rap-payment-card[data-look="fun"] {
+    --pc-radius: 5.2cqw;
+    --pc-bg:
+      radial-gradient(circle at 12% 18%, var(--rap-bubble) 0 14%, transparent 46%),
+      radial-gradient(circle at 92% 8%, var(--rap-acid) 0 10%, transparent 36%),
+      radial-gradient(circle at 78% 96%, var(--rap-sky) 0 14%, transparent 46%),
+      radial-gradient(circle at 18% 110%, var(--rap-flame) 0 22%, transparent 56%),
+      linear-gradient(135deg, var(--rap-plum), var(--rap-blue));
+    --pc-text-shadow: 0 0.3cqw 1cqw rgb(0 0 0 / 0.25);
+  }
+  .rap-payment-card[data-look="fun"] .rap-pc-body { transform: rotateX(var(--rx)) rotateY(var(--ry)); transition-duration: 160ms; }
+  .rap-payment-card[data-look="fun"]:not(:hover) .rap-pc-body { transition-duration: 600ms; transition-timing-function: var(--rap-ease-spring); }
+  .rap-payment-card[data-look="fun"] .rap-pc-sheen {
+    opacity: 0.55;
+    mix-blend-mode: overlay;
+    background:
+      radial-gradient(circle at var(--mx) var(--my), rgb(255 255 255 / 0.55), transparent 42%),
+      linear-gradient(
+        115deg,
+        transparent 20%,
+        color-mix(in srgb, var(--rap-sky) 80%, transparent) 36%,
+        color-mix(in srgb, var(--rap-bubble) 80%, transparent) 46%,
+        color-mix(in srgb, var(--rap-acid) 80%, transparent) 56%,
+        transparent 72%
+      );
+    background-size: 100% 100%, 260% 260%;
+    background-position: 0 0, var(--mx) var(--my);
+  }
+  .rap-payment-card[data-look="fun"]:hover .rap-pc-sheen { opacity: 0.9; }
+
+  /* civic: deep navy with a guilloche */
+  .rap-payment-card[data-look="civic"] {
+    --pc-bg: linear-gradient(140deg, color-mix(in oklab, var(--rap-blue) 52%, black), color-mix(in oklab, var(--rap-blue) 26%, black));
+    --pc-num-font: var(--rap-font-display);
+    --pc-mc-b: color-mix(in oklab, var(--rap-warning) 70%, white);
+  }
+  .rap-payment-card[data-look="civic"] .rap-pc-number { font-size: 6.8cqw; letter-spacing: 0.04em; }
+  .rap-pc-guilloche { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .rap-pc-guilloche path { fill: none; stroke: rgb(255 255 255 / 0.11); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+  /* signal: terracotta into moss, a dot-matrix texture, mono everything */
+  .rap-payment-card[data-look="signal"] {
+    --pc-radius: 2.6cqw;
+    --pc-bg: linear-gradient(160deg, color-mix(in oklab, var(--rap-flame) 66%, black), color-mix(in oklab, var(--rap-blue) 55%, black));
+    --pc-texture: radial-gradient(circle, rgb(255 255 255 / 0.16) 0 0.42cqw, transparent 0.5cqw) 0 0 / 2.2cqw 2.2cqw;
+    --pc-num-font: var(--rap-font-mono);
+    --pc-issuer-font: var(--rap-font-mono);
+    --pc-meta-font: var(--rap-font-mono);
+    --pc-chip: color-mix(in oklab, var(--rap-paper) 70%, var(--rap-flame));
+  }
+  .rap-payment-card[data-look="signal"] .rap-pc-issuer { text-transform: uppercase; font-size: 3.4cqw; letter-spacing: 0.1em; }
+  .rap-payment-card[data-look="signal"] .rap-pc-number { font-weight: 400; letter-spacing: 0.02em; }
+  .rap-payment-card[data-look="signal"] .rap-pc-btn { border-radius: 1.2cqw; }
+
+  /* product: matte black, noise, a thin light edge */
+  .rap-payment-card[data-look="product"] {
+    --pc-radius: 3.6cqw;
+    --pc-bg: linear-gradient(160deg, color-mix(in oklab, black 84%, var(--rap-blue)), color-mix(in oklab, black 94%, var(--rap-blue)));
+    --pc-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --pc-edge: inset 0 0 0 1px rgb(255 255 255 / 0.1), inset 0 1px 0 rgb(255 255 255 / 0.22);
+    --pc-chip: color-mix(in oklab, white 70%, black);
+    --pc-chip-line: black;
+    --pc-btn: rgb(255 255 255 / 0.08);
+    --pc-btn-hover: rgb(255 255 255 / 0.16);
+  }
+  .rap-payment-card[data-look="product"] .rap-pc-issuer { font-family: var(--rap-font-sans); font-weight: 500; font-size: 4cqw; }
+  .rap-payment-card[data-look="product"] .rap-pc-number { letter-spacing: 0.08em; color: var(--pc-soft); }
+
+  /* minimal: white, a hairline, all type */
+  .rap-payment-card[data-look="minimal"] {
+    --pc-radius: 2.4cqw;
+    --pc-bg: var(--rap-surface);
+    --pc-ink: var(--rap-ink);
+    --pc-soft: var(--rap-mute);
+    --pc-edge: inset 0 0 0 1px var(--rap-line);
+    --pc-shadow: 0 0 #0000;
+    --pc-btn: var(--rap-fill);
+    --pc-btn-hover: var(--rap-fill-hover);
+    --pc-chip: transparent;
+    --pc-chip-line: var(--rap-ink);
+    --pc-mc-a: var(--rap-ink);
+    --pc-mc-b: var(--rap-mute);
+    --pc-stripe: var(--rap-ink);
+  }
+  .rap-payment-card[data-look="minimal"] .rap-pc-issuer { font-family: var(--rap-font-sans); font-weight: 600; font-size: 3.6cqw; }
+  .rap-payment-card[data-look="minimal"] .rap-pc-chip-body { stroke-opacity: 1; }
+  .rap-payment-card[data-look="minimal"] .rap-pc-sheen { display: none; }
+  .rap-payment-card[data-look="minimal"] .rap-pc-sig { background: var(--rap-fill); color: var(--rap-ink); }
+  .rap-payment-card[data-look="minimal"] .rap-pc-cvv { background: transparent; color: var(--rap-ink); box-shadow: inset 0 0 0 1px var(--rap-line); }
+  .rap-payment-card[data-look="minimal"] .rap-pc-frost { color: var(--rap-ink); }
+
+  /* ── motion ── */
+  /* fun: the frost creeps in from the bottom-left corner (calm: it is just there) */
+  .rap-pc-frost { animation: rap-pc-frost 900ms var(--rap-ease-out) both; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-pc-frost { animation: none; }
+  @keyframes rap-pc-frost {
+    from { clip-path: circle(0% at 0% 100%); }
+    to { clip-path: circle(150% at 0% 100%); }
+  }
+
+  /* calm: no tilt; the faces cross-fade instead of turning */
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-payment-card .rap-pc-body { transform: none; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-payment-card .rap-pc-face { transform: none; transition: opacity 320ms var(--rap-ease-out); }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-payment-card .rap-pc-back { opacity: 0; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-payment-card[data-flipped] .rap-pc-front { opacity: 0; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-payment-card[data-flipped] .rap-pc-back { opacity: 1; }
+  /* calm: the holographic sheen waits for the pointer like the others */
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-payment-card[data-look="fun"]:not(:hover) .rap-pc-sheen { opacity: 0; }
+  /* still: no light moves at all */
+  [data-rap-motion="still"] .rap-payment-card .rap-pc-sheen { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rap-payment-card .rap-pc-body { transform: none !important; }
+    .rap-payment-card .rap-pc-face { transform: none; transition: opacity 200ms linear; }
+    .rap-pc-frost { animation: none; }
+    .rap-payment-card .rap-pc-back { opacity: 0; }
+    .rap-payment-card[data-flipped] .rap-pc-front { opacity: 0; }
+    .rap-payment-card[data-flipped] .rap-pc-back { opacity: 1; }
+  }
+}

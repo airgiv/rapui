@@ -40,7 +40,12 @@ import "./TempoDial.css";
    Let go with speed and the wheel coasts on the same spring the
    TimeScrubber lands on, to the whole bpm it would have reached.
    A tapped tempo arrives by that spring too, so the ring visibly
-   spins to the new number instead of cutting to it. */
+   spins to the new number instead of cutting to it.
+   ── CALM ────────────────────────────────────────────────
+   The ring turns exactly with the hand, stops dead at the ends
+   and never coasts; a tapped or keyed tempo lands at once. The
+   ring does not flash — the beat is kept quietly by the bar's dots
+   under the pill, which change colour in turn and nothing more. */
 
 /* degrees of ring per bpm, see above */
 const DEG = 3;
@@ -144,9 +149,9 @@ export const TempoDial = forwardRef<HTMLDivElement, TempoDialProps>(function Tem
     const fire = () => {
       const q = n % Math.max(1, beats);
       n += 1;
-      /* calm: the tempo is still kept (onBeat still fires), but
-         nothing on the ring blinks */
-      setBeat(isCalm(dial.current) ? null : { n, q });
+      /* calm: the beat is still kept (onBeat still fires, and the
+         bar's dots follow it), but the ring does not flash — see below */
+      setBeat({ n, q });
       cb.current.onBeat?.(q);
       next += 60000 / bpmRef.current;
       const now = performance.now();
@@ -222,7 +227,8 @@ export const TempoDial = forwardRef<HTMLDivElement, TempoDialProps>(function Tem
     g.a = a;
     g.raw += d;
     hand.feed(d);
-    set(rubber(g.raw, min, max));
+    /* calm: a hard stop at the ends, no stretch */
+    set(isCalm(dial.current) ? clamp(g.raw, min, max) : rubber(g.raw, min, max));
   };
 
   const onUp = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -236,7 +242,8 @@ export const TempoDial = forwardRef<HTMLDivElement, TempoDialProps>(function Tem
     if (!g) return;
     /* capped at 3 bpm a frame; 14 frames of carry — a spin of
        the wrist coasts about a third of a turn */
-    const v = hand.release(3);
+    /* calm throws nothing: it lands on the bpm under the mark */
+    const v = isCalm(dial.current) ? 0 : hand.release(3);
     land(state.current.x + v * 14, v * 0.6);
   };
 
@@ -329,7 +336,7 @@ export const TempoDial = forwardRef<HTMLDivElement, TempoDialProps>(function Tem
                 strokeLinecap="round"
               />
             ))}
-            {beat && quarter >= 0 && (
+            {beat && quarter >= 0 && !isCalm(dial.current) && (
               <g
                 key={beat.n}
                 data-slot="tempo-dial-beat"

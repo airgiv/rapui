@@ -37,6 +37,8 @@ import "./Command.css";
  * (CommandDialog) keeps a quick drop-in of its own rather than the Dialog's
  * toss: ⌘K is opened dozens of times a day. Sound: pop on palette open, a
  * soft detent per row, tick on run.
+ * Calm: no deal, no glide — the selected row's tint fades quickly on its own,
+ * and the palette rises 6px (not 12) and fades out.
  */
 export const Command = forwardRef<ElementRef<typeof CommandPrimitive>, ComponentPropsWithoutRef<typeof CommandPrimitive>>(
   function Command({ className, ...rest }, ref) {
@@ -78,7 +80,8 @@ export function CommandDialog({
   return (
     <Dialog {...rest}>
       {/* the Dialog card (as DialogContent, no close button) with its own motion: a quick
-          drop-in instead of the toss, the same in calm and reduced motion (--rap-dur is 0 there).
+          drop-in instead of the toss; calm halves the rise and leaves on a plain fade
+          (reduced motion: --rap-dur is 0 there).
           Anchored near the top so the box doesn't jump while the list filters. */}
       <DialogPrimitive.Portal>
         <DialogOverlay />
@@ -90,6 +93,7 @@ export function CommandDialog({
             "p-2.5 gap-0 rounded-card overflow-hidden top-[18vh] max-h-[72vh] [transform:translate(-50%,0)]",
             "animate-[rap-command-in_var(--rap-dur)_var(--rap-ease-out)]",
             "data-[state=closed]:animate-[rap-command-out_180ms_var(--rap-ease-rm)_forwards]",
+            "calm:animate-[rap-command-calm-in_var(--rap-dur)_var(--rap-ease-out)] calm:data-[state=closed]:animate-[rap-command-calm-out_180ms_var(--rap-ease-rm)_forwards]",
             className,
           )}
         >
@@ -223,6 +227,7 @@ export const CommandItem = forwardRef<ElementRef<typeof CommandPrimitive.Item>, 
           // utility already ignores data-disabled="false"); the glider paints the selection,
           // except under calm, where rows light up on their own again
           "menu-item calm:data-[selected=true]:bg-fill [&>svg]:text-ink-2 [&[hidden]]:hidden",
+          "calm:[transition:background-color_120ms_var(--rap-ease-rm)]",
           className,
         )}
         onSelect={(value) => {

@@ -24,6 +24,8 @@ import "./AlertDialog.css";
  * (not focus) so keyboard users aren't shown a jittering button, and it rides
  * on the individual `translate`/`rotate` properties so the Button's magnetic
  * `transform` still works underneath. Off under calm and reduced motion.
+ * Calm: Dialog's quiet fade-and-rise card; the danger action holds still and
+ * just takes the Button's calm colour fade.
  * Sound (inside an enabled <SoundProvider>): pop as it lands; drop as it falls
  * away — which is also what confirming sounds like.
  */

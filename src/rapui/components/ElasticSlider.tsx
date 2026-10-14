@@ -59,7 +59,12 @@ import { RollingNumber, isCalm } from "./ScrubNumber";
    Nothing here transitions transform, translate or scale: all
    three are written every frame by the component's spring, and a
    CSS transition on top would drag a second, slower curve behind
-   it. */
+   it.
+   ── CALM ────────────────────────────────────────────────
+   No band: the track never stretches, the thumb never squashes and
+   stops dead at the ends. Under the hand it is exact; a key press
+   (the spring being off) slides thumb and range to the step on a
+   short plain ease-out, and the "active" bubble fades in from 0.98. */
 
 /* the stretch's ceiling, px: how far the band will ever give */
 const STRETCH = 40;
@@ -228,6 +233,13 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
     if (lastW.current !== w) {
       lastW.current = w;
       c.x = c.tx = tx;
+      /* a jump, so calm's slide must not carry it: stand it aside
+         (as a held drag does) for the two frames the jump takes */
+      const area = track.current?.parentElement;
+      if (area) {
+        area.dataset.held = "";
+        requestAnimationFrame(() => requestAnimationFrame(() => !m.current.held && delete area.dataset.held));
+      }
       paint();
       return;
     }
@@ -278,6 +290,8 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
     const onThumb = thumbEl.current?.contains(e.target as Node);
     const grab = onThumb ? (e.clientX - box.left) / k - (c.x + c.s) : 0;
     drag.current = { left: box.left, grab, k, calm: calm() };
+    /* held: calm's slide stands aside so the thumb is under the hand */
+    e.currentTarget.dataset.held = "";
     /* focused for the keys that may follow, but marked as taken by
        the hand so the keyboard focus ring stays off until a key is
        actually pressed */
@@ -295,6 +309,7 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
   const onUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     const g = drag.current;
     drag.current = null;
+    delete e.currentTarget.dataset.held;
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
@@ -410,12 +425,19 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
             className="absolute top-0 h-full rounded-pill bg-fill-strong overflow-hidden"
             style={{ left: trackLeft, width: trackWidth || "100%", transform: `scaleY(${thin.toFixed(3)})` }}
           >
-            <div data-slot="elastic-slider-range" className="absolute left-0 inset-y-0 rounded-[inherit] bg-select" style={{ width: Math.max(0, thumbX - trackLeft) }} />
+            <div
+              data-slot="elastic-slider-range"
+              className="absolute left-0 inset-y-0 rounded-[inherit] bg-select calm:transition-[width] calm:duration-(--rap-dur-fast) calm:ease-soft group-data-[held]/area:transition-none"
+              style={{ width: Math.max(0, thumbX - trackLeft) }} />
           </div>
           <div
             ref={thumbEl}
             data-slot="elastic-slider-thumb"
-            className="group/thumb absolute left-0 top-1/2 size-[22px] -mt-[11px] -ml-[11px] outline-none focus-visible:outline-none cursor-grab group-active/area:cursor-grabbing"
+            className={cn(
+              "group/thumb absolute left-0 top-1/2 size-[22px] -mt-[11px] -ml-[11px] outline-none focus-visible:outline-none cursor-grab group-active/area:cursor-grabbing",
+              // calm only: the spring is off there, so CSS carries a key's step — never under the hand
+              "calm:transition-[translate] calm:duration-(--rap-dur-fast) calm:ease-soft group-data-[held]/area:transition-none",
+            )}
             role="slider"
             tabIndex={disabled ? -1 : 0}
             aria-label={ariaLabel}
@@ -446,7 +468,8 @@ export const ElasticSlider = forwardRef<HTMLDivElement, ElasticSliderProps>(func
                   "absolute left-1/2 bottom-[calc(100%+8px)] -translate-x-1/2 px-[9px] py-[5px] rounded-pill bg-ink text-paper",
                   "text-[0.8125rem] font-medium tracking-[-0.01em] whitespace-nowrap pointer-events-none origin-bottom",
                   "[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-rm),scale_var(--rap-dur-fast)_var(--rap-ease-spring)]",
-                  bubble === "active" && "opacity-0 scale-70 group-focus/thumb:opacity-100 group-focus/thumb:scale-100",
+                  "calm:[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-rm),scale_var(--rap-dur-fast)_var(--rap-ease-out)]",
+                  bubble === "active" && "opacity-0 scale-70 calm:scale-98 group-focus/thumb:opacity-100 group-focus/thumb:scale-100",
                 )}
                 aria-hidden="true"
               >

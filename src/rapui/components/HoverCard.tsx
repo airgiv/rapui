@@ -16,7 +16,9 @@ import { popSwing } from "./Popover";
    inside it scales with distance from the centre. Two imperative springs
    (useSpring maths, tune 50) write CSS variables, so pointer moves never
    re-render the card; they park when settled and stop on close. Off under
-   calm and reduced motion. Sound: a soft pop (0.4). */
+   calm and reduced motion. Sound: a soft pop (0.4).
+   Calm: no tilt — the card fades in from 0.98 with Popover's 4px drift and
+   lies flat. */
 
 const MAX_TILT = 6; // degrees
 

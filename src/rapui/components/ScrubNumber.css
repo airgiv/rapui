@@ -3,8 +3,11 @@
    are Tailwind in ScrubNumber.tsx.
    A digit smears a little while it rolls: a short blur, restarted on every
    change by alternating two identical animation names, because re-applying
-   the same one does not replay. */
+   the same one does not replay. Calm swaps the roll and the smear for a
+   short fade-up of the new digit, on the same two-name trick. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-rollnum-a { from { filter: blur(2px); } to { filter: blur(0); } }
 @keyframes rap-rollnum-b { from { filter: blur(2px); } to { filter: blur(0); } }
+@keyframes rap-rollnum-fade-a { from { opacity: 0.3; } }
+@keyframes rap-rollnum-fade-b { from { opacity: 0.3; } }

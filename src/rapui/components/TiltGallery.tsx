@@ -43,7 +43,9 @@ import { GalleryMedia, createLoop, galleryItemKey, spring, stepSpring, type Gall
    fades in with its own spring so it never pops on.
 
    Calm / reduced motion: flat cards, no glare, no lean; focus
-   and click behave exactly the same. Sound (opt-in): a very
+   and click behave exactly the same. Calm puts back two quiet
+   things instead: the picture eases in by 2% inside its card on
+   hover (the card itself stays put), and a press dips to 0.98. Sound (opt-in): a very
    quiet notch as the hand crosses into a new card, a tap on
    press. */
 
@@ -225,10 +227,16 @@ export const TiltGallery = forwardRef<HTMLDivElement, TiltGalleryProps>(function
                 "aspect-(--tg-ratio) [transform-style:preserve-3d] will-change-transform",
                 onOpen && "cursor-pointer",
                 "outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring",
+                /* calm: `scale` is its own property, so this press never fights the loop's transform */
+                "calm:transition-[scale] calm:duration-(--rap-dur-fast) calm:ease-soft calm:active:scale-98",
               )}
               style={{ "--tg-ratio": ratio } as CSSProperties}
             >
-              <GalleryMedia item={item} />
+              {/* calm: the picture, not the card, answers the hand — a slow 2% ease-in */}
+              <GalleryMedia
+                item={item}
+                className="calm:transition-[scale] calm:duration-(--rap-dur) calm:ease-soft calm:group-hover/tg:scale-102 calm:group-focus-visible/tg:scale-102"
+              />
               {/* the glare: a soft white disc at the pointer, soft-light so it brightens colour */}
               <span
                 data-slot="tilt-gallery-glare"

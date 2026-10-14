@@ -14,7 +14,12 @@ type Size = "sm" | "md" | "lg";
    parts glide too, with no new props. The page change is immediate; the ink follows.
    When the window of numbers shifts under a fixed middle slot the pill stays put —
    the numbers move, not the reader's place. Calm / reduced motion: a plain slide.
-   Sound (opt-in via SoundProvider): a tap on page change, pitched up per slot. */
+   Sound (opt-in via SoundProvider): a tap on page change, pitched up per slot.
+   Calm: the pill slides in one piece on an ease, and the prev/next chevron leans
+   2px the way it would take you while hovered. */
+
+/* calm: the chevron of prev/next leans 2px toward where it goes */
+const calmLean = "calm:[&>svg]:transition-transform calm:[&>svg]:duration-(--rap-dur-fast) calm:[&>svg]:ease-soft";
 
 export const Pagination = forwardRef<HTMLElement, ComponentPropsWithoutRef<"nav"> & { size?: Size }>(function Pagination(
   { className, size = "md", ...rest },
@@ -121,7 +126,7 @@ export const PaginationPrevious = forwardRef<HTMLAnchorElement, PaginationLinkPr
         ref={ref}
         aria-label="Go to previous page"
         data-slot="pagination-previous"
-        className={cn("pr-4 pl-[0.7rem]", className)}
+        className={cn("pr-4 pl-[0.7rem]", calmLean, "calm:hover:[&>svg]:-translate-x-0.5", className)}
         {...rest}
       >
         <ChevronLeft aria-hidden />
@@ -140,7 +145,7 @@ export const PaginationNext = forwardRef<HTMLAnchorElement, PaginationLinkProps 
       ref={ref}
       aria-label="Go to next page"
       data-slot="pagination-next"
-      className={cn("pr-[0.7rem] pl-4", className)}
+      className={cn("pr-[0.7rem] pl-4", calmLean, "calm:hover:[&>svg]:translate-x-0.5", className)}
       {...rest}
     >
       {children ?? (label ? <span>{label}</span> : null)}

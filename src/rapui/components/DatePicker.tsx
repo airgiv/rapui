@@ -14,7 +14,8 @@
 
    The popover is usable from the first frame (focus and keys go
    straight to the grid); the swing only paints it. Reduced
-   motion / data-rap-motion="calm": it simply appears.
+   motion / data-rap-motion="calm": no slap, no swing — the note
+   fades in from 0.98 about its sticky edge and simply fades out.
    Sound: "pop" on open. */
 import { forwardRef, useLayoutEffect, useRef, useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
@@ -199,6 +200,8 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
           className={cn(
             "pop p-3 origin-[50%_0]! data-[side=top]:origin-[50%_100%]! data-[side=left]:origin-[100%_50%]! data-[side=right]:origin-[0_50%]!",
             "animate-[rap-fade-in_160ms_var(--rap-ease-out)]! data-[state=closed]:animate-[rap-dp-out_140ms_var(--rap-ease-rm)_forwards]!",
+            // calm: a quiet popover — in from 0.98 about the sticky edge, out as a plain fade
+            "calm:animate-[rap-dp-calm-in_var(--rap-dur-fast)_var(--rap-ease-out)]! calm:data-[state=closed]:animate-[rap-fade-out_140ms_var(--rap-ease-rm)_forwards]!",
           )}
           style={{ rotate: `${tilt}deg`, scale: String(1 + Math.abs(tilt) * 0.005) }}
         >

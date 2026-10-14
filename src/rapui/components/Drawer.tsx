@@ -34,6 +34,8 @@ import {
  * up (against vaul's resistance) stretches it too. It's written straight to
  * CSS variables by an imperative spring (same maths as useSpring) so a drag
  * doesn't re-render the drawer 60 times a second. Off under calm / reduced motion.
+ * Calm: vaul's slide stays (it follows your finger); the handle doesn't stretch,
+ * it just darkens while you hold the drawer, a quiet "got it".
  * Sound (inside an enabled <SoundProvider>): a whoosh in and out.
  */
 export function Drawer({ shouldScaleBackground = false, ...rest }: ComponentPropsWithoutRef<typeof DrawerPrimitive.Root>) {
@@ -134,8 +136,9 @@ export const DrawerContent = forwardRef<ElementRef<typeof DrawerPrimitive.Conten
               "[--drawer-stretch:0px] flex-none w-[calc(44px+var(--drawer-stretch))] h-[5px]",
               "[scale:1_clamp(0.45,var(--drawer-thin,1),1.4)] mx-auto mb-4 rounded-pill bg-fill-strong",
               "cursor-grab in-[.vaul-dragging]:cursor-grabbing",
-              // calm: the handle stays put (beats the spring's inline style)
+              // calm: the handle stays put (beats the spring's inline style) and only darkens while held
               "calm:[--drawer-stretch:0px]! calm:[--drawer-thin:1]!",
+              "calm:transition-colors calm:duration-(--rap-dur-fast) calm:ease-soft calm:in-[.vaul-dragging]:bg-mute",
             )}
             aria-hidden
           />

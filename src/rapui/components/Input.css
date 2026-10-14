@@ -34,7 +34,12 @@
     opacity: 1;
     transition: opacity 60ms linear, --rap-input-sweep 460ms cubic-bezier(0.3, 0.6, 0.25, 1);
   }
-  :where([data-rap-motion="calm"]) .rap-input:focus-within::before { transition: none; }
+  /* calm: no sweep — the whole ring fades in (and out) */
+  :where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-input::before,
+  :where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-input:focus-within::before {
+    --rap-input-sweep: 100%;
+    transition: opacity var(--rap-dur-fast) var(--rap-ease-out);
+  }
   @media (prefers-reduced-motion: reduce) {
     .rap-input:focus-within::before { transition: none; }
   }

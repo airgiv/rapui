@@ -25,7 +25,9 @@ import "./NavigationMenu.css";
    stretches and gathers behind you; leave, and it fades where it was. When a panel
    opens, its cards/rows are dealt in (rap-deal-in, 22ms apart) like a hand of cards.
    Opening stays immediate; the fill and the dealing ride on top. Calm / reduced motion:
-   plain slide, no dealing. Sound (opt-in via SoundProvider): a pop when a panel opens. */
+   plain slide, no dealing. Sound (opt-in via SoundProvider): a pop when a panel opens.
+   Calm: the fill slides in one piece, panels crossfade with a 6px nudge instead of
+   40px of travel, and the shared panel fades in from 0.98. */
 
 /* --nav-h is the bar height; triggers are pills of it */
 const navigationMenuVariants = cva("group/nav relative z-10 flex justify-center font-sans", {
@@ -170,11 +172,16 @@ export const NavigationMenuContent = forwardRef<
       data-slot="navigation-menu-content"
       className={cn(
         "absolute top-0 left-0 w-max max-w-[calc(100vw_-_2rem)] p-1.5",
-        // Radix's data-motion slides the panels past each other (keyframes in NavigationMenu.css)
+        // Radix's data-motion slides the panels past each other (keyframes in NavigationMenu.css);
+        // calm only nudges them 6px as they crossfade
         "data-[motion=from-start]:animate-[rap-nav-from-start_var(--rap-dur-fast)_var(--rap-ease-out)]",
+        "calm:data-[motion=from-start]:animate-[rap-nav-calm-from-start_var(--rap-dur-fast)_var(--rap-ease-out)]",
         "data-[motion=from-end]:animate-[rap-nav-from-end_var(--rap-dur-fast)_var(--rap-ease-out)]",
+        "calm:data-[motion=from-end]:animate-[rap-nav-calm-from-end_var(--rap-dur-fast)_var(--rap-ease-out)]",
         "data-[motion=to-start]:animate-[rap-nav-to-start_var(--rap-dur-fast)_var(--rap-ease-out)]",
+        "calm:data-[motion=to-start]:animate-[rap-nav-calm-to-start_var(--rap-dur-fast)_var(--rap-ease-out)]",
         "data-[motion=to-end]:animate-[rap-nav-to-end_var(--rap-dur-fast)_var(--rap-ease-out)]",
+        "calm:data-[motion=to-end]:animate-[rap-nav-calm-to-end_var(--rap-dur-fast)_var(--rap-ease-out)]",
         // panel contents are dealt in, 22ms apart (--i from the list, see dealOrder), not while leaving
         "fun:[&:not([data-motion^='to-'])_:is([data-slot=navigation-menu-grid],[data-slot=navigation-menu-content]>ul)>li]:animate-[rap-deal-in_260ms_var(--rap-ease-out)_calc(var(--i,0)*22ms+40ms)_both]",
         "[&>ul>li:nth-child(2)]:[--i:1] [&>ul>li:nth-child(3)]:[--i:2] [&>ul>li:nth-child(4)]:[--i:3] [&>ul>li:nth-child(5)]:[--i:4]",
@@ -283,6 +290,8 @@ export const NavigationMenuViewport = forwardRef<
           "pop relative flex-none mt-2 pointer-events-auto origin-top",
           "w-(--radix-navigation-menu-viewport-width) h-(--radix-navigation-menu-viewport-height) max-w-[calc(100vw_-_2rem)]",
           "transition-[width,height] duration-(--rap-dur-fast) ease-rm",
+          // calm: a fade from 0.98 instead of the pop's scale-and-drop
+          "calm:animate-[rap-nav-calm-in_var(--rap-dur-fast)_var(--rap-ease-out)] calm:data-[state=closed]:animate-[rap-fade-out_140ms_var(--rap-ease-rm)_forwards]",
           className,
         )}
         {...rest}

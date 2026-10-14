@@ -28,7 +28,9 @@ import "./Toast.css";
 
    Sound (with a SoundProvider on): "pop" as a toast lands —
    "success" / "error" for those types — and "drop" as one leaves.
-   Calm / reduced motion: flat toasts and Sonner's plain slide. */
+   Calm / reduced motion: flat toasts and Sonner's plain slide.
+   Calm: no tilt or press-down — a toast fades in rising 6px and fades
+   out drifting 6px back; a swipe leaves on Sonner's plain slide. */
 
 export type ToasterProps = SonnerProps;
 
@@ -56,7 +58,7 @@ const TOAST_CLASSES = [
 
 const BUTTON = cn(
   "flex-none h-8 px-[0.9rem] border-0 rounded-pill [font-family:inherit] text-[0.8125rem] leading-[inherit] font-medium tracking-[-0.01em]",
-  "cursor-pointer transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm active:scale-96",
+  "cursor-pointer transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm active:scale-96 calm:active:scale-98",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
   // two buttons sit 2px apart, not a full toast gap
   "[[data-button]+&]:ml-[calc(var(--rap-gap-tight)-0.75rem)]",
@@ -151,7 +153,7 @@ export function Toaster({ className, toastOptions, icons, position = "bottom-rig
             actionButton: cn(BUTTON, "bg-paper text-ink hover:bg-paper-3", own.actionButton),
             cancelButton: cn(BUTTON, "bg-[color-mix(in_srgb,var(--rap-paper)_14%,transparent)] text-paper", own.cancelButton),
             closeButton: cn(
-              "absolute -top-1.5 -left-1.5 grid place-items-center size-[22px] p-0 border-0 rounded-full",
+              "absolute -top-1.5 -left-1.5 grid place-items-center size-[22px] p-0 border-0 rounded-pill",
               "bg-surface text-ink shadow-[0_0_0_1px_var(--rap-line)] cursor-pointer [&_svg]:size-3",
               own.closeButton,
             ),

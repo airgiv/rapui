@@ -33,6 +33,8 @@
      calm or reduced motion.
    - the wave: 14ms per tick from where the lit run USED to end,
      so the draw starts at the old value and runs to the new one.
+   Calm: the ring and the figure land on the value at once (no swing),
+   and the lit ticks still draw in — a quick, plain ease-out wave.
 
    Sound: a detent per tick crossed while dragging, pitched from
    ×0.75 at the start of the arc to ×1.5 at the end, firmer on a

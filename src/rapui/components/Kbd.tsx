@@ -19,6 +19,8 @@ import { cn } from "../utils";
    the other keyups while ⌘ is down) and on window blur. The
    state is a data attribute written straight to the node — no
    React render per keystroke. Calm switches the sink off in CSS.
+   Calm: the cap still answers — it darkens and dips 1px, then eases
+   back up with no rebound.
    With a SoundProvider on, a press plays "type" (once per
    keystroke, however many caps show that key). */
 
@@ -126,8 +128,10 @@ const kbdVariants = cva(
     "[transition:translate_380ms_var(--rap-ease-back),box-shadow_380ms_var(--rap-ease-out),background_var(--rap-dur-fast)_var(--rap-ease-rm)]",
     "data-pressed:translate-y-0.5 data-pressed:bg-fill-hover data-pressed:shadow-[inset_0_1px_2px_color-mix(in_srgb,var(--rap-ink)_14%,transparent)]",
     "data-pressed:duration-60 data-pressed:ease-soft",
-    // calm: no sink at all; reduced motion: it still darkens, but does not move
-    "calm:data-pressed:translate-none calm:data-pressed:bg-fill calm:data-pressed:shadow-[inset_0_-1px_0_var(--rap-fill-strong)]",
+    // calm: a 1px dip and the darker cap, released on a plain ease (no springing back);
+    // reduced motion: it still darkens, but does not move
+    "calm:data-pressed:translate-y-px",
+    "calm:[transition:translate_var(--rap-dur-fast)_var(--rap-ease-out),box-shadow_var(--rap-dur-fast)_var(--rap-ease-out),background_var(--rap-dur-fast)_var(--rap-ease-rm)]",
     "motion-reduce:data-pressed:translate-none",
   ],
   {

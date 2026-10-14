@@ -9,7 +9,8 @@
    the scrubber is held. They leave by sliding down past the edge
    (their own height + 16px) and fading on --rap-ease-rm, and come
    back the instant the pointer moves — a hide can be lazy, a
-   return cannot. The cursor hides with them. Calm: fade only.
+   return cannot. The cursor hides with them. Calm: a fade with a
+   4px sink, not the slide off the edge.
 
    ── THE SCRUBBER ────────────────────────────────────────
    Split at the chapters into segments with a 3px cut between them
@@ -30,7 +31,12 @@
    progress line, let go, squishes — thick, thin, a hair thick,
    rest (VideoPlayer.css) — like a rubber band dropped on the desk.
    The big centre button squashes flat under the thumb and springs
-   back. Calm / reduced motion: none of it.
+   back. Calm / reduced motion: none of it. Calm keeps what is
+   functional — the played line, the buffering spinner — and makes
+   the rest quiet: the centre button fades (98%) instead of
+   shrinking away, the hovered chapter darkens instead of
+   swelling, the play-head and the scrub bubble fade in, presses
+   dip 2%, and the play glyph eases its morph (MediaKit).
 
    ── SOUND ───────────────────────────────────────────────
    Presses click and a chapter catch ticks once; nothing plays
@@ -89,6 +95,7 @@ const D = 0.72;
 const iconBtn = cn(
   "grid place-items-center size-10 flex-none rounded-pill text-ink bg-transparent hover:bg-fill cursor-pointer [&_svg]:size-5",
   "transition-[background-color,scale] duration-(--rap-dur-fast) ease-spring active:scale-90",
+  "calm:ease-soft calm:active:scale-98",
   "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-1",
 );
 
@@ -363,7 +370,7 @@ export const VideoPlayer = forwardRef<HTMLDivElement, VideoPlayerProps>(function
             "absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate px-3.5 py-2 rounded-pill bg-surface/90 backdrop-blur-md",
             "text-[0.875rem] font-medium tracking-[-0.01em] pointer-events-none",
             "transition-[opacity,translate] duration-(--rap-dur) ease-rm",
-            !shown && "opacity-0 -translate-y-[calc(100%+16px)] calm:translate-y-0",
+            !shown && "opacity-0 -translate-y-[calc(100%+16px)] calm:-translate-y-1",
           )}
         >
           {title}
@@ -385,8 +392,9 @@ export const VideoPlayer = forwardRef<HTMLDivElement, VideoPlayerProps>(function
           "bg-surface/92 backdrop-blur-md text-ink [&_svg]:size-7 @md:[&_svg]:size-8",
           "transition-[opacity,scale] duration-(--rap-dur-fast) ease-spring",
           "fun:active:scale-x-118 fun:active:scale-y-80 fun:active:duration-100",
+          "calm:ease-soft calm:active:scale-98",
           "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-3",
-          playing && "opacity-0 scale-75 pointer-events-none",
+          playing && "opacity-0 scale-75 pointer-events-none calm:scale-98",
         )}
       >
         <PlayGlyph playing={playing} />
@@ -406,7 +414,7 @@ export const VideoPlayer = forwardRef<HTMLDivElement, VideoPlayerProps>(function
           "absolute inset-x-2 bottom-2 @md:inset-x-3 @md:bottom-3 flex items-center gap-0.5 @md:gap-1 p-1 @md:p-1.5 rounded-pill",
           "bg-surface/92 backdrop-blur-md shadow-pop",
           "transition-[opacity,translate] duration-(--rap-dur) ease-rm",
-          !shown && "opacity-0 translate-y-[calc(100%+16px)] pointer-events-none calm:translate-y-0",
+          !shown && "opacity-0 translate-y-[calc(100%+16px)] pointer-events-none calm:translate-y-1",
         )}
       >
         <button
@@ -462,7 +470,9 @@ export const VideoPlayer = forwardRef<HTMLDivElement, VideoPlayerProps>(function
                   className={cn(
                     "absolute inset-y-0 overflow-hidden rounded-pill bg-fill-strong",
                     "transition-[scale] duration-(--rap-dur-fast) ease-spring",
-                    on && "scale-y-150",
+                    /* calm: the chapter under the pointer darkens rather than swelling */
+                    "calm:transition-[background-color] calm:ease-soft",
+                    on && "scale-y-150 calm:scale-y-100 calm:bg-ink/25",
                   )}
                   style={{ left: `calc(${(g.a / (d || 1)) * 100}% + ${i ? 1.5 : 0}px)`, width: `calc(${((g.b - g.a) / (d || 1)) * 100}% - ${i ? 1.5 : 0}px - ${i < segs.length - 1 ? 1.5 : 0}px)` }}
                 >
@@ -482,6 +492,9 @@ export const VideoPlayer = forwardRef<HTMLDivElement, VideoPlayerProps>(function
               "absolute top-1/2 size-3.5 -mt-[7px] -ml-[7px] rounded-full bg-ink shadow-[0_0_0_2px_var(--rap-surface)] pointer-events-none",
               "scale-0 transition-[scale] duration-(--rap-dur-fast) ease-spring",
               "group-hover/bar:scale-100 group-focus-visible/bar:scale-100 group-data-scrub/bar:scale-115",
+              /* calm: the play-head fades in at full size instead of growing out of nothing */
+              "calm:scale-100 calm:opacity-0 calm:transition-opacity calm:ease-soft calm:group-data-scrub/bar:scale-100",
+              "calm:group-hover/bar:opacity-100 calm:group-focus-visible/bar:opacity-100 calm:group-data-scrub/bar:opacity-100",
             )}
             style={{ left: `${(d ? t / d : 0) * 100}%` }}
           />
@@ -490,7 +503,7 @@ export const VideoPlayer = forwardRef<HTMLDivElement, VideoPlayerProps>(function
             <div
               data-slot="video-player-bubble"
               aria-hidden
-              className="absolute bottom-[calc(100%+10px)] -translate-x-1/2 flex flex-col items-center gap-1 p-1 rounded-pop bg-surface shadow-pop pointer-events-none fun:animate-pop-in origin-bottom"
+              className="absolute bottom-[calc(100%+10px)] -translate-x-1/2 flex flex-col items-center gap-1 p-1 rounded-pop bg-surface shadow-pop pointer-events-none fun:animate-pop-in calm:animate-fade-in origin-bottom"
               style={{ left: bubbleX, width: bubbleW }}
             >
               {wantPreview && preview && (

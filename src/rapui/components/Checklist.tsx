@@ -103,8 +103,12 @@ import "./Checklist.css";
    drains and rolls back into its first order.
 
    Calm (`calm`, data-rap-motion="calm" or reduced motion): the
-   state change stays — rows fill and are crossed out at once,
-   in place, no roll, no splash, no finish. Sound (opt-in): a
+   state change stays — rows fill and are crossed out in place,
+   no roll, no splash, no finish. Under calm the springs are off
+   and CSS carries it instead: the liquid fades in over the whole
+   pill rather than pouring, the progress fills on a straight
+   edge, and the one detail is the scribble — the pen still
+   draws its line across the words. Sound (opt-in): a
    tick that rises in pitch as the list empties, a release on
    untick, success on the party, a thud when the heap lands. */
 
@@ -603,7 +607,10 @@ function Progress({ title, label, done, total, still, width }: { title: ReactNod
   const lean = clamp(lag * 0.012, -0.25, 0.25);
   const phase = L * 0.21;
   let clip = "inset(0 100% 0 0)";
-  if (full) clip = "none";
+  /* calm: no wave — a straight edge at the share done, which CSS can ease
+     (the same inset() shape at both ends, so it interpolates) */
+  if (still) clip = `inset(0 ${(100 - pct).toFixed(3)}% 0 0)`;
+  else if (full) clip = "none";
   else if (!empty) {
     const pts: string[] = ["0px 0px"];
     for (let k = 0; k <= 12; k++) {
@@ -633,7 +640,12 @@ function Progress({ title, label, done, total, still, width }: { title: ReactNod
       style={{ height: H }}
     >
       {bar}
-      <span data-slot="checklist-progress-liquid" aria-hidden className="absolute inset-0 bg-ink text-paper-2" style={{ clipPath: clip }}>
+      <span
+        data-slot="checklist-progress-liquid"
+        aria-hidden
+        className="absolute inset-0 bg-ink text-paper-2 calm:[transition:clip-path_var(--rap-dur)_var(--rap-ease-out)]"
+        style={{ clipPath: clip }}
+      >
         {bar}
       </span>
     </div>
@@ -817,6 +829,7 @@ function Row({ id, label, on, filed, tone, y, lean, side, wide, bounce, still, f
             "group/row relative block size-full cursor-pointer rounded-pill border-0 bg-(--chk-field) p-0 text-left font-sans text-ink select-none",
             "hover:bg-(--chk-field-hover) outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             "[-webkit-tap-highlight-color:transparent] transition-[rotate,background-color] duration-(--rap-dur) ease-spring",
+            "calm:duration-(--rap-dur-fast) calm:ease-soft",
             /* on the floor, a die-cut edge in the card's colour, so
                slips of one colour still read as separate slips */
             "data-fell:shadow-[0_0_0_2px_var(--rap-paper-2)]",
@@ -825,11 +838,12 @@ function Row({ id, label, on, filed, tone, y, lean, side, wide, bounce, still, f
         >
           <span aria-hidden className="pointer-events-none absolute inset-0 rounded-pill shadow-pop" style={{ opacity: lift }} />
           <Face label={label} held={held} pour={pour} t={t} cut={cut} roll={roll} run={run} scribble={scribble} sayRef={say} />
+          {/* calm: no pour — the whole liquid layer fades in (and out) over the pill */}
           <span
             data-slot="checklist-liquid"
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-pill bg-(--chk-tone) text-(--chk-tone-ink)"
-            style={{ clipPath: clip }}
+            className="pointer-events-none absolute inset-0 rounded-pill bg-(--chk-tone) text-(--chk-tone-ink) calm:transition-opacity calm:duration-(--rap-dur) calm:ease-soft"
+            style={still ? { opacity: on ? 1 : 0 } : { clipPath: clip }}
           >
             <Face liquid label={label} held={held} pour={pour} t={t} cut={cut} roll={roll} run={run} scribble={scribble} />
           </span>
@@ -891,7 +905,11 @@ function Face({
       <span ref={sayRef} className="relative inline-block max-w-full min-w-0 text-[18px] leading-[1.2] font-[450] tracking-[-0.015em]">
         {/* the words give up some ink as they are crossed out — less in
             the liquid, where they already sit on colour */}
-        <span data-slot="checklist-label" className="block truncate" style={{ opacity: mix(1, liquid ? 0.78 : 0.42, pour) }}>
+        <span
+          data-slot="checklist-label"
+          className="block truncate calm:transition-opacity calm:duration-(--rap-dur) calm:ease-soft"
+          style={{ opacity: mix(1, liquid ? 0.78 : 0.42, pour) }}
+        >
           {label}
         </span>
         {run > 0 && (
@@ -903,7 +921,20 @@ function Face({
             viewBox={`0 0 ${run} 24`}
             fill="none"
           >
-            <path d={scribble} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - cut} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            {/* calm's one detail: with the pour off, `cut` jumps 0 → 1 and the
+                stroke still draws across — a transition only calm carries,
+                since the springs already draw it frame by frame */}
+            <path
+              d={scribble}
+              pathLength={1}
+              strokeDasharray={1}
+              strokeDashoffset={1 - cut}
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="calm:transition-[stroke-dashoffset] calm:duration-(--rap-dur-slow) calm:ease-soft calm:delay-(--rap-dur-fast)"
+            />
           </svg>
         )}
       </span>

@@ -1,0 +1,24 @@
+/* Reasoning — the keyframes utilities cannot say: a step dropping onto the
+   rail and settling (fun), the plain fade a calm step arrives with, and the
+   live step's breathing dot and the ring it lets go of. The rail's liquid
+   fill is a height transition in Reasoning.tsx. Still: global rule. */
+@layer theme, base, components, utilities;
+
+/* falls 10px onto the rail, dips 2px past it, settles */
+@keyframes rap-reasoning-drop {
+  0% { opacity: 0; translate: 0 -10px; }
+  55% { opacity: 1; translate: 0 2px; }
+  78% { translate: 0 -1px; }
+  100% { translate: 0 0; }
+}
+@keyframes rap-reasoning-fade {
+  from { opacity: 0; translate: 0 -3px; }
+}
+@keyframes rap-reasoning-breathe {
+  0%, 100% { scale: 0.8; opacity: 0.7; }
+  50% { scale: 1.1; opacity: 1; }
+}
+@keyframes rap-reasoning-ring {
+  0% { scale: 1; opacity: 0.45; }
+  70%, 100% { scale: 1.9; opacity: 0; }
+}

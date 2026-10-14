@@ -1,6 +1,6 @@
 {
   "name": "@rapui/react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A playful React UI kit on Radix + Tailwind v4: the breadth of shadcn/ui, plus hold buttons, liquid forms, charts you scrub and galleries you throw.",
   "keywords": [
     "react",
@@ -36,6 +36,10 @@
       "types": "./dist/fonts.d.ts",
       "import": "./dist/fonts.js"
     },
+    "./fonts/*": {
+      "types": "./dist/fonts/*.d.ts",
+      "import": "./dist/fonts/*.js"
+    },
     "./styles.css": "./dist/rapui.css",
     "./icons": {
       "types": "./dist/icons.d.ts",
@@ -50,13 +54,15 @@
     "*.css",
     "./src/rapui/index.ts",
     "./src/rapui/fonts.ts",
+    "./src/rapui/fonts/*.ts",
     "./dist/fonts.js",
+    "./dist/fonts/*.js",
     "./dist/styles.js"
   ],
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css dist/",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css src/rapui/styles/presets.css dist/",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build:lib"
@@ -66,8 +72,14 @@
     "react-dom": ">=18"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
+    "@fontsource-variable/ibm-plex-sans": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/inter-tight": "^5.3.0",
+    "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource-variable/onest": "^5.3.1",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@hugeicons/core-free-icons": "^4.3.5",
     "@hugeicons/react": "^1.1.10",
     "@solar-icons/react": "^2.3.2",

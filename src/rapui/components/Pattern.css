@@ -23,5 +23,5 @@
   to { mask-position: var(--rap-pattern-size) var(--rap-pattern-size), center; -webkit-mask-position: var(--rap-pattern-size) var(--rap-pattern-size), center; }
 }
 .rap-pattern-drift { animation: rap-pattern-drift 6s linear infinite; }
-[data-rap-motion="calm"] .rap-pattern-drift { animation: none; }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .rap-pattern-drift { animation: none; }
 @media (prefers-reduced-motion: reduce) { .rap-pattern-drift { animation: none; } }

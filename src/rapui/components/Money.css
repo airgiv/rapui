@@ -1,0 +1,11 @@
+/* Money — only its keyframes; the rest is utilities in Money.tsx.
+   Two names for one crossfade so a value that changes mid-fade restarts it
+   (the parity is picked in JS). Used by calm; still has no durations at all. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-money-fade-a {
+  from { opacity: 0.15; }
+}
+@keyframes rap-money-fade-b {
+  from { opacity: 0.15; }
+}

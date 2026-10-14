@@ -61,7 +61,8 @@ const asContent = (t: ReactNode) => {
   return Drawn ? <Drawn /> : bare(t) + "\uFE0E";
 };
 
-/** Chunky switch with a springy knob that squishes while it travels. */
+/** Chunky switch with a springy knob that squishes while it travels.
+ *  (calm: the knob glides across on an ease-out, round the whole way, and does not squish) */
 export function Switch({
   checked,
   defaultChecked = false,
@@ -145,6 +146,9 @@ export function Switch({
             "[transition:left_var(--rap-dur)_var(--rap-ease-spring),width_var(--rap-dur-fast)_var(--rap-ease-out),background_var(--rap-dur)]",
             "group-active/track:aspect-[1.45]",
             isOn && "left-[calc(100%-var(--sw-h)+var(--sw-pad)+1.5px)] bg-white group-active/track:left-[calc(100%-var(--sw-h)*1.45+var(--sw-pad)*2)]",
+            /* calm: no spring past the stop, no squish under the thumb */
+            "calm:[transition:left_var(--rap-dur)_var(--rap-ease-out),background_var(--rap-dur)] calm:group-active/track:aspect-square",
+            isOn && "calm:group-active/track:left-[calc(100%-var(--sw-h)+var(--sw-pad)+1.5px)]",
           )}
           aria-hidden
         />

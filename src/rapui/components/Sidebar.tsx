@@ -47,6 +47,7 @@ import { Glider, useActiveElement, useActiveTap, useCalm } from "./ProductTabs";
  *    except the <aside> itself (its children are the same elements, React skips them).
  * The collapsed state flips immediately (labels fade, aria updates); only the width is late.
  * Calm / reduced motion: the old eased width transition and a plain slide.
+ * Calm: width eases with no overshoot, labels fade, the ink pill slides in one piece.
  * Sound (opt-in via SoundProvider): tap when the active row changes, whoosh on collapse.
  */
 
@@ -338,7 +339,7 @@ export const SidebarTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
       }}
       data-slot="sidebar-trigger"
       className={cn(
-        "inline-grid place-items-center flex-none size-control-sm p-0 border-0 rounded-full bg-transparent text-ink cursor-pointer",
+        "inline-grid place-items-center flex-none size-control-sm p-0 border-0 rounded-pill bg-transparent text-ink cursor-pointer",
         "transition-[background-color] duration-(--rap-dur-fast) ease-rm hover:bg-fill",
         "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)] [&_svg]:size-[18px]",
         className,

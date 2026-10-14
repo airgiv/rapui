@@ -31,3 +31,11 @@
 }
 @keyframes rap-cal-turn-a { from { translate: calc(var(--turn, 1) * 36px) 0; rotate: calc(var(--turn, 1) * 3deg); opacity: 0; } }
 @keyframes rap-cal-turn-b { from { translate: calc(var(--turn, 1) * 36px) 0; rotate: calc(var(--turn, 1) * 3deg); opacity: 0; } }
+
+/* calm: the ripple as a tint only (no push, no squash), and the month slides
+   in just 4px while it fades — still telling you which way you went */
+@keyframes rap-cal-tint {
+  30% { background-color: color-mix(in srgb, var(--rap-select) calc(16% * var(--rip-a)), transparent); }
+}
+@keyframes rap-cal-slide-a { from { translate: calc(var(--turn, 1) * 4px) 0; opacity: 0; } }
+@keyframes rap-cal-slide-b { from { translate: calc(var(--turn, 1) * 4px) 0; opacity: 0; } }
