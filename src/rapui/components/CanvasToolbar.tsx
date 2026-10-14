@@ -58,7 +58,13 @@ const TAIL = [
    4px pad each side = 54), so the rail is a full pill and the
    46px tools inside it (27 − 4 = 23) are circles. Readymag's
    controls are round, and the concentric rule above still holds.
-   BAR_MAX goes to 32 so the knob can still reach a full pill. */
+   BAR_MAX goes to 32 so the knob can still reach a full pill.
+   rap/ui presets: with no `corner` given, the rail takes the
+   preset's pill radius (--rap-radius-pill — a full pill in fun,
+   10px in signal/product, square in minimal) and the tools the
+   same less the 4px pad, so the concentric rule holds in every
+   preset. BAR_CORNER is what that comes to in fun, and the
+   fallback where no preset sheet is loaded. */
 const BAR_CORNER = 27;
 const BAR_MAX = 32;
 /* rap/ui: glyphs at 20 on a 1.75 stroke, from 17 on 2 — sized
@@ -99,7 +105,10 @@ function Btn({
   );
 }
 
-export function CanvasToolbar({ corner = BAR_CORNER }: { corner?: number } = {}) {
+/* Calm (CanvasToolbar.css): the selected pad and the palette arrive
+   on a plain ease-out — a crossfade and a 4px rise — with no
+   overshoot, and the glyph no longer swells on its pad. */
+export function CanvasToolbar({ corner }: { corner?: number } = {}) {
   const [tool, setTool] = useState("move");
   const [shape, setShape] = useState(SHAPES[0]);
   const [open, setOpen] = useState(false);
@@ -117,10 +126,17 @@ export function CanvasToolbar({ corner = BAR_CORNER }: { corner?: number } = {})
   return (
     <div
       className="bar-well"
-      style={{
-        "--bar-r": `${clamp(corner, 0, BAR_MAX)}px`,
-        "--bar-tool-r": `${Math.max(0, clamp(corner, 0, BAR_MAX) - 4)}px`,
-      } as React.CSSProperties}
+      style={
+        (corner === undefined
+          ? {
+              "--bar-r": `var(--rap-radius-pill, ${BAR_CORNER}px)`,
+              "--bar-tool-r": `max(0px, calc(var(--rap-radius-pill, ${BAR_CORNER}px) - 4px))`,
+            }
+          : {
+              "--bar-r": `${clamp(corner, 0, BAR_MAX)}px`,
+              "--bar-tool-r": `${Math.max(0, clamp(corner, 0, BAR_MAX) - 4)}px`,
+            }) as React.CSSProperties
+      }
     >
       {open && (
         <div className="bar-flyout gpane">

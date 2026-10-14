@@ -36,6 +36,7 @@ const cardVariants = cva(
 /**
  * Airy white card with a big media slot, a short bold title and a tiny
  * caption — a feature-grid tile. Media gently zooms on hover.
+ * Calm: the 4px lift stays; the media only swells 2%.
  */
 export function FeatureCard({ title, children, media, tone = "white", className, ...rest }: FeatureCardProps) {
   return (
@@ -47,6 +48,8 @@ export function FeatureCard({ title, children, media, tone = "white", className,
           className={cn(
             "grid place-items-center aspect-[4/3] overflow-hidden rounded-[calc(var(--rap-radius)-0.6rem)] bg-(--fc-media)",
             "*:transition-transform *:duration-(--rap-dur-slow) *:ease-rm group-hover/fcard:*:scale-106",
+            /* calm: the zoom is a breath, not a push */
+            "calm:group-hover/fcard:*:scale-102",
             "[&_img]:size-full [&_img]:object-cover [&_video]:size-full [&_video]:object-cover",
           )}
         >

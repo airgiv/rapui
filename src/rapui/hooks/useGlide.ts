@@ -80,9 +80,10 @@ export function useGlide(
   const calm = isCalm(container.current);
   // the tail holds its old position for `delay` ms, then follows on the heavy spring
   const tailTarget = useDelayed(dir > 0 ? start : end, first || calm ? 0 : delay);
-  const s = useSpring(dir > 0 ? tailTarget : start, calm ? lead : dir > 0 ? trail : lead, first);
-  const e = useSpring(dir > 0 ? end : tailTarget, lead, first);
-  const cross = useSpring(box ? (axis === "x" ? box.y : box.x) : 0, 50, first);
+  // …and in calm the spring is the dead-beat one (tune 0): it arrives, it does not overshoot
+  const s = useSpring(dir > 0 ? tailTarget : start, calm ? 0 : dir > 0 ? trail : lead, first);
+  const e = useSpring(dir > 0 ? end : tailTarget, calm ? 0 : lead, first);
+  const cross = useSpring(box ? (axis === "x" ? box.y : box.x) : 0, calm ? 0 : 50, first);
   const crossSize = box ? (axis === "x" ? box.h : box.w) : 0;
 
   useLayoutEffect(() => {

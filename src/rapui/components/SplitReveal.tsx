@@ -12,7 +12,10 @@ export interface SplitRevealProps extends HTMLAttributes<HTMLElement> {
   delay?: number;
 }
 
-/** Text rises word-by-word (or char-by-char) from behind a mask when it scrolls into view. */
+/**
+ * Text rises word-by-word (or char-by-char) from behind a mask when it scrolls into view.
+ * Calm: no swing — each piece fades in from 4px low, on the same stagger.
+ */
 export function SplitReveal({ as = "span", children, by = "word", stagger = 60, delay = 0, className, ...rest }: SplitRevealProps) {
   const [ref, inView] = useInView<HTMLElement>({ threshold: 0.3 });
   const pieces = by === "word" ? children.split(/(\s+)/) : Array.from(children);
@@ -48,6 +51,9 @@ export function SplitReveal({ as = "span", children, by = "word", stagger = 60, 
               "inline-block translate-y-[110%] rotate-6 origin-bottom-left",
               "transition-[translate,rotate] duration-(--rap-dur-slow) ease-soft delay-(--d)",
               "group-data-[state=in]/split:translate-none group-data-[state=in]/split:rotate-none",
+              /* calm: no tip and no climb out of the mask — a 4px rise under a fade */
+              "calm:rotate-none calm:translate-y-1 calm:opacity-0 calm:transition-[translate,opacity]",
+              "calm:group-data-[state=in]/split:translate-none calm:group-data-[state=in]/split:opacity-100",
             )}
             style={{ "--d": `${delay + idx * stagger}ms` } as CSSProperties}
           >

@@ -16,7 +16,11 @@ export interface MarqueeProps extends HTMLAttributes<HTMLDivElement> {
   repeat?: number;
 }
 
-/** Infinite ticker band. Put anything inside: words, stickers, images. */
+/**
+ * Infinite ticker band. Put anything inside: words, stickers, images.
+ * Calm: it still runs — scrolling is its job — but level (no tilt), at a slower
+ * pace, and the band's two ends fade into the page instead of cutting off.
+ */
 export function Marquee({
   children,
   duration = 22,
@@ -33,7 +37,12 @@ export function Marquee({
   return (
     <div
       data-slot="marquee"
-      className={cn("group/marquee flex overflow-hidden gap-(--rap-mq-gap) rotate-(--rap-mq-rot) select-none", className)}
+      className={cn(
+        "group/marquee flex overflow-hidden gap-(--rap-mq-gap) rotate-(--rap-mq-rot) select-none",
+        /* calm: level, and the ends feathered over 8% so words drift in and out of view */
+        "calm:rotate-0 calm:[mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]",
+        className,
+      )}
       style={{ ...vars, ...style }}
       {...rest}
     >
@@ -50,6 +59,8 @@ export function Marquee({
           className={cn(
             "flex flex-none items-center gap-(--rap-mq-gap) min-w-full",
             "animate-[rap-marquee_var(--rap-mq-dur)_linear_infinite] motion-reduce:[animation-duration:120s]",
+            /* calm: 1.6× the loop time — a ticker you can read, not one that hurries */
+            "calm:[animation-duration:calc(var(--rap-mq-dur)*1.6)]",
             reverse && "[animation-direction:reverse]",
             pauseOnHover && "group-hover/marquee:[animation-play-state:paused]",
           )}

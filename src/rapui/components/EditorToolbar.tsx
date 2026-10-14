@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
@@ -12,7 +13,7 @@ import {
   type ReactNode,
 } from "react";
 import { Toolbar as ToolbarPrimitive } from "radix-ui";
-import { useGlide } from "../hooks/useGlide";
+import { isCalm, useGlide } from "../hooks/useGlide";
 import { useSound } from "../sound";
 import { cn } from "../utils";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
@@ -42,7 +43,11 @@ import "./EditorToolbar.css";
    around circular slots; slots sit 2px apart (gap-tight) like every
    rap/ui group, and groups are split by a 12–18px gap with a 4px dot —
    a pause, not a wall. Keys: arrows move (detent), Enter/Space pick,
-   1–9 pick the n-th tool directly (tap, pitched up the row). */
+   1–9 pick the n-th tool directly (tap, pitched up the row).
+
+   Calm: the pad slides as one piece on a plain ease-out (no caterpillar,
+   no overshoot), the icons hold still, the glyph keeps its size on the
+   pad, and the label fades in from 98% instead of popping and wagging. */
 
 export interface EditorTool {
   id: string;
@@ -133,6 +138,7 @@ const SLOT = cn(
   // the glyph lifts a hair on the pad and yields when pressed
   "[&>svg]:size-(--et-icon) [&>svg]:transition-[scale] [&>svg]:duration-300 [&>svg]:ease-spring",
   "data-on:[&>svg]:scale-106 active:[&>svg]:scale-90 active:[&>svg]:duration-100",
+  "calm:[&>svg]:ease-soft calm:data-on:[&>svg]:scale-100 calm:active:[&>svg]:scale-98",
   TINT,
 );
 
@@ -144,6 +150,8 @@ const LABEL = cn(
   "group-hover/tool:opacity-100 group-hover/tool:scale-100 group-focus-visible/tool:opacity-100 group-focus-visible/tool:scale-100",
   "group-data-[state=open]/tool:hidden",
   "fun:group-hover/tool:animate-[eti-wag_520ms_var(--rap-ease-out)]",
+  /* calm: a tooltip's entrance — fade, 98% → 100%, no back-ease */
+  "calm:scale-98 calm:ease-soft",
 );
 const KEY =
   "grid place-items-center min-w-5 h-5 px-1 rounded-pill bg-[color-mix(in_oklab,var(--rap-paper)_18%,transparent)] text-[0.75rem] tabular-nums";
@@ -202,6 +210,19 @@ export const EditorToolbar = forwardRef<HTMLDivElement, EditorToolbarProps>(func
     );
   }, [value, widget, groups]);
   const glide = useGlide(root, active, { axis: vertical ? "y" : "x" });
+  /* calm: the pad is placed at its slot and CSS eases it there (see the pad below);
+     the transition only switches on once it has been placed, so it never flies in from 0,0 */
+  const calm = isCalm(root.current);
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!glide.ready || settled) return;
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setSettled(true)));
+    return () => cancelAnimationFrame(id);
+  }, [glide.ready, settled]);
+  const padStyle =
+    calm && glide.box
+      ? { transform: `translate(${glide.box.x}px, ${glide.box.y}px)`, width: glide.box.w, height: glide.box.h }
+      : glide.style;
 
   const keys = (e: KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(e);
@@ -257,8 +278,12 @@ export const EditorToolbar = forwardRef<HTMLDivElement, EditorToolbarProps>(func
       <span
         aria-hidden
         data-slot="editor-toolbar-pad"
-        className="absolute top-0 left-0 -z-1 rounded-pill bg-(--et-sel) pointer-events-none"
-        style={glide.style}
+        data-settled={settled || undefined}
+        className={cn(
+          "absolute top-0 left-0 -z-1 rounded-pill bg-(--et-sel) pointer-events-none",
+          "calm:data-settled:transition-[transform,width,height] calm:data-settled:duration-(--rap-dur) calm:data-settled:ease-soft",
+        )}
+        style={padStyle}
       />
       <ToolbarPrimitive.ToggleGroup
         type="single"
@@ -316,7 +341,7 @@ export const EditorToolbar = forwardRef<HTMLDivElement, EditorToolbarProps>(func
                   // a small "+" badge: this is still the add button, wearing the widget
                   <span
                     aria-hidden
-                    className="absolute top-[14%] right-[14%] grid place-items-center size-[22%] rounded-full bg-(--et-sel-tone) text-[#282828] text-[0.75rem] font-semibold leading-none"
+                    className="absolute top-[14%] right-[14%] grid place-items-center size-[22%] rounded-pill bg-(--et-sel-tone) text-[#282828] text-[0.75rem] font-semibold leading-none"
                   >
                     +
                   </span>
@@ -349,7 +374,7 @@ export const EditorToolbar = forwardRef<HTMLDivElement, EditorToolbarProps>(func
                       className={cn(
                         "rap-eti-host flex flex-col items-center justify-center gap-1.5 size-[92px] rounded-[20px] border-0 bg-fill text-ink cursor-pointer",
                         "font-sans text-[0.8125rem] font-medium tracking-[-0.01em] outline-none",
-                        "transition-[background-color,color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-95",
+                        "transition-[background-color,color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-95 calm:active:scale-98",
                         "data-on:bg-(--et-sel) data-on:text-(--et-sel-ink) data-on:hover:bg-(--et-sel)",
                         "focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
                         TINT,

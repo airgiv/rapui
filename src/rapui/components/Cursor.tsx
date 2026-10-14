@@ -11,6 +11,8 @@ export interface CursorProps {
 /**
  * Custom trailing cursor. Grows over links/buttons; shows a label over
  * any element with `data-rap-cursor="Label"`. Hidden on touch devices.
+ * Calm: over links it opens into a hairline ring instead of a big disc, and a
+ * label fades in rather than popping.
  */
 export function Cursor({ blend = true, size = 18 }: CursorProps) {
   const dot = useRef<HTMLDivElement>(null);
@@ -67,12 +69,15 @@ export function Cursor({ blend = true, size = 18 }: CursorProps) {
           "[transition:width_var(--rap-dur)_var(--rap-ease-out),height_var(--rap-dur)_var(--rap-ease-out),background_var(--rap-dur-fast)]",
           "group-data-[state=hover]/cursor:size-[calc(var(--c-size)*3.4)]",
           "group-data-[state=label]/cursor:size-28 group-data-[state=label]/cursor:bg-acid",
+          /* calm: a ring, not a blot — it frames what you are about to press instead of covering it */
+          "calm:[transition:width_var(--rap-dur)_var(--rap-ease-out),height_var(--rap-dur)_var(--rap-ease-out),background_var(--rap-dur-fast),box-shadow_var(--rap-dur-fast)]",
+          "calm:group-data-[state=hover]/cursor:size-[calc(var(--c-size)*2.2)] calm:group-data-[state=hover]/cursor:bg-transparent calm:group-data-[state=hover]/cursor:shadow-[inset_0_0_0_1.5px_white]",
         )}
       >
         {label && (
           <span
             data-slot="cursor-label"
-            className="font-display text-[0.85rem] font-medium tracking-[-0.02em] text-[#282828] text-center animate-[rap-cursor-in_300ms_var(--rap-ease-out)]"
+            className="font-display text-[0.85rem] font-medium tracking-[-0.02em] text-[#282828] text-center animate-[rap-cursor-in_300ms_var(--rap-ease-out)] calm:animate-fade-in"
           >
             {label}
           </span>

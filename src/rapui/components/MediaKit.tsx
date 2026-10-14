@@ -33,7 +33,11 @@
                      rude over music, so it sits in a muted
                      SoundProvider. UI sound in the players is kept
                      to discrete presses (play, rate, chapter snap).
-     fmt()           0:07 · 3:10 · 1:02:33 — tabular, never "00:07". */
+     fmt()           0:07 · 3:10 · 1:02:33 — tabular, never "00:07".
+
+   Calm: the play glyph still morphs — the players' one shared detail —
+   but as a plain ease-out tween in CSS instead of on the spring; the rate
+   pill slides without overshoot, and presses dip 2% instead of squashing. */
 import {
   useCallback,
   useEffect,
@@ -487,7 +491,11 @@ const PAUSE = [
   [14, 5, 17.5, 5, 17.5, 19, 14, 19],
 ];
 
-/** Play ⇄ pause glyph that morphs on the spring (instant under calm / reduced motion). */
+/**
+ * Play ⇄ pause glyph that morphs on the spring. Calm: the spring is off and the
+ * shape is handed to CSS (`d`), which eases it over the hover duration — no
+ * overshoot, the bars arrive exactly. (Safari cannot transition `d`: it swaps.)
+ */
 export function PlayGlyph({ playing, className }: { playing: boolean; className?: string }) {
   const ref = useRef<SVGSVGElement>(null);
   /* tune 40: one soft overshoot — the bars land slightly too wide and settle */
@@ -499,7 +507,15 @@ export function PlayGlyph({ playing, className }: { playing: boolean; className?
   return (
     <svg ref={ref} data-slot="play-glyph" viewBox="0 0 24 24" aria-hidden className={cn("size-6", className)}>
       {/* a round-joined stroke of the fill's own colour rounds every corner, triangle and bars alike */}
-      <path d={d} fill="currentColor" stroke="currentColor" strokeWidth={1.6} strokeLinejoin="round" />
+      <path
+        d={d}
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth={1.6}
+        strokeLinejoin="round"
+        className="calm:[d:var(--pg-d)] calm:[transition:d_var(--rap-dur-fast)_var(--rap-ease-out)]"
+        style={{ "--pg-d": `path("${d}")` } as CSSProperties}
+      />
     </svg>
   );
 }
@@ -527,14 +543,14 @@ export function RateTabs({ value, onChange, options = [1, 1.5, 2], className, si
       style={{ "--n": options.length, "--at": at } as CSSProperties}
     >
       {/* the pill: same width as a tab, moved by whole tabs; the curve has a
-          hair of overshoot so it lands rather than stops */}
+          hair of overshoot so it lands rather than stops (calm: a plain ease-out) */}
       <span
         aria-hidden
         data-slot="rate-tabs-pill"
         className={cn(
           "absolute top-0.5 bottom-0.5 left-0.5 rounded-pill bg-ink",
           "w-[calc((100%-4px)/var(--n))] translate-x-[calc(var(--at)*100%)]",
-          "transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.16,0.5,1)] calm:duration-0 motion-reduce:duration-0",
+          "transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.16,0.5,1)] calm:duration-(--rap-dur-fast) calm:ease-soft motion-reduce:duration-0!",
         )}
       />
       {options.map((r, i) => (
@@ -554,7 +570,7 @@ export function RateTabs({ value, onChange, options = [1, 1.5, 2], className, si
             "relative z-1 flex-1 rounded-pill border-0 bg-transparent cursor-pointer tabular-nums",
             size === "sm" ? "h-7 min-w-10 px-2 text-[12.5px]" : "h-8 min-w-12 px-2.5 text-[13px]",
             "font-medium tracking-[-0.01em] text-mute hover:text-ink data-on:text-paper",
-            "transition-[color,scale] duration-200 ease-[cubic-bezier(0.28,1.2,0.36,1)] active:scale-94",
+            "transition-[color,scale] duration-200 ease-[cubic-bezier(0.28,1.2,0.36,1)] active:scale-94 calm:ease-soft calm:active:scale-98",
             "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
           )}
         >
@@ -597,7 +613,7 @@ export function VolumeControl({
         }}
         className={cn(
           "grid place-items-center size-9 flex-none rounded-pill text-ink bg-transparent hover:bg-fill cursor-pointer [&_svg]:size-5",
-          "transition-[background-color,scale] duration-(--rap-dur-fast) active:scale-92",
+          "transition-[background-color,scale] duration-(--rap-dur-fast) active:scale-92 calm:ease-soft calm:active:scale-98",
           "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-1",
         )}
       >

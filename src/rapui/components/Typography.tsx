@@ -63,7 +63,7 @@ export function Accent({ className, tone = "flame", ...rest }: HTMLAttributes<HT
   return <span data-slot="accent" data-tone={tone} className={cn(accentTones[tone], className)} {...rest} />;
 }
 
-/** Small label with a live dot. */
+/** Small label with a live dot. Calm: the dot holds steady — a ring that breathes forever is a loop with no job. */
 export function Eyebrow({ className, dot = true, children, ...rest }: HTMLAttributes<HTMLSpanElement> & { dot?: boolean }) {
   return (
     <span
@@ -72,11 +72,11 @@ export function Eyebrow({ className, dot = true, children, ...rest }: HTMLAttrib
       {...rest}
     >
       {dot && (
-        /* the live dot: a ring of accent breathes out of it every 2.2s (Typography.css) */
+        /* the live dot: a ring of accent breathes out of it every 2.2s (Typography.css), fun only */
         <span
           data-slot="eyebrow-dot"
           aria-hidden
-          className="size-[0.55em] rounded-full bg-accent shadow-[0_0_0_0_var(--rap-accent)] animate-[rap-eyebrow-pulse_2.2s_var(--rap-ease-out)_infinite]"
+          className="size-[0.55em] rounded-full bg-accent shadow-[0_0_0_0_var(--rap-accent)] fun:animate-[rap-eyebrow-pulse_2.2s_var(--rap-ease-out)_infinite]"
         />
       )}
       {children}
