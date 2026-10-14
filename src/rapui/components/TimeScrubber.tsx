@@ -4,7 +4,11 @@
    import below, and `hear()` (see there), which now plays the
    tick its comment describes through rap/ui's opt-in sound. The
    tokens its CSS reads are mapped onto rap/ui's in
-   TimeScrubber.css. */
+   TimeScrubber.css.
+   rap/ui calm: the drag stays 1:1, but a release does not coast —
+   it settles on the nearest step on an overdamped glide with no
+   give — and the digits change in place instead of rolling, each new
+   one fading up from a ghost of itself. */
 import { useEffect, useRef, useState } from "react";
 import { useSound } from "../sound";
 import "./TimeScrubber.css";
@@ -60,6 +64,11 @@ import "./TimeScrubber.css";
 const stillness = () =>
   typeof window !== "undefined" &&
   !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/* rap/ui: a calm or still ancestor, read when it is needed */
+const calmAt = (el: Element | null) => !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
+/* rap/ui: a tree whose durations are zero gets no glide at all */
+const instantAt = (el: Element | null) => !!el && parseFloat(getComputedStyle(el).getPropertyValue("--rap-dur")) === 0;
 
 const W = 300;
 /* px per minute along the ruler */
@@ -158,13 +167,16 @@ export function TimeScrubber({
   const run = () => {
     if (raf.current) return;
     let prev = 0;
+    /* rap/ui calm: a stiffer, just-overdamped pair — it arrives
+       a little sooner and never passes the step */
+    const [k, d] = calmAt(ruler.current) ? [0.05, 0.46] : [0.022, 0.26];
     const tick = (t: number) => {
       const dt = prev ? clamp((t - prev) / 16.67, 0, 2.5) : 1;
       prev = t;
       const c = p.current;
       /* near-critical: glides in and lands with a hint of give,
          no swing back and no slow creep at the end */
-      c.v += ((c.to - c.x) * 0.022 - c.v * 0.26) * dt;
+      c.v += ((c.to - c.x) * k - c.v * d) * dt;
       const x = c.x + c.v * dt;
       if (Math.abs(c.to - x) < 0.01 && Math.abs(c.v) < 0.01) {
         c.v = 0;
@@ -183,7 +195,9 @@ export function TimeScrubber({
   const goTo = (to: number, v = p.current.v) => {
     p.current.to = to;
     p.current.v = v;
-    if (still) { p.current.v = 0; set(to); return; }
+    if (still || instantAt(ruler.current)) { p.current.v = 0; set(to); return; }
+    /* rap/ui calm: no carried speed */
+    if (calmAt(ruler.current)) p.current.v = 0;
     run();
   };
 
@@ -219,7 +233,8 @@ export function TimeScrubber({
     if (!g) return;
     /* a hand that stopped before letting go threw nothing */
     /* capped, so a flick spins it hours, never days */
-    const v = performance.now() - g.t > 80 ? 0 : clamp(g.v, -14, 14);
+    /* rap/ui calm: no throw at all — it settles where it was let go */
+    const v = performance.now() - g.t > 80 || calmAt(e.currentTarget) ? 0 : clamp(g.v, -14, 14);
     const s = knobs.current.step;
     const carry = 6 + (clamp(knobs.current.momentum, 0, 100) / 100) * 30;
     const land = Math.round((p.current.x + v * carry) / s) * s;

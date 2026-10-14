@@ -31,7 +31,9 @@ import { GalleryMedia, galleryItemKey, springEasing, wobble, type GalleryItem, t
    ~700ms) — so they overshoot together, as one gesture.
 
    Calm / reduced motion: shapes still cut the pictures (they
-   are the design), but no rotation, no lift and no morph.
+   are the design), but no rotation, no lift and no morph. Calm
+   answers the hand quietly instead: the picture eases in by 2%
+   inside its unchanged cut-out, and the caption pill fills.
    Sound (opt-in): a small pop when a shape changes, a tap on
    click. */
 
@@ -207,7 +209,11 @@ export const ShapeGallery = forwardRef<HTMLDivElement, ShapeGalleryProps>(functi
               )}
               style={{ width: pc.w, aspectRatio: `${pc.w} / ${pc.h}`, "--sg-from": pc.from, "--sg-to": pc.to } as CSSProperties}
             >
-              <GalleryMedia item={pc.item} />
+              {/* calm: the picture, not the shape, answers the hand — a slow 2% ease-in */}
+              <GalleryMedia
+                item={pc.item}
+                className="calm:transition-[scale] calm:duration-(--rap-dur) calm:ease-soft calm:group-hover/sg:scale-102 calm:group-focus-visible/sg:scale-102"
+              />
             </span>
             {captions && pc.item.title && (
               <span

@@ -6,7 +6,9 @@
    counted from where the lit run used to end — so the draw runs
    from the old value to the new one. `both`, so a tick waiting its
    turn is invisible rather than lit-then-redrawn (RangeDial's
-   note on the same wave). Calm and reduced motion: no draw. */
+   note on the same wave). Calm: the same draw, quicker and on the
+   plain ease-out, the wave's step tied to --rap-dur so it closes up
+   to nothing when durations do. Reduced motion: no draw. */
 @layer theme, base, components, utilities;
 
 @layer components {
@@ -15,7 +17,8 @@
     animation-delay: calc(var(--d, 0) * 14ms);
   }
   :where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-gauge-tick {
-    animation: none;
+    animation: rap-gauge-draw var(--rap-dur-fast) var(--rap-ease-out) both;
+    animation-delay: calc(var(--d, 0) * var(--rap-dur) / 90);
   }
   @media (prefers-reduced-motion: reduce) {
     .rap-gauge-tick {

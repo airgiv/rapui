@@ -38,7 +38,10 @@ import "./ScrubNumber.css";
    hand has unwound everything it pushed past the wall. Arriving
    at the wall shakes the pill once ("no") and plays the firmest
    notch; pushing on does nothing further — one bump per arrival,
-   not a buzz. */
+   not a buzz.
+   Calm: the pill never leans or shakes and the digits do not roll —
+   each changed digit is simply replaced, coming up out of a faint
+   ghost of itself in a fifth of a second (the one quiet detail). */
 
 /* ── shared by the scrubber family ────────────────────────
    Knob and ElasticSlider import these two from here rather than
@@ -83,6 +86,8 @@ function Digit({ d }: { d: string }) {
           "flex flex-col *:h-[1.5em] *:leading-[1.5em]",
           "transition-transform duration-(--rap-dur-fast) ease-[cubic-bezier(0.3,1.15,0.4,1)] calm:transition-none motion-reduce:transition-none",
           "fun:data-[flip=a]:animate-[rap-rollnum-a_260ms_ease-out] fun:data-[flip=b]:animate-[rap-rollnum-b_260ms_ease-out]",
+          // calm: no roll — the new digit fades up from a ghost of itself
+          "calm:data-[flip=a]:animate-[rap-rollnum-fade-a_var(--rap-dur-fast)_var(--rap-ease-out)] calm:data-[flip=b]:animate-[rap-rollnum-fade-b_var(--rap-dur-fast)_var(--rap-ease-out)]",
         )}
         data-flip={flip.current === null ? undefined : flip.current ? "a" : "b"}
         style={{ transform: `translateY(${-Number(d) * 1.5}em)` }}

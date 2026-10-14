@@ -19,8 +19,10 @@ import {
   createLoop,
   galleryItemKey,
   galleryNavClass,
+  instantMotion,
   setSpring,
   spring,
+  stepEase,
   stepSpring,
   wobble,
   type GalleryItem,
@@ -63,9 +65,13 @@ import {
    One rAF loop for every card, writing transforms directly;
    it parks as soon as the last card settles.
 
-   Calm / reduced motion: a straight, tidy stack; next/prev swap
-   the top card at once; a drag still follows the hand and
-   still decides next/prev on release. Sound (opt-in): a whoosh
+   Calm / reduced motion: a straight, tidy stack; nothing flies,
+   spins or settles on a spring; a drag still follows the hand and
+   still decides next/prev on release. Calm then eases instead:
+   the top card slips under the pile and the layers glide up one
+   step on a plain ease-out, a card let go short of a throw glides
+   home, and "back" fades the bottom card in on top. Reduced motion
+   (and still) swap at once. Sound (opt-in): a whoosh
    pitched by the throw's speed, and a soft drop when the
    card lands back in the pile. */
 
@@ -161,6 +167,8 @@ export const CardStack = forwardRef<HTMLDivElement, CardStackProps>(function Car
   const settle = useCallback(
     (instant = false) => {
       const calm = isCalm(root.current);
+      /* calm glides (the loop eases it) unless motion is off outright */
+      const jump = instant || (calm && instantMotion(root.current));
       const ord = orderRef.current;
       ord.forEach((i, d) => {
         const c = cards.current[i];
@@ -172,7 +180,7 @@ export const CardStack = forwardRef<HTMLDivElement, CardStackProps>(function Car
           c.r.to = t.r;
           c.s.to = t.s;
           c.z = n - d;
-          if (instant || calm) {
+          if (jump) {
             setSpring(c.x, t.x);
             setSpring(c.y, t.y);
             setSpring(c.r, t.r);
@@ -196,6 +204,7 @@ export const CardStack = forwardRef<HTMLDivElement, CardStackProps>(function Car
 
   loopTick.current = (dt) => {
     let moving = false;
+    const calm = isCalm(root.current);
     const limit = w * 1.15;
     cards.current.forEach((c, i) => {
       if (c.mode === "drag") return;
@@ -230,7 +239,10 @@ export const CardStack = forwardRef<HTMLDivElement, CardStackProps>(function Car
         }
         return;
       }
-      const m = [stepSpring(c.x, c.tune, dt), stepSpring(c.y, c.tune, dt), stepSpring(c.r, c.tune, dt), stepSpring(c.s, c.tune, dt)].some(Boolean);
+      /* calm: a plain ease-out to the layer, never past it */
+      const m = calm
+        ? [stepEase(c.x, dt), stepEase(c.y, dt), stepEase(c.r, dt), stepEase(c.s, dt)].some(Boolean)
+        : [stepSpring(c.x, c.tune, dt), stepSpring(c.y, c.tune, dt), stepSpring(c.r, c.tune, dt), stepSpring(c.s, c.tune, dt)].some(Boolean);
       if (c.landing && Math.hypot(c.x.x - c.x.to, c.y.x - c.y.to) < 14) {
         c.landing = false;
         soundRef.current.play("drop", { strength: 0.35 });
@@ -259,8 +271,9 @@ export const CardStack = forwardRef<HTMLDivElement, CardStackProps>(function Car
       const calm = isCalm(root.current);
       setOrder([...ord.slice(1), top]);
       if (calm) {
+        // under the pile at once; the layers glide up a step (settle eases them)
         c.mode = "rest";
-        settle(true);
+        settle();
         return;
       }
       const speed = Math.max(MIN_FLY, Math.abs(vx));
@@ -284,7 +297,11 @@ export const CardStack = forwardRef<HTMLDivElement, CardStackProps>(function Car
     const c = cards.current[bottom];
     setOrder([bottom, ...ord.slice(0, -1)]);
     if (isCalm(root.current)) {
-      settle(true);
+      settle();
+      // calm: it fades in on top as it glides up into place — a crossfade, not a pop
+      const el = els.current[bottom];
+      if (el && !instantMotion(root.current))
+        el.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "cubic-bezier(0.16, 1, 0.3, 1)" });
       return;
     }
     c.mode = "out";

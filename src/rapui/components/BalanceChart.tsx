@@ -6,7 +6,11 @@
    the original and now sound through rap/ui's opt-in sound
    (the scrub's `heard` block, the moment the pull arms, and the
    new reading landing) — each marked "rap/ui". The tokens its
-   CSS reads are mapped onto rap/ui's in BalanceChart.css. */
+   CSS reads are mapped onto rap/ui's in BalanceChart.css.
+   rap/ui calm: the sheet follows the finger 1:1 with no card
+   stretch or squash, goes home on a plain ease-out instead of the
+   spring, the tabs glide without a bounce, and a new reading
+   crossfades in. */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSound } from "../sound";
 import "./BalanceChart.css";
@@ -146,6 +150,10 @@ function useSpring(target: number, tune = 50, instant = false) {
 const stillness = () =>
   typeof window !== "undefined" &&
   !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/* rap/ui: a calm or still ancestor. Read after every render,
+   like the other rap/ui components — a closest() is cheap. */
+const calmAt = (el: Element | null) => !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 
 /* ── inlined from lab/Gooey ──────────────────────── */
 /* ══ Gooey ════════════════════════════════════════════════
@@ -509,6 +517,13 @@ export function BalanceChart({
      choice. */
   const [win, setWin] = useState(WINDOWS.length - 1);
   const still = stillness();
+  /* rap/ui: calm keeps the gesture and drops the elastic — see
+     `sprung` and `grow` */
+  const [calm, setCalm] = useState(false);
+  useLayoutEffect(() => {
+    const next = calmAt(scroll.current);
+    if (next !== calm) setCalm(next);
+  });
   /* the library measures its items in screen pixels, and every
      card on this bench is scaled — see Gooey.tsx */
   const { box, k } = useGooScale();
@@ -538,11 +553,15 @@ export function BalanceChart({
      would be a pull that can never commit — a knob with a dead
      end is a broken knob, not a strong setting. */
   const R = 700 - (resistance / 100) * 380;
-  const drawn = (R * raw) / (R + raw);
+  /* rap/ui calm: no rubber — the sheet goes exactly as far as the
+     finger, up to a stop half again past the threshold */
+  const drawn = calm ? Math.min(raw, threshold * 1.5) : (R * raw) / (R + raw);
   const target = phase === "work" ? threshold : phase === "hold" ? drawn : 0;
   /* Tracking the finger is instant, because it IS the finger.
      The spring is only ever the journey home. */
-  const sprung = useSpring(target, 58, still || phase === "hold");
+  /* rap/ui calm: no spring at all — the value lands and the
+     stylesheet eases the sheet there, so nothing overshoots */
+  const sprung = useSpring(target, 58, still || calm || phase === "hold");
   /* Clamped at zero, and not as a matter of taste: the content
      is at the top of its own scroller and there is nothing
      above it to reveal. */
@@ -572,7 +591,10 @@ export function BalanceChart({
      overlay rescale the block every frame, and re-rendered the
      component often enough that the gesture itself stopped
      responding. */
-  const grow = sprung >= 0
+  /* rap/ui calm: the card keeps its shape; the sheet slides on it */
+  const grow = calm
+    ? 0
+    : sprung >= 0
     ? GROW * Math.tanh(sprung / GROW)
     /* the rebound is NOT damped: the whole point of the
        squash is that it is a short sharp give, and running it
@@ -892,7 +914,9 @@ export function BalanceChart({
         onLostPointerCapture={done}
       >
         <div className="bal-sheet">
-          <p className="bal-sum">
+          {/* keyed by the reading so calm can crossfade the new
+              figure in (rap/ui); in fun the remount is invisible */}
+          <p className="bal-sum" key={read}>
             <span className="bal-cur">$</span>{whole}
             <span className="bal-dec">{cents}</span>
           </p>

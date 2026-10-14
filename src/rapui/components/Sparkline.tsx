@@ -19,8 +19,9 @@
      "this is the latest reading, and it is live", said the way the
      Badge's live dot says it — slower than a heartbeat, so a column
      of them reads as calm rather than alarmed.
-   Both are behind `fun:` — calm and reduced motion get the finished
-   line and a still dot.
+   Both are behind `fun:`. Calm: the pen is quicker and plain
+   (ease-out, no hand), the dot simply fades in as it lifts, and it
+   does not breathe. Reduced motion gets the finished line.
 
    ── why the numbers ──────────────────────────────────────────
    120×32 by default: about the width of a table column of figures
@@ -130,7 +131,7 @@ export function Sparkline({
           strokeWidth={2.1}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="fun:animate-[rap-spark-draw_900ms_cubic-bezier(0.45,0.05,0.25,1)_both]"
+          className="fun:animate-[rap-spark-draw_900ms_cubic-bezier(0.45,0.05,0.25,1)_both] calm:motion-safe:animate-[rap-spark-draw_var(--rap-dur)_var(--rap-ease-out)_both]"
         />
       </svg>
 
@@ -142,6 +143,8 @@ export function Sparkline({
             "absolute size-[5px] -m-[2.5px] pointer-events-none transition-opacity duration-150",
             // lands as the pen lifts: 900ms of draw, then a small pop
             "fun:animate-[rap-spark-land_320ms_cubic-bezier(0.28,1.6,0.4,1)_860ms_both]",
+            // calm: no pop, a fade as the quicker pen lifts
+            "calm:motion-safe:animate-[rap-spark-fade_var(--rap-dur-fast)_var(--rap-ease-out)_calc(var(--rap-dur)*0.8)_both]",
             dot && "opacity-0",
           )}
           style={{ left: `${xPct(end.x)}%`, top: end.y }}

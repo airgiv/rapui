@@ -542,6 +542,33 @@
   .bal-tip, .bal-guide, .bal-win-pill { transition-duration: 1ms; }
 }
 
+/* ── rap/ui calm ─────────────────────────────────────────
+   The JS hands over a spring-free `--at` (and no card growth),
+   so the sheet's trip home and the ring's fade are eased here,
+   on a plain ease-out — but never while the finger holds it:
+   the pull itself stays 1:1. The dot on the line holds its size,
+   the tabs glide without the bounce, a press dips to 0.98, and
+   the one quiet detail: a new reading crossfades in. */
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal:not([data-phase="hold"]) .bal-scroll {
+  transition: transform var(--rap-dur) var(--rap-ease-out);
+}
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal:not([data-phase="hold"]) .bal-goo {
+  transition: opacity var(--rap-dur-fast) var(--rap-ease-out), scale var(--rap-dur-fast) var(--rap-ease-out);
+}
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal-tip { transition: none; }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal-plot[data-scrub] .bal-tip { scale: 1; }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal-win-pill {
+  transition: transform var(--rap-dur-fast) var(--rap-ease-out);
+}
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal-win-btn {
+  transition: color 200ms ease, transform var(--rap-dur-fast) var(--rap-ease-out);
+}
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal-win-btn:active { transform: scale(0.98); }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) .bal-sum {
+  animation: bal-fade var(--rap-dur) var(--rap-ease-out);
+}
+@keyframes bal-fade { from { opacity: 0; } }
+
 @keyframes bal-spin { to { rotate: 360deg; } }
 }
 

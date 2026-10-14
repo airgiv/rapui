@@ -4,7 +4,10 @@
    spring (hooks/useSpring) as a plain object you step by hand,
    so a gallery can drive dozens of values from ONE rAF loop
    that parks itself when everything has settled — instead of a
-   hook (and a loop, and a render) per value. */
+   hook (and a loop, and a render) per value.
+   Calm gets its own step, stepEase: a plain ease-out toward the
+   target that can never overshoot, for the slides and settles a
+   gallery still needs when its springs and throws are off. */
 import { type ReactNode } from "react";
 import { springOf } from "../hooks/useSpring";
 import { clamp, cn } from "../utils";
@@ -65,6 +68,25 @@ export function stepSpring(s: Spring, tune: number, dt: number): boolean {
     return false;
   }
   return true;
+}
+
+/** Calm's frame: a plain exponential ease-out toward `to` (≈ --rap-dur to arrive at the
+    default rate). No velocity, so nothing ever passes its target. Returns true while moving. */
+export function stepEase(s: Spring, dt: number, rate = 0.14): boolean {
+  s.v = 0;
+  s.x += (s.to - s.x) * (1 - Math.pow(1 - rate, dt));
+  if (Math.abs(s.to - s.x) < 0.02) {
+    s.x = s.to;
+    return false;
+  }
+  return true;
+}
+
+/** No glide at all: reduced motion, or a tree whose durations are zero (still). */
+export function instantMotion(el: Element | null | undefined) {
+  if (typeof window === "undefined") return true;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return true;
+  return !!el && parseFloat(getComputedStyle(el).getPropertyValue("--rap-dur")) === 0;
 }
 
 /** Jump a spring to a value with no motion. */
@@ -132,9 +154,10 @@ export function springEasing(tune: number): { easing: string; ms: number } {
   return { easing: `linear(0, ${pts.map((p) => +p.toFixed(3)).join(", ")})`, ms: Math.round(pts.length * 16.67) };
 }
 
-/** The round prev/next button the galleries share: filled, never outlined. */
+/** The round prev/next button the galleries share: filled, never outlined. A control, so it
+    takes the preset's pill radius (round in fun/civic, softened in signal/product, square in minimal). */
 export const galleryNavClass = cn(
-  "grid place-items-center size-control shrink-0 p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
-  "transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-95",
+  "grid place-items-center size-control shrink-0 p-0 border-0 rounded-pill bg-fill text-ink cursor-pointer",
+  "transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-95 calm:active:scale-98",
   "outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-40 disabled:cursor-default [&_svg]:size-5",
 );

@@ -148,6 +148,17 @@
   background: var(--tms-mark, #e5484d);}
 }
 
+/* rap/ui calm: the digits change in place — no roll, no smear; the
+   new digit fades up from a ghost of itself, as RollingNumber does */
+@layer components {
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .tms-strip { transition: none; animation: none; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .tms-strip[data-flip="a"] { animation: tms-fade-a var(--rap-dur-fast) var(--rap-ease-out); }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) .tms-strip[data-flip="b"] { animation: tms-fade-b var(--rap-dur-fast) var(--rap-ease-out); }
+}
+
+@keyframes tms-fade-a { from { opacity: 0.3; } }
+@keyframes tms-fade-b { from { opacity: 0.3; } }
+
 @keyframes tms-blur-a { from { filter: blur(2px); } to { filter: blur(0); } }
 
 @keyframes tms-blur-b { from { filter: blur(2px); } to { filter: blur(0); } }

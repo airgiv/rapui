@@ -61,7 +61,11 @@ import { RollingNumber, isCalm } from "./ScrubNumber";
    Each side is drawn as a ramp that climbs from its own end to
    the meeting point, 30% to 100% of the row's height, so the
    split reads as two amounts pressing against each other rather
-   than as a bar with a marker on it. */
+   than as a bar with a marker on it.
+   ── CALM ────────────────────────────────────────────────
+   No spring, so no comb: the handle steps from tick to tick under
+   the hand and the ticks stay upright; the centre notch still
+   fades in when you land on 50/50. */
 
 const MAGNET = 3;
 
@@ -310,7 +314,7 @@ export const SplitSlider = forwardRef<HTMLDivElement, SplitSliderProps>(function
         <span
           data-slot="split-slider-handle"
           data-even={current === 50 || undefined}
-          className="group/handle absolute top-0 bottom-0 w-[6px] -ml-[3px] rounded-full bg-ink data-[even]:bg-ink-2"
+          className="group/handle absolute top-0 bottom-0 w-[6px] -ml-[3px] rounded-pill bg-ink data-[even]:bg-ink-2"
           style={{ left: at }}
           aria-hidden="true"
         >

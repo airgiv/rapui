@@ -21,8 +21,9 @@
    Checklist's slips falling into their pile. With sound on each
    landing is a soft notch pitched by the bar's value, and the
    first one lands with a "drop". Click a bar and it wobbles like
-   jelly. All of it behind `fun:`; calm and reduced motion show the
-   bars already standing.
+   jelly. All of it behind `fun:`. Calm: a new window's bars rise
+   out of the baseline together on a plain ease-out — no fall, no
+   squash, no jelly. Reduced motion shows them already standing.
 
    ── why the numbers ──────────────────────────────────────────
    - The fall is 720ms with the impact at 52%: ease-in to the
@@ -286,6 +287,8 @@ export function BarsChart({
                 className={cn(
                   "flex-1 min-w-0 h-full flex items-end justify-center origin-bottom",
                   "fun:animate-[rap-bars-drop_720ms_both]",
+                  // calm: one quiet rise for the whole row, no stagger
+                  "calm:motion-safe:animate-[rap-bars-rise_var(--rap-dur)_var(--rap-ease-out)_both] calm:[animation-delay:0ms]!",
                 )}
                 style={{ animationDelay: `${delayOf(i, n)}ms` }}
               >

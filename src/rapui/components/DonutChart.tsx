@@ -33,9 +33,10 @@
      threw it (never rewinding). With sound on, every segment
      crossing the top is a notch, pitched by its share, so a spin
      sounds like a prize wheel.
-   Sweep, spring and spin are all off under calm / reduced motion:
-   the ring is simply there, pointing still lifts a segment (without
-   the spring), and the ring does not turn. */
+   Calm: no spin and no spring — the whole ring draws once, every
+   segment at the same time on a plain ease-out, and a pointed-at
+   segment eases out its 5px and thickens without overshoot.
+   Reduced motion: the ring is simply there. */
 import {
   useEffect,
   useMemo,
@@ -354,7 +355,8 @@ export function DonutChart({
         style={{
           width: size,
           height: size,
-          cursor: sel !== null ? "grab" : undefined,
+          // calm does not spin, so there is nothing to grab
+          cursor: sel !== null && !isCalm(root.current) ? "grab" : undefined,
         }}
       >
         <svg
@@ -475,8 +477,9 @@ function Arc({
   dim: boolean;
 }) {
   const ref = useRef<SVGGElement>(null);
+  const calm = isCalm(ref.current);
   // 0..100 (pixels-or-percent units, see useSpring), tune 60: one friendly overshoot
-  const lift = useSpring(on ? 100 : 0, 60, isCalm(ref.current)) / 100;
+  const lift = useSpring(on ? 100 : 0, 60, calm) / 100;
   const dash = Math.max(0.001, sweep - gapDeg - capDeg * 2);
   const mid = ((start + sweep / 2 - 90) * Math.PI) / 180;
   const dx = Math.cos(mid) * LIFT * lift;
@@ -490,7 +493,10 @@ function Arc({
       ref={ref}
       data-slot="donut-segment"
       data-on={on || undefined}
-      transform={`translate(${dx.toFixed(2)} ${dy.toFixed(2)})`}
+      // calm: the lift lands at once and CSS eases it there — no spring, no overshoot
+      transform={calm ? undefined : `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`}
+      style={calm ? { translate: `${dx.toFixed(2)}px ${dy.toFixed(2)}px` } : undefined}
+      className="calm:transition-[translate] calm:duration-(--rap-dur-fast) calm:ease-soft"
     >
       <circle
         cx={c}
@@ -500,19 +506,23 @@ function Arc({
         fill="none"
         stroke="currentColor"
         strokeLinecap="round"
-        strokeWidth={thickness + GROW * lift}
+        strokeWidth={calm ? thickness : thickness + GROW * lift}
         strokeDasharray={`${dash.toFixed(3)} ${(360 - dash).toFixed(3)}`}
         transform={`rotate(${(start - 90 + gapDeg / 2 + capDeg).toFixed(3)} ${c} ${c})`}
         className={cn(
           tone,
           "transition-opacity duration-200",
           dim && "opacity-35",
-          "fun:animate-[rap-donut-sweep_600ms_cubic-bezier(0.3,1.22,0.5,1)_both]",
+          "fun:animate-[rap-donut-sweep_var(--sweep-dur)_cubic-bezier(0.3,1.22,0.5,1)_var(--sweep-delay)_both]",
+          // calm: one quiet draw, every segment at once, no overshoot
+          "calm:transition-[opacity,stroke-width] calm:ease-soft",
+          "calm:motion-safe:animate-[rap-donut-sweep_var(--rap-dur)_var(--rap-ease-out)_both]",
         )}
         style={
           {
-            animationDelay: `${delay.toFixed(0)}ms`,
-            animationDuration: `${dur.toFixed(0)}ms`,
+            "--sweep-delay": `${delay.toFixed(0)}ms`,
+            "--sweep-dur": `${dur.toFixed(0)}ms`,
+            strokeWidth: calm ? thickness + GROW * lift : undefined,
           } as CSSProperties
         }
       />

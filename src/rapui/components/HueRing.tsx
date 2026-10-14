@@ -41,7 +41,10 @@ import { turn } from "./tickKit";
    ── A NOTCH PER TICK ────────────────────────────────────
    Every tick crossed clicks, pitched round the wheel from ×0.75
    at red to ×1.5 just before it comes back — a sweep sounds like
-   a scale that resets where the colours do. */
+   a scale that resets where the colours do.
+   ── CALM ────────────────────────────────────────────────
+   No spring: the bulge sits exactly on the chosen hue, and the
+   swatch crossfades to its new colour — the one moving thing. */
 
 const R0 = 74;
 

@@ -41,8 +41,9 @@ import { GalleryMedia, galleryItemKey, springEasing, type GalleryItem, type Gall
 
    Keyboard: the hand is one tab stop; ←/→ pick the neighbour,
    Home/End the ends, Enter opens the chosen card.
-   Calm / reduced motion: the same fan, still — no hover spread
-   and no transitions. Sound (opt-in): a quiet notch as the
+   Calm / reduced motion: the same fan, no hover spread. Calm keeps
+   one movement: choosing a card turns the hand to it on a plain
+   ease-out, no overshoot. Reduced motion: no transitions at all. Sound (opt-in): a quiet notch as the
    hand passes over a card, a tap when one is chosen. */
 
 const EASE = springEasing(52);
@@ -176,7 +177,7 @@ export const FanGallery = forwardRef<HTMLDivElement, FanGalleryProps>(function F
                 "absolute left-1/2 top-(--fg-top) p-0 border-0 overflow-hidden rounded-[calc(var(--rap-radius)*0.75)] bg-paper-3 cursor-pointer",
                 "shadow-[0_1px_2px_rgb(0_0_0/0.08),0_14px_30px_-14px_rgb(0_0_0/0.45)] will-change-transform",
                 "[transform:translateX(-50%)_rotate(var(--fg-a))_translateY(var(--fg-lift))_scale(var(--fg-s))]",
-                "[transition:transform_var(--fg-dur)_var(--fg-ease)] calm:transition-none motion-reduce:transition-none",
+                "[transition:transform_var(--fg-dur)_var(--fg-ease)] calm:motion-safe:[transition:transform_var(--rap-dur)_var(--rap-ease-out)] motion-reduce:transition-none",
                 "outline-offset-3 focus-visible:outline-2 focus-visible:outline-ring",
               )}
               style={

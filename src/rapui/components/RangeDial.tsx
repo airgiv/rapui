@@ -5,7 +5,11 @@
    silent — a tap on grab and a detent per snap step, pitched by
    the hour, as the comment in onMove says — played through
    rap/ui's opt-in sound. Changes are marked "rap/ui". The tokens
-   its CSS reads are mapped onto rap/ui's in RangeDial.css. */
+   its CSS reads are mapped onto rap/ui's in RangeDial.css.
+   rap/ui calm: the handles sit exactly under the finger — no
+   rubber trail, no droplet tail, no sprung swell on grab — and the
+   lit ticks draw in on a quicker, plain wave. The two handles still
+   neck into one as the window closes: the one quiet detail. */
 import { useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Liquid } from "liquid-gooey";
@@ -123,6 +127,11 @@ function useGooScale() {
 
 const rad = (d: number) => (d * Math.PI) / 180;
 
+/* rap/ui: a calm or still ancestor (or reduced motion) */
+const calmAt = (el: Element | null) =>
+  (typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) ||
+  !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
+
 /* ══ 1 · sleep, a two handle arc ══════════════════════════
    Same tick language as the humidity wheel, but the value is
    a range rather than a point, so the ticks fill between the
@@ -184,6 +193,12 @@ export function RangeDial({
      this bench is drawn at a fraction — see Gooey.tsx */
   const { box, k } = useGooScale();
   const sound = useSound();
+  /* rap/ui calm, re-read after every render — a closest() is cheap */
+  const [calm, setCalm] = useState(false);
+  useLayoutEffect(() => {
+    const next = calmAt(box.current);
+    if (next !== calm) setCalm(next);
+  });
   /* rap/ui: the last stop that made a sound, per drag */
   const heard = useRef(-1);
   /* rap/ui: one click per snap step crossed, and the pitch is
@@ -406,14 +421,15 @@ export function RangeDial({
             <Liquid.Item
               key={k}
               effect="move"
-              move={{ springiness: 0.5, trail: 0.18 }}
+              /* rap/ui calm: a rigid surface glued to the handle */
+              move={calm ? { springiness: 1, wobble: 0, stretch: 0, trail: 0 } : { springiness: 0.5, trail: 0.18 }}
             >
               <motion.span
                 className="slp-knob"
                 data-held={held || undefined}
                 /* Framer springs the grab, which used to be a
                    jump from r 5.4 to 6.4 between two frames. */
-                animate={{ scale: held ? 1.22 : 1 }}
+                animate={{ scale: held && !calm ? 1.22 : 1 }}
                 transition={LIQUID}
                 style={{ x: at.x, y: at.y }}
               >

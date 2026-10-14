@@ -155,7 +155,9 @@ export function ChartDelta({ change, format, digits = 0, pct, when, className, .
    a shape that moves says "this one, and it came from that one".
    Placed by arithmetic — every tab is flex-1, so a translate of
    (100% + gap) of the pill's own width is exactly one tab — nothing
-   is measured. 1.16 on the curve: a bounce you feel, not watch. */
+   is measured. 1.16 on the curve: a bounce you feel, not watch.
+   Calm: the pill glides on a plain ease-out, no bounce, and a press
+   dips only to 0.98. */
 
 export interface ChartTabsProps<T extends string> {
   options: readonly { id: T; label: ReactNode }[];
@@ -182,7 +184,7 @@ export function ChartTabs<T extends string>({ options, value, onChange, classNam
         className={cn(
           "absolute inset-y-0 left-0 rounded-pill bg-ink/7",
           "w-[calc((100%-(var(--n)-1)*4px)/var(--n))] translate-x-[calc(var(--at)*(100%+4px))]",
-          "transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.16,0.5,1)] calm:duration-0",
+          "transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.16,0.5,1)] calm:duration-(--rap-dur-fast) calm:ease-soft",
         )}
       />
       {options.map((o, i) => (
@@ -199,7 +201,7 @@ export function ChartTabs<T extends string>({ options, value, onChange, classNam
           className={cn(
             "relative z-1 flex-1 h-8 rounded-pill border-0 bg-transparent cursor-pointer",
             "text-[12.5px] font-medium tracking-[0.01em] text-ink/45 hover:text-ink data-on:text-ink",
-            "transition-[color,scale] duration-200 ease-[cubic-bezier(0.28,1.2,0.36,1)] active:scale-94",
+            "transition-[color,scale] duration-200 ease-[cubic-bezier(0.28,1.2,0.36,1)] active:scale-94 calm:ease-soft calm:active:scale-98",
             "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
           )}
         >
@@ -317,7 +319,8 @@ export function ScrubGuide({ x, on, inset = 6 }: { x: number; on: boolean; inset
 
 /**
  * The ring on the line: a hollow 9px dot with a 2px currentColor ring, grown a
- * little while reading. `y` is a 0..1 fraction of the plot's inner height (between `inset`s).
+ * little while reading (calm: it holds its size — the readout does the talking).
+ * `y` is a 0..1 fraction of the plot's inner height (between `inset`s).
  */
 export function ScrubDot({ x, y, on, inset = 6 }: { x: number; y: number; on: boolean; inset?: number }) {
   return (
@@ -327,7 +330,7 @@ export function ScrubDot({ x, y, on, inset = 6 }: { x: number; y: number; on: bo
       className={cn(
         "absolute size-[9px] -m-[4.5px] rounded-full bg-surface shadow-[0_0_0_2px_currentColor] pointer-events-none",
         "transition-[scale] duration-160 ease-[cubic-bezier(0.28,1.4,0.36,1)]",
-        on && "scale-118",
+        on && "scale-118 calm:scale-100",
       )}
       style={{ left: `${x}%`, top: `calc(${inset}px + (100% - ${inset * 2}px) * ${y})` }}
     />

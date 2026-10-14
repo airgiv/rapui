@@ -11,6 +11,9 @@
    spring to their new share and the numbers count there. When a
    new leader arrives at the top it gives a small hop, the only
    moment in the chart that is about a winner.
+   Calm: no springs, no squash, no hop — the rows glide to their new
+   places and the bars to their new lengths on one plain ease-out,
+   and the numbers simply change.
 
    The numbers, and why:
    - 34px a row: the 12.5px label line, 7px gap, a 6px bar and air
@@ -228,6 +231,8 @@ function RaceRow({
       className={cn(
         "absolute inset-x-0 top-0 flex flex-col justify-center gap-[7px] rounded-[10px] outline-none cursor-default",
         "transition-opacity duration-200 ease-soft",
+        // calm: the springs are off, so CSS carries the row to its new rank
+        "calm:[transition:opacity_200ms_var(--rap-ease-out),transform_var(--rap-dur)_var(--rap-ease-out)]",
         dim ? "opacity-30" : "opacity-100",
         "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
       )}
@@ -254,7 +259,7 @@ function RaceRow({
             /* grey pills with one in colour, the BarsChart way: solid ink bars
                were the loudest thing on a page of thin lines. The leader carries
                the colour; the row you point at takes it. */
-            className={cn("absolute inset-y-0 left-0 rounded-pill transition-colors duration-200", on ? "bg-chart-up" : rank === 0 ? "bg-chart-up/75" : "bg-ink/18")}
+            className={cn("absolute inset-y-0 left-0 rounded-pill transition-colors duration-200", on ? "bg-chart-up" : rank === 0 ? "bg-chart-up/75" : "bg-ink/18", "calm:[transition:background-color_200ms,width_var(--rap-dur)_var(--rap-ease-out)]")}
             style={{
               /* clamped: the spring may overshoot, the bar may not leave its track */
               width: `${Math.min(100, Math.max(1.5, w)).toFixed(2)}%`,

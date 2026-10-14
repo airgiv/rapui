@@ -46,7 +46,9 @@ import { RollingNumber, isCalm } from "./ScrubNumber";
    The value answers the hand at once; the LENS follows it on
    Bencho's spring (tune 50) in px, so a jump across the ruler is
    a lens sliding there and settling with one small overshoot,
-   and dragging smoothly it simply rides under your finger. */
+   and dragging smoothly it simply rides under your finger.
+   Calm: no spring — the lens sits exactly on the value, wherever it
+   goes; the fisheye stays, since it is how the fine ticks are read. */
 
 const K = 1.3;
 const R = 40;

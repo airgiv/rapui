@@ -1,5 +1,6 @@
 /* DonutChart — only the sweep's keyframes; everything else is utilities in DonutChart.tsx.
-   It runs behind `fun:` there, so calm and reduced motion get the ring already drawn. */
+   Fun runs it staggered on a sprung curve; calm runs it once for every segment at
+   the same time on a plain ease-out; reduced motion gets the ring already drawn. */
 @layer theme, base, components, utilities;
 
 /* ── the sweep ───────────────────────────────────────────────

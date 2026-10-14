@@ -45,7 +45,11 @@ import { RollingNumber, isCalm } from "./ScrubNumber";
    ticks read it clamped to the range — a knob that swings past
    its own end stop is a glitch, not a bounce. So a jump to max
    lands hard against the stop and holds there for the frames
-   the overshoot would have spent past it. */
+   the overshoot would have spent past it.
+   ── CALM ────────────────────────────────────────────────
+   No magnet and no spring: the dial follows the hand step for
+   step, and a key press or a value set from outside turns the cap
+   to its notch on a short plain ease-out (never while held). */
 
 /* the dial's sweep, degrees: 270 with the gap at the bottom,
    the travel of nearly every pot on nearly every amp */
@@ -223,6 +227,8 @@ export const Knob = forwardRef<HTMLDivElement, KnobProps>(function Knob(
     /* focused for the keys that may follow; marked as the hand's so
        the keyboard ring stays off until a key is pressed */
     e.currentTarget.dataset.pointer = "";
+    /* held: calm's ease on the cap stands aside for the hand */
+    e.currentTarget.dataset.held = "";
     e.currentTarget.focus({ preventScroll: true });
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -268,6 +274,7 @@ export const Knob = forwardRef<HTMLDivElement, KnobProps>(function Knob(
   const onUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     const g = drag.current;
     drag.current = null;
+    delete e.currentTarget.dataset.held;
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
@@ -390,6 +397,8 @@ export const Knob = forwardRef<HTMLDivElement, KnobProps>(function Knob(
           className={cn(
             "absolute inset-[18%] rounded-full bg-surface shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_2px_8px_rgb(0_0_0/0.18)]",
             "transition-[box-shadow] duration-(--rap-dur-fast) ease-rm",
+            // calm: the spring is off, so a key's step turns the cap on an ease — but never under the hand
+            "calm:transition-[box-shadow,transform] calm:ease-soft group-data-[held]/dial:transition-[box-shadow]",
             "group-[:focus-visible:not([data-pointer])]/dial:shadow-[0_0_0_2px_var(--rap-ring),0_2px_8px_rgb(0_0_0/0.18)]",
           )}
           aria-hidden="true"

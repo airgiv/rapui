@@ -41,12 +41,16 @@ import "./Chart.css";
    nodes when it measures, and inside the window they simply
    start their grow again.
 
-   Calm / reduced motion: no intro, the chart is just there. */
+   Calm: a short, clean intro — the pen draws on a plain ease-out in
+   0.6s and bars rise from the baseline together, no overshoot, no
+   stagger. Reduced motion: no intro, the chart is just there. */
 
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
+const isCalm = (el: Element | null) => !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 const TWEENED = new Set<unknown>([Area, Bar, Line]);
 /** how long the intro window stays open: the longest bar stagger + its grow */
 const INTRO_MS = 1500;
+/** calm's window: one 600ms draw, nothing staggered */
+const CALM_INTRO_MS = 700;
 
 function typeName(t: unknown): string {
   if (typeof t === "string") return t;
@@ -102,9 +106,9 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(fu
   });
 
   useLayoutEffect(() => {
-    if (isCalm(box.current)) return;
+    if (prefersReducedMotion()) return;
     setIntro(true);
-    const t = window.setTimeout(() => setIntro(false), INTRO_MS);
+    const t = window.setTimeout(() => setIntro(false), isCalm(box.current) ? CALM_INTRO_MS : INTRO_MS);
     return () => window.clearTimeout(t);
   }, [signature]);
 
