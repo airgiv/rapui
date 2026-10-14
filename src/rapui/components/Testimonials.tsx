@@ -146,7 +146,7 @@ function CivicQuotes({ items }: BodyProps) {
         <Grid cols={Math.min(rest.length, 3)} gap="tile">
           {rest.map((item, i) => (
             <figure key={i} data-slot="testimonial" className="m-0 flex flex-col justify-between gap-(--rap-space-lg) p-(--rap-space-lg) rounded-lg bg-surface text-ink">
-              <blockquote className="m-0 font-display text-[1.25rem] leading-[1.45] tracking-[-0.01em]">“{item.quote}”</blockquote>
+              <blockquote className="m-0 font-display text-[1.625rem] leading-[1.3] tracking-[-0.005em]">“{item.quote}”</blockquote>
               <Byline item={item} />
             </figure>
           ))}

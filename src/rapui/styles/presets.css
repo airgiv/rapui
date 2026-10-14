@@ -6,7 +6,7 @@
    data-rap-preset on <html> or on any wrapper (or <RapStyle>):
 
      fun      the default — loud, round, playful (tokens.css)
-     civic    a public-service site: transitional serif headlines,
+     civic    a public-service site: big condensed serif headlines,
               navy and a little red, soft big cards, calm motion
      signal   a field instrument: sage paper, green-black ink,
               phosphor green, Plex, dot matrices and scanlines
@@ -31,14 +31,16 @@
 
 /* ── civic ─────────────────────────────────────────────────── */
 [data-rap-preset="civic"] {
-  --rap-font-display: "Newsreader Variable", "Newsreader", ui-serif, Georgia, serif;
+  --rap-font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --rap-font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  /* light: a public-service serif reads refined at size, not heavy */
-  --rap-display-weight: 440;
+  /* Instrument Serif has one weight; it is condensed, so it is set large and tight */
+  --rap-display-weight: 400;
   --rap-display-weight-mega: 400;
-  /* section titles a step larger than the default: a light serif needs size to carry */
-  --rap-size-lg: clamp(2.125rem, 4.2vw, 3.75rem);
-  --rap-display-tracking: -0.025em;
+  /* section titles well above the default: a narrow serif needs size to carry */
+  --rap-size-lg: clamp(2.5rem, 5.2vw, 4.75rem);
+  --rap-size-xl: clamp(2.75rem, 6.6vw, 6.5rem);
+  --rap-size-xxl: clamp(3.25rem, 9.6vw, 10rem);
+  --rap-display-tracking: -0.015em;
 
   --rap-radius-xs: 8px;
   --rap-radius-sm: 14px;
@@ -120,9 +122,12 @@
   color-scheme: dark;
 }
 
-/* a public-service page doesn't do two-tone headlines: a muted Accent stays ink */
-[data-rap-preset="civic"] [data-slot="accent"][data-tone="mute"] {
+/* a public-service page doesn't do two-tone headlines: an Accent stays ink and
+   turns to the serif's italic instead */
+[data-rap-preset="civic"] [data-slot="accent"] {
   color: inherit;
+  font-style: italic;
+  letter-spacing: -0.01em;
 }
 
 /* ── signal ────────────────────────────────────────────────── */

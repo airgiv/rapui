@@ -130,7 +130,7 @@ function CivicFooter({ logo, tagline, columns = [], bottom, social, mark }: Part
             {mark && <div data-slot="site-footer-mark" className="grid place-items-center shrink-0 size-14 rounded-full shadow-[inset_0_0_0_1px_var(--rap-line)]">{mark}</div>}
             <div className="text-[1.25rem] font-semibold">{logo}</div>
           </div>
-          {tagline && <p className="m-0 max-w-[34ch] font-display text-[1.375rem] leading-snug tracking-[-0.01em] text-ink">{tagline}</p>}
+          {tagline && <p className="m-0 max-w-[30ch] font-display text-[1.75rem] leading-[1.2] tracking-[-0.005em] text-ink">{tagline}</p>}
         </GridItem>
         <GridItem span={8}>
           <Columns

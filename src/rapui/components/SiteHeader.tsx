@@ -12,7 +12,10 @@
 
    fun      a floating pill bar in the inverted theme (ink ground,
             paper words), like the rapui landing's own header
-   civic    a white bar on a thin rule: sans links, a navy button
+   civic    a white bar on a thin rule: sans links, a navy button;
+            folded, a navy "Menu" pill, and the menu's links set big in
+            the serif. A `notice` reads like a government site's
+            "An official website of…" line above it all
    signal   mono uppercase links on a hairline, with a live dot and
             a clock readout at the end
    product  a translucent blurred bar on a hairline, links centred
@@ -45,6 +48,8 @@ export interface SiteHeaderProps extends HTMLAttributes<HTMLElement> {
   navLabel?: string;
   /** "#content": adds a skip link to the page's main content, visible on focus. */
   skipTo?: string;
+  /** A slim line above the bar: "An official website of…", a notice, a banner. */
+  notice?: ReactNode;
   /** signal: the readout at the end (default: a live dot and the local time). */
   status?: ReactNode;
   look?: BlockLook;
@@ -115,15 +120,23 @@ const LINK: Record<BlockLook, string> = {
 
 const MENU_BTN: Record<BlockLook, string> = {
   fun: "size-11 rounded-full bg-ink text-paper fun:active:scale-90",
-  civic: "size-11 rounded-full bg-fill text-ink hover:bg-fill-hover",
+  civic: "flex items-center whitespace-nowrap h-10 px-4 gap-2 rounded-pill bg-accent text-accent-ink text-[0.9375rem] font-medium hover:opacity-90 [&_svg]:size-4!",
   signal: "size-9 rounded-xs shadow-[inset_0_0_0_1px_var(--rap-line)] text-ink hover:bg-fill",
   product: "size-9 rounded-sm shadow-[inset_0_0_0_1px_var(--rap-edge)] text-ink hover:bg-fill",
   minimal: "h-9 px-0 text-ink underline-offset-4 hover:underline",
 };
 
+const NOTICE: Record<BlockLook, string> = {
+  fun: "text-ink-2",
+  civic: "bg-paper text-ink-2 border-b border-line",
+  signal: "font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-2 border-b border-line",
+  product: "text-ink-2 border-b border-line",
+  minimal: "text-ink-2",
+};
+
 const SHEET_LINK: Record<BlockLook, string> = {
   fun: "py-1.5 font-display text-[2.2rem] font-medium tracking-[-0.04em] leading-[1.05] hover:text-flame",
-  civic: "py-3 border-b border-line font-display text-[1.75rem] tracking-[-0.02em] hover:text-flame",
+  civic: "py-3 border-b border-line font-display text-[2.5rem] leading-[1.05] tracking-[-0.01em] hover:text-blue",
   signal: "py-3 border-b border-line font-mono text-[0.875rem] uppercase tracking-[0.08em] hover:text-flame",
   product: "py-2.5 text-[1.125rem] font-medium text-ink-2 hover:text-ink",
   minimal: "py-2 text-[1.5rem] tracking-[-0.02em] hover:underline underline-offset-4 decoration-1",
@@ -137,6 +150,7 @@ export function SiteHeader({
   navLabel = "Main",
   skipTo,
   status,
+  notice,
   look: lookProp,
   className,
   ...rest
@@ -183,6 +197,11 @@ export function SiteHeader({
           Skip to content
         </a>
       )}
+      {notice && (
+        <div data-slot="site-header-notice" className={cn("text-[0.8125rem] leading-snug", NOTICE[look])}>
+          <Container className="flex items-center gap-2 py-2">{notice}</Container>
+        </div>
+      )}
       <Container size={look === "fun" ? "full" : "default"} className={cn(look === "fun" && "px-2.5")}>
         <div
           data-slot="site-header-bar"
@@ -226,7 +245,16 @@ export function SiteHeader({
                     MENU_BTN[look],
                   )}
                 >
-                  {look === "minimal" ? <span className="text-[0.9375rem]">Menu</span> : <Menu />}
+                  {look === "minimal" ? (
+                    <span className="text-[0.9375rem]">Menu</span>
+                  ) : look === "civic" ? (
+                    <>
+                      <Menu />
+                      Menu
+                    </>
+                  ) : (
+                    <Menu />
+                  )}
                 </button>
               </div>
             )}

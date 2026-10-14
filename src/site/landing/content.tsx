@@ -123,7 +123,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
           A landing page, <Accent>respectfully submitted.</Accent>
         </>
       ),
-      lead: "This is the civic preset: a transitional serif, navy ink and soft white cards, centred like a notice on a courthouse door. Every statement on this page is true, including this one.",
+      lead: "This is the civic preset: a tall condensed serif, navy ink and soft white cards, centred like a notice on a courthouse door. Every statement on this page is true, including this one.",
       primary: "Enter the record",
       secondary: "Read the fine print",
       meta: [],
@@ -137,9 +137,9 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       lead: "The court has reviewed the preset and makes the following findings, each of them a real, working component.",
       items: [
         { title: "Centred, as is customary", text: "Headlines and section heads sit on the centre line, where a reader expects to find the important part.", icon: "document" },
-        { title: "Serif, under oath", text: "Newsreader for headlines, set at an optical size made for large type. It swears to be legible.", icon: "book" },
+        { title: "Serif, under oath", text: "Instrument Serif for headlines, set large and close, the way a front page sets its name. It swears to be legible.", icon: "book" },
         { title: "Soft cards, firm edges", text: "Big rounded white cards on cool grey paper. No borders, no shadows, nothing to object to.", icon: "folder" },
-        { title: "One red word", text: "Colour is held in reserve: a single word per headline in red, so it carries weight when it appears.", icon: "flag" },
+        { title: "One word in italic", text: "No second colour in a headline: the word that matters leans into the serif’s italic, and that is emphasis enough.", icon: "flag" },
         { title: "Readable at 200%", text: "Contrast checked against WCAG 2.2 AA, from the kicker to the footnote you are about to skip.", icon: "check-circle" },
         { title: "Calm motion only", text: "Things fade and settle. Nothing bounces in a place of record.", icon: "shield" },
       ],
@@ -156,7 +156,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       eyebrow: "Findings of fact",
       title: <>The facts, <Accent tone="mute">stipulated</Accent></>,
       items: [
-        { value: 1, label: "red word per headline", note: "never two" },
+        { value: 1, label: "italic phrase per headline", note: "never two" },
         { value: 28, suffix: "px", label: "corner radius", note: "on the large cards" },
         { value: 4.5, suffix: ":1", label: "minimum contrast", note: "and usually more" },
         { value: 0, label: "exclamation marks", note: "in the entire record" },
@@ -187,7 +187,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       items: [
         { q: "Is this legal advice?", a: "No. It is a landing page dressed as a law firm. Please consult an actual lawyer, ideally one with a nicer website than this." },
         { q: "Why is everything centred?", a: "The civic preset puts headlines, section heads and calls to action on the centre line, the way a public notice is set. The other presets disagree, and you may switch to them below." },
-        { q: "Where did the colour go?", a: "Into a single red word per headline. The rest of the page is navy and grey, as befits the occasion." },
+        { q: "Where did the colour go?", a: "Into the italic. The page is navy and grey, as befits the occasion; a headline makes its point by leaning, not by shouting in red." },
         { q: "May I object?", a: "You may. The objection is noted, and the page will continue regardless." },
       ],
     },

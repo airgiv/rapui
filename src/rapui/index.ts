@@ -67,3 +67,4 @@ export * from "./groups/tools";
 export * from "./groups/ai";
 export * from "./groups/blocks";
 export * from "./groups/finance";
+export * from "./groups/awards";

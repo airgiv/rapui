@@ -113,7 +113,7 @@ const ROW: Record<BlockLook, { list: string; item: string; trigger: string; q: s
     list: "flex flex-col gap-(--rap-space-xs)",
     item: "rounded-card bg-surface text-ink",
     trigger: "gap-(--rap-space-md) px-(--rap-space-lg) py-(--rap-space-md) rounded-card",
-    q: "font-display text-[1.25rem] font-medium leading-[1.3] tracking-[-0.01em]",
+    q: "font-display text-[1.625rem] font-[var(--rap-display-weight)] leading-[1.2] tracking-[-0.005em]",
     a: "px-(--rap-space-lg) pb-(--rap-space-lg) text-[1rem] leading-[1.65] text-ink-2 max-w-[62ch]",
   },
   signal: {

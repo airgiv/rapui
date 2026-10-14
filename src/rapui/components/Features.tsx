@@ -176,7 +176,7 @@ function CivicCards({ items, cols }: BodyProps) {
               <FeatureIcon icon={item.icon ?? "star"} tone="ink" size={32} />
             </span>
           )}
-          <ItemTitle item={item} className="font-display text-[1.5rem] font-medium leading-[1.15] tracking-[-0.02em]" />
+          <ItemTitle item={item} className="font-display text-[1.875rem] font-[var(--rap-display-weight)] leading-[1.1] tracking-[-0.01em]" />
           <div className="text-[1rem] leading-[1.6] text-ink-2">{item.text}</div>
           {item.href && (
             <span aria-hidden className="mt-auto inline-flex items-center gap-2 text-[0.9375rem] font-semibold text-accent underline-offset-4 group-hover/card:underline">
