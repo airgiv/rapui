@@ -15,7 +15,7 @@
      civic    centred, a large light serif; the parts sit bare in
               the line, a slider on a soft white pill
      signal   flush left in Plex; each part held in rust [brackets]
-     product  centred, tight and heavy; each part in a hairline chip
+     product  centred, tight and heavy; a slider or stars on a round chip
      minimal  flush left and large, the parts bare
 
    The parts are real and keyboard-reachable; the text is one <p>
@@ -48,7 +48,7 @@ export function Statement({ eyebrow, children, textAs = "p", footer, look: lookP
   useLayoutEffect(() => {
     const el = text.current;
     if (!el) return;
-    const base = look === "signal" ? 68 : look === "civic" ? 58 : 54;
+    const base = look === "signal" ? 74 : look === "civic" ? 62 : 58;
     const fit = () => el.style.setProperty("--slot-zoom", String(Math.max(1, Math.min(2.2, parseFloat(getComputedStyle(el).fontSize) / base)).toFixed(3)));
     fit();
     const ro = new ResizeObserver(fit);

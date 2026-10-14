@@ -11,7 +11,7 @@ export function LandingPreview({ dark, setDark }: { dark: boolean; setDark: (v: 
   const { preset, setPreset, motion, setMotion } = useStylePreset();
   const [grid, setGrid] = useState(false);
   useEffect(() => {
-    document.title = "Commons — a rapui landing page";
+    document.title = "Docket — a rapui landing page";
     window.scrollTo(0, 0);
   }, []);
   // Shift+G toggles the grid here too, in step with the switch

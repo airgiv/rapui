@@ -283,7 +283,7 @@ export interface SourceCardProps extends Omit<AnchorHTMLAttributes<HTMLAnchorEle
 }
 
 const cardBase = cn(
-  "group/source relative flex min-h-[92px] flex-col gap-2 rounded-card bg-paper-2 p-3 text-left no-underline",
+  "group/source relative flex min-h-[92px] flex-col gap-2 rounded-sm bg-paper-2 p-3 text-left no-underline",
   "shadow-[inset_0_0_0_1px_var(--rap-edge)] outline-none",
   "transition-[background-color,box-shadow,transform] duration-150 ease-soft",
   "hover:bg-fill focus-visible:ring-2 focus-visible:ring-ring",

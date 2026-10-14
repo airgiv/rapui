@@ -29,7 +29,7 @@ export function PresetPicker({ value, onChange, size = "md", className }: { valu
       value={value}
       onValueChange={(v) => v && onChange(v as RapPreset)}
       aria-label="Style preset"
-      className={cn("max-w-full overflow-x-auto", className)}
+      className={cn("w-fit max-w-full self-start overflow-x-auto", className)}
     >
       {RAP_PRESETS.map((p) => (
         <ToggleGroupItem key={p.value} value={p.value}>
@@ -49,7 +49,7 @@ export function PresetScope({ preset, children }: { preset: RapPreset; children:
   );
 }
 
-/* open the full Commons landing in this preset (the docs and the landing share the choice) */
+/* open the full Docket landing in this preset (the docs and the landing share the choice) */
 function openLanding(p: RapPreset) {
   try {
     localStorage.setItem("rapui-preset", p);
@@ -80,12 +80,14 @@ export function PresetsSection({ copyClass }: { copyClass: string }) {
 
   return (
     <section ref={ref} className="px-(--gutter) pt-10 pb-28 flex flex-col gap-10" id="presets">
-      <div className="grid grid-cols-[1fr_minmax(0,28rem)] gap-x-10 gap-y-6 items-end max-[900px]:grid-cols-1">
+      {/* the title, then one row under it: the words on the left, the picker on the right,
+          sharing a bottom line — so nothing floats above the headline */}
+      <div className="flex flex-col gap-6">
         <Display size="xl">
           Five characters, <Accent tone="mute">one code</Accent>
         </Display>
-        <div className="flex flex-col gap-5">
-          <p className={copyClass}>
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
+          <p className={cn(copyClass, "max-w-[46ch]")}>
             Not every product wants to be this loud. Pick a preset and the same components change their type, colour, shape, spacing and
             how much they move — and the blocks re-lay the page: flush left and huge here, centred and serif for a public service.
           </p>
@@ -94,7 +96,7 @@ export function PresetsSection({ copyClass }: { copyClass: string }) {
       </div>
 
       <PresetScope preset={preset}>
-        <div className="relative overflow-hidden rounded-lg bg-paper text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)]">
+        <div className="relative flex min-h-[clamp(36.5rem,58vw,50rem)] items-center overflow-hidden rounded-lg bg-paper text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)] [&>[data-slot=statement]]:w-full">
           <Statement
             eyebrow={note}
             size="md"
