@@ -1,9 +1,16 @@
 /* NavigationMenu — the one thing utilities cannot say: the keyframes Radix's
    data-motion picks between as one panel replaces another (from/to the start or
-   end side, 40px of travel). Everything else lives in NavigationMenu.tsx. */
+   end side, 40px of travel; 6px under calm). Everything else lives in NavigationMenu.tsx. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-nav-from-start { from { opacity: 0; transform: translateX(-40px); } }
 @keyframes rap-nav-from-end { from { opacity: 0; transform: translateX(40px); } }
 @keyframes rap-nav-to-start { to { opacity: 0; transform: translateX(-40px); } }
 @keyframes rap-nav-to-end { to { opacity: 0; transform: translateX(40px); } }
+
+/* calm: the same crossfade with a 6px nudge, and the shared panel fades in from 0.98 */
+@keyframes rap-nav-calm-from-start { from { opacity: 0; transform: translateX(-6px); } }
+@keyframes rap-nav-calm-from-end { from { opacity: 0; transform: translateX(6px); } }
+@keyframes rap-nav-calm-to-start { to { opacity: 0; transform: translateX(-6px); } }
+@keyframes rap-nav-calm-to-end { to { opacity: 0; transform: translateX(6px); } }
+@keyframes rap-nav-calm-in { from { opacity: 0; transform: scale(0.98); } }

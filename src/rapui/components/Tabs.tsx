@@ -16,7 +16,11 @@ export interface TabsProps {
   className?: string;
 }
 
-/** Pill tabs with a gooey indicator that slides between options. */
+/**
+ * Pill tabs with a gooey indicator that slides between options.
+ * Calm: the ink pill glides on a plain ease-out (no spring) and the panel
+ * fades up 4px, without the blur.
+ */
 export function Tabs({ items, value, defaultValue, onValueChange, className }: TabsProps) {
   const [inner, setInner] = useState(defaultValue ?? items[0]?.value);
   const active = value ?? inner;
@@ -69,6 +73,7 @@ export function Tabs({ items, value, defaultValue, onValueChange, className }: T
           className={cn(
             "absolute -z-1 top-[5px] bottom-[5px] left-0 rounded-pill bg-ink",
             "[transition:transform_var(--rap-dur)_var(--rap-ease-spring),width_var(--rap-dur)_var(--rap-ease-spring)]",
+            "calm:[transition:transform_var(--rap-dur)_var(--rap-ease-out),width_var(--rap-dur)_var(--rap-ease-out)]",
           )}
           style={{ transform: `translateX(${ind.left}px)`, width: ind.width }}
           aria-hidden
@@ -100,7 +105,7 @@ export function Tabs({ items, value, defaultValue, onValueChange, className }: T
       {current?.content !== undefined && (
         <div
           data-slot="animated-tabs-panel"
-          className="pt-8 animate-[rap-tab-in_var(--rap-dur)_var(--rap-ease-out)]"
+          className="pt-8 animate-[rap-tab-in_var(--rap-dur)_var(--rap-ease-out)] calm:animate-[rap-tab-calm-in_var(--rap-dur)_var(--rap-ease-out)]"
           role="tabpanel" id={`${base}-p-${current.value}`} aria-labelledby={`${base}-t-${current.value}`} key={current.value}>
           {current.content}
         </div>

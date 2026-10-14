@@ -34,7 +34,9 @@ import "./Avatar.css";
    The face under the pointer lifts (4px, 1.08×) on the
    overshooting ease so you can tell whom you are about to click.
    Calm / reduced motion: the stack stays stacked. With a
-   SoundProvider on, each lift is a very soft detent (0.25). */
+   SoundProvider on, each lift is a very soft detent (0.25).
+   Calm: no fan — the face under the pointer just comes to the front
+   and rises 2px on a plain ease-out. */
 
 /** true under prefers-reduced-motion or inside data-rap-motion="calm" (kept live). */
 function useCalm(ref: RefObject<Element | null>) {
@@ -111,7 +113,8 @@ const fallbackVariants = cva("grid place-items-center size-full bg-fill-strong t
    size × --fan (0→1 on the group's spring), so the -18% overlap opens to a 4% gap.
    The face under the pointer lifts 4px and swells 1.08× on the spring ease; the
    lift is a registered property (Avatar.css) so it can transition inside the
-   same `translate` that carries the fan. Calm: the stack stays stacked. */
+   same `translate` that carries the fan. Calm: the stack stays stacked; the pointed
+   face only steps forward 2px. */
 const GROUP_FACES = [
   "[&>[data-slot=avatar]]:shadow-[0_0_0_2px_var(--av-ring)] [&>[data-slot=avatar]]:ml-[calc(var(--av)*-0.18)]",
   "[&>[data-slot=avatar]]:text-[length:calc(var(--av)*0.34)] [&>[data-slot=avatar]:first-child]:ml-0",
@@ -119,6 +122,9 @@ const GROUP_FACES = [
   "[&>[data-slot=avatar]]:[transition:scale_var(--rap-dur-fast)_var(--rap-ease-back),--rap-av-lift_var(--rap-dur-fast)_var(--rap-ease-back)]",
   "data-fanned:[&>[data-slot=avatar]:hover]:[--rap-av-lift:-4px] data-fanned:[&>[data-slot=avatar]:hover]:scale-108 data-fanned:[&>[data-slot=avatar]:hover]:z-1",
   "calm:[&>[data-slot=avatar]]:translate-none calm:[&>[data-slot=avatar]]:scale-none",
+  // calm: the pointed face steps forward and rises 2px, eased, no overshoot
+  "calm:[&>[data-slot=avatar]]:[transition:translate_var(--rap-dur-fast)_var(--rap-ease-out)]",
+  "calm:[&>[data-slot=avatar]:hover]:[translate:0_-2px] calm:[&>[data-slot=avatar]:hover]:z-1",
 ];
 
 /**

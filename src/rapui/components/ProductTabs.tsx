@@ -33,6 +33,7 @@ import "./ProductTabs.css";
  * MutationObserver (the ToggleGroup pattern), so controlled, uncontrolled and keyboard
  * changes all glide. The selection itself is immediate; only the ink is late.
  * Under calm / reduced motion it falls back to a plain eased slide.
+ * Calm: the pill / underline slides in one piece on ease-rm and the panel fades up 4px.
  * Sound (opt-in via SoundProvider): a tap on change, pitched up per tab position.
  */
 

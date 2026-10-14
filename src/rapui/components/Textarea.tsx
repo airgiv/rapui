@@ -20,8 +20,9 @@
    again the moment you are back under. A soft limit never eats
    what you typed; `maxLength` still hard-caps if you want that.
 
-   Reduced motion / data-rap-motion="calm": the height snaps, the
-   counter still turns flame but does not hop. */
+   Reduced motion / data-rap-motion="calm": no spring — the height
+   eases to each new line in CSS (no overshoot); the counter still
+   turns flame but does not hop. */
 import {
   forwardRef,
   useCallback,
@@ -145,6 +146,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         size === "lg" && "[--ta-pad-x:20px] [--ta-pad-y:15px] text-[1.0625rem]",
         "leading-[1.45]", // after the sizes: tailwind-merge drops a leading that precedes a text size
         autoGrow && "resize-none overflow-hidden",
+        // calm: the height is set without the spring, so it eases here instead of snapping
+        autoGrow && "calm:transition-[background-color,box-shadow,height]",
         // room under the text for the counter in the corner
         counted && "pb-[calc(var(--ta-pad-y)+1.4em)]",
         flagged && "shadow-[inset_0_0_0_2px_var(--rap-danger)] focus:shadow-[inset_0_0_0_2px_var(--rap-danger)]",

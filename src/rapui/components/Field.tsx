@@ -16,7 +16,8 @@ const floated =
   "peer-focus:top-0 peer-focus:font-sans peer-focus:text-[0.875rem] peer-focus:font-medium peer-focus:tracking-[-0.01em] peer-focus:text-ink " +
   "peer-not-placeholder-shown:top-0 peer-not-placeholder-shown:font-sans peer-not-placeholder-shown:text-[0.875rem] peer-not-placeholder-shown:font-medium peer-not-placeholder-shown:tracking-[-0.01em] peer-not-placeholder-shown:text-ink";
 
-/** Giant underline input. Label floats up, the line draws itself on focus. */
+/** Giant underline input. Label floats up, the line draws itself on focus.
+ *  (calm: unchanged — both are already plain ease-outs, and the drawn line is the one detail) */
 export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
   { label, hint, error, size = "lg", className, id, placeholder, ...rest },
   ref,

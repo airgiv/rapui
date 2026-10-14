@@ -5,7 +5,10 @@
    a constant, the stylesheet and sound imports below, and `to()`,
    which now plays the click its comment describes through
    rap/ui's opt-in sound. Changes are marked "rap/ui". The tokens
-   its CSS reads are mapped onto rap/ui's in ProgressTicks.css. */
+   its CSS reads are mapped onto rap/ui's in ProgressTicks.css.
+   rap/ui calm: nothing to change — the ticks already only ease
+   their height and colour (no spring, no overshoot), the same in
+   every motion level. */
 import { useRef, useState } from "react";
 import { useSound } from "../sound";
 import "./ProgressTicks.css";

@@ -1,6 +1,7 @@
 /* Popover (and HoverCard) — the one thing utilities cannot say: the swing
    keyframes. They read --swing-tilt / --swing-dx / --swing-dy, set per Radix
-   data-side by the `popSwing` classes in Popover.tsx. */
+   data-side by the `popSwing` classes in Popover.tsx — and the calm pair,
+   which reuses the same offsets at 40% (a 4px drift) and no tilt. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-pop-swing-in {
@@ -10,3 +11,7 @@
 @keyframes rap-pop-swing-out {
   to { opacity: 0; scale: 0.8; rotate: calc(var(--swing-tilt) * 0.5); translate: calc(var(--swing-dx) * 0.5) calc(var(--swing-dy) * 0.5); }
 }
+@keyframes rap-pop-calm-in {
+  from { opacity: 0; scale: 0.98; translate: calc(var(--swing-dx) * 0.4) calc(var(--swing-dy) * 0.4); }
+}
+@keyframes rap-pop-calm-out { to { opacity: 0; } }

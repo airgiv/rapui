@@ -41,7 +41,10 @@ import { cn, prefersReducedMotion } from "../utils";
    Calm / reduced motion: the highlight falls back to per-row hover
    and rows jump straight to their places. With a SoundProvider on,
    each row the highlight arrives at is a soft detent (0.3) — the
-   ratchet limiter keeps a fast sweep from buzzing. */
+   ratchet limiter keeps a fast sweep from buzzing.
+   Calm: rows tint on their own hover with a quick fade, and a row
+   that moved or arrived doesn't fly — it lands in place and fades
+   up from 40% over --rap-dur-fast, so a sort still reads as a change. */
 
 const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 
@@ -175,6 +178,8 @@ export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTML
     const el = body.current;
     if (!el) return;
     const calm = isCalm(el);
+    // calm: no flight, just a short fade on rows that moved or arrived (0 when the tokens say no motion)
+    const fade = calm ? parseFloat(getComputedStyle(el).getPropertyValue("--rap-dur-fast")) || 0 : 0;
     const first = !seen.current;
     seen.current = el.rows.length > 0;
     let arriving = 0;
@@ -182,7 +187,11 @@ export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTML
       const top = tr.offsetTop;
       const was = tops.current.get(tr);
       tops.current.set(tr, top);
-      if (calm) continue;
+      if (calm) {
+        if (fade > 0 && !first && was !== top)
+          tr.animate([{ opacity: 0.4 }, { opacity: 1 }], { duration: fade, easing: "cubic-bezier(0.16, 1, 0.3, 1)" });
+        continue;
+      }
       if (was == null) {
         if (!first)
           tr.animate([{ opacity: 0, translate: "0 10px" }, { opacity: 1, translate: "0 0" }], {

@@ -264,9 +264,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
           layer,
           "bg-(--btn-blob)",
           "[clip-path:inset(calc(var(--btn-h)/2)_round_var(--rap-radius-pill))] group-hover/btn:[clip-path:inset(0_round_var(--rap-radius-pill))]",
-          "[transition:clip-path_var(--rap-dur-slow)_var(--rap-ease-out),scale_420ms_var(--rap-ease-spring)]",
+          "[transition:clip-path_var(--rap-dur-slow)_var(--rap-ease-out),scale_420ms_var(--rap-swell-ease,var(--rap-ease-spring))]",
           /* calm: no flood — the colour simply fades in over the whole shape */
-          "calm:[clip-path:inset(0_round_var(--rap-radius-pill))] calm:opacity-0 calm:group-hover/btn:opacity-100 calm:[transition:opacity_var(--rap-dur)_var(--rap-ease-out)]",
+          "calm:[clip-path:inset(0_round_var(--rap-radius-pill))] calm:opacity-0 calm:group-hover/btn:opacity-100 calm:[transition:opacity_var(--rap-dur)_var(--rap-ease-out),scale_420ms_var(--rap-ease-out)]",
         )}
       />
       {/* loading: diagonal stripes run across the pill, a barber pole for
@@ -284,7 +284,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         data-slot="button-stripes"
         className={cn(
           layer,
-          "overflow-hidden [transition:scale_420ms_var(--rap-ease-spring)]",
+          "overflow-hidden [transition:scale_420ms_var(--rap-swell-ease,var(--rap-ease-spring))]",
           state === "loading"
             ? "bg-[repeating-linear-gradient(-45deg,transparent_0_14px,color-mix(in_srgb,var(--btn-fg)_16%,transparent)_14px_28px)] [background-size:40px_40px] fun:animate-stripes"
             : "invisible",

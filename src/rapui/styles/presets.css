@@ -353,6 +353,13 @@
   color-scheme: dark;
 }
 
+/* ── motion: calm ──────────────────────────────────────────── */
+/* the stack swell (FormStack's blobs and the button's fill riding them) eases
+   out instead of springing; both read this one variable, so they stay in step */
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) {
+  --rap-swell-ease: var(--rap-ease-out);
+}
+
 /* ── motion: still ─────────────────────────────────────────── */
 /* no movement at all: every token-driven transition is instant. (The playful
    layer is already off: still counts as calm for the fun:/calm: variants and

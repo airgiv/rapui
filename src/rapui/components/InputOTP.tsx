@@ -16,7 +16,9 @@
 
    All of it is `fun:` animation classes, so the characters and the
    caret are never delayed. Reduced motion / data-rap-motion=
-   "calm": none of it. Sound: "type" per character, "success"
+   "calm": none of it — a character fades up 3px into its slot,
+   and the wave becomes a tint that sweeps the tiles left to right
+   (same 45ms stagger), nothing lifting. Sound: "type" per character, "success"
    when complete, "error" when invalid turns on. */
 import {
   forwardRef,
@@ -137,6 +139,8 @@ export const InputOTPSlot = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
           hops > 0 && (hops % 2 ? "fun:animate-hop" : "fun:animate-[rap-otp-hop-b_360ms_var(--rap-ease-out)]"),
           // the code is complete: a wave from left to right (45ms a slot), a bit higher than a hop
           complete && "fun:animate-[rap-otp-wave_460ms_var(--rap-ease-out)_calc(var(--i,0)*45ms)_both]",
+          // calm: the same reading left to right, as a tint passing over the tiles
+          complete && "calm:animate-[rap-otp-tint_var(--rap-dur)_var(--rap-ease-out)_calc(var(--i,0)*45ms)_both]",
           className,
         )}
         data-active={slot?.isActive || undefined}
@@ -148,7 +152,7 @@ export const InputOTPSlot = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
         }}
       >
         {slot?.char != null ? (
-          <span data-slot="input-otp-char" className="fun:animate-[rap-otp-pop_260ms_var(--rap-ease-spring)]">
+          <span data-slot="input-otp-char" className="fun:animate-[rap-otp-pop_260ms_var(--rap-ease-spring)] calm:animate-[rap-otp-rise_var(--rap-dur-fast)_var(--rap-ease-out)]">
             {slot.char}
           </span>
         ) : slot?.placeholderChar ? (

@@ -15,6 +15,7 @@ import { createSpring, isCalm } from "./ProductTabs";
  * like elastic. Panels resize exactly as before; only the grip is rubber. It is driven
  * imperatively (a CSS variable on the handle) so dragging never re-renders React.
  * Calm / reduced motion: the grip just lights up.
+ * Calm: no rubber and no stretch — the gap and the grip fade to the select colour while held.
  * Sound (opt-in via SoundProvider): a firm detent when a panel hits its min or max.
  */
 
@@ -151,11 +152,11 @@ export function ResizableHandle({ className, withHandle, children, elementRef, .
             "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-spring)]",
             "group-data-[separator=hover]/handle:bg-ink-2 group-data-[separator=active]/handle:bg-select group-data-[separator=focus]/handle:bg-select",
             // rubber: --grip-s (0 rest … ~1 at a hard stop) is sprung from the effect above.
-            // Calm / reduced motion: the old fixed stretch while dragging, no rubber.
+            // Calm: no rubber and no stretch, the grip only changes colour (no spring on it).
             horizontal
-              ? "w-1 h-8 [scale:calc(1-var(--grip-s,0)*0.3)_calc(1+var(--grip-s,0))] calm:group-data-[separator=active]/handle:[transform:scaleY(1.25)]"
-              : "w-8 h-1 [scale:calc(1+var(--grip-s,0))_calc(1-var(--grip-s,0)*0.3)] calm:group-data-[separator=active]/handle:[transform:scaleX(1.25)]",
-            "calm:[scale:none]",
+              ? "w-1 h-8 [scale:calc(1-var(--grip-s,0)*0.3)_calc(1+var(--grip-s,0))]"
+              : "w-8 h-1 [scale:calc(1+var(--grip-s,0))_calc(1-var(--grip-s,0)*0.3)]",
+            "calm:[scale:none] calm:[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm)]",
           )}
         />
       )}

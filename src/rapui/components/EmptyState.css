@@ -1,9 +1,11 @@
 /* EmptyState — only the floor shadow's keyframes; everything else is utilities
    in EmptyState.tsx. The icon rises at 50%, so the shadow is smallest and
-   faintest there — that is what sells "floating" rather than "bobbing". */
+   faintest there — that is what sells "floating" rather than "bobbing".
+   Calm: the icon's one-off settle instead. */
 @layer theme, base, components, utilities;
 
 @keyframes rap-empty-shadow {
   0%, 100% { scale: 1; opacity: 1; }
   50% { scale: 0.7; opacity: 0.5; }
 }
+@keyframes rap-empty-calm-in { from { opacity: 0; translate: 0 4px; } }

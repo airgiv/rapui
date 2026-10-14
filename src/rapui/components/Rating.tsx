@@ -23,9 +23,12 @@
    A radiogroup underneath: one tab stop, arrows move the score,
    Home clears, End fills. Colour is currentColor — set it with a
    text-* class. Reduced motion / data-rap-motion="calm": no stamps,
-   no sparks. Sound: a pop that climbs with the score, a drop on
+   no sparks, no lean on hover. Instead the colour itself runs along
+   the row: the stars that light (or go out) fade one after another,
+   45ms apart, from where the score was — the stamp's rhythm with
+   nothing jumping. Sound: a pop that climbs with the score, a drop on
    the way down. */
-import { forwardRef, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { forwardRef, useEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { useSound } from "../sound";
 import { cn } from "../utils";
 import { isMotionCalm } from "./FormField";
@@ -80,6 +83,13 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
   const [anims, setAnims] = useState<Record<number, StarAnim>>({});
   const [spark, setSpark] = useState<{ k: number; at: number; delay: number } | null>(null);
   const [cheer, setCheer] = useState<number | null>(null);
+  // calm: the last change, so each star's colour can wait its turn (see the path's delay)
+  const [run, setRun] = useState<{ prev: number; next: number } | null>(null);
+  useEffect(() => {
+    if (!run) return;
+    const id = window.setTimeout(() => setRun(null), Math.abs(run.next - run.prev) * 45 + 260);
+    return () => window.clearTimeout(id);
+  }, [run]);
   const seq = useRef(0);
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -89,6 +99,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
   const sound = useSound();
   const live = !readOnly && !disabled;
   const rs = typeof size === "number" ? `${size}px` : size;
+  const calm = isMotionCalm(root.current);
 
   /* full marks: every star jumps in a wave, 70ms apart, and bursts */
   const CHEER_GAP = 70;
@@ -109,7 +120,8 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     const prev = valueRef.current;
     if (next === prev) return;
     valueRef.current = next;
-    if (!isMotionCalm(root.current)) {
+    if (isMotionCalm(root.current)) setRun({ prev, next });
+    else {
       const up = next > prev;
       setAnims((a) => {
         const out = { ...a };
@@ -243,7 +255,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
             <span
               key={a ? a.k : "rest"}
               className="block size-full transition-transform duration-300 ease-spring"
-              style={{ transform: hover === n && live ? "translateY(-8%) scale(1.12)" : undefined, ...anim }}
+              style={{ transform: hover === n && live && !calm ? "translateY(-8%) scale(1.12)" : undefined, ...anim }}
             >
               <svg viewBox="0 0 24 24" className="size-full overflow-visible" aria-hidden>
                 <path
@@ -255,6 +267,11 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
                     lit ? "fill-current stroke-current" : "fill-ink/12 stroke-transparent",
                     faint && "opacity-35",
                   )}
+                  style={
+                    run && n > Math.min(run.prev, run.next) && n <= Math.max(run.prev, run.next)
+                      ? { transitionDelay: `${(run.next > run.prev ? n - run.prev - 1 : run.prev - n) * 45}ms` }
+                      : undefined
+                  }
                 />
               </svg>
             </span>

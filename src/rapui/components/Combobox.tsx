@@ -20,8 +20,10 @@
    still marks N-M-T-L in Neue Montreal); a row found only by its
    keywords is not marked, since nothing in its label matched.
 
-   Reduced motion / data-rap-motion="calm": the marker is simply
-   there, the deal and roll are off.
+   Reduced motion: the marker is simply there, the deal and roll
+   are off. data-rap-motion="calm": no deal; the value crossfades
+   (Select's useRoll) and the highlighter swipe stays — it is a
+   stroke being drawn, not a bounce, and it is the one detail.
    Sound: "pop" on open, "tick" on pick. */
 import { forwardRef, useEffect, useRef, useState, type ComponentPropsWithoutRef, type CSSProperties, type ReactNode } from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
@@ -58,6 +60,8 @@ function matchesOf(label: string, query: string): number[] {
 const hitClass = cn(
   "text-[#282828] bg-[linear-gradient(var(--rap-acid),var(--rap-acid))] bg-no-repeat bg-[position:0_55%] bg-[size:100%_86%]",
   "fun:animate-[rap-combobox-swipe_110ms_linear_calc(var(--k,0)*18ms)_both]",
+  // calm keeps the stroke: a marker drawn along the word is exactly the quiet kind of motion
+  "calm:animate-[rap-combobox-swipe_110ms_linear_calc(var(--k,0)*18ms)_both]",
 );
 
 /** The label with every matched character marked; `--k` is its place in its run, for the swipe. */

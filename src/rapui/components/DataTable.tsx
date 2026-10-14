@@ -26,6 +26,7 @@ import { useSound } from "../sound";
 import { cn } from "../utils";
 import { Checkbox } from "./Checkbox";
 import { Input } from "./Input";
+import { popCalm } from "./Popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./Table";
 
 const FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]";
@@ -34,8 +35,8 @@ const META_TEXT = "text-[0.8125rem] font-medium tracking-[-0.01em] tabular-nums"
 const SELECT_CELL = "w-[1%] pr-1 last:pr-1 [&>*]:align-middle";
 
 const NAV = cn(
-  "inline-grid place-items-center size-control-sm p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
-  "transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-94",
+  "inline-grid place-items-center size-control-sm p-0 border-0 rounded-pill bg-fill text-ink cursor-pointer",
+  "transition-[background-color,scale] duration-(--rap-dur-fast) ease-rm hover:bg-fill-hover active:scale-94 calm:active:scale-98",
   FOCUS_RING,
   "disabled:opacity-35 disabled:pointer-events-none [&_svg]:size-[18px]",
 );
@@ -99,6 +100,8 @@ export interface DataTableProps<TData extends RowData> {
  * Rows are keyed by `getRowId` (or TanStack's index id), which is what lets a row
  * keep its DOM node and fly. With a SoundProvider on, sorting taps and selecting a
  * row ticks.
+ * Calm: Table's calm — rows tint on hover and a re-sorted row fades up in its new
+ * place instead of flying; the columns menu fades up from 0.98.
  */
 export function DataTable<TData extends RowData>({
   data,
@@ -203,7 +206,7 @@ export function DataTable<TData extends RowData>({
                 </MenuPrimitive.Trigger>
                 <MenuPrimitive.Portal>
                   <MenuPrimitive.Content align="end" sideOffset={6} data-slot="data-table-columns-menu"
-                    className="pop min-w-48 p-1">
+                    className={cn("pop min-w-48 p-1", popCalm)}>
                     {table
                       .getAllLeafColumns()
                       .filter((c) => c.getCanHide())

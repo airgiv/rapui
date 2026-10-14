@@ -14,7 +14,9 @@ import "./Skeleton.css";
    2.8s — slow enough to read as light moving, and the pause makes
    it breathe rather than strobe.
 
-   Calm / reduced motion: the placeholders stay still. */
+   Reduced motion: the placeholders stay still.
+   Calm: the same single light, slower (a pass every 3.6s) — loading
+   is information, so it keeps moving. */
 
 export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   width?: CSSProperties["width"];
@@ -33,8 +35,8 @@ const skeletonVariants = cva(
     "after:absolute after:inset-0 after:bg-no-repeat after:bg-fixed after:bg-size-[150vw_100vh] after:bg-position-[-150vw_0]",
     "after:bg-[linear-gradient(115deg,transparent_0%,transparent_40%,var(--sk-glint)_50%,transparent_60%,transparent_100%)]",
     "after:animate-[rap-skeleton-light_2.8s_cubic-bezier(0.4,0,0.6,1)_infinite]",
-    // calm / reduced motion: the placeholders stay still
-    "calm:after:hidden motion-reduce:after:hidden",
+    // calm: the light passes more slowly; reduced motion: the placeholders stay still
+    "calm:after:[animation-duration:3.6s] motion-reduce:after:hidden",
   ],
   {
     variants: {

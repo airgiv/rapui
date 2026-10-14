@@ -11,6 +11,8 @@
    RISING edge only — a field that stays wrong does not keep
    shaking while you type into it — and again whenever a string
    error changes to a different one (a second, different "no").
+   Calm / reduced motion: no shake; the row still opens on an
+   ease-out and the message fades in from 3px above, no spring.
 
    The control gets a wrapper so the shake moves the control and
    not the label: the label is the question, the control is the
@@ -196,14 +198,14 @@ export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(function For
             className={cn(
               "grid grid-rows-[1fr]",
               hint != null
-                ? "mt-[calc(var(--rap-gap-tight)-var(--ff-gap))] fun:animate-[rap-ff-open-tight_320ms_var(--rap-ease-out)]"
-                : "fun:animate-[rap-ff-open_320ms_var(--rap-ease-out)]",
+                ? "mt-[calc(var(--rap-gap-tight)-var(--ff-gap))] fun:animate-[rap-ff-open-tight_320ms_var(--rap-ease-out)] calm:animate-[rap-ff-open-tight_var(--rap-dur-fast)_var(--rap-ease-out)]"
+                : "fun:animate-[rap-ff-open_320ms_var(--rap-ease-out)] calm:animate-[rap-ff-open_var(--rap-dur-fast)_var(--rap-ease-out)]",
             )}
           >
             <p
               id={errorId}
               data-slot="form-field-error"
-              className={cn(messageClass, "text-danger font-medium min-h-0 overflow-hidden fun:animate-[rap-ff-drop_380ms_var(--rap-ease-spring)]")}
+              className={cn(messageClass, "text-danger font-medium min-h-0 overflow-hidden fun:animate-[rap-ff-drop_380ms_var(--rap-ease-spring)] calm:animate-[rap-ff-settle_var(--rap-dur)_var(--rap-ease-out)]")}
               role="alert"
             >
               {error}

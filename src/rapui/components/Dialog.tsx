@@ -27,6 +27,8 @@ import "./Dialog.css";
    Both are individual `translate`/`rotate`/`scale` properties, so they stack
    on top of the centring `transform` instead of fighting it. Calm and reduced
    motion get the old quiet fade. Open/close state itself is immediate.
+   Calm: the card fades up 6px from 0.98 and fades out; the close button's
+   quarter turn becomes a plain colour change.
    Sound (only inside an enabled <SoundProvider>): a pop as it lands, a drop
    as it falls. */
 
@@ -104,10 +106,10 @@ export const DialogCloseButton = forwardRef<HTMLButtonElement, ComponentPropsWit
       ref={ref}
       data-slot="dialog-close"
       className={cn(
-        // round close button, top right; turns a quarter on hover
-        "absolute top-5 right-5 grid place-items-center size-control-sm p-0 border-0 rounded-full bg-fill text-ink cursor-pointer",
+        // round close button, top right; turns a quarter on hover (fun only — calm just tints)
+        "absolute top-5 right-5 grid place-items-center size-control-sm p-0 border-0 rounded-pill bg-fill text-ink cursor-pointer",
         "[transition:background_var(--rap-dur-fast)_var(--rap-ease-rm),transform_var(--rap-dur-fast)_var(--rap-ease-spring)]",
-        "hover:bg-fill-hover hover:[transform:rotate(90deg)]",
+        "hover:bg-fill-hover fun:hover:[transform:rotate(90deg)]",
         "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)] [&_svg]:size-[18px]",
         className,
       )}

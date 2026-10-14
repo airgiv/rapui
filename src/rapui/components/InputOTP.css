@@ -25,3 +25,8 @@
   60% { translate: 3px; }
   75% { translate: -1px; }
 }
+
+/* calm: a character fades up 3px into its slot; the complete code is read by a
+   tint passing over the tiles instead of a wave that lifts them */
+@keyframes rap-otp-rise { from { translate: 0 3px; opacity: 0; } }
+@keyframes rap-otp-tint { 40% { background-color: var(--rap-fill-strong); } }

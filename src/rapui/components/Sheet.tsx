@@ -25,6 +25,8 @@ import "./Sheet.css";
    5% of 420px is already a ~20px overshoot; at tune 50 it would be 90px and
    look broken. The deal waits ~120ms so the rows land after the panel, not with
    it. Closing is a plain quick slide; calm and reduced motion drop all of it.
+   Calm: no long slide — the panel fades in drifting 6px off its own edge and
+   fades out the same way; the contents are simply there.
    Sound (inside an enabled <SoundProvider>): a whoosh in and out.
 
    Styling: utilities below; Sheet.css keeps the per-side slide keyframes and
@@ -38,8 +40,8 @@ export const SheetPortal = SheetPrimitive.Portal;
 export type SheetSide = "right" | "left" | "top" | "bottom";
 
 /* Open: 440ms on useSpring tune 20 (k .112, d .66) sampled per 2 frames — ~5%
-   overshoot, one settle. Closed: a plain 260ms slide out. Calm: the plain
-   ease-out slide over --rap-dur. Reduced motion: 1ms. */
+   overshoot, one settle. Closed: a plain 260ms slide out. Calm: a fade with a
+   6px drift from the edge (Sheet.css), ease-out over --rap-dur. Reduced motion: 1ms. */
 const sheetVariants = cva(
   [
     "group/sheet fixed z-1000 flex flex-col gap-5 p-7 overflow-hidden [--sheet-inset:8px] [--sheet-size:420px]",
@@ -57,18 +59,22 @@ const sheetVariants = cva(
         right: [
           "top-(--sheet-inset) bottom-(--sheet-inset) right-(--sheet-inset) w-[min(var(--sheet-size),calc(100vw-var(--sheet-inset)*2))]",
           "[animation-name:rap-sheet-in-right] data-[state=closed]:[animation-name:rap-sheet-out-right]",
+          "calm:[animation-name:rap-sheet-calm-in-right] calm:data-[state=closed]:[animation-name:rap-sheet-calm-out-right]",
         ],
         left: [
           "top-(--sheet-inset) bottom-(--sheet-inset) left-(--sheet-inset) w-[min(var(--sheet-size),calc(100vw-var(--sheet-inset)*2))]",
           "[animation-name:rap-sheet-in-left] data-[state=closed]:[animation-name:rap-sheet-out-left]",
+          "calm:[animation-name:rap-sheet-calm-in-left] calm:data-[state=closed]:[animation-name:rap-sheet-calm-out-left]",
         ],
         top: [
           "left-(--sheet-inset) right-(--sheet-inset) top-(--sheet-inset) max-h-[calc(100vh-var(--sheet-inset)*2)]",
           "[animation-name:rap-sheet-in-top] data-[state=closed]:[animation-name:rap-sheet-out-top]",
+          "calm:[animation-name:rap-sheet-calm-in-top] calm:data-[state=closed]:[animation-name:rap-sheet-calm-out-top]",
         ],
         bottom: [
           "left-(--sheet-inset) right-(--sheet-inset) bottom-(--sheet-inset) max-h-[calc(100vh-var(--sheet-inset)*2)]",
           "[animation-name:rap-sheet-in-bottom] data-[state=closed]:[animation-name:rap-sheet-out-bottom]",
+          "calm:[animation-name:rap-sheet-calm-in-bottom] calm:data-[state=closed]:[animation-name:rap-sheet-calm-out-bottom]",
         ],
       },
     },

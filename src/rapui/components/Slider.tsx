@@ -24,7 +24,9 @@
 
    Values are immediate; the stretch and swing only paint them.
    Reduced motion / data-rap-motion="calm": no stretch, no swing
-   (the bubble still shows the value). Sound: a detent per step,
+   (the bubble still shows the value). Calm also swaps the
+   balloon's pop for a fade with a 4px rise, and the thumb's grab
+   swell for a hair (1.02) on an ease-out. Sound: a detent per step,
    firmer at the ends. */
 import {
   forwardRef,
@@ -95,12 +97,14 @@ function Thumb({
     <SliderPrimitive.Thumb
       data-slot="slider-thumb"
       className={cn(
-        "group/thumb relative block size-[22px] rounded-full cursor-grab outline-none [--hold:1] hover:[--hold:1.1] active:[--hold:1.18] active:cursor-grabbing",
-        "before:absolute before:inset-0 before:rounded-full before:bg-white",
+        "group/thumb relative block size-[22px] rounded-pill cursor-grab outline-none [--hold:1] hover:[--hold:1.1] active:[--hold:1.18] active:cursor-grabbing",
+        "before:absolute before:inset-0 before:rounded-pill before:bg-white",
         "before:shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_2px_8px_rgb(0_0_0/0.18)]",
         "focus-visible:before:shadow-[0_0_0_2px_var(--rap-surface),0_0_0_4px_var(--rap-ring),0_2px_8px_rgb(0_0_0/0.18)]",
         "before:[scale:calc(var(--sq-x,1)*var(--hold))_calc(var(--sq-y,1)*var(--hold))]",
         "before:[transition:--hold_var(--rap-dur-fast)_var(--rap-ease-spring)]",
+        // calm: a hair of swell, eased out — no spring past it
+        "calm:hover:[--hold:1.02] calm:active:[--hold:1.02] calm:before:[transition:--hold_var(--rap-dur-fast)_var(--rap-ease-out)]",
       )}
       style={style}
     >
@@ -117,6 +121,9 @@ function Thumb({
             "[transition:scale_240ms_cubic-bezier(0.34,1.8,0.64,1),opacity_120ms_var(--rap-ease-rm)]",
             "group-data-[held]/slider:group-focus/thumb:scale-100 group-data-[held]/slider:group-focus/thumb:opacity-100",
             "calm:rotate-none! calm:[transition:opacity_120ms_var(--rap-ease-rm)] motion-reduce:rotate-none!",
+            // calm: no pop — the balloon is full size and fades in with a 4px rise
+            "calm:scale-100 calm:translate-y-1 calm:group-data-[held]/slider:group-focus/thumb:translate-y-0",
+            "calm:[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-out),translate_var(--rap-dur-fast)_var(--rap-ease-out)]",
             // the string's knot: a small triangle under the balloon, in its colour
             "after:absolute after:left-1/2 after:top-[calc(100%-1px)] after:w-2 after:h-[5px] after:-translate-x-1/2",
             "after:bg-inherit after:[clip-path:polygon(0_0,100%_0,50%_100%)]",

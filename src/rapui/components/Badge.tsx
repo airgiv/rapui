@@ -17,7 +17,9 @@ import "./Badge.css";
    ring expand off it every 2.4s — slow enough to read as "on
    air", not "error". Both are switched off under calm and
    reduced motion (both sit behind the `fun:` variant).
-   With a SoundProvider on, the hop comes with a soft tick (0.4). */
+   With a SoundProvider on, the hop comes with a soft tick (0.4).
+   Calm: no hop and a still dot — the new label just fades in where
+   the old one was. */
 
 export type BadgeVariant = "neutral" | "ink" | "blue" | "flame" | "success" | "warning" | "danger" | "outline";
 
@@ -116,7 +118,12 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(function Badge(
       <span
         ref={label}
         data-slot="badge-label"
-        className="block -translate-y-[0.05em] supports-[text-box:trim-both_cap_alphabetic]:translate-none supports-[text-box:trim-both_cap_alphabetic]:[text-box:trim-both_cap_alphabetic]"
+        className={cn(
+          "block -translate-y-[0.05em] supports-[text-box:trim-both_cap_alphabetic]:translate-none supports-[text-box:trim-both_cap_alphabetic]:[text-box:trim-both_cap_alphabetic]",
+          // calm: instead of the hop, the new text fades in (Badge.css)
+          hop.cls("calm:animate-[rap-badge-calm-in_var(--rap-dur-fast)_var(--rap-ease-out)]"),
+        )}
+        onAnimationEnd={hop.done}
       >
         {children}
       </span>

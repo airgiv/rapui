@@ -13,10 +13,11 @@ import { cn, prefersReducedMotion } from "../utils";
 
    The hidden start state is set from JS (data-draw="wait") only
    when an IntersectionObserver is there to finish it, so without
-   JS, under calm or with reduced motion the line is simply on
-   the page. Once drawn it stays drawn. */
-
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
+   JS or with reduced motion the line is simply on the page.
+   Once drawn it stays drawn.
+   Calm: the stroke is kept — it is already a quiet ease-out, no
+   overshoot — a little quicker (--rap-dur), and the label just
+   fades in, without the springy grow. */
 
 function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
   if (typeof ref === "function") ref(value);
@@ -27,7 +28,8 @@ function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
 function useDrawIn(node: { current: HTMLElement | null }) {
   useLayoutEffect(() => {
     const el = node.current;
-    if (!el || typeof IntersectionObserver === "undefined" || isCalm(el)) return;
+    // calm draws too (on the quieter classes below); only reduced motion skips it
+    if (!el || typeof IntersectionObserver === "undefined" || prefersReducedMotion()) return;
     el.setAttribute("data-draw", "wait");
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -68,8 +70,8 @@ export const Separator = forwardRef<ElementRef<typeof SeparatorPrimitive.Root>, 
     const half = cn(
       LINE,
       "flex-1 w-auto h-px",
-      "group-data-draw/sep:transition-[scale] group-data-draw/sep:duration-700 group-data-draw/sep:ease-soft",
-      "group-data-[draw=wait]/sep:scale-x-0 calm:group-data-[draw=wait]/sep:scale-none",
+      "group-data-draw/sep:transition-[scale] group-data-draw/sep:duration-700 group-data-draw/sep:ease-soft calm:group-data-draw/sep:duration-(--rap-dur)",
+      "group-data-[draw=wait]/sep:scale-x-0",
     );
     return (
       <div
@@ -85,7 +87,8 @@ export const Separator = forwardRef<ElementRef<typeof SeparatorPrimitive.Root>, 
             "flex-none font-sans text-[0.8125rem] font-medium tracking-[-0.01em] text-mute",
             "group-data-draw/sep:[transition:opacity_400ms_var(--rap-ease-out),scale_500ms_var(--rap-ease-spring)]",
             "group-data-[draw=wait]/sep:opacity-0 group-data-[draw=wait]/sep:scale-80",
-            "calm:group-data-[draw=wait]/sep:opacity-100 calm:group-data-[draw=wait]/sep:scale-none",
+            // calm: the label only fades in as the halves part
+            "calm:group-data-[draw=wait]/sep:scale-none calm:group-data-draw/sep:[transition:opacity_400ms_var(--rap-ease-out)]",
           )}
         >
           {label}
@@ -107,7 +110,7 @@ export const Separator = forwardRef<ElementRef<typeof SeparatorPrimitive.Root>, 
         LINE,
         orientation === "horizontal" ? "w-full h-px" : "w-px h-auto self-stretch min-h-[1em]",
         // delight: drawn from the centre out, 700ms on the out-ease
-        "data-draw:transition-[scale] data-draw:duration-700 data-draw:ease-soft calm:data-[draw=wait]:scale-none",
+        "data-draw:transition-[scale] data-draw:duration-700 data-draw:ease-soft calm:data-draw:duration-(--rap-dur)",
         orientation === "horizontal" ? "data-[draw=wait]:scale-x-0" : "data-[draw=wait]:scale-y-0",
         className,
       )}

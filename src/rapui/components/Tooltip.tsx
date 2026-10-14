@@ -17,6 +17,7 @@ import "./Tooltip.css";
  * pointer sweeping along a toolbar) the pop is quicker and smaller, so a
  * sweep feels like flicking through labels rather than a string of bounces.
  * Calm and reduced motion keep the plain quick scale. Sound: a soft pop (0.4).
+ * Calm: no overshoot, no wag — a quick fade up from 0.98 and a fade out.
  */
 // Tells a <Tooltip> that a shared provider is already above it, so it must not
 // bring its own: a private provider per tooltip would reset the skip-delay and
@@ -63,13 +64,14 @@ export const TooltipContent = forwardRef<ElementRef<typeof TooltipPrimitive.Cont
         className={cn(
           "group/tooltip z-1100 inline-flex items-center gap-2 max-w-[260px] py-[0.4rem] px-[0.8rem] rounded-pill bg-ink text-paper",
           "font-sans text-[0.8125rem] font-medium leading-[1.3] tracking-[-0.01em] origin-(--radix-tooltip-content-transform-origin)",
-          // calm: a plain quick scale; reduced motion: 1ms
-          "animate-[rap-tooltip-in_180ms_var(--rap-ease-spring)] motion-reduce:animate-[rap-tooltip-in_1ms_linear]",
+          // calm: a plain quick fade from 0.98, no spring; reduced motion: 1ms
+          "animate-[rap-tooltip-in_180ms_var(--rap-ease-out)] motion-reduce:animate-[rap-tooltip-in_1ms_linear]",
           // pop with overshoot: useSpring tune 40 (k .144, d .70) sampled every 2 frames
           "fun:animate-[rap-tooltip-pop_360ms_linear(0,0.262,0.636,0.94,1.109,1.156,1.127,1.07,1.019,0.988,0.977,0.979,0.987,0.995,1)]",
           // sweeping along a row of triggers: a smaller, quicker pop
           "fun:data-[state=instant-open]:[animation-name:rap-tooltip-pop-small] fun:data-[state=instant-open]:[animation-duration:240ms]",
           "data-[state=closed]:animate-[rap-tooltip-out_120ms_var(--rap-ease-rm)_forwards]",
+          "calm:data-[state=closed]:animate-[rap-tooltip-calm-out_120ms_var(--rap-ease-rm)_forwards]",
           "motion-reduce:data-[state=closed]:animate-[rap-tooltip-out_1ms_linear_forwards]",
           // shortcut hint inside a tooltip
           "[&_kbd]:[font-family:inherit] [&_kbd]:text-[0.75rem] [&_kbd]:opacity-60",

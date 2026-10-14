@@ -15,7 +15,9 @@ import "./EmptyState.css";
    the pointer is already inside, since then you have found it.
 
    Pass a FancyIcon (Solar duotone) for the icon — this is an
-   illustrative spot. Calm / reduced motion: still icon, no nudge. */
+   illustrative spot. Calm / reduced motion: still icon, no nudge.
+   Calm: the icon settles into place once — a fade up from 4px on
+   mount — and then holds still; no float, no wiggle. */
 
 const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 const NUDGE_AFTER = 1800;
@@ -93,6 +95,8 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(function E
             className={cn(
               "grid place-items-center rounded-full bg-fill text-ink-2",
               "fun:animate-[rap-float_3.6s_var(--rap-ease-in-out)_infinite]",
+              // calm: arrives once, quietly, then stays (EmptyState.css)
+              "calm:animate-[rap-empty-calm-in_var(--rap-dur)_var(--rap-ease-out)_both]",
               // a FancyIcon brings its own size: give it room, and it must not float twice
               "[&>[data-slot=fancy-icon]]:animate-none",
               size === "sm"

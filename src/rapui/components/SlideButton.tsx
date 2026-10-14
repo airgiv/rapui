@@ -58,7 +58,10 @@ import { isCalm } from "./ScrubNumber";
    12px) springs back.
 
    Calm / reduced motion: no band, no squash, no stretch of the
-   label (it only fades); release jumps to its stop. */
+   label (it only fades). Let go and the thumb glides to its stop
+   on a CSS ease-out instead of the spring (the trail and the
+   label follow it); the arrow fades rather than turning away, and
+   the drawn check is the one detail kept. */
 
 /* Bencho's spring at tune 50 for the snap home and to the end */
 const K = 0.16;
@@ -382,7 +385,7 @@ export const SlideButton = forwardRef<HTMLDivElement, SlideButtonProps>(function
       <span
         aria-hidden
         data-slot="slide-button-trail"
-        className="absolute left-(--sb-in) inset-y-(--sb-in) rounded-pill bg-current opacity-18 group-data-[state=done]/slide:opacity-0 transition-opacity duration-(--rap-dur-fast)"
+        className="absolute left-(--sb-in) inset-y-(--sb-in) rounded-pill bg-current opacity-18 group-data-[state=done]/slide:opacity-0 transition-opacity duration-(--rap-dur-fast) calm:transition-[opacity,width] calm:duration-(--rap-dur) calm:ease-soft calm:group-data-[state=dragging]/slide:transition-none"
         style={{ width: `calc(var(--sb-d) + ${Math.max(0, x).toFixed(2)}px)` }}
       />
       {/* the instruction: right of the thumb; flush left on hero like Readymag */}
@@ -392,6 +395,8 @@ export const SlideButton = forwardRef<HTMLDivElement, SlideButtonProps>(function
         className={cn(
           "absolute inset-y-0 right-[calc(var(--sb-in)*2.5)] left-[calc(var(--sb-d)+var(--sb-in)*2.5)] flex items-center origin-left",
           size === "hero" ? "justify-start" : "justify-center",
+          /* calm: the words fade back in as the thumb glides home */
+          "calm:transition-opacity calm:duration-(--rap-dur) calm:ease-soft calm:group-data-[state=dragging]/slide:transition-none",
           done && "invisible",
         )}
         style={{ opacity: fade, scale: quiet || done ? undefined : `${stretch.toFixed(3)} 1`, clipPath: covered ? `inset(0 0 0 ${covered.toFixed(2)}px)` : undefined }}
@@ -405,7 +410,7 @@ export const SlideButton = forwardRef<HTMLDivElement, SlideButtonProps>(function
         className={cn(
           "absolute inset-y-0 left-[calc(var(--sb-in)*2.5)] right-[calc(var(--sb-d)+var(--sb-in)*2.5)] flex items-center",
           size === "hero" ? "justify-start" : "justify-center",
-          "opacity-0 translate-y-[40%] transition-[opacity,translate] duration-(--rap-dur) ease-soft",
+          "opacity-0 translate-y-[40%] calm:translate-y-1 transition-[opacity,translate] duration-(--rap-dur) ease-soft",
           "group-data-landed/slide:opacity-100 group-data-landed/slide:translate-y-0 group-data-landed/slide:delay-100",
         )}
       >
@@ -421,6 +426,8 @@ export const SlideButton = forwardRef<HTMLDivElement, SlideButtonProps>(function
         tabIndex={disabled ? -1 : 0}
         className={cn(
           "group/thumb absolute left-(--sb-in) top-(--sb-in) size-(--sb-d) rounded-pill outline-none cursor-grab active:cursor-grabbing",
+          /* calm: no spring — a released thumb glides to its stop (never while the hand holds it) */
+          "calm:transition-[translate] calm:duration-(--rap-dur) calm:ease-soft calm:group-data-[state=dragging]/slide:transition-none",
           "grid place-items-center",
         )}
         style={{ translate: `${x.toFixed(2)}px 0` }}
@@ -451,6 +458,7 @@ export const SlideButton = forwardRef<HTMLDivElement, SlideButtonProps>(function
             className={cn(
               "grid place-items-center transition-[opacity,scale,rotate] duration-(--rap-dur-fast) ease-soft",
               "group-data-landed/slide:opacity-0 group-data-landed/slide:scale-50 group-data-landed/slide:rotate-90",
+              "calm:group-data-landed/slide:scale-100 calm:group-data-landed/slide:rotate-0",
             )}
           >
             {/* a firmer stroke than the kit default: the thumb is a big round button and a 2px line in it read as a hairline */}

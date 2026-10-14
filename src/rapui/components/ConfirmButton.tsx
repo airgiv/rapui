@@ -55,9 +55,11 @@ import { isCalm } from "./ScrubNumber";
    does not sit armed). Linear because it is a clock. A tick
    every second is the clock you can hear.
 
-   Calm / reduced motion: no width spring (the width jumps), no
-   letter roll (the labels swap), but the ring still drains — it
-   is the information, not the flourish. */
+   Calm / reduced motion: no width spring and no letter roll. The
+   width eases to its new size in CSS, and the words crossfade in
+   place with the same 18ms stagger, so the change sweeps across
+   the word left to right — the one detail. The ring still drains:
+   it is the information, not the flourish. */
 
 /* letter stagger, ms — as RollText */
 const STAGGER = 18;
@@ -99,6 +101,8 @@ const confirmVariants = cva(
 const PILL = cn(
   "absolute inset-y-0 isolate overflow-hidden rounded-pill min-w-(--cb-min) bg-(--cb-bg) text-(--cb-fg)",
   "transition-[background-color,color,scale] duration-(--rap-dur) ease-soft group-active/confirm:scale-96",
+  /* calm: a smaller press */
+  "calm:group-active/confirm:scale-98",
   "group-data-[state=sure]/confirm:bg-(--cb-arm) group-data-[state=sure]/confirm:text-(--cb-arm-fg)",
   "group-data-[state=done]/confirm:bg-success group-data-[state=done]/confirm:text-white",
   "group-focus-visible/confirm:outline-2 group-focus-visible/confirm:outline-offset-3 group-focus-visible/confirm:outline-ring",
@@ -168,7 +172,12 @@ function Rolling({ text, at, current, check }: { text: string; at: Step; current
         {Array.from(text).map((ch, i) => (
           <span
             key={i}
-            className={cn("inline-block transition-[translate,opacity] duration-(--rap-dur) ease-spring calm:transition-none", pos)}
+            className={cn(
+              "inline-block transition-[translate,opacity] duration-(--rap-dur) ease-spring",
+              pos,
+              /* calm: no roll — each letter fades where it stands, still staggered */
+              "calm:translate-y-0 calm:transition-opacity calm:duration-(--rap-dur-fast) calm:ease-soft",
+            )}
             style={{ transitionDelay: `${i * STAGGER}ms` } as CSSProperties}
           >
             {ch === " " ? " " : ch}
@@ -311,7 +320,13 @@ export const ConfirmButton = forwardRef<HTMLButtonElement, ConfirmButtonProps>(f
       </span>
       <span
         data-slot="confirm-button-pill"
-        className={cn(PILL, size === "hero" ? "left-0" : "left-1/2 -translate-x-1/2")}
+        className={cn(
+          PILL,
+          size === "hero" ? "left-0" : "left-1/2 -translate-x-1/2",
+          /* calm: the width (set without the spring) eases instead of jumping — only once
+             live, so the first measure does not animate in from 100% */
+          live && "calm:transition-[background-color,color,scale,width]",
+        )}
         style={{
           width: widths ? `calc(${(live ? at : target).toFixed(2)}px + var(--cb-px) * 2)` : "100%",
         }}

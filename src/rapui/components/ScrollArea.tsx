@@ -22,6 +22,7 @@ export interface ScrollAreaProps extends ComponentPropsWithoutRef<typeof ScrollA
  * Wheel and touch both push. The drawn thumb is the ::after of Radix's thumb, so the
  * squash can pivot on the end it's pressed against without fighting Radix's own
  * translate. Calm / reduced motion: no squash.
+ * Calm: the bar fades in and out and the thumb only darkens on hover; the end is just the end.
  */
 const MAX_SQUASH = 35; // % of the thumb's length
 

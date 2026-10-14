@@ -13,7 +13,9 @@ import { cn } from "../utils";
    contact, the release takes 450ms so you see the rebound.
 
    Only for cards that are a target: `pressable`, or any card
-   with an onClick. A card that just holds content stays still. */
+   with an onClick. A card that just holds content stays still.
+   Calm: a pressable card dips evenly to 0.99 from its centre and
+   eases back with no rebound. */
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg";
@@ -38,7 +40,8 @@ const cardVariants = cva(
           "cursor-pointer origin-[var(--card-ox,50%)_var(--card-oy,50%)] [-webkit-tap-highlight-color:transparent]",
           "transition-[scale] duration-450 ease-(--rap-ease-back)",
           "active:scale-[0.985] active:duration-90 active:ease-soft",
-          "calm:active:scale-none motion-reduce:active:scale-none",
+          // calm: an even 0.99 dip from the centre, eased back without the overshoot
+          "calm:origin-center calm:ease-soft calm:active:scale-[0.99] motion-reduce:active:scale-none",
           "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
         ],
         false: "",

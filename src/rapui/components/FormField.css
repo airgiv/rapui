@@ -28,3 +28,7 @@
 @keyframes rap-ff-drop {
   from { translate: 0 -0.9em; opacity: 0; }
 }
+/* calm: the message fades in from just above — no drop on the spring */
+@keyframes rap-ff-settle {
+  from { translate: 0 -3px; opacity: 0; }
+}

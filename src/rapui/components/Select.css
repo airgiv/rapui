@@ -10,3 +10,8 @@
 @keyframes rap-roll-in-a { from { translate: 0 115%; opacity: 0.2; } }
 @keyframes rap-roll-in-b { from { translate: 0 115%; opacity: 0.2; } }
 @keyframes rap-roll-out { to { translate: 0 -115%; opacity: 0; } }
+
+/* calm: no reel — the new value fades in over the old one fading out (the ghost
+   uses the theme's rap-fade-out); two names again so a quick second pick restarts */
+@keyframes rap-roll-fade-a { from { opacity: 0; } }
+@keyframes rap-roll-fade-b { from { opacity: 0; } }

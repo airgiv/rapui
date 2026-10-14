@@ -21,10 +21,10 @@ import "./Alert.css";
 
    The fall: 160ms swing on the out-ease, then 480ms of gravity
    (--rap-ease-gravity: starts at nothing and gains), 150px and a
-   further 10°, fading over the last half. Calm / reduced motion:
-   no ghost, it just goes. With a SoundProvider on it plays "drop". */
-
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
+   further 10°, fading over the last half. Reduced motion: no ghost,
+   it just goes. With a SoundProvider on it plays "drop".
+   Calm: the ghost doesn't swing or fall — it just fades where it stood,
+   lifting 4px, so the alert leaves rather than vanishes. */
 
 function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
   if (typeof ref === "function") ref(value);
@@ -32,14 +32,14 @@ function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
 }
 
 /* delight: unpinned, it swings on one corner (the pin at 14px,14px) and falls —
-   keyframes in Alert.css. Calm / reduced motion never make a ghost; the classes
-   hide one anyway if the mode changes mid-fall. */
+   keyframes in Alert.css. Calm: a quiet fade in place instead. Reduced motion
+   never makes a ghost; the class hides one anyway if it changes mid-fall. */
 const GHOST = [
   "z-[2147483000]",
   "pointer-events-none",
   "origin-[14px_14px]",
   "animate-[rap-alert-fall_640ms_linear_forwards]",
-  "calm:hidden",
+  "calm:animate-[rap-alert-calm-out_var(--rap-dur-fast)_var(--rap-ease-rm)_forwards]",
   "motion-reduce:hidden",
 ];
 
@@ -121,7 +121,8 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   const sound = useSound();
   const dismiss = () => {
     const el = node.current;
-    if (el && !isCalm(el)) dropGhost(el);
+    // calm still gets a ghost (it fades); only reduced motion goes at once
+    if (el && !prefersReducedMotion()) dropGhost(el);
     sound.play("drop");
     onDismiss?.();
   };
@@ -166,7 +167,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
           type="button"
           data-slot="alert-close"
           className={cn(
-            "inline-grid place-items-center flex-none size-7 -my-1 -mr-1.5 ml-0 p-0 border-0 rounded-full bg-transparent text-ink-2 cursor-pointer",
+            "inline-grid place-items-center flex-none size-7 -my-1 -mr-1.5 ml-0 p-0 border-0 rounded-pill bg-transparent text-ink-2 cursor-pointer",
             "transition-[background-color] duration-(--rap-dur-fast) ease-rm hover:bg-fill [&_svg]:size-4",
             "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--rap-ring)]",
           )}

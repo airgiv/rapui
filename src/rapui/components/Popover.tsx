@@ -14,19 +14,32 @@ import "./Popover.css";
    CSS `linear()` curve, so it runs on the compositor. Closing is quick: it
    folds back into the trigger in 150ms. The tilt direction is keyed off
    Radix's `data-side`, so a popover that flips to fit the screen still swings
-   the right way. Calm and reduced motion keep the plain fade. Sound: pop. */
+   the right way. Calm and reduced motion keep the plain fade. Sound: pop.
+   Calm: a fade from 0.98 that drifts 4px out of the trigger's side — the
+   direction of the swing, without the swing. */
 
 /* ── delight: swing out of the trigger (also used by HoverCard) ──
    --swing-tilt / --swing-dx / --swing-dy come from Radix's data-side.
    Open: useSpring tune 30 (k .128, d .68) sampled every 2 frames — ~4%
    overshoot on scale; the keyframe (Popover.css) is one segment only, because
    a linear() easing applies per keyframe interval. Closed: folds back in 150ms.
-   Calm keeps the `pop` utility's own fade; reduced motion makes it 1ms. */
-export const popSwing = cn(
+   Calm: fade + 0.98 scale + a 4px drift away from the trigger (40% of the
+   swing offset), then a plain fade out; reduced motion makes it 1ms. */
+const swingSides = cn(
   "[--swing-tilt:-5deg] [--swing-dx:0px] [--swing-dy:-10px]",
   "data-[side=top]:[--swing-tilt:5deg] data-[side=top]:[--swing-dy:10px]",
   "data-[side=right]:[--swing-tilt:5deg] data-[side=right]:[--swing-dx:-10px] data-[side=right]:[--swing-dy:0px]",
   "data-[side=left]:[--swing-dx:10px] data-[side=left]:[--swing-dy:0px]",
+);
+
+/** Calm enter/exit for any Radix floating panel with a data-side (menus use it too). */
+export const popCalm = cn(
+  swingSides,
+  "calm:animate-[rap-pop-calm-in_var(--rap-dur-fast)_var(--rap-ease-out)] calm:data-[state=closed]:animate-[rap-pop-calm-out_140ms_var(--rap-ease-rm)_forwards]",
+);
+
+export const popSwing = cn(
+  popCalm,
   "fun:animate-[rap-pop-swing-in_480ms_linear(0,0.226,0.551,0.829,1.006,1.087,1.099,1.077,1.044,1.017,0.999,0.991,0.99,0.992,0.996,1)]",
   "fun:data-[state=closed]:animate-[rap-pop-swing-out_150ms_var(--rap-ease-rm)_forwards]",
   "motion-reduce:animate-[rap-pop-in_1ms_linear] motion-reduce:data-[state=closed]:animate-[rap-pop-out_1ms_linear_forwards]",

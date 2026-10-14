@@ -22,6 +22,7 @@ import "./Collapsible.css";
    markup. Only a real open deals: content that starts open just sits there, and closing
    is the plain collapse, because putting things away shouldn't put on a show.
    Calm / reduced motion: no dealing.
+   Calm: just the eased height-and-fade and the chevron's half turn.
    A chevron placed by hand (e.g. inside an asChild trigger) turns too: give it
    data-slot="collapsible-chevron".
    Sound (opt-in via SoundProvider): pop on open, drop on close, both at half strength. */
