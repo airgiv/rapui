@@ -36,6 +36,10 @@
       "types": "./dist/fonts.d.ts",
       "import": "./dist/fonts.js"
     },
+    "./fonts/*": {
+      "types": "./dist/fonts/*.d.ts",
+      "import": "./dist/fonts/*.js"
+    },
     "./styles.css": "./dist/rapui.css",
     "./icons": {
       "types": "./dist/icons.d.ts",
@@ -50,7 +54,9 @@
     "*.css",
     "./src/rapui/index.ts",
     "./src/rapui/fonts.ts",
+    "./src/rapui/fonts/*.ts",
     "./dist/fonts.js",
+    "./dist/fonts/*.js",
     "./dist/styles.js"
   ],
   "scripts": {
@@ -66,8 +72,14 @@
     "react-dom": ">=18"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
+    "@fontsource-variable/ibm-plex-sans": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/inter-tight": "^5.3.0",
+    "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource-variable/onest": "^5.3.1",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@hugeicons/core-free-icons": "^4.3.5",
     "@hugeicons/react": "^1.1.10",
     "@solar-icons/react": "^2.3.2",

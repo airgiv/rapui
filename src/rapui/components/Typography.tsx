@@ -12,9 +12,11 @@ type DisplaySize = "mega" | "xxl" | "xl" | "lg" | "md";
    the size grows: giant lines need less air between them. */
 /* (leading sits after the size in every variant: tailwind-merge lets a
    later `text-*` size drop an earlier `leading-*`) */
-const displayVariants = cva("m-0 font-display font-medium tracking-[-0.02em] text-balance", {
+/* weight and tight tracking are tokens, so a preset can retune them for its face
+   (a serif wants less negative tracking than a grotesk, Plex a lighter weight) */
+const displayVariants = cva("m-0 font-display [font-weight:var(--rap-display-weight,500)] tracking-[-0.02em] text-balance", {
   variants: {
-    tight: { true: "tracking-[-0.045em]", false: "" },
+    tight: { true: "tracking-[var(--rap-display-tracking,-0.045em)]", false: "" },
     size: {
       mega: "text-display-mega leading-[0.86] font-[450] tracking-[-0.06em]",
       xxl: "text-display-xxl leading-[0.88]",

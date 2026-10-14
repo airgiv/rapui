@@ -14,7 +14,7 @@
     animation: rap-gauge-draw 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(var(--d, 0) * 14ms);
   }
-  :where([data-rap-motion="calm"]) .rap-gauge-tick {
+  :where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-gauge-tick {
     animation: none;
   }
   @media (prefers-reduced-motion: reduce) {

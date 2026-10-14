@@ -49,7 +49,7 @@ import "./ScrubNumber.css";
  *  the gesture, not once, so the docs' Calm switch applies to a
  *  component that is already on the page. */
 export const isCalm = (el: Element | null | undefined) =>
-  prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+  prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 
 /* ── a digit that rolls, through a window that fades ──────
    The TimeScrubber's digit, kept as it was there: a strip of

@@ -46,7 +46,7 @@ import "./FormField.css";
 
 /** True when playful motion should be skipped for this element: reduced motion, or a calm ancestor. */
 export function isMotionCalm(el: Element | null | undefined): boolean {
-  return prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+  return prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 }
 
 /**

@@ -40,7 +40,7 @@ import "./Avatar.css";
 function useCalm(ref: RefObject<Element | null>) {
   const [calm, setCalm] = useState(false);
   useLayoutEffect(() => {
-    const check = () => setCalm(prefersReducedMotion() || !!ref.current?.closest('[data-rap-motion="calm"]'));
+    const check = () => setCalm(prefersReducedMotion() || !!ref.current?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]'));
     check();
     const mo = new MutationObserver(check);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-rap-motion"], subtree: true });

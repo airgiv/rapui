@@ -30,6 +30,9 @@
   --rap-font-display: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
   --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
   --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  /* display headlines: weight and the tight tracking — presets retune both for their face */
+  --rap-display-weight: 500;
+  --rap-display-tracking: -0.045em;
 
   /* fluid scale */
   --rap-size-mega: clamp(3.5rem, 13vw, 15rem);
@@ -66,6 +69,9 @@
 
   /* floating surfaces: popovers, menus, dialogs */
   --rap-surface: var(--rap-paper-2);
+  /* the outline of a card — none here (cards are set off by colour); presets
+     whose cards sit on a same-colour page draw a hairline instead */
+  --rap-edge: transparent;
   --rap-shadow-pop: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 40px rgb(0 0 0 / 0.12);
   --rap-scrim: rgb(20 20 20 / 0.32);
 

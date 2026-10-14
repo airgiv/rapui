@@ -24,7 +24,7 @@ import "./Alert.css";
    further 10°, fading over the last half. Calm / reduced motion:
    no ghost, it just goes. With a SoundProvider on it plays "drop". */
 
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 
 function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
   if (typeof ref === "function") ref(value);

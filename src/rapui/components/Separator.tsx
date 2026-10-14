@@ -16,7 +16,7 @@ import { cn, prefersReducedMotion } from "../utils";
    JS, under calm or with reduced motion the line is simply on
    the page. Once drawn it stays drawn. */
 
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 
 function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
   if (typeof ref === "function") ref(value);

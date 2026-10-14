@@ -61,7 +61,7 @@ export function useCalm(ref: RefObject<HTMLElement | null>) {
 
 /** One-off check for event handlers and imperative loops. */
 export function isCalm(el: Element | null | undefined) {
-  return prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+  return prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 }
 
 /** The first element under `container` matching `selector`, kept current as attributes change. */

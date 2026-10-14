@@ -12,6 +12,11 @@ export default defineConfig({
       entry: {
         index: "src/rapui/index.ts",
         fonts: "src/rapui/fonts.ts",
+        "fonts/civic": "src/rapui/fonts/civic.ts",
+        "fonts/signal": "src/rapui/fonts/signal.ts",
+        "fonts/product": "src/rapui/fonts/product.ts",
+        "fonts/minimal": "src/rapui/fonts/minimal.ts",
+        "fonts/all": "src/rapui/fonts/all.ts",
         icons: "src/rapui/icons.tsx",
         // the stylesheet: Tailwind theme + utilities used by the components, no preflight
         styles: "src/rapui/styles.ts",

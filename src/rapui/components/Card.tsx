@@ -22,7 +22,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const cardVariants = cva(
-  "flex flex-col p-(--card-pad) bg-surface text-ink font-sans",
+  "flex flex-col p-(--card-pad) bg-surface text-ink font-sans shadow-[inset_0_0_0_1px_var(--rap-edge)]",
   {
     variants: {
       size: {

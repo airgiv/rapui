@@ -181,8 +181,8 @@ export const DialogDescription = forwardRef<
 /** True when playful motion should stay off for this node. */
 export function isCalm(el?: Element | null): boolean {
   if (prefersReducedMotion()) return true;
-  if (el?.closest('[data-rap-motion="calm"]')) return true;
-  return typeof document !== "undefined" && document.documentElement.getAttribute("data-rap-motion") === "calm";
+  if (el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]')) return true;
+  return typeof document !== "undefined" && ["calm", "still"].includes(document.documentElement.getAttribute("data-rap-motion") ?? "");
 }
 
 /**

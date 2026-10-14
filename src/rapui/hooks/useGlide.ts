@@ -21,7 +21,7 @@ import { useSpring } from "./useSpring";
 export function isCalm(el: Element | null | undefined) {
   if (typeof window === "undefined") return false;
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return true;
-  return !!(el?.closest?.('[data-rap-motion="calm"]') ?? document.documentElement.closest('[data-rap-motion="calm"]'));
+  return !!(el?.closest?.('[data-rap-motion="calm"], [data-rap-motion="still"]') ?? document.documentElement.closest('[data-rap-motion="calm"], [data-rap-motion="still"]'));
 }
 
 export interface GlideBox {

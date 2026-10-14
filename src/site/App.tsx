@@ -236,7 +236,7 @@ function Hero() {
     <section className="relative min-h-svh pt-32 px-(--gutter) pb-14 flex flex-col gap-10 max-[900px]:pt-28" id="top">
       <h1 className={cn("m-0", HEAD)}>
         <span className="block">
-          All the <span className="text-flame">components,</span>
+          All the <span className="text-flame">UI components,</span>
         </span>
         <span className="flex flex-wrap items-center gap-x-[0.22em]">
           none of the
@@ -453,7 +453,7 @@ const STAT_TEXT = "m-0 max-w-[24ch] text-[1.2rem] leading-[1.35] opacity-80";
 
 function Stats() {
   const cards = [
-    { n: COUNT, from: 0, text: "components, from Dialog and DataTable to a button you have to hold.", tone: "bg-flame text-white" },
+    { n: COUNT, from: 0, text: "UI components, from Dialog and DataTable to a button you have to hold.", tone: "bg-flame text-white" },
     { n: 0, from: 100, text: "grey rectangles with 4px corners.", tone: "bg-paper-2" },
     { n: 1, from: 10, text: "attribute to turn every joke off, for the serious screens.", tone: "bg-ink text-paper" },
   ];

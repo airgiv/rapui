@@ -14,15 +14,15 @@
   .rap-eq > i:nth-child(3) { height: 40%; }
 
   @media (prefers-reduced-motion: no-preference) {
-    .rap-eq[data-playing]:not(:where([data-rap-motion="calm"] *)) > i {
+    .rap-eq[data-playing]:not(:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]) *)) > i {
       animation: rap-eq-a 0.9s var(--rap-ease-in-out) infinite alternate;
     }
-    .rap-eq[data-playing]:not(:where([data-rap-motion="calm"] *)) > i:nth-child(2) {
+    .rap-eq[data-playing]:not(:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]) *)) > i:nth-child(2) {
       animation-name: rap-eq-b;
       animation-duration: 0.7s;
       animation-delay: -0.3s;
     }
-    .rap-eq[data-playing]:not(:where([data-rap-motion="calm"] *)) > i:nth-child(3) {
+    .rap-eq[data-playing]:not(:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]) *)) > i:nth-child(3) {
       animation-name: rap-eq-c;
       animation-duration: 1.1s;
       animation-delay: -0.6s;

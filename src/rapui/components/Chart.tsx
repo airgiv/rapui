@@ -43,7 +43,7 @@ import "./Chart.css";
 
    Calm / reduced motion: no intro, the chart is just there. */
 
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 const TWEENED = new Set<unknown>([Area, Bar, Line]);
 /** how long the intro window stays open: the longest bar stagger + its grow */
 const INTRO_MS = 1500;

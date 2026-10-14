@@ -37,7 +37,7 @@
 }
 
 /* calm: Sonner's plain slide back */
-[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] { animation-name: swipe-out-right; animation-duration: 200ms; }
-[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] { animation-name: swipe-out-left; animation-duration: 200ms; }
-[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] { animation-name: swipe-out-down; animation-duration: 200ms; }
-[data-rap-motion="calm"] [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] { animation-name: swipe-out-up; animation-duration: 200ms; }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] { animation-name: swipe-out-right; animation-duration: 200ms; }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] { animation-name: swipe-out-left; animation-duration: 200ms; }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] { animation-name: swipe-out-down; animation-duration: 200ms; }
+:is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="toaster"] [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] { animation-name: swipe-out-up; animation-duration: 200ms; }

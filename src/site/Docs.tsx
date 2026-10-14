@@ -25,6 +25,9 @@ import { Wordmark } from "./Wordmark";
 import { SMALL_SWITCH, SoundControls } from "./SoundControls";
 import { cn } from "../rapui/utils";
 import type { SoundSettings } from "../rapui";
+import { PRESET_MOTION, RAP_PRESETS, RapStyle, type RapMotion, type RapPreset } from "../rapui";
+// every preset's typefaces: the explorer switches presets live
+import "../rapui/fonts/all";
 import "./docs.css";
 
 /* ── settings panel ─────────────────────────────────────────── */
@@ -32,7 +35,7 @@ import "./docs.css";
 const CTL = "flex flex-col gap-[0.45rem]";
 const CTL_LABEL = "flex justify-between text-[0.8125rem] font-medium text-mute";
 /* the demo stage: a white card the component sits in the middle of */
-const STAGE = "relative grid place-items-center min-h-[22rem] p-[clamp(1.5rem,4vw,3rem)] rounded-card bg-surface overflow-hidden";
+const STAGE = "relative grid place-items-center min-h-[22rem] p-[clamp(1.5rem,4vw,3rem)] rounded-card bg-surface shadow-[inset_0_0_0_1px_var(--rap-edge)] overflow-hidden";
 
 function ControlField({ c, value, onChange }: { c: Control; value: Props[string]; onChange: (v: Props[string]) => void }) {
   const label = c.label ?? c.prop;
@@ -109,7 +112,7 @@ function Playground({ entry }: { entry: DocEntry }) {
           <Demo p={p} />
         </div>
         {hasControls && (
-          <div className="flex flex-col gap-4 p-5 rounded-card bg-surface" aria-label="Settings">
+          <div className="flex flex-col gap-4 p-5 rounded-card bg-surface shadow-[inset_0_0_0_1px_var(--rap-edge)]" aria-label="Settings">
             <div className="flex justify-between items-center font-medium">
               <span>Settings</span>
               <button
@@ -213,13 +216,27 @@ export function Docs({
 }) {
   const [q, setQ] = useState("");
   const [menu, setMenu] = useState(false);
-  // Calm switches off the playful layer everywhere (data-rap-motion="calm" on <html>, so portals follow)
-  const [calm, setCalm] = useState(false);
-  useEffect(() => {
-    if (calm) document.documentElement.setAttribute("data-rap-motion", "calm");
-    else document.documentElement.removeAttribute("data-rap-motion");
-    return () => document.documentElement.removeAttribute("data-rap-motion");
-  }, [calm]);
+  // the style the explorer previews in: a preset and a motion level, on <html> through
+  // RapStyle (so dialogs and menus in portals follow). Remembered per browser.
+  const [preset, setPresetState] = useState<RapPreset>(() => {
+    try {
+      const v = localStorage.getItem("rapui-preset");
+      return RAP_PRESETS.some((p) => p.value === v) ? (v as RapPreset) : "fun";
+    } catch {
+      return "fun";
+    }
+  });
+  const [motion, setMotion] = useState<RapMotion | null>(null); // null: the preset's own
+  const setPreset = (p: RapPreset) => {
+    setPresetState(p);
+    setMotion(null);
+    try {
+      localStorage.setItem("rapui-preset", p);
+    } catch {
+      /* storage blocked */
+    }
+  };
+  const styleControls = <StyleControls preset={preset} setPreset={setPreset} motion={motion ?? PRESET_MOTION[preset]} setMotion={setMotion} />;
   const entry = ENTRIES.find((e) => e.slug === slug) ?? ENTRIES[0];
   const idx = ENTRIES.indexOf(entry);
   const prev = ENTRIES[idx - 1];
@@ -239,6 +256,7 @@ export function Docs({
   }, [entry]);
 
   return (
+    <RapStyle preset={preset} motion={motion ?? undefined}>
     <div className="rap-root min-h-screen bg-paper">
       <header
         className={cn(
@@ -266,10 +284,7 @@ export function Docs({
         <div className="ml-auto flex items-center gap-tight">
           <div className="contents max-[900px]:hidden">
             <SoundControls value={sound} onChange={setSound} />
-            <label className="inline-flex items-center gap-2 mr-3 text-[0.875rem] font-medium text-mute">
-              <span>Calm</span>
-              <Switch checked={calm} onCheckedChange={setCalm} onText="" offText="" className={SMALL_SWITCH} />
-            </label>
+            {styleControls}
           </div>
           <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" />
         </div>
@@ -284,10 +299,7 @@ export function Docs({
           </SheetBody>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-4 border-t border-line">
             <SoundControls value={sound} onChange={setSound} />
-            <label className="inline-flex items-center gap-2 text-[0.875rem] font-medium text-mute">
-              <span>Calm</span>
-              <Switch checked={calm} onCheckedChange={setCalm} onText="" offText="" className={SMALL_SWITCH} />
-            </label>
+            {styleControls}
           </div>
         </SheetContent>
       </Sheet>
@@ -337,5 +349,49 @@ export function Docs({
         </main>
       </div>
     </div>
+    </RapStyle>
   );
 }
+
+/* the preset picker and the motion level, for the header and the phone menu */
+function StyleControls({
+  preset,
+  setPreset,
+  motion,
+  setMotion,
+}: {
+  preset: RapPreset;
+  setPreset: (p: RapPreset) => void;
+  motion: RapMotion;
+  setMotion: (m: RapMotion) => void;
+}) {
+  return (
+    <div className="inline-flex items-center gap-2 mr-3">
+      <Select value={preset} onValueChange={(v) => setPreset(v as RapPreset)}>
+        <SelectTrigger size="sm" aria-label="Style preset" className="w-[8.5rem]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {RAP_PRESETS.map((p) => (
+            <SelectItem key={p.value} value={p.value}>
+              {p.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <ToggleGroup
+        type="single"
+        size="sm"
+        value={motion}
+        onValueChange={(v) => v && setMotion(v as RapMotion)}
+        aria-label="Motion"
+        className="[&_[data-slot=toggle-group-item]]:px-3 [&_[data-slot=toggle-group-item]]:text-[0.8125rem]"
+      >
+        <ToggleGroupItem value="fun">Fun</ToggleGroupItem>
+        <ToggleGroupItem value="calm">Calm</ToggleGroupItem>
+        <ToggleGroupItem value="still">Still</ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  );
+}
+

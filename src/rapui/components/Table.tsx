@@ -43,7 +43,7 @@ import { cn, prefersReducedMotion } from "../utils";
    each row the highlight arrives at is a soft detent (0.3) — the
    ratchet limiter keeps a fast sweep from buzzing. */
 
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 
 function setRef<T>(ref: ForwardedRef<T>, value: T | null) {
   if (typeof ref === "function") ref(value);

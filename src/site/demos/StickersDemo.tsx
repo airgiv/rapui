@@ -150,7 +150,7 @@ export function StickersDemo({ className }: { className?: string }) {
     });
   useEffect(() => () => loop.current?.stop(), []);
 
-  const still = () => prefersReducedMotion() || !!board.current?.closest('[data-rap-motion="calm"]');
+  const still = () => prefersReducedMotion() || !!board.current?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 
   const addItem = (key: string, x: number, y: number, rot: number, delay = 0): Item => {
     const id = nextId.current++;

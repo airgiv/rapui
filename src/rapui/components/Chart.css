@@ -63,8 +63,8 @@
   /* the tooltip follows on a spring instead of a plain slide */
   [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform 420ms var(--rap-ease-spring) !important; }
 
-  [data-rap-motion="calm"] [data-slot="chart"][data-intro] * { animation: none !important; stroke-dasharray: none; }
-  [data-rap-motion="calm"] [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform var(--rap-dur-fast) var(--rap-ease-rm) !important; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="chart"][data-intro] * { animation: none !important; stroke-dasharray: none; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="chart"] .recharts-tooltip-wrapper { transition: transform var(--rap-dur-fast) var(--rap-ease-rm) !important; }
   @media (prefers-reduced-motion: reduce) {
     [data-slot="chart"][data-intro] * { animation: none !important; stroke-dasharray: none; }
     [data-slot="chart"] .recharts-tooltip-wrapper { transition: none !important; }

@@ -1,0 +1,364 @@
+/* ───────────────────────────────────────────────────────────
+   rapui — style presets
+
+   A preset is a whole character: palette, typefaces, shape,
+   density and how much things move. Set it with
+   data-rap-preset on <html> or on any wrapper (or <RapStyle>):
+
+     fun      the default — loud, round, playful (tokens.css)
+     civic    a public-service site: transitional serif headlines,
+              navy and a little red, soft big cards, calm motion
+     signal   analogue AI: earthy brown, olive and rust, Plex,
+              dot matrices and scanlines, near-square corners
+     product  a modern product page: Geist, near-black buttons,
+              thin borders, small radii, an iris accent
+     minimal  black on white, hairlines, square corners, no colour
+
+   The colour names stay (flame, blue, acid, bubble, sky, plum) so
+   every component recolours without changes: each preset gives
+   them its own hue — civic's "flame" is Old Glory red, signal's
+   is rust, minimal's is ink.
+
+   Light and dark: a preset's colours are set for the element with
+   the attribute and for any light/dark island inside it, at a
+   higher specificity than tokens.css, so data-rap-theme still
+   flips between the preset's own light and dark palettes.
+
+   Motion is separate (data-rap-motion: fun | calm | still); each
+   preset has a default that <RapStyle> applies. Fonts are opt-in:
+   import "@rapui/react/fonts/civic" etc.
+   ─────────────────────────────────────────────────────────── */
+
+/* ── civic ─────────────────────────────────────────────────── */
+[data-rap-preset="civic"] {
+  --rap-font-display: "Newsreader Variable", "Newsreader", ui-serif, Georgia, serif;
+  --rap-font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --rap-display-weight: 500;
+  --rap-display-tracking: -0.035em;
+
+  --rap-radius-xs: 8px;
+  --rap-radius-sm: 14px;
+  --rap-radius: 28px;
+  --rap-radius-lg: 40px;
+  --rap-radius-pill: 999px;
+  --rap-control-h-sm: 38px;
+  --rap-control-h: 48px;
+  --rap-control-h-lg: 56px;
+  --rap-gap-tight: 6px;
+  --rap-gap-tile: 12px;
+
+  --rap-ease-rm: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --rap-dur-fast: 200ms;
+  --rap-dur: 420ms;
+  --rap-dur-slow: 700ms;
+}
+[data-rap-preset="civic"],
+[data-rap-preset="civic"] [data-rap-theme="light"],
+[data-rap-preset="civic"][data-rap-theme="light"] {
+  --rap-paper: #f6f7f9;
+  --rap-paper-2: #ffffff;
+  --rap-paper-3: #e6e9ef;
+  --rap-ink: #0b1a33;
+  --rap-ink-2: #3d4a5f;
+  --rap-mute: #8a94a6;
+  --rap-line: rgb(11 26 51 / 0.12);
+  --rap-flame: #b22234;
+  --rap-blue: #1e46a8;
+  --rap-plum: #0b2a5b;
+  --rap-acid: #eadfb8;
+  --rap-bubble: #f3d6d9;
+  --rap-sky: #dce5f3;
+  --rap-accent: #0b2a5b;
+  --rap-accent-ink: #ffffff;
+  --rap-fill: rgb(11 26 51 / 0.05);
+  --rap-fill-hover: rgb(11 26 51 / 0.09);
+  --rap-fill-strong: rgb(11 26 51 / 0.15);
+  --rap-ring: #1e46a8;
+  --rap-select: #1e46a8;
+  --rap-surface: #ffffff;
+  --rap-shadow-pop: 0 2px 6px rgb(11 26 51 / 0.04), 0 24px 60px rgb(11 26 51 / 0.1);
+  --rap-scrim: rgb(11 26 51 / 0.28);
+  color-scheme: light;
+}
+[data-rap-preset="civic"][data-rap-theme="dark"],
+[data-rap-theme="dark"] [data-rap-preset="civic"],
+[data-rap-preset="civic"] [data-rap-theme="dark"] {
+  --rap-paper: #08111f;
+  --rap-paper-2: #0f1b2e;
+  --rap-paper-3: #18263d;
+  --rap-ink: #f1f3f7;
+  --rap-ink-2: #c4cbd8;
+  --rap-mute: #7d889c;
+  --rap-line: rgb(241 243 247 / 0.13);
+  --rap-flame: #e04b5c;
+  --rap-blue: #6b8fe8;
+  --rap-plum: #c9d6f0;
+  --rap-accent: #f1f3f7;
+  --rap-accent-ink: #0b1a33;
+  --rap-fill: rgb(241 243 247 / 0.07);
+  --rap-fill-hover: rgb(241 243 247 / 0.12);
+  --rap-fill-strong: rgb(241 243 247 / 0.19);
+  --rap-ring: #6b8fe8;
+  --rap-select: #6b8fe8;
+  --rap-surface: #132036;
+  --rap-shadow-pop: 0 2px 6px rgb(0 0 0 / 0.3), 0 24px 60px rgb(0 0 0 / 0.45);
+  --rap-scrim: rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+/* ── signal ────────────────────────────────────────────────── */
+[data-rap-preset="signal"] {
+  --rap-font-display: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --rap-display-weight: 400;
+  --rap-display-tracking: -0.03em;
+
+  --rap-radius-xs: 3px;
+  --rap-radius-sm: 6px;
+  --rap-radius: 10px;
+  --rap-radius-lg: 12px;
+  --rap-radius-pill: 10px;
+  --rap-control-h-sm: 34px;
+  --rap-control-h: 42px;
+  --rap-control-h-lg: 50px;
+  --rap-gap-tight: 2px;
+  --rap-gap-tile: 2px;
+
+  --rap-ease-rm: cubic-bezier(0.3, 0, 0.2, 1);
+  --rap-dur-fast: 160ms;
+  --rap-dur: 360ms;
+  --rap-dur-slow: 640ms;
+}
+[data-rap-preset="signal"],
+[data-rap-preset="signal"] [data-rap-theme="light"],
+[data-rap-preset="signal"][data-rap-theme="light"] {
+  --rap-paper: #e8e8e5;
+  --rap-paper-2: #f7f7f4;
+  --rap-paper-3: #d6d7d0;
+  --rap-ink: #2b241d;
+  --rap-ink-2: #4a4237;
+  --rap-mute: #8c8578;
+  --rap-line: rgb(43 36 29 / 0.14);
+  --rap-flame: #c8613f;
+  --rap-blue: #4e6b62;
+  --rap-plum: #3a2f26;
+  --rap-acid: #b9bd98;
+  --rap-bubble: #d8b4a0;
+  --rap-sky: #b7c3c2;
+  --rap-accent: #c8613f;
+  --rap-accent-ink: #ffffff;
+  --rap-fill: rgb(43 36 29 / 0.06);
+  --rap-fill-hover: rgb(43 36 29 / 0.1);
+  --rap-fill-strong: rgb(43 36 29 / 0.16);
+  --rap-ring: #c8613f;
+  --rap-select: #2b241d;
+  --rap-surface: #ffffff;
+  --rap-shadow-pop: 0 1px 0 rgb(43 36 29 / 0.05), 0 10px 30px rgb(43 36 29 / 0.12);
+  --rap-scrim: rgb(43 36 29 / 0.35);
+  --rap-chart-up: #5f7d52;
+  --rap-chart-down: #c8613f;
+  color-scheme: light;
+}
+[data-rap-preset="signal"][data-rap-theme="dark"],
+[data-rap-theme="dark"] [data-rap-preset="signal"],
+[data-rap-preset="signal"] [data-rap-theme="dark"] {
+  --rap-paper: #3a2f26;
+  --rap-paper-2: #45392e;
+  --rap-paper-3: #52453a;
+  --rap-ink: #ede9e1;
+  --rap-ink-2: #cfc7b9;
+  --rap-mute: #9c9283;
+  --rap-line: rgb(237 233 225 / 0.15);
+  --rap-flame: #e07a52;
+  --rap-blue: #8fae9f;
+  --rap-plum: #ede9e1;
+  --rap-accent: #e07a52;
+  --rap-accent-ink: #2b241d;
+  --rap-fill: rgb(237 233 225 / 0.07);
+  --rap-fill-hover: rgb(237 233 225 / 0.12);
+  --rap-fill-strong: rgb(237 233 225 / 0.19);
+  --rap-ring: #e07a52;
+  --rap-select: #ede9e1;
+  --rap-select-ink: #2b241d;
+  --rap-surface: #4a3d32;
+  --rap-shadow-pop: 0 1px 0 rgb(0 0 0 / 0.2), 0 10px 30px rgb(0 0 0 / 0.35);
+  --rap-scrim: rgb(20 15 10 / 0.55);
+  --rap-chart-up: #a3c48e;
+  --rap-chart-down: #e07a52;
+  color-scheme: dark;
+}
+
+/* ── product ───────────────────────────────────────────────── */
+[data-rap-preset="product"] {
+  --rap-font-display: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --rap-display-weight: 600;
+  --rap-display-tracking: -0.04em;
+
+  --rap-radius-xs: 6px;
+  --rap-radius-sm: 8px;
+  --rap-radius: 14px;
+  --rap-radius-lg: 18px;
+  --rap-radius-pill: 10px;
+  --rap-control-h-sm: 32px;
+  --rap-control-h: 40px;
+  --rap-control-h-lg: 48px;
+  --rap-gap-tight: 6px;
+  --rap-gap-tile: 12px;
+
+  --rap-ease-rm: cubic-bezier(0.2, 0, 0, 1);
+  --rap-dur-fast: 150ms;
+  --rap-dur: 300ms;
+  --rap-dur-slow: 560ms;
+}
+[data-rap-preset="product"],
+[data-rap-preset="product"] [data-rap-theme="light"],
+[data-rap-preset="product"][data-rap-theme="light"] {
+  --rap-paper: #fafafa;
+  --rap-paper-2: #ffffff;
+  --rap-paper-3: #ededed;
+  --rap-ink: #111111;
+  --rap-ink-2: #4b4b4b;
+  --rap-mute: #8f8f8f;
+  --rap-line: rgb(0 0 0 / 0.09);
+  --rap-flame: #f76b15;
+  --rap-blue: #2f6bff;
+  --rap-plum: #5b5bd6;
+  --rap-acid: #c6f27a;
+  --rap-bubble: #ffd6e7;
+  --rap-sky: #d6e4ff;
+  --rap-accent: #111111;
+  --rap-accent-ink: #ffffff;
+  --rap-fill: rgb(0 0 0 / 0.04);
+  --rap-fill-hover: rgb(0 0 0 / 0.07);
+  --rap-fill-strong: rgb(0 0 0 / 0.12);
+  --rap-ring: #5b5bd6;
+  --rap-select: #5b5bd6;
+  --rap-surface: #ffffff;
+  --rap-edge: var(--rap-line);
+  --rap-shadow-pop: 0 0 0 1px rgb(0 0 0 / 0.06), 0 8px 30px rgb(0 0 0 / 0.08);
+  --rap-scrim: rgb(0 0 0 / 0.3);
+  color-scheme: light;
+}
+[data-rap-preset="product"][data-rap-theme="dark"],
+[data-rap-theme="dark"] [data-rap-preset="product"],
+[data-rap-preset="product"] [data-rap-theme="dark"] {
+  --rap-paper: #0a0a0a;
+  --rap-paper-2: #141414;
+  --rap-paper-3: #1f1f1f;
+  --rap-ink: #ededed;
+  --rap-ink-2: #b4b4b4;
+  --rap-mute: #707070;
+  --rap-line: rgb(255 255 255 / 0.1);
+  --rap-plum: #8b8bf0;
+  --rap-accent: #ededed;
+  --rap-accent-ink: #0a0a0a;
+  --rap-fill: rgb(255 255 255 / 0.06);
+  --rap-fill-hover: rgb(255 255 255 / 0.1);
+  --rap-fill-strong: rgb(255 255 255 / 0.16);
+  --rap-ring: #8b8bf0;
+  --rap-select: #8b8bf0;
+  --rap-surface: #171717;
+  --rap-edge: var(--rap-line);
+  --rap-shadow-pop: 0 0 0 1px rgb(255 255 255 / 0.08), 0 8px 30px rgb(0 0 0 / 0.5);
+  --rap-scrim: rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+/* ── minimal ───────────────────────────────────────────────── */
+[data-rap-preset="minimal"] {
+  --rap-font-display: "Inter Tight Variable", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-sans: "Inter Tight Variable", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --rap-display-weight: 500;
+  --rap-display-tracking: -0.04em;
+
+  --rap-radius-xs: 0px;
+  --rap-radius-sm: 0px;
+  --rap-radius: 0px;
+  --rap-radius-lg: 0px;
+  --rap-radius-pill: 0px;
+  --rap-control-h-sm: 34px;
+  --rap-control-h: 40px;
+  --rap-control-h-lg: 48px;
+  --rap-gap-tight: 1px;
+  --rap-gap-tile: 1px;
+
+  --rap-ease-rm: cubic-bezier(0.4, 0, 0.2, 1);
+  --rap-dur-fast: 120ms;
+  --rap-dur: 240ms;
+  --rap-dur-slow: 400ms;
+}
+[data-rap-preset="minimal"],
+[data-rap-preset="minimal"] [data-rap-theme="light"],
+[data-rap-preset="minimal"][data-rap-theme="light"] {
+  --rap-paper: #ffffff;
+  --rap-paper-2: #ffffff;
+  --rap-paper-3: #efefef;
+  --rap-ink: #000000;
+  --rap-ink-2: #444444;
+  --rap-mute: #9a9a9a;
+  --rap-line: rgb(0 0 0 / 0.12);
+  --rap-flame: #111111;
+  --rap-blue: #555555;
+  --rap-plum: #222222;
+  --rap-acid: #eaeaea;
+  --rap-bubble: #f2f2f2;
+  --rap-sky: #e6e6e6;
+  --rap-accent: #000000;
+  --rap-accent-ink: #ffffff;
+  --rap-fill: rgb(0 0 0 / 0.04);
+  --rap-fill-hover: rgb(0 0 0 / 0.08);
+  --rap-fill-strong: rgb(0 0 0 / 0.14);
+  --rap-ring: #000000;
+  --rap-select: #000000;
+  --rap-surface: #ffffff;
+  --rap-edge: var(--rap-line);
+  --rap-shadow-pop: 0 0 0 1px rgb(0 0 0 / 0.12);
+  --rap-scrim: rgb(255 255 255 / 0.7);
+  --rap-chart-up: #111111;
+  --rap-chart-down: #8a8a8a;
+  color-scheme: light;
+}
+[data-rap-preset="minimal"][data-rap-theme="dark"],
+[data-rap-theme="dark"] [data-rap-preset="minimal"],
+[data-rap-preset="minimal"] [data-rap-theme="dark"] {
+  --rap-paper: #000000;
+  --rap-paper-2: #0b0b0b;
+  --rap-paper-3: #1a1a1a;
+  --rap-ink: #ffffff;
+  --rap-ink-2: #bbbbbb;
+  --rap-mute: #6a6a6a;
+  --rap-line: rgb(255 255 255 / 0.14);
+  --rap-flame: #f2f2f2;
+  --rap-blue: #a8a8a8;
+  --rap-plum: #dddddd;
+  --rap-acid: #2a2a2a;
+  --rap-bubble: #1c1c1c;
+  --rap-sky: #222222;
+  --rap-accent: #ffffff;
+  --rap-accent-ink: #000000;
+  --rap-fill: rgb(255 255 255 / 0.06);
+  --rap-fill-hover: rgb(255 255 255 / 0.1);
+  --rap-fill-strong: rgb(255 255 255 / 0.16);
+  --rap-ring: #ffffff;
+  --rap-select: #ffffff;
+  --rap-select-ink: #000000;
+  --rap-surface: #0b0b0b;
+  --rap-edge: var(--rap-line);
+  --rap-shadow-pop: 0 0 0 1px rgb(255 255 255 / 0.16);
+  --rap-scrim: rgb(0 0 0 / 0.7);
+  --rap-chart-up: #ffffff;
+  --rap-chart-down: #7a7a7a;
+  color-scheme: dark;
+}
+
+/* ── motion: still ─────────────────────────────────────────── */
+/* no movement at all: every token-driven transition is instant. (The playful
+   layer is already off: still counts as calm for the fun:/calm: variants and
+   for every component's isCalm check.) */
+[data-rap-motion="still"] {
+  --rap-dur-fast: 0ms;
+  --rap-dur: 0ms;
+  --rap-dur-slow: 0ms;
+}

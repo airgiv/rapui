@@ -17,7 +17,7 @@ import "./EmptyState.css";
    Pass a FancyIcon (Solar duotone) for the icon — this is an
    illustrative spot. Calm / reduced motion: still icon, no nudge. */
 
-const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"]');
+const isCalm = (el: Element | null) => prefersReducedMotion() || !!el?.closest('[data-rap-motion="calm"], [data-rap-motion="still"]');
 const NUDGE_AFTER = 1800;
 /** the shared one-off wiggle, added from JS (still behind `fun:` in case calm arrives later) */
 const WIGGLE = "fun:animate-wiggle";

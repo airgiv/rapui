@@ -43,9 +43,9 @@
   [data-slot="sheet-content"][data-state="open"] > [data-slot="sheet-close"] { animation-delay: 60ms; }
 
   /* calm and reduced motion: no deal */
-  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] > *,
-  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,
-  [data-rap-motion="calm"] [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * { animation: none; }
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="sheet-content"][data-state="open"] > *,
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,
+  :is([data-rap-motion="calm"], [data-rap-motion="still"]) [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > :only-child > * { animation: none; }
   @media (prefers-reduced-motion: reduce) {
     [data-slot="sheet-content"][data-state="open"] > *,
     [data-slot="sheet-content"][data-state="open"] [data-slot="sheet-body"] > *,
