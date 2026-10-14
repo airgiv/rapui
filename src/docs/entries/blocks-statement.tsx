@@ -34,7 +34,7 @@ export const entries: DocEntry[] = [
           </StatementSlot>{" "}
           slide and{" "}
           <StatementSlot>
-            <Rating defaultValue={4} size={18} aria-label="A rating" />
+            <Rating defaultValue={4} size={28} aria-label="A rating" />
           </StatementSlot>{" "}
           score — <Accent tone="mute">in whatever style you pick.</Accent>
         </Statement>
