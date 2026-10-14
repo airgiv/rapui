@@ -91,7 +91,9 @@ export function InlineMedia({ src, alt = "", className, children, ...rest }: Inl
       aria-label={alt || undefined}
       aria-hidden={alt ? undefined : true}
       className={cn(
-        "relative inline-block h-[0.74em] w-[1.75em] mx-[0.06em] overflow-hidden rounded-pill bg-paper-3 align-baseline",
+        // exactly as tall as the capitals, sitting on the baseline: an inline-block that clips
+        // takes its bottom edge as its baseline, so 1cap tall spans baseline to cap height
+        "relative inline-block h-[0.7em] supports-[height:1cap]:h-[1cap] w-[1.6em] mx-[0.08em] overflow-hidden rounded-pill bg-paper-3 align-baseline",
         "[&>:is(img,video,svg)]:block [&>:is(img,video,svg)]:size-full [&>:is(img,video)]:object-cover",
         "transition-[rotate,scale] duration-(--rap-dur) ease-spring fun:hover:-rotate-6 fun:hover:scale-110",
         className,
