@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 export const GROUPS = [
   "Actions",
   "AI",
+  "Finance",
   "Forms",
   "Scrubbers",
   "Overlays",
