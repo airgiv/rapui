@@ -50,9 +50,12 @@ function lazyPage<T>(load: () => Promise<T>) {
 const Docs = lazyPage(() => import("./Docs").then((m) => ({ default: m.Docs })));
 /* the beginners' guide: its own small chunk too */
 const Guide = lazyPage(() => import("./Guide").then((m) => ({ default: m.Guide })));
+/* a whole landing page built from the blocks, in the previewed preset */
+const LandingPreview = lazyPage(() => import("./LandingPreview").then((m) => ({ default: m.LandingPreview })));
 
 /* Three views on one bundle, picked by the hash:
    #docs or #docs.<slug> → the components explorer, #start → the beginners' guide,
+   #landing → a landing page made of the blocks,
    anything else → the landing page.
    Plain tokens only (no slashes), so deep links survive hosts that strip paths. */
 function useHash() {
@@ -91,8 +94,9 @@ function Root() {
 
   const inDocs = hash === "docs" || hash.startsWith("docs.");
   const inGuide = hash === "start";
+  const inLanding = hash === "landing";
   useEffect(() => {
-    if (!inDocs && !inGuide) document.title = "rapui — all the components, none of the boring";
+    if (!inDocs && !inGuide && !inLanding) document.title = "rapui — all the components, none of the boring";
   }, [inDocs, inGuide]);
 
   return (
@@ -100,6 +104,10 @@ function Root() {
       {inDocs ? (
         <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
           <Docs slug={hash.slice(5)} dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
+        </Suspense>
+      ) : inLanding ? (
+        <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
+          <LandingPreview dark={dark} setDark={setDark} />
         </Suspense>
       ) : inGuide ? (
         <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>

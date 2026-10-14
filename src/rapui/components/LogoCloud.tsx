@@ -44,7 +44,7 @@ const WORDMARK = [
 
 function Mark({ logo, i, plain, className }: { logo: LogoCloudLogo; i: number; plain?: boolean; className?: string }) {
   return (
-    <span data-slot="logo" className={cn("inline-flex items-center whitespace-nowrap leading-none [&_svg]:h-[1.1em] [&_svg]:w-auto", !logo.logo && !plain && WORDMARK[i % WORDMARK.length], className)}>
+    <span data-slot="logo" className={cn("inline-flex items-center leading-none [&_svg]:h-[1.1em] [&_svg]:w-auto", !plain && "whitespace-nowrap", !logo.logo && !plain && WORDMARK[i % WORDMARK.length], className)}>
       {logo.logo ?? logo.name}
     </span>
   );

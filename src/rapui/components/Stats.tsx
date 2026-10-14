@@ -81,7 +81,7 @@ export function Stats({ eyebrow, index, title, lead, items, look: lookProp, clas
                   TILES[i % TILES.length],
                 )}
               >
-                <Display as="p" size="xxl" className="text-[length:clamp(3rem,24cqi,8rem)]">
+                <Display as="p" size="xxl" className="text-[length:clamp(3rem,24cqi,8rem)] leading-[0.88]">
                   <Figure item={it} />
                 </Display>
                 <div className="flex flex-col gap-1">

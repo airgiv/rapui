@@ -170,7 +170,7 @@ function FunHero({ eyebrow, title, lead, actions, media, sticker }: Parts) {
   return (
     <Stack gap="lg">
       <BlockKicker look="fun">{eyebrow}</BlockKicker>
-      <Display as="h1" size="mega" className="max-w-[15ch] text-[length:clamp(3rem,12.5cqi,14rem)]">
+      <Display as="h1" size="mega" className="max-w-[15ch] text-[length:clamp(3rem,12.5cqi,14rem)] leading-[0.86]">
         {title}
       </Display>
       {(lead || actions) && (
@@ -336,7 +336,7 @@ function MinimalHero({ eyebrow, index, title, lead, actions, media, meta = [] }:
           </BlockKicker>
         </GridItem>
         <GridItem span={10}>
-          <Display as="h1" size="xxl" className="max-w-[16ch] text-[length:clamp(2.75rem,8.5cqi,8.5rem)]">
+          <Display as="h1" size="xxl" className="max-w-[16ch] text-[length:clamp(2.75rem,8.5cqi,8.5rem)] leading-[0.9]">
             {title}
           </Display>
         </GridItem>

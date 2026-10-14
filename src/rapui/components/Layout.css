@@ -24,6 +24,9 @@
     position: relative;
     padding-block: calc(var(--rap-section-y) * var(--section-k, 1));
     color: var(--rap-ink);
+    /* a sticker slapped on a corner may hang out a little; never past the page edge
+       (clip, not hidden: no scroll container, so sticky children still stick) */
+    overflow-x: clip;
   }
   .rap-section[data-size="sm"] { --section-k: 0.6; }
   .rap-section[data-size="lg"] { --section-k: 1.35; }
