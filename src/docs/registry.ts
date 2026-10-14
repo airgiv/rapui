@@ -29,8 +29,9 @@ import { entries as blocksFeatures } from "./entries/blocks-features";
 import { entries as blocksHero } from "./entries/blocks-hero";
 import { entries as blocksPricing } from "./entries/blocks-pricing";
 import { entries as blocksLanding } from "./entries/blocks-landing";
+import { entries as blocksStatement } from "./entries/blocks-statement";
 
 /** Every documented component, sorted by sidebar group then name. */
-export const ENTRIES: DocEntry[] = [...actions, ...aiCore, ...aiSources, ...aiPrompt, ...aiChat, ...aiAgent, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...charts, ...chartsA, ...chartsB, ...galleries, ...players, ...tools, ...patterns, ...signal, ...navigation, ...expressive, ...layout, ...blocksFeatures, ...blocksHero, ...blocksPricing, ...blocksLanding, ...financeMoney, ...financePayments, ...financeMarkets, ...figures].sort(
+export const ENTRIES: DocEntry[] = [...actions, ...aiCore, ...aiSources, ...aiPrompt, ...aiChat, ...aiAgent, ...buttonsFun, ...forms, ...scrubbers, ...overlays, ...display, ...charts, ...chartsA, ...chartsB, ...galleries, ...players, ...tools, ...patterns, ...signal, ...navigation, ...expressive, ...layout, ...blocksFeatures, ...blocksHero, ...blocksPricing, ...blocksLanding, ...blocksStatement, ...financeMoney, ...financePayments, ...financeMarkets, ...figures].sort(
   (a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || a.name.localeCompare(b.name),
 );

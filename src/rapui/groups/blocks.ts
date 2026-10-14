@@ -21,3 +21,5 @@ export { SiteHeader } from "../components/SiteHeader";
 export type { SiteHeaderProps, SiteHeaderLink } from "../components/SiteHeader";
 export { SiteFooter } from "../components/SiteFooter";
 export type { SiteFooterProps, SiteFooterColumn } from "../components/SiteFooter";
+export { Statement, StatementSlot } from "../components/Statement";
+export type { StatementProps } from "../components/Statement";
