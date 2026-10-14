@@ -18,9 +18,10 @@
             front page: a big light serif headline, the lead and
             buttons under it, the picture in a wide rounded card below;
             drop an <InlineMedia> between the headline's words
-   signal   a split with a mono "[ 00 ]" kicker, the picture behind
-            scan lines (MediaFrame) and a ruled meta row of
-            coordinates ending in a dot-matrix strip
+   signal   an instrument's front panel: a mono readout strip (kicker
+            and `meta`), the headline the full width of the grid, then
+            the picture as a wide scanned plate (MediaFrame) with crop
+            marks and a dot-matrix level meter under it
    product  centred: a pill badge, headline, lead, two buttons, then
             the picture in a framed window with a soft glow under it
    minimal  a big left-aligned headline over nine columns, a small
@@ -222,53 +223,58 @@ function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
   );
 }
 
-/* the hairline-ruled cell grid: every cell draws a rule on its left and top,
-   and the grid clips the ones at its outer edges */
-const ruled = "overflow-hidden [&>*]:shadow-[-1px_0_0_var(--rap-line),0_-1px_0_var(--rap-line)]";
 
 /* signal: an instrument readout — a mono kicker, the picture on a scanned screen, coordinates under it */
 function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [] }: Parts) {
+  /* a field instrument's front panel: a mono readout strip across the top, the headline
+     the full width of the grid, then the picture as a wide scanned plate with crop marks
+     and corner labels, a dot-matrix level meter running under it */
   return (
     <Stack gap="xl">
-      <Grid rowGap="lg" className="items-end">
-        <GridItem span={media ? 7 : 10}>
-          <Stack gap="lg">
-            <BlockKicker look="signal" index={index}>
-              {eyebrow}
-            </BlockKicker>
-            <Display as="h1" size="xl" className="max-w-[18ch]">
-              {title}
-            </Display>
-            {lead && <p className={cn(leadText, "max-w-[46ch]")}>{lead}</p>}
-            {actions && <Actions>{actions}</Actions>}
-          </Stack>
-        </GridItem>
-        {media && (
-          <GridItem span={5}>
-            <MediaFrame data-slot="hero-media" picture={<div className={fill}>{media}</div>} className="aspect-[4/5] rounded-xs">
-              <CropMarks />
-            </MediaFrame>
-          </GridItem>
+      <div className="flex flex-wrap items-center justify-between gap-x-(--rap-space-lg) gap-y-(--rap-space-xs) border-y border-line py-(--rap-space-xs)">
+        <BlockKicker look="signal" index={index}>
+          {eyebrow}
+        </BlockKicker>
+        {meta.length > 0 && (
+          <dl className="m-0 flex flex-wrap gap-x-(--rap-space-lg) gap-y-1 font-mono text-xs uppercase tracking-[0.06em]">
+            {meta.map((m) => (
+              <div key={m.label} className="flex gap-2">
+                <dt className="text-mute">{m.label}</dt>
+                <dd className="m-0 text-ink">{m.value}</dd>
+              </div>
+            ))}
+          </dl>
         )}
-      </Grid>
-      <div className="border-y border-line">
-        <Grid cols={[1, 2, Math.min(meta.length + 1, 5)]} gap="none" role="list" aria-label="Details" className={ruled}>
-          {meta.map((m) => (
-            <div key={m.label} role="listitem" className="flex flex-col gap-1 px-(--rap-space-sm) py-(--rap-space-sm) font-mono text-xs uppercase tracking-[0.06em]">
-              <span className="text-mute">{m.label}</span>
-              <span className="text-ink">{m.value}</span>
-            </div>
-          ))}
-          <div aria-hidden className="flex items-center overflow-hidden px-(--rap-space-sm) py-(--rap-space-sm) text-flame">
-            <DotMatrix cols={40} rows={3} size={3} gap={3} shape="square" animation="wave" period={900} />
-          </div>
-        </Grid>
       </div>
+      <Grid rowGap="lg" className="items-end">
+        <GridItem span={11}>
+          <Display as="h1" size="xxl" className="max-w-[16ch] text-[length:clamp(2.75rem,8cqi,8rem)] leading-[0.95]">
+            {title}
+          </Display>
+        </GridItem>
+        <GridItem span={5}>{lead && <p className={cn(leadText, "max-w-[46ch]")}>{lead}</p>}</GridItem>
+        <GridItem span={4} start={9} className="flex @min-[46rem]:justify-end">
+          {actions && <Actions>{actions}</Actions>}
+        </GridItem>
+      </Grid>
+      {media && (
+        <figure data-slot="hero-media" className="m-0 flex flex-col gap-(--rap-space-xs)">
+          <MediaFrame picture={<div className={fill}>{media}</div>} className="aspect-[4/5] @md:aspect-[16/10] @3xl:aspect-[21/9] rounded-xs">
+            <CropMarks />
+            <span aria-hidden className="absolute left-(--rap-space-md) top-(--rap-space-md) font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-paper-2/85">
+              Plate {index ?? "00"} · scan
+            </span>
+          </MediaFrame>
+          <div aria-hidden className="flex items-center gap-(--rap-space-sm) overflow-hidden text-flame">
+            <span className="shrink-0 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-mute">Level</span>
+            <DotMatrix cols={96} rows={2} size={3} gap={3} shape="square" animation="wave" period={900} />
+          </div>
+        </figure>
+      )}
     </Stack>
   );
 }
 
-/* four corner ticks over the screen, like a viewfinder */
 function CropMarks() {
   const tick = "absolute size-4 border-paper-2/70";
   return (
