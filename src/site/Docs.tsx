@@ -36,7 +36,7 @@ import "./docs.css";
 const CTL = "flex flex-col gap-[0.45rem]";
 const CTL_LABEL = "flex justify-between text-[0.8125rem] font-medium text-mute";
 /* the demo stage: a white card the component sits in the middle of */
-const STAGE = "relative grid place-items-center min-h-[22rem] p-[clamp(1.5rem,4vw,3rem)] rounded-card bg-surface shadow-[inset_0_0_0_1px_var(--rap-edge)] overflow-hidden";
+const STAGE = "relative grid grid-cols-[minmax(0,1fr)] place-items-center min-h-[22rem] p-[clamp(1.5rem,4vw,3rem)] rounded-card bg-surface shadow-[inset_0_0_0_1px_var(--rap-edge)] overflow-hidden";
 
 function ControlField({ c, value, onChange }: { c: Control; value: Props[string]; onChange: (v: Props[string]) => void }) {
   const label = c.label ?? c.prop;

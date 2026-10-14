@@ -1,0 +1,38 @@
+/* StockChart — only its keyframes; everything else is utilities in StockChart.tsx.
+   The pen, the wipe, the dot's spring and the breath run behind `fun:` there;
+   calm crossfades a range change with rap-stock-in / rap-stock-out. */
+@layer theme, base, components, utilities;
+
+/* the pen: pathLength=1, so the offset is a fraction of the line, whatever its shape */
+@keyframes rap-stock-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* the candles, volume and area fill are uncovered left to right, in step with the pen */
+@keyframes rap-stock-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* the scrub dot arrives on a spring: from nothing, a third past full, back */
+@keyframes rap-stock-dot {
+  0% { scale: 0; }
+  55% { scale: 1.32; }
+  78% { scale: 0.92; }
+  100% { scale: 1; }
+}
+
+/* the latest reading breathes, like the Sparkline's end dot */
+@keyframes rap-stock-breathe {
+  0% { scale: 1; opacity: 0.45; }
+  60%, 100% { scale: 2.8; opacity: 0; }
+}
+
+/* calm: one range fades out as the next fades in */
+@keyframes rap-stock-in {
+  from { opacity: 0; }
+}
+@keyframes rap-stock-out {
+  to { opacity: 0; }
+}

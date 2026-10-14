@@ -8,7 +8,7 @@ import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
 
 /* a paper ground inside the white stage: finance cards are white sheets */
-const GROUND = "grid place-items-center w-full min-h-80 p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
+const GROUND = "grid grid-cols-[minmax(0,1fr)] place-items-center w-full min-h-80 p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
 const CARD = "rounded-card bg-surface text-ink";
 
 /* ── Money ─────────────────────────────────────────────────── */
