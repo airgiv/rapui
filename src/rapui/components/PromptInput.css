@@ -1,0 +1,38 @@
+/* PromptInput — placeholder carousel, the sent-text lift, the arrow nudge.
+
+   Every leaving layer (the old placeholder, the sent text) rests at
+   opacity 0 and only shows while its animation runs from 1, so where
+   motion is off it simply never appears — nothing to special-case. */
+
+/* fun: the old example slides up and out, the new one rises in under it */
+@keyframes rap-pi-ph-in {
+  from { opacity: 0; translate: 0 100%; }
+}
+@keyframes rap-pi-ph-out {
+  from { opacity: 1; translate: 0 0; }
+  to { opacity: 0; translate: 0 -100%; }
+}
+/* calm: a crossfade */
+@keyframes rap-pi-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* the sent text lifts out of the field as if it had been posted upward */
+@keyframes rap-pi-lift {
+  0% { opacity: 1; translate: 0 0; filter: blur(0); }
+  100% { opacity: 0; translate: 0 -2.4em; filter: blur(2px); }
+}
+/* calm: it just fades where it stood */
+@keyframes rap-pi-sent-fade {
+  from { opacity: 0.8; }
+  to { opacity: 0; }
+}
+
+/* the send arrow hops up — out of the top, back in from below */
+@keyframes rap-pi-nudge {
+  0% { translate: 0 0; opacity: 1; }
+  45% { translate: 0 -140%; opacity: 0; }
+  46% { translate: 0 140%; opacity: 0; }
+  100% { translate: 0 0; opacity: 1; }
+}

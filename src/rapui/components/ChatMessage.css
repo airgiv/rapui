@@ -1,0 +1,73 @@
+/* ChatMessage / MessageActions / ChatThread — arrivals, the thumb's hop and
+   confetti, the drawn copy check, the "new messages" pill.
+   Fun: assistant turns rise and fade in, the user's bubble pops out of its
+   own corner; a chosen thumb hops and throws a few dots.
+   Calm: plain fades and a fill that fades in. Still: handled globally. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-chat-rise { from { opacity: 0; translate: 0 8px; } }
+@keyframes rap-chat-fade { from { opacity: 0; } }
+@keyframes rap-chat-pop {
+  0% { opacity: 0; scale: 0.55; translate: 10px 4px; }
+  55% { opacity: 1; scale: 1.035; translate: 0 0; }
+  80% { scale: 0.99; }
+  100% { scale: 1; }
+}
+@keyframes rap-thumb-hop {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  35% { translate: 0 -6px; rotate: -12deg; }
+  65% { translate: 0 1px; rotate: 4deg; }
+}
+@keyframes rap-confetti {
+  0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(-1 * var(--d, 16px))) scale(0.4); }
+}
+@keyframes rap-pill-in { from { opacity: 0; translate: 0 8px; scale: 0.9; } }
+
+/* ── arrivals ── */
+.rap-chat-in[data-role="assistant"] { animation: rap-chat-rise 360ms var(--rap-ease-out) both; }
+.rap-chat-in[data-role="user"] .rap-chat-bubble {
+  transform-origin: 100% 100%;
+  animation: rap-chat-pop 420ms var(--rap-ease-out) both;
+}
+.rap-chat-in[data-role="user"] .rap-chat-meta { animation: rap-chat-fade 300ms var(--rap-ease-out) 120ms both; }
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-chat-in[data-role="assistant"],
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-chat-in[data-role="user"] .rap-chat-bubble {
+  animation: rap-chat-fade 320ms var(--rap-ease-out) both;
+}
+
+/* ── thumbs: fill fades in (both levels); fun adds the hop + confetti ── */
+.rap-thumb path { fill: currentColor; fill-opacity: 0; transition: fill-opacity 220ms var(--rap-ease-out); }
+[aria-pressed="true"] .rap-thumb path { fill-opacity: 1; }
+[aria-pressed="true"] .rap-thumb-hop { animation: rap-thumb-hop 420ms var(--rap-ease-out); }
+.rap-confetti i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 999px;
+  background: var(--c, var(--rap-accent));
+  opacity: 0;
+  animation: rap-confetti 520ms var(--rap-ease-out) 60ms both;
+}
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) :is(.rap-thumb-hop, .rap-confetti) { animation: none; }
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-confetti { display: none; }
+
+/* ── copy: the check draws itself ── */
+.rap-copy-check { stroke-dasharray: 1; animation: rap-draw 320ms var(--rap-ease-out) both; }
+
+/* ── thread pill ── */
+.rap-chat-pill { animation: rap-pill-in 260ms var(--rap-ease-spring) both; }
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-chat-pill { animation: rap-chat-fade 200ms var(--rap-ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rap-chat-in[data-role="assistant"],
+  .rap-chat-in[data-role="user"] .rap-chat-bubble,
+  .rap-chat-in[data-role="user"] .rap-chat-meta,
+  .rap-thumb-hop,
+  .rap-chat-pill,
+  .rap-copy-check { animation: none; }
+  .rap-confetti { display: none; }
+}

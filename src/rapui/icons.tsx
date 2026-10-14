@@ -85,6 +85,8 @@ import {
   LogOutIcon,
   Mail01Icon,
   Menu01Icon,
+  Mic01Icon,
+  Attachment01Icon,
   MinusSignIcon,
   Moon02Icon,
   MoreHorizontalIcon,
@@ -124,6 +126,7 @@ import {
   TextIcon,
   TextUnderlineIcon,
   ThumbsUpIcon,
+  ThumbsDownIcon,
   Tick02Icon,
   UndoIcon,
   UnfoldMoreIcon,
@@ -280,6 +283,8 @@ export const LogOut = make(LogOutIcon, "LogOut");
 export const Mail = make(Mail01Icon, "Mail");
 export const Maximize = make(ArrowExpand01Icon, "Maximize");
 export const Menu = make(Menu01Icon, "Menu");
+export const Mic = make(Mic01Icon, "Mic");
+export const Paperclip = make(Attachment01Icon, "Paperclip");
 export const Minimize = make(ArrowShrink02Icon, "Minimize");
 export const Moon = make(Moon02Icon, "Moon");
 export const Pause = make(PauseIcon, "Pause");
@@ -297,6 +302,7 @@ export const Sparkle = make(SparklesIcon, "Sparkle");
 export const Sun = make(Sun03Icon, "Sun");
 export const Tag = make(Tag01Icon, "Tag");
 export const ThumbsUp = make(ThumbsUpIcon, "ThumbsUp");
+export const ThumbsDown = make(ThumbsDownIcon, "ThumbsDown");
 export const Undo = make(UndoIcon, "Undo");
 export const User = make(UserIcon, "User");
 export const Video = make(Video01Icon, "Video");
