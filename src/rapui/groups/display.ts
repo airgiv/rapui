@@ -59,3 +59,6 @@ export { Redact } from "../components/Redact";
 export type { RedactProps } from "../components/Redact";
 export { MediaFrame } from "../components/MediaFrame";
 export type { MediaFrameProps } from "../components/MediaFrame";
+// thin-line 3D figures
+export { Figure, FIGURE_SHAPES } from "../components/Figure";
+export type { FigureProps, FigureShape, FigureHidden, FigureLook } from "../components/Figure";

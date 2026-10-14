@@ -59,7 +59,7 @@ import { ART } from "../docs/entries/galleries";
 
 /* How many components the docs list. Kept by hand so the landing does not pull
    the docs registry (and every demo in it) into the first bundle. */
-const COUNT = 154;
+const COUNT = 155;
 
 /* ───────────────────────── shared class strings ───────────────────────── */
 

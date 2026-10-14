@@ -17,6 +17,7 @@ export const GROUPS = [
   "Layout",
   "Blocks",
   "Expressive",
+  "Figures",
 ] as const;
 export type Group = (typeof GROUPS)[number];
 
