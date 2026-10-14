@@ -305,7 +305,7 @@
   --rap-acid: #eaeaea;
   --rap-bubble: #f2f2f2;
   --rap-sky: #e6e6e6;
-  --rap-accent: #000000;
+  --rap-accent: #3a3a3a; /* not black: a solid black button needs somewhere to go on hover */
   --rap-accent-ink: #ffffff;
   --rap-fill: rgb(0 0 0 / 0.04);
   --rap-fill-hover: rgb(0 0 0 / 0.08);
@@ -336,7 +336,7 @@
   --rap-acid: #2a2a2a;
   --rap-bubble: #1c1c1c;
   --rap-sky: #222222;
-  --rap-accent: #ffffff;
+  --rap-accent: #cfcfcf;
   --rap-accent-ink: #000000;
   --rap-fill: rgb(255 255 255 / 0.06);
   --rap-fill-hover: rgb(255 255 255 / 0.1);
@@ -361,4 +361,12 @@
   --rap-dur-fast: 0ms;
   --rap-dur: 0ms;
   --rap-dur-slow: 0ms;
+}
+/* and every hard-coded duration too: still means nothing moves, not "most things" */
+[data-rap-motion="still"] *,
+[data-rap-motion="still"] *::before,
+[data-rap-motion="still"] *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
 }

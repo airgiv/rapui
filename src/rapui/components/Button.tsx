@@ -25,7 +25,7 @@ const buttonVariants = cva(
     "rounded-pill border-[1.5px] border-(--btn-border) bg-(--btn-bg) text-(--btn-fg)",
     "font-sans text-(length:--btn-fs) font-medium tracking-[-0.01em]",
     "transition-[color,border-color,transform] duration-(--rap-dur) ease-soft",
-    "hover:text-(--btn-blob-fg) active:scale-96",
+    "hover:text-(--btn-blob-fg) active:scale-96 calm:active:scale-98",
     "disabled:opacity-40 disabled:pointer-events-none",
     "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring",
     "[-webkit-tap-highlight-color:transparent]",
@@ -153,6 +153,7 @@ export const Arrow = () => (
 
 /**
  * Pill button. On hover the other colour floods in as a concentric pill, letters roll,
+ * (calm: the colour fades in, the letters stay, the arrow passes through its bubble)
  * the icon bubble spins. Optional magnetic pull.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -262,8 +263,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         className={cn(
           layer,
           "bg-(--btn-blob)",
-          "[clip-path:inset(calc(var(--btn-h)/2)_round_9999px)] group-hover/btn:[clip-path:inset(0_round_9999px)]",
+          "[clip-path:inset(calc(var(--btn-h)/2)_round_var(--rap-radius-pill))] group-hover/btn:[clip-path:inset(0_round_var(--rap-radius-pill))]",
           "[transition:clip-path_var(--rap-dur-slow)_var(--rap-ease-out),scale_420ms_var(--rap-ease-spring)]",
+          /* calm: no flood — the colour simply fades in over the whole shape */
+          "calm:[clip-path:inset(0_round_var(--rap-radius-pill))] calm:opacity-0 calm:group-hover/btn:opacity-100 calm:[transition:opacity_var(--rap-dur)_var(--rap-ease-out)]",
         )}
       />
       {/* loading: diagonal stripes run across the pill, a barber pole for
@@ -292,14 +295,25 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         <span
           data-slot="button-icon"
           className={cn(
-            "grid place-items-center size-[calc(var(--btn-h)*0.72)] rounded-full",
+            "relative grid place-items-center size-[calc(var(--btn-h)*0.72)] rounded-pill overflow-hidden",
             "bg-(--btn-icon-bg) text-(--btn-icon-fg) text-[calc(var(--btn-fs)*1.05)]",
             "transition-[rotate,scale,background-color,color] duration-(--rap-dur) ease-spring",
             "group-hover/btn:rotate-45 group-hover/btn:scale-106 group-hover/btn:bg-(--btn-blob-fg) group-hover/btn:text-(--btn-blob)",
+            /* calm: the bubble holds still; the glyph flies out to the top right and
+               its twin slides in from the bottom left — the one moving detail */
+            "calm:group-hover/btn:rotate-0 calm:group-hover/btn:scale-100 calm:ease-soft",
             variant === "ghost" && "w-auto group-hover/btn:bg-transparent group-hover/btn:text-current",
           )}
         >
-          {iconNode}
+          <span className="grid place-items-center calm:transition-transform calm:duration-(--rap-dur) calm:ease-soft calm:group-hover/btn:translate-x-[140%] calm:group-hover/btn:-translate-y-[140%]">
+            {iconNode}
+          </span>
+          <span
+            aria-hidden
+            className="hidden calm:grid absolute inset-0 place-items-center -translate-x-[140%] translate-y-[140%] transition-transform duration-(--rap-dur) ease-soft group-hover/btn:translate-0"
+          >
+            {iconNode}
+          </span>
         </span>
       )}
     </button>

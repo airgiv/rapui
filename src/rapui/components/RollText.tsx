@@ -35,6 +35,8 @@ export function RollText({ children, stagger = 18, className, ...rest }: RollTex
             "after:absolute after:left-0 after:top-full after:content-[attr(data-char)]",
             /* the host contract: any ancestor with .rap-roll-host rolls it */
             "group-hover/roll:-translate-y-full in-[.rap-roll-host:hover]:-translate-y-full in-[.rap-roll-host:focus-visible]:-translate-y-full",
+            /* calm and still: the word stays put */
+            "calm:translate-y-0!",
           )}
           style={{ "--i": i, "--stagger": `${stagger}ms` } as CSSProperties}
           data-char={ch === " " ? " " : ch}
