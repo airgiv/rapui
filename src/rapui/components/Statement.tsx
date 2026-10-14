@@ -12,9 +12,8 @@
    Each look sets the composition its own way:
      fun      huge and flush left; every part sits a little askew
               and straightens when you reach for it
-     civic    centred, a large light serif; each part rests on a
-              soft white pill, the way a public-service front page
-              sets small round pictures into its sentences
+     civic    centred, a large light serif; the parts sit bare in
+              the line, a slider on a soft white pill
      signal   flush left in Plex; each part held in rust [brackets]
      product  centred, tight and heavy; each part in a hairline chip
      minimal  flush left and large, the parts bare
@@ -22,7 +21,7 @@
    The parts are real and keyboard-reachable; the text is one <p>
    (or the heading you pass as `as`), so it reads as a sentence.
    Calm: the fun tilt stays, without the hover swell. */
-import { createElement, type ElementType, type HTMLAttributes, type ReactNode } from "react";
+import { createElement, useLayoutEffect, useRef, type ElementType, type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "../utils";
 import { Section, type BlockLook, type SectionProps, useBlockLook } from "./Layout";
 import { BlockKicker } from "./Hero";
@@ -43,11 +42,24 @@ export interface StatementProps extends Omit<SectionProps, "title"> {
 export function Statement({ eyebrow, children, textAs = "p", footer, look: lookProp, className, ...rest }: StatementProps) {
   const { ref, look } = useBlockLook<HTMLElement>(lookProp);
   const centred = look === "civic" || look === "product";
+  // the live parts scale with the words: zoom = the line's font size over a per-look
+  // base (signal's parts sit smaller in its lighter line), never below their own size
+  const text = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = text.current;
+    if (!el) return;
+    const base = look === "signal" ? 68 : look === "civic" ? 58 : 54;
+    const fit = () => el.style.setProperty("--slot-zoom", String(Math.max(1, Math.min(2.2, parseFloat(getComputedStyle(el).fontSize) / base)).toFixed(3)));
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [look]);
   return (
     <Section ref={ref} data-look={look} data-slot="statement" className={cn("rap-statement", className)} {...rest}>
       <div className={cn("@container flex flex-col gap-(--rap-space-lg)", centred && "items-center text-center")}>
         {eyebrow && <BlockKicker look={look}>{eyebrow}</BlockKicker>}
-        {createElement(textAs, { "data-slot": "statement-text", className: "rap-statement-text" }, children)}
+        {createElement(textAs, { ref: text, "data-slot": "statement-text", className: "rap-statement-text" }, children)}
         {footer && <div className={cn("flex flex-wrap gap-3 pt-(--rap-space-xs)", centred && "justify-center")}>{footer}</div>}
       </div>
     </Section>

@@ -246,7 +246,12 @@
     box-sizing: border-box;
     border: 0 solid;
   }
-  :where([data-slot]) { font-family: var(--rap-font-sans); }
+  /* every part starts in the text face — except the inline ones that live inside a
+     headline (a coloured word, a marker swipe, rolling letters, a word split to reveal):
+     those take the face of the line they sit in */
+  :where([data-slot]:not([data-slot="accent"], [data-slot="highlight"], [data-slot^="roll-text"], [data-slot^="rolling-number"], [data-slot^="split-reveal"])) {
+    font-family: var(--rap-font-sans);
+  }
   :where(button[data-slot], [data-slot] button, [data-slot] input, [data-slot] textarea, [data-slot] select, input[data-slot], textarea[data-slot]) {
     font: inherit;
     letter-spacing: inherit;

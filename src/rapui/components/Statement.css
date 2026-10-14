@@ -26,15 +26,12 @@
     line-height: 1.2;
     white-space: nowrap;
     text-align: left;
-    /* the parts are drawn at their own sizes; zoom brings them up to the line's scale */
-    zoom: var(--slot-zoom, 1.5);
-  }
-  @container (max-width: 40rem) {
-    .rap-statement-slot { zoom: 1; }
+    /* the parts are drawn at their own sizes; zoom brings them up to the line's scale —
+       set from the line's font size as it resizes (Statement.tsx), so they grow with the words */
+    zoom: var(--slot-zoom, 1);
   }
 
   /* fun: huge, flush left; each part sits a little askew and straightens when you reach for it */
-  [data-look="fun"] { --slot-zoom: 1.9; }
   [data-look="fun"] .rap-statement-text {
     font-size: clamp(2.5rem, 7.6cqi, 7.5rem);
     line-height: 1.02;
@@ -50,9 +47,8 @@
   [data-look="fun"] .rap-statement-slot:focus-within { --slot-tilt: 0deg; scale: 1.06; }
   :where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) [data-look="fun"] .rap-statement-slot { scale: 1; }
 
-  /* civic: centred, a large light serif; each part rests on a soft white pill, like the
-     small round pictures a public-service front page sets into its sentences */
-  [data-look="civic"] { --slot-zoom: 1.35; }
+  /* civic: centred, a large light serif; the parts sit bare in the line, a slider on a
+     soft white pill so its track reads as a control */
   [data-look="civic"] .rap-statement-text {
     font-size: clamp(2.125rem, 5.4cqi, 5rem);
     line-height: 1.22;
@@ -60,7 +56,9 @@
     max-width: 22ch;
     margin-inline: auto;
   }
-  [data-look="civic"] .rap-statement-slot {
+  /* only a slider gets the pill: a bare track floating in a sentence reads as a stray line;
+     a switch, a button or stars hold their own */
+  [data-look="civic"] .rap-statement-slot:has([role="slider"]) {
     padding: 0.4rem 0.6rem;
     border-radius: var(--rap-radius-pill);
     background: var(--rap-surface);
@@ -68,7 +66,6 @@
   }
 
   /* signal: flush left in Plex, each part held in mono brackets like a field on a form */
-  [data-look="signal"] { --slot-zoom: 1.4; }
   [data-look="signal"] .rap-statement-text {
     font-size: clamp(2rem, 5.2cqi, 4.75rem);
     line-height: 1.18;
@@ -83,7 +80,6 @@
   [data-look="signal"] .rap-statement-slot::after { content: "]"; margin-left: 0.35rem; }
 
   /* product: centred, tight and heavy; each part in a hairline chip floating a little off the page */
-  [data-look="product"] { --slot-zoom: 1.6; }
   [data-look="product"] .rap-statement-text {
     font-size: clamp(2.25rem, 6cqi, 5.75rem);
     line-height: 1.12;
@@ -99,7 +95,6 @@
   }
 
   /* minimal: flush left, large, nothing around the parts at all */
-  [data-look="minimal"] { --slot-zoom: 1.6; }
   [data-look="minimal"] .rap-statement-text {
     font-size: clamp(2.25rem, 6.4cqi, 6.25rem);
     line-height: 1.08;

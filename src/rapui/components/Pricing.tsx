@@ -151,10 +151,10 @@ function PlanAction({ action, variant, size = "md", className }: { action: Prici
       <span
         aria-hidden
         className={cn(
-          "absolute inset-0 -z-1 rounded-pill bg-(--btn-blob) pointer-events-none",
-          "[clip-path:inset(calc(var(--btn-h)/2)_round_var(--rap-radius-pill))] group-hover/btn:[clip-path:inset(0_round_var(--rap-radius-pill))]",
+          "absolute inset-0 -z-1 rounded-[max(0px,calc(var(--rap-radius-pill)-1.5px))] bg-(--btn-blob) pointer-events-none",
+          "[clip-path:inset(calc(var(--btn-h)/2)_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))] group-hover/btn:[clip-path:inset(0_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))]",
           "transition-[clip-path] duration-(--rap-dur-slow) ease-soft",
-          "calm:[clip-path:inset(0_round_var(--rap-radius-pill))] calm:opacity-0 calm:group-hover/btn:opacity-100 calm:transition-opacity calm:duration-(--rap-dur)",
+          "calm:[clip-path:inset(0_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))] calm:opacity-0 calm:group-hover/btn:opacity-100 calm:transition-opacity calm:duration-(--rap-dur)",
         )}
       />
       <span>{action.label}</span>
