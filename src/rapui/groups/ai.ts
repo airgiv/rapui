@@ -11,3 +11,5 @@ export type { CitationSource, CitationProps, SourceCardProps, SourcesProps, Sour
 export { PromptInput, type PromptInputProps } from "../components/PromptInput";
 export { ChatMessage, ChatThread, FileChip, MessageActions } from "../components/ChatMessage";
 export type { ChatAttachment, ChatMessageProps, ChatRole, ChatThreadProps, FileChipProps, MessageActionsProps, MessageFeedback } from "../components/ChatMessage";
+export { Reasoning, type ReasoningProps, type ReasoningStep, type ReasoningStepStatus } from "../components/Reasoning";
+export { ToolCall, ToolChips, toolIcon, type ToolCallProps, type ToolCallStatus, type ToolCallDecision, type ToolChip, type ToolChipsProps } from "../components/ToolCall";
