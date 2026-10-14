@@ -166,7 +166,10 @@ const headerControls: Control[] = [
   { type: "number", prop: "links", label: "links", min: 0, max: 5, default: 4, codeDefault: null },
   { type: "boolean", prop: "actions", default: true, codeDefault: null },
   { type: "boolean", prop: "sticky", default: false },
+  { type: "boolean", prop: "notice", default: false, codeDefault: null },
 ];
+
+const NOTICE = "Fernway is in public beta. Boards made now are yours to keep.";
 
 /* a stand-in page under the header, so its ground and rule read in context */
 function PageBelow() {
@@ -386,6 +389,7 @@ export const entries: DocEntry[] = [
           logo={<FernwayLogo />}
           links={LINKS.slice(0, Number(p.links))}
           sticky={Boolean(p.sticky)}
+          notice={p.notice ? NOTICE : undefined}
           skipTo="#content"
           actions={
             p.actions ? (
@@ -408,7 +412,7 @@ ${LINKS.slice(0, Number(p.links))
   .map((l) => `    { label: "${l.label}", href: "${l.href}"${l.current ? ", current: true" : ""} },`)
   .join("\n")}
   ]}
-  skipTo="#content"${p.actions ? `\n  actions={<><Button size="sm" variant="ghost">Sign in</Button><Button size="sm">Start free</Button></>}` : ""}${attrs(p, headerControls, ["links", "actions"])}
+  skipTo="#content"${p.notice ? `\n  notice="${NOTICE}"` : ""}${p.actions ? `\n  actions={<><Button size="sm" variant="ghost">Sign in</Button><Button size="sm">Start free</Button></>}` : ""}${attrs(p, headerControls, ["links", "actions", "notice"])}
 />`,
     examples: [
       {

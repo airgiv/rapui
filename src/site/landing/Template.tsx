@@ -9,8 +9,6 @@ import {
   AILoader,
   BudgetBar,
   Button,
-  ChatMessage,
-  Citation,
   Container,
   CTA,
   DotMatrix,
@@ -18,9 +16,11 @@ import {
   Features,
   FeatureSplit,
   Hero,
+  Laurel,
   LogoCloud,
   MatrixStatus,
   Pricing,
+  PromptInput,
   Rating,
   Receipt,
   Redact,
@@ -28,8 +28,6 @@ import {
   SiteHeader,
   Slider,
   SourceCard,
-  Sources,
-  SourcesProvider,
   Statement,
   StatementSlot,
   Stats,
@@ -40,6 +38,7 @@ import {
   type RapPreset,
 } from "../../rapui";
 import { Foliage } from "./foliage";
+import { Courthouse } from "./courthouse";
 import { CONTENT, type LandingContent } from "./content";
 
 /* a UI shot as a picture: centred on a soft wash of the preset's own colours,
@@ -59,6 +58,15 @@ function Scene({ children }: { children: ReactNode }) {
 }
 
 const card = "flex w-full flex-col gap-4 rounded-card bg-surface p-(--rap-space-md) text-left shadow-[inset_0_0_0_1px_var(--rap-edge)]";
+
+/* the award each landing gives itself, framed in the preset's laurels */
+const LAUREL: Record<RapPreset, { eyebrow: string; text: string; caption: string }> = {
+  fun: { eyebrow: "Self-awarded", text: "Loudest landing page of the year", caption: "Hollr · 2026" },
+  civic: { eyebrow: "In the matter of this page", text: "Every component, working together", caption: "Precedent · so ordered" },
+  signal: { eyebrow: "Field report", text: "Page received in full", caption: "Fieldkit · 104.2 MHz" },
+  product: { eyebrow: "Editors’ Choice", text: "#1 in Landing pages", caption: "Shiplog · shipped itself" },
+  minimal: { eyebrow: "Award", text: "Less", caption: "2026" },
+};
 
 /* ── the hero pictures, one per preset, all live ── */
 
@@ -82,31 +90,41 @@ function Playground() {
   );
 }
 
+/* the little striped flag in front of civic's "unofficial website" line */
+function Pennant() {
+  return (
+    <svg viewBox="0 0 16 11" width="16" height="11" aria-hidden className="shrink-0 rounded-[1px]">
+      {Array.from({ length: 7 }, (_, i) => (
+        <rect key={i} y={(i * 11) / 7} width="16" height={11 / 14} fill="var(--rap-flame)" />
+      ))}
+      <rect width="7" height="6" fill="var(--rap-plum)" />
+    </svg>
+  );
+}
+
 /* civic: the page asks counsel about itself */
 const CIVIC_SOURCES: CitationSource[] = [
   { url: "https://rapui.dev/#docs", title: "The civic preset, tokens and type", site: "rapui docs", snippet: "A transitional serif, navy ink, soft white cards, calm motion." },
   { url: "https://www.w3.org/TR/WCAG22/", title: "WCAG 2.2, 1.4.3 Contrast (Minimum)", site: "W3C", snippet: "Text has a contrast ratio of at least 4.5:1." },
   { url: "https://rapui.dev/#landing", title: "This page", site: "rapui", snippet: "A landing page, respectfully submitted." },
 ];
+/* civic: a front-page photograph with the question box laid over it, the way a
+   public service puts "ask anything" on its first screen; the page's answer above */
 function Counsel() {
   return (
-    <SourcesProvider sources={CIVIC_SOURCES}>
-      <div className={card}>
-        <ChatMessage role="user" time="09:00">
-          Is this landing page legally binding?
-        </ChatMessage>
-        <ChatMessage role="assistant" name="Precedent">
-          No. It is a demonstration of the civic preset
-          <Citation index={1} />, set to a contrast the guidelines require
-          <Citation index={2} />. It binds nobody, though it does hold together rather well
-          <Citation index={3} />.
-        </ChatMessage>
-        <Sources layout="row" max={3} label={null} />
+    <div className="relative grid size-full grid-cols-[minmax(0,1fr)] content-end justify-items-center p-[clamp(12px,5%,56px)]">
+      <div className="absolute inset-0 [&>svg]:size-full">
+        <Courthouse />
       </div>
-    </SourcesProvider>
+      <PromptInput
+        className="relative w-full max-w-[40rem] shadow-pop"
+        placeholder={["Ask the record anything", "Is this page legally binding?", "Who drafted this preset?"]}
+        label="Ask the record"
+        onMicClick={() => {}}
+      />
+    </div>
   );
 }
-
 /* signal: the page receiving itself */
 function Transmission() {
   return (
@@ -236,6 +254,16 @@ export function LandingTemplate() {
     <div ref={ref} data-slot="landing" className="bg-paper text-ink font-sans">
       <SiteHeader
         logo={logo}
+        notice={
+          preset === "civic" ? (
+            <>
+              <Pennant />
+              <span>
+                An unofficial website of the Precedent landing page. <a href="#faq" className="text-blue underline underline-offset-2">Here’s how you know</a>
+              </span>
+            </>
+          ) : undefined
+        }
         links={[
           { label: lFeatures, href: "#features" },
           { label: lSplit, href: "#split" },
@@ -271,6 +299,8 @@ export function LandingTemplate() {
               </div>
               <div className="relative w-full max-w-[30rem]">{HERO_PICTURE.signal()}</div>
             </div>
+          ) : preset === "civic" ? (
+            HERO_PICTURE.civic()
           ) : (
             <Scene>{HERO_PICTURE[preset]()}</Scene>
           )
@@ -323,6 +353,12 @@ export function LandingTemplate() {
       <Testimonials index="04" eyebrow={c.quotes.eyebrow} title={c.quotes.title} items={c.quotes.items} />
       <Pricing id="pricing" index="05" eyebrow={c.pricing.eyebrow} title={c.pricing.title} lead={c.pricing.lead} plans={c.pricing.plans} />
       <FAQ id="faq" index="06" eyebrow={c.faq.eyebrow} title={c.faq.title} items={c.faq.items} />
+      {/* a laurel line between the questions and the close, each preset's own wreath */}
+      <Container className="flex justify-center py-(--rap-space-xl)">
+        <Laurel size="lg" eyebrow={LAUREL[preset].eyebrow} caption={LAUREL[preset].caption}>
+          {LAUREL[preset].text}
+        </Laurel>
+      </Container>
       <CTA
         eyebrow={c.cta.eyebrow}
         title={c.cta.title}

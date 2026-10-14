@@ -248,8 +248,8 @@
   }
   /* every part starts in the text face — except the inline ones that live inside a
      headline (a coloured word, a marker swipe, rolling letters, a word split to reveal):
-     those take the face of the line they sit in */
-  :where([data-slot]:not([data-slot="accent"], [data-slot="highlight"], [data-slot^="roll-text"], [data-slot^="rolling-number"], [data-slot^="split-reveal"])) {
+     those take the face of the line they sit in, as does a plan's price */
+  :where([data-slot]:not([data-slot="accent"], [data-slot="highlight"], [data-slot^="roll-text"], [data-slot^="rolling-number"], [data-slot^="split-reveal"], [data-slot="pricing-amount"])) {
     font-family: var(--rap-font-sans);
   }
   :where(button[data-slot], [data-slot] button, [data-slot] input, [data-slot] textarea, [data-slot] select, input[data-slot], textarea[data-slot]) {

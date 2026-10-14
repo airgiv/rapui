@@ -79,6 +79,7 @@ Then `bg-surface`, `text-ink`, `rounded-pill`, `h-control`, `ease-rm`, `animate-
 | Layout | Pattern (dots, grid, lines, cross, checker, stripes, waves), Accordion, Collapsible, Resizable, ScrollArea, Carousel |
 | AI | AIOrb, AILoader, StreamingText, PromptInput, ChatMessage, ChatThread, MessageActions, Reasoning, ToolCall, ToolChips, Sources & Citation |
 | Finance | Money, MoneyDelta, AmountInput, CurrencyConverter, TickerTape, PaymentCard, Transactions, Receipt, TransferStatus, StockChart, BudgetBar, Holdings |
+| Awards | Laurel (wreath branches drawn per preset), LaurelWreath, AwardBadge, RatingSummary, Stars, AppStats, ReviewCard |
 | Signal set | DotMatrix, MatrixStatus, DotText, Redact, MediaFrame |
 | Page layout | Container, Section, Grid, GridItem, Stack, SectionHeader, GridOverlay |
 | Landing blocks | SiteHeader, Hero, LogoCloud, Features, FeatureSplit, Stats, Testimonials, Pricing, FAQ, CTA, Statement, SiteFooter — each re-laid per preset |

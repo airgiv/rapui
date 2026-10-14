@@ -127,7 +127,10 @@ function Price({
             </span>
           </>
         ) : (
-          <span data-slot="pricing-amount">{v}</span>
+          // words for a price ("By arrangement") sit smaller than a figure would, and wrap
+          <span data-slot="pricing-amount" className="text-[0.6em] leading-[1.1] text-balance">
+            {v}
+          </span>
         )}
       </p>
       <p data-slot="pricing-caption" className={cn("m-0 mt-1 text-[0.8125rem] opacity-70 min-h-[1.25em]", !yearly && "invisible")} aria-hidden={!yearly}>
@@ -309,7 +312,7 @@ function CivicPlans({ plans, billing, caption }: LookProps) {
           >
             <header className="flex flex-col gap-(--rap-space-sm)">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="m-0 font-display text-[1.5rem] font-normal leading-[1.2] tracking-[-0.015em]">{plan.name}</h3>
+                <h3 className="m-0 font-display text-[2rem] font-normal leading-[1.1] tracking-[-0.01em]">{plan.name}</h3>
                 {featured && <Badge variant="outline">{plan.badge ?? "Most popular"}</Badge>}
               </div>
               {plan.description && <p className="m-0 text-ink-2 leading-relaxed">{plan.description}</p>}

@@ -1,0 +1,47 @@
+/* Laurel — only what utilities cannot say: the fun look's lean, the leaves
+   popping on along each branch, the sway on hover, and signal's dots
+   powering up. Each leaf pops from its own base (transform-origin is set
+   inline, in the leaf's frame); --i is its place from foot to tip, --n the
+   last place. A branch leans and sways from its foot; --dir is -1 on the
+   left, 1 on the right, so the two open outward together.
+
+   All of it only when playful motion is allowed: no reduced motion and no
+   calm / still ancestor. Otherwise everything is simply in place. */
+@layer theme, base, components, utilities;
+
+.rap-laurel-leaf { transform-box: fill-box; }
+
+/* fun: the branches lean out a little — a laurel tossed on, not engraved */
+.rap-laurel[data-look="fun"] .rap-laurel-branch { rotate: calc(var(--dir) * 7deg); }
+
+@keyframes rap-laurel-pop {
+  0% { scale: 0; rotate: -24deg; opacity: 0; }
+  55% { scale: 1.18; rotate: 6deg; opacity: 1; }
+  80% { scale: 0.96; rotate: -2deg; }
+  100% { scale: 1; rotate: 0deg; }
+}
+@keyframes rap-laurel-stem {
+  from { opacity: 0; }
+}
+@keyframes rap-laurel-sway {
+  0%, 100% { rotate: calc(var(--dir) * 7deg); }
+  30% { rotate: calc(var(--dir) * 11deg); }
+  70% { rotate: calc(var(--dir) * 4deg); }
+}
+@keyframes rap-laurel-power {
+  0% { opacity: 0.12; }
+  60% { opacity: 1; }
+  80% { opacity: 0.55; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rap-laurel[data-look="fun"]:not(:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]), :is([data-rap-motion="calm"], [data-rap-motion="still"]) *)) {
+    & .rap-laurel-stem { animation: rap-laurel-stem 260ms var(--rap-ease-out) both; }
+    & .rap-laurel-leaf { animation: rap-laurel-pop 560ms var(--rap-ease-out) calc(120ms + var(--i) * 55ms) both; }
+    &:hover .rap-laurel-branch { animation: rap-laurel-sway 1.8s var(--rap-ease-in-out) infinite; }
+  }
+  .rap-laurel[data-look="signal"]:not(:where(:is([data-rap-motion="calm"], [data-rap-motion="still"]), :is([data-rap-motion="calm"], [data-rap-motion="still"]) *)) .rap-laurel-dot {
+    animation: rap-laurel-power 520ms steps(4, end) calc(var(--t) * 700ms) both;
+  }
+}

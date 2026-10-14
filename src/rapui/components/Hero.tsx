@@ -213,8 +213,8 @@ function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
         {actions && <Actions className="justify-center pt-(--rap-space-xs)">{actions}</Actions>}
       </Stack>
       {media && (
-        <div data-slot="hero-media" className="w-full max-w-5xl text-left">
-          <div className="aspect-[3/4] @md:aspect-[4/3] @3xl:aspect-[16/9] overflow-hidden rounded-lg bg-paper-3">
+        <div data-slot="hero-media" className="@container w-full text-left">
+          <div className="aspect-[3/4] @md:aspect-[4/3] @3xl:aspect-[16/8] overflow-hidden rounded-lg bg-paper-3">
             <div className={fill}>{media}</div>
           </div>
         </div>
