@@ -2,9 +2,12 @@
    Commons, an assistant that answers questions about a city from its own
    open data. The same JSX in every preset: what changes between fun, civic,
    signal, product and minimal is only the preset on <html>. */
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { usePreset } from "../../rapui/hooks/usePreset";
 import {
   Accent,
+  AILoader,
+  SourceCard,
   Button,
   ChatMessage,
   Citation,
@@ -115,6 +118,15 @@ const FEATURES: FeatureItem[] = [
   { title: "Staff stay in the loop", text: "When Commons isn't sure, it says so and routes the question to the right department with the context attached.", icon: "inbox" },
 ];
 
+/* product shows the thing itself in its wide bento cards: live parts, not pictures */
+const LIVE_FEATURES: FeatureItem[] = FEATURES.map((f, i) =>
+  i === 0
+    ? { ...f, media: <div className="w-full max-w-[17rem] p-3"><SourceCard source={SOURCES[0]} index={1} /></div> }
+    : i === FEATURES.length - 1
+      ? { ...f, media: <div className="rounded-pill bg-surface px-4 py-2.5 shadow-pop"><AILoader label="Routing to Public Works" timer /></div> }
+      : f,
+);
+
 const STATS: StatItem[] = [
   { value: 182, suffix: "k", label: "questions answered", note: "since the March pilot" },
   { value: 94, suffix: "%", label: "with a cited source", note: "the rest go to a person" },
@@ -167,8 +179,12 @@ const PLANS: PricingPlan[] = [
 ];
 
 export function LandingTemplate() {
+  // the arrow in a bubble is rapui's own button; the quieter presets keep a plain one
+  const ref = useRef<HTMLDivElement>(null);
+  const { preset } = usePreset(ref);
+  const arrows = preset === "fun" || preset === "product";
   return (
-    <div data-slot="landing" className="bg-paper text-ink font-sans">
+    <div ref={ref} data-slot="landing" className="bg-paper text-ink font-sans">
       <SiteHeader
         logo={<span className="font-display text-[1.375rem] [font-weight:var(--rap-display-weight)] tracking-[-0.03em]">Commons</span>}
         links={[
@@ -195,7 +211,9 @@ export function LandingTemplate() {
         lead="Commons answers residents' questions from the city's own open data — schedules, permits, closures, 311 — in plain words, with the source one tap away."
         actions={
           <>
-            <Button variant="accent">Book a demo</Button>
+            <Button variant="accent" icon={arrows || undefined}>
+              Book a demo
+            </Button>
             <Button variant="soft">Try it on Port Allen</Button>
           </>
         }
@@ -214,37 +232,39 @@ export function LandingTemplate() {
         id="how"
         index="01"
         eyebrow="How it works"
-        title="The city's knowledge, at the level of your street"
+        title={<>The city's knowledge, <Accent tone="mute">at the level of your street</Accent></>}
         lead="Commons reads what the city already publishes and answers like the most patient clerk you've met."
-        items={FEATURES}
+        items={preset === "product" ? LIVE_FEATURES : FEATURES}
       />
       <FeatureSplit
         index="02"
         eyebrow="For staff"
-        title="Fewer calls about schedules, more time for real problems"
+        title={<>Fewer calls about schedules, <Accent tone="mute">more time for real problems</Accent></>}
         lead="Every question residents ask is a signal. Commons groups them, shows what people couldn't find, and hands off the ones that need a person."
         points={["A weekly digest of the top unanswered questions", "Routing rules per department, with context attached", "Answer review: approve, correct, or pin an answer"]}
         media={<Scene><Digest /></Scene>}
         caption="Port Allen, first 90 days"
       />
-      <Stats id="cities" index="03" eyebrow="In numbers" title="A year of answers" items={STATS} />
-      <Testimonials index="04" eyebrow="From the field" title="What cities say" items={QUOTES} />
+      <Stats id="cities" index="03" eyebrow="In numbers" title={<>A year <Accent tone="mute">of answers</Accent></>} items={STATS} />
+      <Testimonials index="04" eyebrow="From the field" title={<>What cities <Accent tone="mute">say</Accent></>} items={QUOTES} />
       <Pricing
         id="pricing"
         index="05"
         eyebrow="Pricing"
-        title="Priced by population, not by question"
+        title={<>Priced by population, <Accent tone="mute">not by question</Accent></>}
         lead="Every plan includes unlimited questions, every data source you publish, and a pilot before you commit."
         plans={PLANS}
       />
-      <FAQ id="faq" index="06" eyebrow="Questions" title="Before you ask Commons, ask us" items={QUESTIONS} />
+      <FAQ id="faq" index="06" eyebrow="Questions" title={<>Before you ask Commons, <Accent tone="mute">ask us</Accent></>} items={QUESTIONS} />
       <CTA
         eyebrow="Pilot in six weeks"
-        title="Give your residents a clerk who never closes"
+        title={<>Give your residents a clerk <Accent tone="mute">who never closes</Accent></>}
         lead="We'll connect a few of your datasets and show you Commons answering real questions from your city."
         actions={
           <>
-            <Button variant="accent">Book a demo</Button>
+            <Button variant="accent" icon={arrows || undefined}>
+              Book a demo
+            </Button>
             <Button variant="soft">Read the pilot report</Button>
           </>
         }

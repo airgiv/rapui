@@ -34,7 +34,7 @@
    Delight (fun): a tile lifts and tips a degree under the hand,
    on the spring; the split's picture tilts back the other way.
    Calm: tiles stay put — only the link underline answers. */
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "../utils";
 import { ArrowRight, Check } from "../icons";
 import { Grid, GridItem, Section, SectionHeader, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
@@ -232,36 +232,84 @@ function SignalCells({ items, cols }: BodyProps) {
 
 /* product: tidy cards with a hairline edge */
 function ProductCards({ items, cols }: BodyProps) {
+  const spans = bento(items.length, cols);
   return (
-    <Grid cols={cols} role="list">
-      {items.map((item, i) => (
-        <div
-          key={i}
-          role="listitem"
-          data-slot="feature"
-          className={cn(
-            "group/card relative flex flex-col gap-(--rap-space-sm) p-(--rap-space-lg) rounded-card bg-surface text-ink",
-            "shadow-[inset_0_0_0_1px_var(--rap-line)] transition-shadow duration-(--rap-dur-fast)",
-            item.href && "hover:shadow-[inset_0_0_0_1px_var(--rap-mute)]",
-          )}
-        >
-          {item.media && <div className="overflow-hidden rounded-sm shadow-[0_0_0_1px_var(--rap-line)] mb-(--rap-space-xs)">{item.media}</div>}
-          {item.icon != null && (
-            <span aria-hidden className="grid place-items-center size-9 rounded-sm bg-paper shadow-[inset_0_0_0_1px_var(--rap-line)] text-ink [&_svg]:size-[18px]">
-              <FeatureIcon icon={item.icon} tone="ink" size={20} />
-            </span>
-          )}
-          <ItemTitle item={item} className="pt-(--rap-space-2xs) text-[1rem] font-semibold leading-[1.3] tracking-[-0.01em]" />
-          <div className="text-[0.9375rem] leading-[1.55] text-mute">{item.text}</div>
-          {item.href && (
-            <span aria-hidden className="mt-auto pt-(--rap-space-xs) inline-flex items-center gap-1.5 text-[0.875rem] font-medium text-ink">
-              Learn more <ArrowRight size={14} className="transition-transform duration-(--rap-dur-fast) group-hover/card:translate-x-0.5" />
-            </span>
-          )}
-        </div>
-      ))}
+    <Grid cols={cols} gap="tile" role="list" className="[grid-auto-flow:row_dense]">
+      {items.map((item, i) => {
+        const wide = spans[i] > 1;
+        return (
+          <div
+            key={i}
+            role="listitem"
+            data-slot="feature"
+            data-wide={wide || undefined}
+            style={{ "--span": spans[i] } as CSSProperties}
+            className={cn(
+              "@container group/card relative grid gap-(--rap-space-md) p-(--rap-space-lg) rounded-card bg-surface text-ink",
+              "shadow-[inset_0_0_0_1px_var(--rap-line)] transition-[translate,box-shadow] duration-(--rap-dur) ease-(--rap-ease-out)",
+              "fun:hover:-translate-y-1 fun:hover:shadow-[inset_0_0_0_1px_var(--rap-line),var(--rap-shadow-pop)]",
+              // spans: a wide card fills the row at two columns, its share at three
+              wide && "@min-[40rem]/grid:col-span-2 @min-[60rem]/grid:col-[span_var(--span)]",
+              wide && "@min-[34rem]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @min-[34rem]:items-stretch",
+            )}
+          >
+            <div className="flex flex-col gap-(--rap-space-sm)">
+              {item.icon != null && (
+                // the chip: ink on paper, inverted; it flips to flame and tips over when the card is hovered
+                <span
+                  aria-hidden
+                  data-rap-theme="dark"
+                  className={cn(
+                    "grid place-items-center size-10 rounded-sm bg-paper text-ink [&_svg]:size-5",
+                    "transition-[background-color,rotate] duration-(--rap-dur) ease-(--rap-ease-spring)",
+                    "group-hover/card:bg-flame fun:group-hover/card:-rotate-8",
+                  )}
+                >
+                  <FeatureIcon icon={item.icon} tone="ink" size={22} />
+                </span>
+              )}
+              <ItemTitle item={item} className={cn("pt-(--rap-space-xs) font-display font-semibold leading-[1.2] tracking-[-0.025em]", wide ? "text-[1.5rem]" : "text-[1.125rem]")} />
+              <div className="max-w-[46ch] text-[0.9375rem] leading-[1.55] text-ink-2">{item.text}</div>
+              {item.href && (
+                <span aria-hidden className="mt-auto pt-(--rap-space-xs) inline-flex items-center gap-1.5 text-[0.875rem] font-medium text-ink">
+                  Learn more <ArrowRight size={14} className="transition-transform duration-(--rap-dur-fast) group-hover/card:translate-x-0.5" />
+                </span>
+              )}
+            </div>
+            {wide && (
+              // the wide card's other half: the picture, or the icon blown up on an editor's dot grid
+              <div
+                aria-hidden={!item.media}
+                className="relative grid min-h-40 place-items-center overflow-hidden rounded-sm bg-paper [background-image:radial-gradient(circle,var(--rap-fill-strong)_1px,transparent_1.3px)] [background-size:16px_16px] shadow-[inset_0_0_0_1px_var(--rap-line)]"
+              >
+                {item.media ?? (
+                  <span className="text-ink opacity-90 transition-transform duration-(--rap-dur-slow) ease-(--rap-ease-spring) fun:group-hover/card:scale-110 fun:group-hover/card:rotate-6 [&_svg]:size-24">
+                    <FeatureIcon icon={item.icon ?? "star"} tone="flame" size={96} />
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </Grid>
   );
+}
+
+/* bento spans for a row of `cols`: a wide card, then a row of singles, then wide on the
+   other side… and whatever is left over fills its row, so no card sits alone */
+function bento(n: number, cols: number): number[] {
+  if (cols < 3) return Array(n).fill(1);
+  const rows = [[2, 1], [1, 1, 1], [1, 2], [1, 1, 1]];
+  const out: number[] = [];
+  let r = 0;
+  while (out.length < n) {
+    const left = n - out.length;
+    const row = rows[r++ % rows.length];
+    if (left >= row.length) out.push(...row);
+    else out.push(...(left === 1 ? [3] : [2, 1]));
+  }
+  return out;
 }
 
 /* minimal: a numbered list in two columns, each entry under a rule */
@@ -436,7 +484,7 @@ function SplitMedia({ look, caption, reverse, children }: { look: BlockLook; cap
           ))}
           {caption && <span className="ml-3 truncate text-[0.75rem] text-mute">{caption}</span>}
         </div>
-        <div className={cn("aspect-[16/10]", fill)}>{children}</div>
+        <div className={cn("aspect-[4/5] @md:aspect-[16/10]", fill)}>{children}</div>
       </div>
     );
   return (

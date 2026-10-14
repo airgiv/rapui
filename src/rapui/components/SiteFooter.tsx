@@ -181,9 +181,9 @@ function SignalFooter({ logo, tagline, columns = [], bottom, social }: Parts) {
   );
 }
 
-function ProductFooter({ logo, tagline, columns = [], bottom, social }: Parts) {
+function ProductFooter({ logo, tagline, columns = [], bottom, social, wordmark }: Parts) {
   return (
-    <Stack gap="xl">
+    <Stack gap="xl" className="@container">
       <Grid gap="column" rowGap="xl">
         <GridItem span={4} className="flex flex-col gap-(--rap-space-sm)">
           <div>{logo}</div>
@@ -195,6 +195,17 @@ function ProductFooter({ logo, tagline, columns = [], bottom, social }: Parts) {
         </GridItem>
       </Grid>
       {bottom && <div className="flex flex-wrap justify-between gap-(--rap-space-sm) border-t border-line pt-(--rap-space-md) text-[0.8125rem] text-mute">{bottom}</div>}
+      {wordmark && (
+        /* the name, edge to edge, fading into the page: a signature, not a shout */
+        <p
+          aria-hidden
+          data-slot="site-footer-wordmark"
+          className="m-0 -mb-[0.12em] font-display font-semibold leading-[0.85] tracking-[-0.06em] whitespace-nowrap text-transparent bg-clip-text bg-[linear-gradient(to_bottom,var(--rap-fill-strong),transparent_85%)] select-none"
+          style={{ fontSize: `clamp(3rem, ${(100 / (Math.max(wordmark.length, 3) * 0.64)).toFixed(1)}cqi, 22rem)` }}
+        >
+          {wordmark}
+        </p>
+      )}
     </Stack>
   );
 }

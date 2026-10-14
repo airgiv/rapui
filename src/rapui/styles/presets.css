@@ -120,6 +120,11 @@
   color-scheme: dark;
 }
 
+/* a public-service page doesn't do two-tone headlines: a muted Accent stays ink */
+[data-rap-preset="civic"] [data-slot="accent"][data-tone="mute"] {
+  color: inherit;
+}
+
 /* ── signal ────────────────────────────────────────────────── */
 [data-rap-preset="signal"] {
   --rap-font-display: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;

@@ -10,8 +10,8 @@
    With scope="local" it wraps its children instead: for previews
    and side-by-side demos (portals then keep the page's style).
 
-   Motion: each preset has a default (civic, signal and product
-   move calmly; minimal stays still; fun is fun). Pass `motion`
+   Motion: each preset has a default (civic and signal move
+   calmly; minimal stays still; fun and product move like rapui). Pass `motion`
    to override. Fonts are opt-in imports per preset, e.g.
    import "@rapui/react/fonts/civic". */
 import { useLayoutEffect, type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
@@ -25,7 +25,7 @@ export const RAP_PRESETS: { value: RapPreset; label: string; note: string }[] = 
   { value: "fun", label: "Fun", note: "Loud, round, playful" },
   { value: "civic", label: "Civic", note: "Serif headlines, navy, soft cards" },
   { value: "signal", label: "Signal", note: "Analogue AI: earth tones, Plex, dot matrices" },
-  { value: "product", label: "Product", note: "Clean product pages: Geist, near-black, thin borders" },
+  { value: "product", label: "Product", note: "A product page with rapui's moves: Geist, ink, an editor's canvas" },
   { value: "minimal", label: "Minimal", note: "Black on white, hairlines, square" },
 ];
 
@@ -34,7 +34,7 @@ export const PRESET_MOTION: Record<RapPreset, RapMotion> = {
   fun: "fun",
   civic: "calm",
   signal: "calm",
-  product: "calm",
+  product: "fun",
   minimal: "still",
 };
 

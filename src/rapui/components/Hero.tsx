@@ -306,18 +306,27 @@ function ProductHero({ eyebrow, eyebrowHref, title, lead, actions, media }: Part
         {actions && <Actions className="justify-center">{actions}</Actions>}
       </Stack>
       {media && (
-        <div data-slot="hero-media" className="relative">
-          {/* a soft glow the window sits in */}
-          <div aria-hidden className="absolute inset-x-[8%] -top-[6%] h-2/3 rounded-lg bg-[radial-gradient(closest-side,var(--rap-fill-strong),transparent)] blur-2xl" />
+        /* the window sits on an editor's canvas: a dot grid, and the window selected on it —
+           a flame frame with corner handles and a size tag, the way a design tool marks
+           the thing you are working on (rapui's own origin) */
+        <div data-slot="hero-media" className="group/canvas relative rounded-lg bg-paper-2 p-[clamp(14px,4cqi,56px)] shadow-[inset_0_0_0_1px_var(--rap-line)] [background-image:radial-gradient(circle,var(--rap-fill-strong)_1.1px,transparent_1.4px)] [background-size:20px_20px] [background-position:center]">
+          <div className="relative">
+            <span aria-hidden className="pointer-events-none absolute -inset-[7px] z-1 border border-flame">
+              {["-left-1 -top-1", "-right-1 -top-1", "-left-1 -bottom-1", "-right-1 -bottom-1"].map((pos) => (
+                <span key={pos} className={cn("absolute size-[7px] border border-flame bg-surface", pos)} />
+              ))}
+              <span className="absolute -top-[1.6rem] left-[-1px] rounded-xs bg-flame px-1.5 py-0.5 font-mono text-[0.6875rem] leading-[1.2] text-white tabular-nums">Hero · 1440 × 900</span>
+            </span>
           <div className="relative rounded-lg border border-line bg-surface p-1.5 shadow-pop">
             <div aria-hidden className="flex h-7 items-center gap-1.5 px-2.5">
               {[0, 1, 2].map((i) => (
                 <span key={i} className="size-2.5 rounded-pill bg-fill-strong" />
               ))}
             </div>
-            <div className="aspect-[16/10] overflow-hidden rounded-sm border border-line bg-paper">
+            <div className="aspect-[4/5] @md:aspect-[16/10] overflow-hidden rounded-sm border border-line bg-paper">
               <div className={fill}>{media}</div>
             </div>
+          </div>
           </div>
         </div>
       )}

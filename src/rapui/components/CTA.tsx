@@ -21,7 +21,7 @@
 
    Delight (fun): the tile breathes in a hair as the pointer arrives.
    Calm: it stays put. */
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cn } from "../utils";
 import { DotMatrix } from "./DotMatrix";
 import { Grid, GridItem, Section, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
@@ -146,33 +146,37 @@ function SignalCTA({ eyebrow, index, title, lead, actions, media, form }: Parts)
   );
 }
 
-/* a faint grid that fades out from the middle: two hairline gradients, masked */
-const productBackdrop: CSSProperties = {
-  backgroundImage: "linear-gradient(var(--rap-line) 1px, transparent 1px), linear-gradient(90deg, var(--rap-line) 1px, transparent 1px)",
-  backgroundSize: "48px 48px",
-  backgroundPosition: "center center",
-  maskImage: "radial-gradient(ellipse 60% 70% at 50% 50%, #000 20%, transparent 75%)",
-  WebkitMaskImage: "radial-gradient(ellipse 60% 70% at 50% 50%, #000 20%, transparent 75%)",
-};
-
 function ProductCTA({ eyebrow, title, lead, actions, media, form }: Parts) {
+  /* an inverted tile — the page's ink as its ground — with the editor's dot grid fading
+     out from the centre and a flame dot in the kicker: the one loud moment of a quiet page */
   return (
-    <div className="relative isolate py-(--rap-space-xl)">
-      <div aria-hidden data-slot="cta-backdrop" className="absolute inset-0 -z-1" style={productBackdrop} />
-      <Stack gap="md" align="center" className="text-center mx-auto max-w-2xl">
+    <div
+      data-rap-theme="dark"
+      data-slot="cta-tile"
+      className="@container relative isolate overflow-hidden rounded-lg bg-paper px-(--rap-space-lg) py-(--rap-space-2xl) text-ink shadow-pop"
+    >
+      <div
+        aria-hidden
+        data-slot="cta-backdrop"
+        className="absolute inset-0 -z-1 [background-image:radial-gradient(circle,var(--rap-fill-strong)_1.1px,transparent_1.4px)] [background-size:22px_22px] [mask-image:radial-gradient(70%_80%_at_50%_45%,black,transparent)]"
+      />
+      <Stack gap="md" align="center" className="text-center mx-auto max-w-3xl">
         {eyebrow && (
-          <span className="inline-flex items-center h-7 px-3 rounded-pill bg-surface text-[0.8125rem] font-medium text-ink-2 shadow-[inset_0_0_0_1px_var(--rap-edge)]">
+          <span className="inline-flex items-center gap-2 h-7 px-3 rounded-pill bg-fill text-[0.8125rem] font-medium text-ink-2">
+            <span aria-hidden className="size-1.5 rounded-pill bg-flame" />
             {eyebrow}
           </span>
         )}
-        <Display size="xl">{title}</Display>
+        <Display size="xl" className="max-w-[18ch]">
+          {title}
+        </Display>
         {lead && <p className="m-0 max-w-[44ch] text-[1.0625rem] leading-relaxed text-ink-2">{lead}</p>}
         {form && (
           <div data-slot="cta-form" className="w-full max-w-md pt-(--rap-space-xs)">
             {form}
           </div>
         )}
-        {actions && <Row className="justify-center pt-(--rap-space-xs)">{actions}</Row>}
+        {actions && <Row className="justify-center pt-(--rap-space-sm)">{actions}</Row>}
         {media && (
           <div data-slot="cta-media" className="w-full pt-(--rap-space-lg)">
             {media}

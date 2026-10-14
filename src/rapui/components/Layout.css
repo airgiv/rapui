@@ -48,7 +48,7 @@
 
   /* ── Grid ── equal columns collapse 1 → 2 → n with the space they get;
      the 12-track grid keeps its tracks and lets each item go full width when narrow */
-  .rap-grid-wrap { container-type: inline-size; min-width: 0; }
+  .rap-grid-wrap { container: grid / inline-size; min-width: 0; }
   .rap-grid {
     display: grid;
     column-gap: var(--grid-gap);
@@ -90,8 +90,8 @@
   [data-rap-preset="signal"] .rap-section-index::before { content: "["; }
   [data-rap-preset="signal"] .rap-section-index::after { content: "]"; }
 
-  [data-rap-preset="product"] .rap-section-kicker { color: var(--rap-plum); }
-  [data-rap-preset="product"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
+  [data-rap-preset="product"] .rap-section-kicker { color: var(--rap-ink-2); }
+  [data-rap-preset="product"] .rap-section-kicker [data-slot="eyebrow-dot"] { background: var(--rap-flame); --rap-accent: var(--rap-flame); }
 
   [data-rap-preset="minimal"] .rap-section-kicker { font-weight: 400; color: var(--rap-ink-2); }
   [data-rap-preset="minimal"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }

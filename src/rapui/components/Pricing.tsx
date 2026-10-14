@@ -374,7 +374,7 @@ function SignalPlans({ plans, billing, caption }: LookProps) {
 
 function ProductPlans({ plans, billing, caption }: LookProps) {
   return (
-    <Grid cols={cols(plans.length)} gap="column">
+    <Grid cols={cols(plans.length)} gap="tile" className="items-stretch">
       {plans.map((plan) => {
         const featured = !!plan.featured;
         return (
@@ -382,28 +382,38 @@ function ProductPlans({ plans, billing, caption }: LookProps) {
             key={plan.name}
             data-slot="pricing-plan"
             data-featured={featured || undefined}
+            // the featured plan is the inverted card: the page's ink as its ground
+            {...(featured ? { "data-rap-theme": "dark" } : {})}
             className={cn(
-              "flex flex-col gap-(--rap-space-md) p-(--rap-space-lg) rounded-card bg-surface",
-              featured ? "shadow-[inset_0_0_0_1.5px_var(--rap-ink),var(--rap-shadow-pop)]" : "shadow-[inset_0_0_0_1px_var(--rap-edge)]",
+              "relative flex flex-col gap-(--rap-space-md) p-(--rap-space-lg) rounded-card text-ink",
+              featured ? "bg-paper shadow-pop" : "bg-surface shadow-[inset_0_0_0_1px_var(--rap-line)]",
             )}
           >
             <header className="flex flex-col gap-(--rap-space-2xs)">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="m-0 text-base font-semibold tracking-[-0.01em]">{plan.name}</h3>
                 {featured && (
-                  <Badge variant="ink" size="sm">
+                  <span className="inline-flex h-6 items-center gap-1.5 rounded-pill bg-flame px-2.5 text-[0.75rem] font-semibold text-white">
+                    <span aria-hidden className="size-1.5 rounded-pill bg-white" />
                     {plan.badge ?? "Most popular"}
-                  </Badge>
+                  </span>
                 )}
               </div>
               {plan.description && <p className="m-0 text-[0.875rem] text-ink-2 leading-snug">{plan.description}</p>}
             </header>
-            <Price plan={plan} billing={billing} caption={caption} className="text-[2.75rem] font-semibold tracking-[-0.04em] leading-none" periodClassName="text-mute opacity-100" />
-            <PlanAction action={plan.cta} variant={featured ? "solid" : "soft"} size="sm" />
+            <Price
+              plan={plan}
+              billing={billing}
+              caption={caption}
+              roll
+              className="py-(--rap-space-xs) font-display text-[clamp(2.75rem,5cqi,3.5rem)] font-semibold tracking-[-0.05em] leading-none"
+              periodClassName="text-mute opacity-100"
+            />
+            <PlanAction action={plan.cta} variant={featured ? "accent" : "solid"} />
             <Features
               items={plan.features}
-              className="text-[0.875rem] text-ink-2 border-t border-line pt-(--rap-space-md)"
-              mark={<Check aria-hidden className="flex-none size-4 mt-0.5 text-plum" />}
+              className="text-[0.875rem] text-ink-2 pt-(--rap-space-xs)"
+              mark={<Check aria-hidden className={cn("flex-none size-4 mt-0.5", featured ? "text-flame" : "text-ink")} />}
             />
           </article>
         );
