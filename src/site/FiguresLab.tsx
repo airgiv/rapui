@@ -3,15 +3,16 @@
    marble machine drawn for rapui with the anatomy skill) sits on the right of
    a hero; the preset picker restyles the section, words and machine together,
    through the per-preset --anatomy-* looks in figures/looks.ts. */
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Accent, Button, Display, RAP_PRESETS, RapStyle, type RapPreset } from "../rapui";
 import "../rapui/fonts/all";
 import { FIGURE_LOOKS } from "./figures/looks";
-import { ChainReaction } from "./figures/chain";
+import { ChainReaction, type ChainHandle } from "./figures/chain";
 import { PresetPicker } from "./PresetsShowcase";
 
 export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => void }) {
   const [preset, setPreset] = useState<RapPreset>("fun");
+  const machine = useRef<ChainHandle>(null);
   const look = FIGURE_LOOKS[preset];
   const label = RAP_PRESETS.find((p) => p.value === preset)?.label;
   useEffect(() => {
@@ -25,7 +26,7 @@ export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: bool
           <a href="#" className="text-[0.875rem] font-medium text-ink-2 hover:text-ink">
             ← rapui
           </a>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
             <PresetPicker value={preset} onChange={setPreset} size="sm" />
             <Button variant="soft" size="sm" onClick={() => setDark(!dark)}>
               {dark ? "Light" : "Dark"}
@@ -44,14 +45,17 @@ export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: bool
                 with the Anatomy skill, here in {label}. Pick another preset above and the same machine changes character.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button variant="accent" icon>
+                <Button variant="accent" icon onClick={() => machine.current?.run()}>
                   Start the run
                 </Button>
                 <Button variant="soft">How it's drawn</Button>
               </div>
             </div>
-            <div className="relative" {...(look.dark ? { "data-rap-theme": "dark" } : {})}>
-              <ChainReaction style={look.tokens as CSSProperties} />
+            <div
+              className={look.dark ? "relative rounded-[var(--rap-radius-lg,1.25rem)] bg-paper p-[clamp(0.75rem,2vw,1.5rem)]" : "relative"}
+              {...(look.dark ? { "data-rap-theme": "dark" } : {})}
+            >
+              <ChainReaction ref={machine} style={look.tokens as CSSProperties} />
             </div>
           </div>
         </section>

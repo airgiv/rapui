@@ -33,7 +33,7 @@ export const SKIRT_IN = 5;
 
 /* the wall the zigzag hangs on (its +x face is the one you see) */
 export const WALL = { x: -158, y: -120, w: 12, d: 184, r: 1.5 };
-export const WALL_TOP = 198;
+export const WALL_TOP = 172;
 export const FACE_X = WALL.x + WALL.w; // -146
 
 /* the screw lift in front of the wall's back end */
@@ -42,25 +42,25 @@ export const LIFT_BALL: Plane = [-131, -80]; // where the marble rides up, on th
 export const PEDESTAL = { x: -144, y: -118, w: 38, d: 54, r: 3 };
 export const PED_TOP = 14;
 export const Z_IN = PED_TOP + R; // marble centre waiting in the intake pocket
-export const Z_OUT = 174; // marble centre where the flight hands it to ramp 1
+export const Z_OUT = 150; // marble centre where the flight hands it to ramp 1
 export const PITCH = 24; // flight pitch
-export const V_LIFT = 50; // rise speed, units/s
+export const V_LIFT = 60; // rise speed, units/s
 export const SCREW_R = 11; // flight (wire) radius
 export const SHAFT_R = 3.4;
 export const SCREW_Z0 = PED_TOP + 1;
-export const SCREW_Z1 = 184;
+export const SCREW_Z1 = 160;
 
 /* ramps on the wall: the marble's line is x = -131 */
 export const RX = -131;
 export const RAMP_Y0 = -80; // ramp 1 starts at the lift
 export const RAMP_YE = 46; // far end, near the wall's front
-export const RAMP_YB = -70; // near end, by the lift
+export const RAMP_YB = -56; // near end, by the lift
 export const PLATE_FRONT = 56; // the bumper plate at the wall's front end (marble stops at 50)
-export const PLATE_BACK = -76; // the bumper plate by the lift (marble stops at -70)
+export const PLATE_BACK = -62; // the bumper plate by the lift (marble stops at -64)
 export const RAMPS: { from: V3; to: V3 }[] = [
-  { from: [RX, RAMP_Y0, Z_OUT], to: [RX, RAMP_YE, 154] },
-  { from: [RX, 50, 136], to: [RX, RAMP_YB, 116] },
-  { from: [RX, RAMP_YB, 98], to: [RX, 50, 79] },
+  { from: [RX, RAMP_Y0, Z_OUT], to: [RX, RAMP_YE, Z_OUT - 15.1] },
+  { from: [RX, 50, 117], to: [RX, RAMP_YB, 102.6] },
+  { from: [RX, RAMP_YB, 84.6], to: [RX, 50, 76.2] },
 ];
 
 /* the quarter-turn chute that brings the marble off the wall onto the stairs */
@@ -74,7 +74,7 @@ export const STEP_LEN = 14;
 export const STEP_RISE = 11;
 export const STEPS = 4;
 export const STAIR_X0 = -106; // back of the top tread
-export const STAIR_TOP = 60; // top tread surface
+export const STAIR_TOP = 64; // top tread surface
 export const STAIR_W = 18; // across (y)
 
 /* the domino table, the run-out and the domino row */
@@ -93,7 +93,7 @@ export const RUN_R = 20;
 
 /* the catapult behind the row */
 export const LEVER_Y = -62;
-export const PIVOT: V3 = [-36, LEVER_Y, 22];
+export const PIVOT: V3 = [-36, LEVER_Y, 19];
 export const ARM_CUP = 26; // pivot to cup
 export const ARM_HIT = 18; // pivot to the struck paddle
 export const LEVER_REST = -20; // cup arm angle at rest (degrees, + is up)
@@ -102,13 +102,13 @@ export const CUP_R = 6.5;
 
 /* the gutter that takes the striking marble back to the cup */
 export const GUTTER_X = -62;
-export const GUTTER_END = -51; // the gate, just short of the cup
+export const GUTTER_END = -47; // the gate, just short of the cup
 
 /* the spiral */
 export const SPIRAL: Plane = [60, -36];
 export const SPIRAL_R = 26;
 export const SPIRAL_TOP = 92;
-export const SPIRAL_BOT = 22;
+export const SPIRAL_BOT = 30;
 export const SPIRAL_TURNS = 1.75;
 export const POST_R = 4.5;
 export const POST_TOP = 104;
@@ -116,7 +116,7 @@ export const POST_TOP = 104;
 /* the exit straight, the bell and the return channel */
 export const EXIT_X = SPIRAL[0] - SPIRAL_R; // 34
 export const BACK_Y = -80; // the return channel's line
-export const BELL_Y = -52;
+export const BELL_X = -20; // the hammer hangs over the return channel here
 
 /* camera */
 export const AZIMUTH = 45;

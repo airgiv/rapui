@@ -1,0 +1,27 @@
+/* the chain reaction: rails drawn as round bars, marbles, the stage */
+.cr { position: relative; }
+.cr .iso-figure { margin: 0; }
+.cr-stage { position: relative; outline: none; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.cr-stage:not([tabindex]) { cursor: default; }
+.cr-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; border-radius: 4px; }
+.cr-svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* a rail: an outline stroke with the bar's body stroked over it, in user units so it scales with the drawing */
+.iso-svg path.cr-rail-o,
+.iso-svg path.cr-rail-i { vector-effect: none; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.iso-svg path.cr-rail-o { stroke: var(--anatomy-hi); stroke-width: calc(var(--cr-rail) + 2 * min(var(--anatomy-weight), 1.15px)); }
+.iso-svg path.cr-rail-i { stroke: var(--anatomy-shade-1); stroke-width: var(--cr-rail); }
+.cr-rail[data-tone="mid"] path.cr-rail-o { stroke: var(--anatomy-mid); }
+
+/* the screw's wire flight */
+.iso-svg path.cr-wire { stroke-width: calc(var(--anatomy-weight) * 1.8); }
+
+/* marbles */
+.cr-ball-fill { fill: var(--anatomy-face); stroke: none; }
+.cr-ball-shade { fill: var(--anatomy-shade-1); stroke: none; }
+.cr-ball-glint { fill: var(--anatomy-top); stroke: none; }
+.iso-svg circle.cr-ball-edge { fill: none; stroke: var(--anatomy-hi); stroke-width: var(--anatomy-weight); }
+.cr-ball[data-lit] .cr-ball-fill { fill: color-mix(in oklab, var(--anatomy-lit) 22%, var(--anatomy-lit-top)); }
+.cr-ball[data-lit] .cr-ball-shade { fill: color-mix(in oklab, var(--anatomy-lit) 45%, var(--anatomy-lit-shade)); }
+.cr-ball[data-lit] .cr-ball-glint { fill: var(--anatomy-face); }
+.iso-svg .cr-ball[data-lit] circle.cr-ball-edge { stroke: var(--anatomy-lit); stroke-width: calc(var(--anatomy-weight) * 1.35); }
