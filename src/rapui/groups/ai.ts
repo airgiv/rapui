@@ -6,3 +6,5 @@ export type { AILoaderProps, AILoaderLook } from "../components/AILoader";
 export { StreamingText } from "../components/StreamingText";
 export type { StreamingTextProps } from "../components/StreamingText";
 export { usePreset } from "../hooks/usePreset";
+export { Citation, SourceCard, Sources, SourcesProvider, SourceIcon, useSources, sourceDomain } from "../components/Sources";
+export type { CitationSource, CitationProps, SourceCardProps, SourcesProps, SourcesProviderProps, SourceIconProps } from "../components/Sources";
