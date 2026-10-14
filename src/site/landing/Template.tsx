@@ -56,6 +56,25 @@ function Scene({ children }: { children: ReactNode }) {
   );
 }
 
+/* the picture in the headline: a small city at dusk, drawn in the preset's own colours
+   (sky, a low sun in flame, the blocks in blue and ink) so it belongs in every look */
+function Skyline() {
+  return (
+    <svg viewBox="0 0 70 28" preserveAspectRatio="xMidYMax slice" aria-hidden className="block size-full">
+      <defs>
+        <linearGradient id="commons-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--rap-sky)" />
+          <stop offset="1" stopColor="var(--rap-bubble)" />
+        </linearGradient>
+      </defs>
+      <rect width="70" height="28" fill="url(#commons-sky)" />
+      <circle cx="47" cy="17" r="6" fill="var(--rap-flame)" opacity="0.85" />
+      <path fill="var(--rap-blue)" opacity="0.55" d="M0 28V17h5v-3h4v6h4v-8h5v9h3v-5h6v8h4v-11h5v11h4v-6h5v4h5v-9h4v12h7v4z" />
+      <path fill="var(--rap-ink)" d="M0 28v-6h3v-4h5v5h3v-9h6v3h2v-6h4v12h3v-4h5v7h2v-9h3v-3h3v3h2v8h3v-5h5v4h3v-6h4v5h6v6z" />
+    </svg>
+  );
+}
+
 /* the product in one picture: a resident's question, answered with sources */
 function AnswerCard() {
   return (
@@ -204,7 +223,7 @@ export function LandingTemplate() {
         title={
           <>
             Ask your city <InlineMedia>
-              <span className="block size-full bg-[linear-gradient(135deg,var(--rap-sky),var(--rap-blue))]" />
+              <Skyline />
             </InlineMedia> <Accent>anything</Accent>
           </>
         }
