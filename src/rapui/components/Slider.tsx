@@ -80,6 +80,14 @@ function Thumb({
     return () => window.clearTimeout(id);
   }, [value, span]);
 
+  // no room above (a slider in a header at the top of the window)? the balloon hangs below instead
+  const thumbRef = useRef<HTMLSpanElement>(null);
+  const [below, setBelow] = useState(false);
+  const place = () => {
+    const r = thumbRef.current?.getBoundingClientRect();
+    if (r) setBelow(r.top < 52);
+  };
+
   const stretch = useSpring(calm ? 0 : Math.abs(impulse), 60, calm);
   const swing = useSpring(calm ? 0 : -impulse, 78, calm);
   const s = clamp(stretch * 0.012, -0.2, 0.35);
@@ -95,6 +103,9 @@ function Thumb({
        stretch (--sq-x/--sq-y, from the spring) never distorts the bubble. --hold
        (registered in Slider.css so it can transition) swells it on hover and grab. */
     <SliderPrimitive.Thumb
+      ref={thumbRef}
+      onPointerDown={place}
+      onFocus={place}
       data-slot="slider-thumb"
       className={cn(
         "group/thumb relative block size-[22px] rounded-pill cursor-grab outline-none [--hold:1] hover:[--hold:1.1] active:[--hold:1.18] active:cursor-grabbing",
@@ -114,8 +125,9 @@ function Thumb({
            10px gap + half the thumb, hence the origin at 100% + 21px. Calm: no swing. */
         <span
           data-slot="slider-bubble"
+          data-side={below ? "bottom" : "top"}
           className={cn(
-            "absolute left-1/2 bottom-[calc(100%+10px)] min-w-[34px] py-[5px] px-[9px] rounded-pill bg-ink text-paper",
+            "absolute left-1/2 bottom-[calc(100%+10px)] data-[side=bottom]:bottom-auto data-[side=bottom]:top-[calc(100%+10px)] data-[side=bottom]:origin-[50%_-21px] min-w-[34px] py-[5px] px-[9px] rounded-pill bg-ink text-paper",
             "font-sans text-[0.8125rem] font-medium leading-[1.2] tracking-[-0.01em] tabular-nums text-center whitespace-nowrap",
             "pointer-events-none -translate-x-1/2 origin-[50%_calc(100%+21px)] scale-0 opacity-0",
             "[transition:scale_240ms_cubic-bezier(0.34,1.8,0.64,1),opacity_120ms_var(--rap-ease-rm)]",
@@ -127,6 +139,8 @@ function Thumb({
             // the string's knot: a small triangle under the balloon, in its colour
             "after:absolute after:left-1/2 after:top-[calc(100%-1px)] after:w-2 after:h-[5px] after:-translate-x-1/2",
             "after:bg-inherit after:[clip-path:polygon(0_0,100%_0,50%_100%)]",
+            // hanging below: the knot points up, the calm rise comes from underneath
+            "data-[side=bottom]:after:top-auto data-[side=bottom]:after:bottom-[calc(100%-1px)] data-[side=bottom]:after:[clip-path:polygon(50%_0,100%_100%,0_100%)]",
           )}
           style={{ rotate: `${clamp(swing * 1.6, -28, 28)}deg` }}
           aria-hidden
