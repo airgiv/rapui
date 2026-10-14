@@ -1,0 +1,119 @@
+/* Layout — the page grid a landing sits on. Everything reads the preset's
+   layout tokens (tokens.css / presets.css): --rap-container, --rap-gutter,
+   --rap-column-gap, --rap-section-y, --rap-section-inset / -radius / -rule,
+   and the --rap-space-* steps. Responsive by container queries, not the
+   viewport, so a block collapses the same in a sidebar, a preview or a page. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* ── Container ── */
+  .rap-container {
+    container-type: inline-size;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: calc(var(--c-max) + 2 * var(--rap-gutter));
+    margin-inline: auto;
+    padding-inline: var(--rap-gutter);
+    --c-max: var(--rap-container);
+  }
+  .rap-container[data-size="narrow"] { --c-max: var(--rap-container-narrow); }
+  .rap-container[data-size="full"] { max-width: none; }
+
+  /* ── Section ── */
+  .rap-section {
+    position: relative;
+    padding-block: calc(var(--rap-section-y) * var(--section-k, 1));
+    color: var(--rap-ink);
+  }
+  .rap-section[data-size="sm"] { --section-k: 0.6; }
+  .rap-section[data-size="lg"] { --section-k: 1.35; }
+  .rap-section[data-size="none"] { --section-k: 0; }
+  /* a plain section: the preset's rule across its top (signal, minimal), none elsewhere */
+  .rap-section[data-tone="plain"] + .rap-section[data-tone="plain"] { box-shadow: inset 0 1px 0 var(--rap-section-rule); }
+  /* a toned section is an object of its own: in fun and civic a big rounded card
+     inset from the page edge, flush and square in the others */
+  .rap-section:not([data-tone="plain"]) {
+    margin-inline: var(--rap-section-inset);
+    border-radius: var(--rap-section-radius);
+    box-shadow: inset 0 0 0 1px var(--rap-edge);
+    background: var(--rap-paper);
+  }
+  .rap-section:not([data-tone="plain"]) + .rap-section:not([data-tone="plain"]) { margin-top: var(--rap-section-inset); }
+  .rap-section[data-tone="surface"] { background: var(--rap-surface); }
+  .rap-section[data-tone="muted"] { background: var(--rap-paper-3); }
+  /* dark: a dark island (data-rap-theme="dark" on the element) — its own paper */
+
+  /* ── Grid ── equal columns collapse 1 → 2 → n with the space they get;
+     the 12-track grid keeps its tracks and lets each item go full width when narrow */
+  .rap-grid-wrap { container-type: inline-size; min-width: 0; }
+  .rap-grid {
+    display: grid;
+    column-gap: var(--grid-gap);
+    row-gap: var(--grid-row-gap, var(--grid-gap));
+    grid-template-columns: repeat(var(--grid-sm, 1), minmax(0, 1fr));
+  }
+  @container (min-width: 40rem) {
+    .rap-grid { grid-template-columns: repeat(var(--grid-md, 2), minmax(0, 1fr)); }
+  }
+  @container (min-width: 60rem) {
+    .rap-grid { grid-template-columns: repeat(var(--grid-lg, 3), minmax(0, 1fr)); }
+  }
+  .rap-grid-item { grid-column: 1 / -1; min-width: 0; }
+  @container (min-width: 46rem) {
+    .rap-grid-item { grid-column: var(--item-start, auto) / span var(--item-span, 12); }
+  }
+
+  /* ── SectionHeader ── each preset sets its kicker its own way */
+  .rap-section-header { display: flex; flex-direction: column; gap: var(--rap-space-md); max-width: 52rem; }
+  .rap-section-header[data-align="center"] { align-items: center; text-align: center; margin-inline: auto; }
+  .rap-section-kicker { display: inline-flex; align-items: center; gap: 0.75em; font-size: 0.875rem; font-weight: 500; color: var(--rap-ink); }
+  .rap-section-index { display: none; font-variant-numeric: tabular-nums; }
+  .rap-section-lead { margin: 0; max-width: 46ch; font-size: clamp(1.0625rem, 1.3vw, 1.25rem); line-height: 1.5; color: var(--rap-ink-2); text-wrap: pretty; }
+  .rap-section-header[data-align="center"] .rap-section-lead { margin-inline: auto; }
+
+  [data-rap-preset="civic"] .rap-section-kicker { color: var(--rap-flame); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.8125rem; }
+  [data-rap-preset="civic"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
+
+  [data-rap-preset="signal"] .rap-section-kicker {
+    font-family: var(--rap-font-mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rap-ink-2);
+  }
+  [data-rap-preset="signal"] .rap-section-kicker [data-slot="eyebrow-dot"] { border-radius: 1px; }
+  [data-rap-preset="signal"] .rap-section-index { display: inline; color: var(--rap-flame); }
+  [data-rap-preset="signal"] .rap-section-index::before { content: "["; }
+  [data-rap-preset="signal"] .rap-section-index::after { content: "]"; }
+
+  [data-rap-preset="product"] .rap-section-kicker { color: var(--rap-plum); }
+  [data-rap-preset="product"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
+
+  [data-rap-preset="minimal"] .rap-section-kicker { font-weight: 400; color: var(--rap-ink-2); }
+  [data-rap-preset="minimal"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
+  [data-rap-preset="minimal"] .rap-section-index { display: inline; color: var(--rap-mute); }
+  [data-rap-preset="minimal"] .rap-section-index::after { content: " —"; }
+
+  /* ── GridOverlay ── the preset's columns over the page, like a design tool's
+     layout grid. Fun: the columns drop in left to right; calm: a fade. */
+  .rap-grid-overlay { pointer-events: none; inset: 0; z-index: 2147483000; }
+  .rap-grid-overlay .rap-container,
+  .rap-grid-overlay .rap-grid-wrap,
+  .rap-grid-overlay .rap-grid { height: 100%; }
+  .rap-grid-overlay-col {
+    background: color-mix(in srgb, var(--rap-flame) 9%, transparent);
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--rap-flame) 35%, transparent), inset -1px 0 0 color-mix(in srgb, var(--rap-flame) 35%, transparent);
+    transform-origin: top;
+    animation: rap-grid-col-in 520ms var(--rap-ease-out) both;
+    animation-delay: calc(var(--i) * 28ms);
+  }
+  /* 4 columns on a phone, 8 on a tablet: the rest are hidden, not wrapped */
+  .rap-grid-overlay-col:nth-child(n + 5) { display: none; }
+  @container (min-width: 40rem) { .rap-grid-overlay-col:nth-child(-n + 8) { display: block; } }
+  @container (min-width: 60rem) { .rap-grid-overlay-col:nth-child(n) { display: block; } }
+  :where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-grid-overlay-col { animation: rap-grid-col-fade 240ms ease-out both; }
+  @keyframes rap-grid-col-in { from { scale: 1 0; opacity: 0; } }
+  @keyframes rap-grid-col-fade { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .rap-grid-overlay-col { animation: none; } }
+}

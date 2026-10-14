@@ -25,7 +25,8 @@ import { Wordmark } from "./Wordmark";
 import { SMALL_SWITCH, SoundControls } from "./SoundControls";
 import { cn } from "../rapui/utils";
 import type { SoundSettings } from "../rapui";
-import { PRESET_MOTION, RAP_PRESETS, RapStyle, type RapMotion, type RapPreset } from "../rapui";
+import { StyleControls, useStylePreset } from "./StyleControls";
+import { PRESET_MOTION, RapStyle } from "../rapui";
 // every preset's typefaces: the explorer switches presets live
 import "../rapui/fonts/all";
 import "./docs.css";
@@ -218,24 +219,7 @@ export function Docs({
   const [menu, setMenu] = useState(false);
   // the style the explorer previews in: a preset and a motion level, on <html> through
   // RapStyle (so dialogs and menus in portals follow). Remembered per browser.
-  const [preset, setPresetState] = useState<RapPreset>(() => {
-    try {
-      const v = localStorage.getItem("rapui-preset");
-      return RAP_PRESETS.some((p) => p.value === v) ? (v as RapPreset) : "fun";
-    } catch {
-      return "fun";
-    }
-  });
-  const [motion, setMotion] = useState<RapMotion | null>(null); // null: the preset's own
-  const setPreset = (p: RapPreset) => {
-    setPresetState(p);
-    setMotion(null);
-    try {
-      localStorage.setItem("rapui-preset", p);
-    } catch {
-      /* storage blocked */
-    }
-  };
+  const { preset, setPreset, motion, setMotion } = useStylePreset();
   const styleControls = <StyleControls preset={preset} setPreset={setPreset} motion={motion ?? PRESET_MOTION[preset]} setMotion={setMotion} />;
   const entry = ENTRIES.find((e) => e.slug === slug) ?? ENTRIES[0];
   const idx = ENTRIES.indexOf(entry);
@@ -353,45 +337,4 @@ export function Docs({
   );
 }
 
-/* the preset picker and the motion level, for the header and the phone menu */
-function StyleControls({
-  preset,
-  setPreset,
-  motion,
-  setMotion,
-}: {
-  preset: RapPreset;
-  setPreset: (p: RapPreset) => void;
-  motion: RapMotion;
-  setMotion: (m: RapMotion) => void;
-}) {
-  return (
-    <div className="inline-flex items-center gap-2 mr-3">
-      <Select value={preset} onValueChange={(v) => setPreset(v as RapPreset)}>
-        <SelectTrigger size="sm" aria-label="Style preset" className="w-[8.5rem]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {RAP_PRESETS.map((p) => (
-            <SelectItem key={p.value} value={p.value}>
-              {p.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <ToggleGroup
-        type="single"
-        size="sm"
-        value={motion}
-        onValueChange={(v) => v && setMotion(v as RapMotion)}
-        aria-label="Motion"
-        className="[&_[data-slot=toggle-group-item]]:px-3 [&_[data-slot=toggle-group-item]]:text-[0.8125rem]"
-      >
-        <ToggleGroupItem value="fun">Fun</ToggleGroupItem>
-        <ToggleGroupItem value="calm">Calm</ToggleGroupItem>
-        <ToggleGroupItem value="still">Still</ToggleGroupItem>
-      </ToggleGroup>
-    </div>
-  );
-}
 

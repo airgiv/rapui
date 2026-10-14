@@ -47,6 +47,16 @@
   --rap-gap-tight: 6px;
   --rap-gap-tile: 12px;
 
+  --rap-container: 1240px;
+  --rap-container-narrow: 720px;
+  --rap-gutter: clamp(16px, 4vw, 48px);
+  --rap-column-gap: clamp(16px, 2.4vw, 32px);
+  --rap-section-y: clamp(4rem, 8vw, 7rem);
+  --rap-section-inset: clamp(8px, 1.5vw, 20px);
+  --rap-section-radius: var(--rap-radius-lg);
+  --rap-section-rule: transparent;
+  --rap-density: 1.1;
+
   --rap-ease-rm: cubic-bezier(0.25, 0.1, 0.25, 1);
   --rap-dur-fast: 200ms;
   --rap-dur: 420ms;
@@ -124,6 +134,16 @@
   --rap-control-h-lg: 50px;
   --rap-gap-tight: 2px;
   --rap-gap-tile: 2px;
+
+  --rap-container: 1320px;
+  --rap-container-narrow: 720px;
+  --rap-gutter: clamp(16px, 3vw, 36px);
+  --rap-column-gap: clamp(12px, 1.6vw, 20px);
+  --rap-section-y: clamp(3rem, 6vw, 5.5rem);
+  --rap-section-inset: 0px;
+  --rap-section-radius: 0px;
+  --rap-section-rule: var(--rap-line);
+  --rap-density: 0.85;
 
   --rap-ease-rm: cubic-bezier(0.3, 0, 0.2, 1);
   --rap-dur-fast: 160ms;
@@ -207,6 +227,16 @@
   --rap-gap-tight: 6px;
   --rap-gap-tile: 12px;
 
+  --rap-container: 1160px;
+  --rap-container-narrow: 680px;
+  --rap-gutter: clamp(16px, 4vw, 32px);
+  --rap-column-gap: clamp(16px, 2vw, 24px);
+  --rap-section-y: clamp(4rem, 9vw, 8rem);
+  --rap-section-inset: 0px;
+  --rap-section-radius: 0px;
+  --rap-section-rule: transparent;
+  --rap-density: 1;
+
   --rap-ease-rm: cubic-bezier(0.2, 0, 0, 1);
   --rap-dur-fast: 150ms;
   --rap-dur: 300ms;
@@ -283,6 +313,16 @@
   --rap-control-h-lg: 48px;
   --rap-gap-tight: 1px;
   --rap-gap-tile: 1px;
+
+  --rap-container: 1280px;
+  --rap-container-narrow: 640px;
+  --rap-gutter: clamp(16px, 4vw, 56px);
+  --rap-column-gap: clamp(16px, 2vw, 24px);
+  --rap-section-y: clamp(5rem, 11vw, 10rem);
+  --rap-section-inset: 0px;
+  --rap-section-radius: 0px;
+  --rap-section-rule: var(--rap-line);
+  --rap-density: 1.2;
 
   --rap-ease-rm: cubic-bezier(0.4, 0, 0.2, 1);
   --rap-dur-fast: 120ms;

@@ -65,3 +65,4 @@ export * from "./groups/galleries";
 export * from "./groups/players";
 export * from "./groups/tools";
 export * from "./groups/ai";
+export * from "./groups/blocks";
