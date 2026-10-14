@@ -51,11 +51,13 @@ const Docs = lazyPage(() => import("./Docs").then((m) => ({ default: m.Docs })))
 /* the beginners' guide: its own small chunk too */
 const Guide = lazyPage(() => import("./Guide").then((m) => ({ default: m.Guide })));
 /* a whole landing page built from the blocks, in the previewed preset */
+/* a lab page: one Anatomy figure drawn in every preset */
+const FiguresLab = lazyPage(() => import("./FiguresLab").then((m) => ({ default: m.FiguresLab })));
 const LandingPreview = lazyPage(() => import("./LandingPreview").then((m) => ({ default: m.LandingPreview })));
 
 /* Three views on one bundle, picked by the hash:
    #docs or #docs.<slug> → the components explorer, #start → the beginners' guide,
-   #landing → a landing page made of the blocks,
+   #landing → a landing page made of the blocks, #figures → the figures lab,
    anything else → the landing page.
    Plain tokens only (no slashes), so deep links survive hosts that strip paths. */
 function useHash() {
@@ -95,9 +97,10 @@ function Root() {
   const inDocs = hash === "docs" || hash.startsWith("docs.");
   const inGuide = hash === "start";
   const inLanding = hash === "landing";
+  const inFigures = hash === "figures";
   useEffect(() => {
-    if (!inDocs && !inGuide && !inLanding) document.title = "rapui — all the components, none of the boring";
-  }, [inDocs, inGuide]);
+    if (!inDocs && !inGuide && !inLanding && !inFigures) document.title = "rapui — all the components, none of the boring";
+  }, [inDocs, inGuide, inLanding, inFigures]);
 
   return (
     <SoundProvider {...sound}>
@@ -108,6 +111,10 @@ function Root() {
       ) : inLanding ? (
         <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
           <LandingPreview dark={dark} setDark={setDark} />
+        </Suspense>
+      ) : inFigures ? (
+        <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
+          <FiguresLab dark={dark} setDark={setDark} />
         </Suspense>
       ) : inGuide ? (
         <Suspense fallback={<div className="rap-root" style={{ minHeight: "100vh" }} />}>
