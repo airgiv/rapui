@@ -33,8 +33,10 @@
 [data-rap-preset="civic"] {
   --rap-font-display: "Newsreader Variable", "Newsreader", ui-serif, Georgia, serif;
   --rap-font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  --rap-display-weight: 500;
-  --rap-display-tracking: -0.035em;
+  /* light: a public-service serif reads refined at size, not heavy */
+  --rap-display-weight: 340;
+  --rap-display-weight-mega: 300;
+  --rap-display-tracking: -0.025em;
 
   --rap-radius-xs: 8px;
   --rap-radius-sm: 14px;

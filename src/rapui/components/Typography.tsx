@@ -18,7 +18,7 @@ const displayVariants = cva("m-0 font-display [font-weight:var(--rap-display-wei
   variants: {
     tight: { true: "tracking-[var(--rap-display-tracking,-0.045em)]", false: "" },
     size: {
-      mega: "text-display-mega leading-[0.86] font-[450] tracking-[-0.06em]",
+      mega: "text-display-mega leading-[0.86] [font-weight:var(--rap-display-weight-mega,450)] tracking-[-0.06em]",
       xxl: "text-display-xxl leading-[0.88]",
       xl: "text-display-xl leading-[0.92]",
       lg: "text-display-lg leading-none",

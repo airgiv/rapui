@@ -62,7 +62,7 @@ export function Stats({ eyebrow, index, title, lead, items, look: lookProp, clas
   const n = Math.max(1, Math.min(items.length, 4));
   const cols: [number, number, number] = [1, Math.min(n, 2), n];
   const header = title ? (
-    <SectionHeader eyebrow={eyebrow} index={index} title={title} lead={lead} align={look === "product" ? "center" : "start"} size={look === "fun" ? "xl" : "lg"} />
+    <SectionHeader eyebrow={eyebrow} index={index} title={title} lead={lead} align={look === "product" || look === "civic" ? "center" : "start"} size={look === "fun" ? "xl" : "lg"} />
   ) : null;
 
   return (

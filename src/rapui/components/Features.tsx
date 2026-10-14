@@ -104,7 +104,7 @@ export function Features({ eyebrow, index, title, lead, items, cols = 3, look: l
   return (
     <Section ref={ref} data-look={look} data-slot="features" className={className} {...rest}>
       <Stack gap={look === "minimal" ? "2xl" : "xl"}>
-        <SectionHeader eyebrow={eyebrow} index={index} title={title} lead={lead} size={look === "fun" ? "xl" : "lg"} />
+        <SectionHeader eyebrow={eyebrow} index={index} title={title} lead={lead} align={look === "civic" ? "center" : "start"} size={look === "fun" ? "xl" : "lg"} />
         <Body items={items} cols={cols} />
       </Stack>
     </Section>

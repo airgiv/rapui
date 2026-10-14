@@ -13,8 +13,9 @@
    Per look:
      fun      bold rounded rows packed 4px apart; an open row turns
               acid and its + spins into an ×
-     civic    a list of soft white cards with serif questions and a
-              chevron in a tinted circle
+     civic    centred: the heading on the centre line over a narrow
+              list of soft white cards, serif questions, a chevron in a
+              tinted circle
      signal   ruled rows with mono "Q." and "A." markers in rust
      product  one centred narrow column: a hairline card, divided
      minimal  numbered questions between hairlines, a plain + / −
@@ -51,7 +52,7 @@ export function FAQ({ eyebrow, index, title, lead, items, contact, defaultOpen =
   const list = <FAQList items={items} look={look} defaultOpen={defaultOpen} />;
   const contactBox = contact ? <FAQContact look={look}>{contact}</FAQContact> : null;
 
-  if (look === "product")
+  if (look === "product" || look === "civic")
     return (
       <Section ref={ref} data-look={look} data-slot="faq" width="narrow" className={className} {...rest}>
         <Stack gap="xl">

@@ -14,8 +14,9 @@
    fun      a giant stacked headline, the lead and buttons in a row
             under it, the picture as a big rounded tile with a sticker
             slapped on its corner
-   civic    a split on a soft white card: serif headline, lead and
-            buttons left, the picture in a large rounded card right;
+   civic    centred on a soft white card, like a public-service
+            front page: a big light serif headline, the lead and
+            buttons under it, the picture in a wide rounded card below;
             drop an <InlineMedia> between the headline's words
    signal   a split with a mono "[ 00 ]" kicker, the picture behind
             scan lines (MediaFrame) and a ruled meta row of
@@ -195,28 +196,27 @@ function FunHero({ eyebrow, title, lead, actions, media, sticker }: Parts) {
   );
 }
 
-/* civic: a public-service split — the words left, a photo in a soft rounded card right */
+/* civic: a public-service front page — everything on the centre line, a big light
+   serif headline, then the picture as a wide soft card under the words */
 function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
   return (
-    <Grid rowGap="xl" className="items-center">
-      <GridItem span={media ? 6 : 9}>
-        <Stack gap="lg" className="py-(--rap-space-md)">
-          <BlockKicker look="civic">{eyebrow}</BlockKicker>
-          <Display as="h1" size="xl" className="max-w-[16ch]">
-            {title}
-          </Display>
-          {lead && <p className={cn(leadText, "max-w-[42ch]")}>{lead}</p>}
-          {actions && <Actions className="pt-(--rap-space-xs)">{actions}</Actions>}
-        </Stack>
-      </GridItem>
+    <Stack gap="xl" align="center" className="text-center">
+      <Stack gap="lg" align="center" className="py-(--rap-space-md)">
+        <BlockKicker look="civic">{eyebrow}</BlockKicker>
+        <Display as="h1" size="xxl" className="max-w-[14ch]">
+          {title}
+        </Display>
+        {lead && <p className={cn(leadText, "max-w-[46ch]")}>{lead}</p>}
+        {actions && <Actions className="justify-center pt-(--rap-space-xs)">{actions}</Actions>}
+      </Stack>
       {media && (
-        <GridItem span={6}>
-          <div data-slot="hero-media" className="aspect-[4/3] overflow-hidden rounded-lg bg-paper-3 shadow-pop">
+        <div data-slot="hero-media" className="w-full max-w-5xl text-left">
+          <div className="aspect-[4/3] @3xl:aspect-[16/9] overflow-hidden rounded-lg bg-paper-3 shadow-pop">
             <div className={fill}>{media}</div>
           </div>
-        </GridItem>
+        </div>
       )}
-    </Grid>
+    </Stack>
   );
 }
 
