@@ -30,9 +30,6 @@ const CAPTIONS: Record<FigureShape, string> = {
   knot: "Trefoil knot",
   stairs: "Stair, 5 risers",
   lattice: "Lattice, 3³",
-  wave: "Standing wave",
-  gyroscope: "Gyroscope",
-  tesseract: "Tesseract",
 };
 
 export const entries: DocEntry[] = [
@@ -41,7 +38,7 @@ export const entries: DocEntry[] = [
     name: "Figure",
     group: "Figures",
     description:
-      "Thin-line 3D figures — the platonic solids, a torus, a trefoil knot, a gyroscope, a tesseract turning through the fourth dimension — drawn as hairlines in SVG and turning slowly on their own. The lines at the back fade (or dash, or drop out) so the solid reads without shading. Grab one and spin it. Each preset draws them its way: a touch heavier with the accent in fun, a plotter's dots on every corner in signal, one plain hairline elsewhere. No 3D library: a 4 KB projector.",
+      "Thin-line 3D figures — the platonic solids, a sphere, a torus, a trefoil knot, a double helix, a stair — drawn as hairlines in SVG and turning slowly on their own. The lines at the back fade (or dash, or drop out) so the solid reads without shading. Grab one and spin it. Each preset draws them its way: a touch heavier with the accent in fun, a plotter's dots on every corner in signal, one plain hairline elsewhere. No 3D library: a 4 KB projector.",
     controls,
     Demo: ({ p }) => (
       <Figure

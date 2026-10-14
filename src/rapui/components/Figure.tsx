@@ -1,6 +1,6 @@
 /* ══ Figure ═══════════════════════════════════════════════
    A thin-line 3D figure — a cube, a torus, a trefoil knot, a
-   turning tesseract — drawn as hairlines in SVG and slowly
+   double helix — drawn as hairlines in SVG and slowly
    turning on its stand, the way an engraving of a solid would
    if it could move.
 
@@ -21,9 +21,7 @@
 
    Delight (fun): it turns on its own; grab it and spin it, and
    it carries on with the spin you gave it and eases back to its
-   own pace. A few shapes move inside themselves (the wave rolls,
-   the gyroscope's rings tumble, the tesseract turns through the
-   fourth dimension). Calm: a slow turn, dragging turns it but
+   own pace. Calm: a slow turn, dragging turns it but
    lets go without a throw. Still / reduced motion: one fixed
    isometric view. Off screen it stops drawing. */
 import { useEffect, useRef, type CSSProperties, type HTMLAttributes, type PointerEvent } from "react";

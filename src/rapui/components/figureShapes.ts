@@ -259,6 +259,12 @@ export const SHAPES = {
       return { lines, accent: box([-0.15, -0.15, -0.15], [0.15, 0.15, 0.15]) };
     },
   },
+} satisfies Record<string, ShapeDef>;
+
+/* Shapes that move inside themselves (a rolling wave, a tumbling gyroscope, a
+   tesseract turning in 4D). Parked: they rebuild every frame and don't yet move
+   as smoothly as the rest. Not in the catalogue until they do. */
+export const MOVING_SHAPES = {
   wave: {
     animated: true,
     pitch: 30,
