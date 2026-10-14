@@ -8,8 +8,8 @@
      fun      the default — loud, round, playful (tokens.css)
      civic    a public-service site: transitional serif headlines,
               navy and a little red, soft big cards, calm motion
-     signal   analogue AI: earthy brown, olive and rust, Plex,
-              dot matrices and scanlines, near-square corners
+     signal   a field instrument: sage paper, green-black ink,
+              phosphor green, Plex, dot matrices and scanlines
      product  a modern product page: Geist, near-black buttons,
               thin borders, small radii, an iris accent
      minimal  black on white, hairlines, square corners, no colour
@@ -162,59 +162,65 @@
 [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="light"],
 [data-rap-preset="signal"][data-rap-theme="light"] {
-  --rap-paper: #e8e8e5;
-  --rap-paper-2: #f7f7f4;
-  --rap-paper-3: #d6d7d0;
-  --rap-ink: #2b241d;
-  --rap-ink-2: #4a4237;
-  --rap-mute: #8c8578;
-  --rap-line: rgb(43 36 29 / 0.14);
-  --rap-flame: #c8613f;
-  --rap-blue: #4e6b62;
-  --rap-plum: #3a2f26;
-  --rap-acid: #b9bd98;
-  --rap-bubble: #d8b4a0;
-  --rap-sky: #b7c3c2;
-  --rap-accent: #c8613f;
+  /* a field instrument: sage paper, green-black ink, one phosphor green that does all the
+     signalling, a lime for highlights and a single warm red kept for alarms */
+  --rap-paper: #e3e7de;
+  --rap-paper-2: #f1f3ec;
+  --rap-paper-3: #d0d7c8;
+  --rap-ink: #111a14;
+  --rap-ink-2: #34433a;
+  --rap-mute: #7a877e;
+  --rap-line: rgb(17 26 20 / 0.14);
+  --rap-flame: #1f8f4e;
+  --rap-blue: #2f6b78;
+  --rap-plum: #16301f;
+  --rap-acid: #c9ef4f;
+  --rap-bubble: #b8d6bf;
+  --rap-sky: #b6cdc7;
+  --rap-accent: #1f8f4e;
   --rap-accent-ink: #ffffff;
-  --rap-fill: rgb(43 36 29 / 0.06);
-  --rap-fill-hover: rgb(43 36 29 / 0.1);
-  --rap-fill-strong: rgb(43 36 29 / 0.16);
-  --rap-ring: #c8613f;
-  --rap-select: #2b241d;
-  --rap-surface: #ffffff;
-  --rap-shadow-pop: 0 1px 0 rgb(43 36 29 / 0.05), 0 10px 30px rgb(43 36 29 / 0.12);
-  --rap-scrim: rgb(43 36 29 / 0.35);
-  --rap-chart-up: #5f7d52;
-  --rap-chart-down: #c8613f;
+  --rap-fill: rgb(17 26 20 / 0.06);
+  --rap-fill-hover: rgb(17 26 20 / 0.1);
+  --rap-fill-strong: rgb(17 26 20 / 0.16);
+  --rap-ring: #1f8f4e;
+  --rap-select: #111a14;
+  --rap-surface: #f7f8f3;
+  --rap-shadow-pop: 0 1px 0 rgb(17 26 20 / 0.05), 0 10px 30px rgb(17 26 20 / 0.12);
+  --rap-scrim: rgb(17 26 20 / 0.35);
+  --rap-danger: #d2492a;
+  --rap-success: #1f8f4e;
+  --rap-chart-up: #1f8f4e;
+  --rap-chart-down: #d2492a;
   color-scheme: light;
 }
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="dark"] {
-  --rap-paper: #3a2f26;
-  --rap-paper-2: #45392e;
-  --rap-paper-3: #52453a;
-  --rap-ink: #ede9e1;
-  --rap-ink-2: #cfc7b9;
-  --rap-mute: #9c9283;
-  --rap-line: rgb(237 233 225 / 0.15);
-  --rap-flame: #e07a52;
-  --rap-blue: #8fae9f;
-  --rap-plum: #ede9e1;
-  --rap-accent: #e07a52;
-  --rap-accent-ink: #2b241d;
-  --rap-fill: rgb(237 233 225 / 0.07);
-  --rap-fill-hover: rgb(237 233 225 / 0.12);
-  --rap-fill-strong: rgb(237 233 225 / 0.19);
-  --rap-ring: #e07a52;
-  --rap-select: #ede9e1;
-  --rap-select-ink: #2b241d;
-  --rap-surface: #4a3d32;
-  --rap-shadow-pop: 0 1px 0 rgb(0 0 0 / 0.2), 0 10px 30px rgb(0 0 0 / 0.35);
-  --rap-scrim: rgb(20 15 10 / 0.55);
-  --rap-chart-up: #a3c48e;
-  --rap-chart-down: #e07a52;
+  /* the same instrument at night: a green-black screen and phosphor */
+  --rap-paper: #0c1410;
+  --rap-paper-2: #121d17;
+  --rap-paper-3: #1a271f;
+  --rap-ink: #dfeadf;
+  --rap-ink-2: #aebfb1;
+  --rap-mute: #708276;
+  --rap-line: rgb(223 234 223 / 0.13);
+  --rap-flame: #5fd38a;
+  --rap-blue: #7fb6c2;
+  --rap-plum: #dfeadf;
+  --rap-acid: #c9ef4f;
+  --rap-accent: #5fd38a;
+  --rap-accent-ink: #08110c;
+  --rap-fill: rgb(223 234 223 / 0.07);
+  --rap-fill-hover: rgb(223 234 223 / 0.12);
+  --rap-fill-strong: rgb(223 234 223 / 0.19);
+  --rap-ring: #5fd38a;
+  --rap-select: #dfeadf;
+  --rap-select-ink: #08110c;
+  --rap-surface: #15211a;
+  --rap-shadow-pop: 0 1px 0 rgb(0 0 0 / 0.2), 0 10px 30px rgb(0 0 0 / 0.4);
+  --rap-scrim: rgb(4 8 6 / 0.6);
+  --rap-chart-up: #5fd38a;
+  --rap-chart-down: #ff7a59;
   color-scheme: dark;
 }
 

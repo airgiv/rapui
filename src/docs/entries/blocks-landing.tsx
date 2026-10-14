@@ -9,7 +9,7 @@ export const entries: DocEntry[] = [
     name: "Landing page",
     group: "Blocks",
     description:
-      "Every block on one page, for one made-up product — Docket, an AI research desk that reads every new ruling overnight and briefs lawyers by morning, every claim cited. Nothing in it is styled per preset: switch the preset at the top and the same JSX re-lays itself — a loud tiled page in fun, a public-service site in civic, ruled data sheets in signal, a centred product page, a numbered black-on-white one. Open it full screen to see it at real size, with the grid overlay a Shift+G away.",
+      "Every block on one page — five pages, really: each preset gets its own made-up product and its own copy, and every one of them talks about itself. Hollr shouts in fun, Precedent submits itself respectfully in civic, Fieldkit receives itself in fragments in signal, Shiplog ships itself in product, and Less says less in minimal. The blocks are the same JSX throughout; switch the preset at the top and watch the page re-lay itself. Open it full screen to see it at real size, with the grid overlay a Shift+G away.",
     Demo: () => (
       <BlockFrame>
         <div className="flex justify-center pt-4 pb-2">
