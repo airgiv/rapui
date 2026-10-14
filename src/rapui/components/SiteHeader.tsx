@@ -12,7 +12,8 @@
 
    fun      a floating pill bar in the inverted theme (ink ground,
             paper words), like the rapui landing's own header
-   civic    a white bar on a thin rule: sans links, a navy button;
+   civic    a bar on the page's own grey, no rule: sans links, a navy
+            button (a white card under it stands clear of it);
             folded, a navy "Menu" pill, and the menu's links set big in
             the serif. A `notice` reads like a government site's
             "An official website of…" line above it all
@@ -93,7 +94,7 @@ const BAR: Record<BlockLook, string> = {
 
 const ROOT: Record<BlockLook, string> = {
   fun: "pt-2.5",
-  civic: "bg-surface text-ink border-b border-line",
+  civic: "bg-paper text-ink",
   signal: "bg-paper text-ink border-b border-line",
   product: "bg-paper/75 text-ink border-b border-line backdrop-blur-md backdrop-saturate-150",
   minimal: "bg-paper text-ink",
@@ -128,7 +129,7 @@ const MENU_BTN: Record<BlockLook, string> = {
 
 const NOTICE: Record<BlockLook, string> = {
   fun: "text-ink-2",
-  civic: "bg-paper text-ink-2 border-b border-line",
+  civic: "text-ink-2",
   signal: "font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-2 border-b border-line",
   product: "text-ink-2 border-b border-line",
   minimal: "text-ink-2",
