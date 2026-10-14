@@ -1,0 +1,82 @@
+/* AIOrb — fields, sheen, ring and ripples.
+
+   glow: three radial colour fields inside a clipped sphere, each turning on
+   its own orbit (different speeds and directions, so the mix never repeats
+   exactly), blurred into one another; a white sheen on top makes it a ball.
+   The whole orb breathes (idle), swells with --lvl (listening/speaking), and
+   the fields spin faster and pull in while thinking.
+   ring: a hairline circle with an arc travelling round it; thinking spins it,
+   speaking scales the core with --lvl.
+   Calm: slower turns, no breath. Still: frozen (global rule). */
+@layer theme, base, components, utilities;
+
+.rap-ai-orb {
+  --orb-a: var(--rap-flame);
+  --orb-b: var(--rap-blue);
+  --orb-c: var(--rap-bubble);
+  --orb-spin: 14s;
+  scale: calc(1 + var(--lvl, 0) * 0.14);
+  transition: scale 90ms linear;
+}
+.rap-ai-orb[data-state="idle"] { animation: rap-orb-breathe 4.2s var(--rap-ease-in-out) infinite; }
+.rap-ai-orb[data-state="thinking"] { --orb-spin: 3.2s; }
+
+.rap-orb-glow {
+  background: color-mix(in srgb, var(--orb-b) 55%, var(--rap-paper-2));
+  box-shadow: inset 0 -6px 14px rgb(0 0 0 / 0.16);
+}
+.rap-orb-field {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  filter: blur(calc(var(--orb-blur, 6px)));
+  mix-blend-mode: normal;
+  animation: rap-orb-turn var(--orb-spin) linear infinite;
+}
+.rap-orb-a { background: radial-gradient(circle at 30% 30%, var(--orb-a) 0 28%, transparent 52%); }
+.rap-orb-b { background: radial-gradient(circle at 70% 60%, var(--orb-b) 0 30%, transparent 55%); animation-direction: reverse; animation-duration: calc(var(--orb-spin) * 1.35); }
+.rap-orb-c { background: radial-gradient(circle at 45% 75%, var(--orb-c) 0 24%, transparent 50%); animation-duration: calc(var(--orb-spin) * 0.8); }
+.rap-ai-orb[data-state="thinking"] .rap-orb-field { inset: -6%; }
+.rap-orb-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 26%, rgb(255 255 255 / 0.75) 0 8%, rgb(255 255 255 / 0) 34%);
+}
+
+@keyframes rap-orb-turn { to { rotate: 360deg; } }
+@keyframes rap-orb-breathe { 50% { scale: 1.035; } }
+
+/* ring */
+.rap-orb-ring { color: var(--rap-ink); }
+.rap-orb-arc {
+  stroke-dasharray: 22 78;
+  transform-origin: center;
+  animation: rap-orb-turn calc(var(--orb-spin) * 0.5) linear infinite;
+}
+.rap-ai-orb[data-state="idle"] .rap-orb-arc { stroke-dasharray: 6 94; }
+.rap-orb-core { transform-origin: center; transform-box: fill-box; scale: calc(1 + var(--lvl, 0) * 0.9); transition: scale 90ms linear; }
+.rap-ai-orb[data-look="ring"] { scale: 1; animation: none; }
+
+/* matrix */
+.rap-orb-matrix { position: absolute; }
+.rap-ai-orb[data-look="matrix"] { animation: none; }
+
+/* listening ripples */
+.rap-orb-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--orb-b) 70%, transparent);
+  animation: rap-orb-ripple 1.2s var(--rap-ease-out) infinite;
+}
+@keyframes rap-orb-ripple { from { scale: 1; opacity: 0.8; } to { scale: 1.6; opacity: 0; } }
+
+/* calm: slower, no breath, softer ripple */
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-ai-orb { --orb-spin: 26s; animation: none; }
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-ai-orb[data-state="thinking"] { --orb-spin: 7s; }
+:where([data-rap-motion="calm"]) .rap-orb-ripple { animation-duration: 2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rap-ai-orb, .rap-orb-field, .rap-orb-arc, .rap-orb-ripple { animation: none; }
+}

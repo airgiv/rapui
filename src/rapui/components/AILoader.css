@@ -1,0 +1,51 @@
+/* AILoader — the dots and the line.
+   dots: three dots take turns; fun lifts each one in a small hop, calm
+   only fades them up and down. line: a hairline track with a short bright
+   run travelling along it, ease-in-out, like a cursor reading the line.
+   Still freezes (global rule); reduced motion too. */
+@layer theme, base, components, utilities;
+
+.rap-ai-dots > i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: rap-ai-hop 1.05s var(--rap-ease-in-out) infinite;
+}
+.rap-ai-dots > i:nth-child(2) { animation-delay: 140ms; }
+.rap-ai-dots > i:nth-child(3) { animation-delay: 280ms; }
+@keyframes rap-ai-hop {
+  0%, 60%, 100% { translate: 0 0; opacity: 0.35; }
+  30% { translate: 0 -4px; opacity: 1; }
+}
+@keyframes rap-ai-fade {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-ai-dots > i { animation-name: rap-ai-fade; animation-duration: 1.6s; }
+/* the minimal and product presets square the dots off with the pill radius */
+.rap-ai-dots > i { border-radius: min(999px, var(--rap-radius-pill)); }
+
+.rap-ai-line {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 6rem;
+  height: 1.5px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  overflow: hidden;
+}
+.rap-ai-line::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 32%;
+  background: currentColor;
+  animation: rap-ai-run 1.6s var(--rap-ease-in-out) infinite;
+}
+@keyframes rap-ai-run { from { translate: -100% 0; } to { translate: 320% 0; } }
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-ai-line::after { animation-duration: 2.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rap-ai-dots > i, .rap-ai-line::after { animation: none; }
+}

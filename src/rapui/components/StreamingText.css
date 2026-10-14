@@ -1,0 +1,26 @@
+/* StreamingText — new words fade in (fun: with a 2px rise), the caret
+   blinks. Calm: a plain fade. Still / reduced motion: no fade, steady caret. */
+@layer theme, base, components, utilities;
+
+@keyframes rap-stream-in { from { opacity: 0; translate: 0 2px; } }
+@keyframes rap-stream-fade { from { opacity: 0; } }
+@keyframes rap-stream-blink { 50% { opacity: 0; } }
+
+.rap-stream-new { animation: rap-stream-in 320ms var(--rap-ease-out) both; }
+:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-stream-new { animation-name: rap-stream-fade; animation-duration: 420ms; }
+
+.rap-stream-caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-left: 0.12em;
+  vertical-align: -0.16em;
+  background: var(--rap-accent);
+  border-radius: min(2px, var(--rap-radius-xs));
+  animation: rap-stream-blink 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rap-stream-new { animation: none; }
+  .rap-stream-caret { animation: none; }
+}
