@@ -59,7 +59,10 @@ export interface Tile {
   ctl: Ctl;
 }
 
-export const TILES: Tile[] = [
+export type Layout = "hero" | "field";
+
+/* the hero: 15 tiles, flat ones toward the headline on the left, the tall knobs in the middle and right */
+export const HERO_TILES: Tile[] = [
   { id: "k1", cell: [0, 0, 1, 1], lift: 0, ctl: { kind: "knob", cap: null } },
   { id: "ka", cell: [1, 0, 2, 2], lift: 0, ctl: { kind: "knob", cap: 0 } },
   { id: "k2", cell: [3, 0, 1, 1], lift: 3, ctl: { kind: "knob", cap: null } },
@@ -93,31 +96,63 @@ export const centreOf = (t: Tile): [number, number] => {
 };
 export const topOf = (t: Tile) => TILE_H + t.lift;
 
-/* the knobs, in TILES order, and the controls you can press (keys 1..n) */
-export const KNOBS = TILES.filter((t) => t.ctl.kind === "knob");
-export const FADERS = TILES.filter((t) => t.ctl.kind === "fader");
-export const SWITCHES = TILES.filter((t) => t.ctl.kind === "switch");
-export const PRESSABLE = TILES.filter((t) => t.ctl.kind === "disc" || t.ctl.kind === "soft" || t.ctl.kind === "pill");
-/* the knobs whose caps take colour, in the order the lit accent visits them */
-export const CAPPED = KNOBS.filter((t) => t.ctl.kind === "knob" && t.ctl.cap !== null);
+/* the field: a wide scattered band of 26 tiles for a landing block. Everything sits right of the
+   x − y = −5 diagonal, so the left of the picture stays empty floor for a headline (see FIELD_TEXT in world.ts);
+   a few gaps and two small islands keep the outline loose. */
+const k = (id: string, x: number, y: number, cap: number | null, size = 1, lift = 0): Tile => ({ id, cell: [x, y, size, size], lift, ctl: { kind: "knob", cap } });
+const one = (id: string, x: number, y: number, ctl: Ctl, lift = 0): Tile => ({ id, cell: [x, y, 1, 1], lift, ctl });
+export const FIELD_TILES: Tile[] = [
+  // the far island
+  k("f-k1", 3, -2, null),
+  one("f-s1", 4, -2, { kind: "switch", axis: "y" }),
+  k("f-ka", 5, -2, 0, 2),
+  one("f-d1", 7, -1, { kind: "disc" }, 2),
+  // the main field
+  one("f-l1", 2, 0, { kind: "soft", icon: "loop" }),
+  k("f-k2", 3, 0, null, 1, 3),
+  one("f-d2", 4, 0, { kind: "disc" }),
+  { id: "f-fd1", cell: [5, 0, 2, 1], lift: 0, ctl: { kind: "fader" } },
+  k("f-k3", 7, 0, 1),
+  one("f-t1", 1, 1, { kind: "soft", icon: "tape" }),
+  { id: "f-p1", cell: [2, 1, 2, 1], lift: 0, ctl: { kind: "pill" } },
+  { id: "f-g1", cell: [4, 1, 2, 2], lift: 0, ctl: { kind: "grille" } },
+  k("f-kb", 6, 1, 2, 2),
+  one("f-s2", 1, 2, { kind: "switch", axis: "x" }, 1.5),
+  k("f-k4", 2, 2, null),
+  one("f-w1", 3, 2, { kind: "soft", icon: "wave" }),
+  one("f-d3", 8, 2, { kind: "disc" }),
+  { id: "f-fd2", cell: [1, 3, 2, 1], lift: 0, ctl: { kind: "fader" } },
+  k("f-kc", 3, 3, 0, 2),
+  one("f-l2", 5, 3, { kind: "soft", icon: "loop" }),
+  k("f-k5", 6, 3, 1, 1, 2),
+  one("f-s3", 7, 3, { kind: "switch", axis: "y" }),
+  // the near island
+  { id: "f-p2", cell: [2, 5, 2, 1], lift: 0, ctl: { kind: "pill" } },
+  one("f-d4", 4, 5, { kind: "disc" }),
+  k("f-k6", 5, 5, null),
+  one("f-t2", 6, 5, { kind: "soft", icon: "tape" }, 2),
+];
 
+/* the furthest points of a set of tiles, knob tops included, for framing */
+export function extremesOf(tiles: Tile[]): Point3[] {
+  const out: Point3[] = [];
+  for (const t of tiles) {
+    const p = planOf(t);
+    for (const x of [p.x, p.x + p.w]) for (const y of [p.y, p.y + p.d]) out.push([x, y, 0], [x, y, topOf(t)]);
+    if (t.ctl.kind === "knob") {
+      const [cx, cy] = centreOf(t);
+      for (const a of [0, 90, 180, 270]) {
+        const r = (a * Math.PI) / 180;
+        out.push([cx + KNOB_R * Math.cos(r), cy + KNOB_R * Math.sin(r), topOf(t) + KNOB_H]);
+      }
+    }
+  }
+  return out;
+}
 
 /* camera: the kit's 45° azimuth, looking down a little steeper than 30° */
 export const AZIMUTH = 45;
 export const ELEVATION = 34;
-
-const extremes: Point3[] = [];
-for (const t of TILES) {
-  const p = planOf(t);
-  for (const x of [p.x, p.x + p.w]) for (const y of [p.y, p.y + p.d]) extremes.push([x, y, 0], [x, y, topOf(t)]);
-  if (t.ctl.kind === "knob") {
-    const [cx, cy] = centreOf(t);
-    for (const a of [0, 90, 180, 270]) {
-      const r = (a * Math.PI) / 180;
-      extremes.push([cx + KNOB_R * Math.cos(r), cy + KNOB_R * Math.sin(r), topOf(t) + KNOB_H]);
-    }
-  }
-}
 
 function fit(points: Point3[], pad: number): Projection {
   const unit: Projection = { origin: [0, 0], scale: 1, azimuth: AZIMUTH, elevation: ELEVATION };
@@ -137,7 +172,8 @@ function fit(points: Point3[], pad: number): Projection {
   };
 }
 
-export const P = fit(extremes, 16);
+/* one camera for every layout (the hero frames it); a layout only picks its own viewBox */
+export const P = fit(extremesOf(HERO_TILES), 16);
 export const at = (p: Point3): Flat => iso(p, P);
 export const K = P.scale * Math.sqrt(1.6); // screen units per world unit across the view
 export const RAD = Math.PI / 180;
