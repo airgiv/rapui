@@ -3,13 +3,11 @@
    talks about itself in that preset's voice — and its own hero picture made of
    live components. What changes between them is the preset on <html> and the
    words; the layout is the blocks' own doing. */
-import { isValidElement, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { isValidElement, useRef, useState, type ReactNode } from "react";
 import { usePreset } from "../../rapui/hooks/usePreset";
 import { cn } from "../../rapui/utils";
 import {
   AILoader,
-  BlockKicker,
-  Section,
   BudgetBar,
   Button,
   Container,
@@ -42,36 +40,6 @@ import {
 import { Foliage } from "./foliage";
 import house from "./house.webp";
 import { CONTENT, type LandingContent } from "./content";
-import { ControlModules } from "../figures/modules";
-import { FIGURE_LOOKS } from "../figures/looks";
-
-/* the modules band: an endless strip of control tiles (the Anatomy figure, layout "field") you can drag
-   sideways, with a small kicker and one line above it. Each preset gets its own set of tiles: synth
-   modules (fun, product, minimal), a bench of lab instruments (signal), old office hardware (civic). */
-const MODULE_SET: Record<RapPreset, "synth" | "lab" | "office"> = { fun: "synth", product: "synth", minimal: "synth", signal: "lab", civic: "office" };
-function ModulesBand({ preset, content }: { preset: RapPreset; content: LandingContent["modules"] }) {
-  return (
-    <Section id="modules" tone="plain" width="bleed" className="overflow-x-clip">
-      <Container>
-        <div className="flex flex-col items-start gap-2 pb-(--rap-space-md)">
-          <BlockKicker look={preset}>{content.eyebrow}</BlockKicker>
-          <p className="m-0 max-w-[70ch] text-[0.9375rem] leading-relaxed text-ink-2">
-            {content.line}
-            {content.action ? (
-              <>
-                {" "}
-                <a href="#modules" className="whitespace-nowrap font-medium text-ink underline decoration-from-font underline-offset-4 hover:text-ink-2">
-                  {content.action} →
-                </a>
-              </>
-            ) : null}
-          </p>
-        </div>
-      </Container>
-      <ControlModules layout="field" set={MODULE_SET[preset]} style={FIGURE_LOOKS[preset].tokens as CSSProperties} />
-    </Section>
-  );
-}
 
 /* a UI shot as a picture: centred on a soft wash of the preset's own colours,
    filling whatever box the block gives its media */
@@ -350,7 +318,6 @@ export function LandingTemplate() {
         {gap(c.statement.end)}
         {c.statement.end}
       </Statement>
-      <ModulesBand preset={preset} content={c.modules} />
       <FeatureSplit
         id="split"
         index="02"

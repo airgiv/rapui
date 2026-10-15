@@ -50,10 +50,13 @@ export interface ControlModulesProps {
   layout?: Layout;
   /** A field's tile set (default "synth"). */
   set?: TileSet;
+  /** A field can be dragged around (default); false holds it as a fixed composition cropped by its box,
+      which then sets its height (the field fills it). */
+  pan?: boolean;
 }
 
 export const ControlModules = React.forwardRef<ModulesHandle, ControlModulesProps>(function ControlModules(
-  { className, style, framed = false, runKey, layout = "hero", set = "synth" },
+  { className, style, framed = false, runKey, layout = "hero", set = "synth", pan = true },
   ref,
 ) {
   const outer = useSound();
@@ -76,10 +79,11 @@ export const ControlModules = React.forwardRef<ModulesHandle, ControlModulesProp
         soundOn={enabled}
         onSound={onSound}
         set={set}
+        pan={pan}
       />
     </SoundProvider>
   );
-  const cls = ["iso", "cm", `cm-${layout}`, layout === "field" ? `cm-set-${set}` : "", framed ? "cm-framed" : "", className ?? ""].filter(Boolean).join(" ");
+  const cls = ["iso", "cm", `cm-${layout}`, layout === "field" ? `cm-set-${set}` : "", layout === "field" && !pan ? "cm-fixed" : "", framed ? "cm-framed" : "", className ?? ""].filter(Boolean).join(" ");
   if (!framed) {
     return (
       <div className={cls} data-theme="light" style={style}>

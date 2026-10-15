@@ -14,8 +14,6 @@ export interface LandingContent {
   logos: string[];
   /** The Statement: words around four live parts — a switch, a button, a slider, stars. */
   statement: { eyebrow: string; before: string; afterSwitch: string; button: string; afterButton: string; afterSlider: string; end: ReactNode };
-  /** The modules band: an endless, draggable strip of control tiles under a small kicker and one line. */
-  modules: { eyebrow: string; line: string; action?: string };
   features: { eyebrow: string; title: ReactNode; lead: string; items: FeatureItem[] };
   split: { eyebrow: string; title: ReactNode; lead: string; points: string[]; caption: string; board: { title: string; unit: string; rows: [string, number, string][] } };
   stats: { eyebrow: string; title: ReactNode; items: StatItem[] };
@@ -49,11 +47,6 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     logosTitle: "Overheard in the offices of",
     logos: ["Boom & Sons", "Megaphonics", "Very Big Co", "Shouty", "Exclamation Labs", "Ta-da!"],
     statement: { eyebrow: "A sentence that does things", before: "This sentence has a", afterSwitch: "switch in it, a", button: "Button", afterButton: "you can press, a", afterSlider: "slider and", end: <>stars — <Accent tone="mute">because a sentence can.</Accent></> },
-    modules: {
-      eyebrow: "Desk of noisy things",
-      line: "An endless desk of knobs, keys and faders. Drag it any way you like; it never runs out. Click a grille for sound.",
-      action: "Poke them all",
-    },
     features: {
       eyebrow: "Why so loud",
       title: <>Six reasons this page <Accent tone="mute">won't use its indoor voice</Accent></>,
@@ -138,11 +131,6 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     logosTitle: "As cited in the margins of",
     logos: ["Hale & Partners", "Morrow Kline", "Alder & Finch", "Briar & Stone", "Lowell Chambers", "Vantage Legal"],
     statement: { eyebrow: "Let the record show", before: "Let the record show the", afterSwitch: "switch was on, the", button: "Motion", afterButton: "was carried, the", afterSlider: "was moved and", end: <>four stars were entered into evidence.</> },
-    modules: {
-      eyebrow: "Exhibit M",
-      line: "The office equipment of record, filed without end in every direction. Drag to review; the bell is for emergencies.",
-      action: "Examine the exhibits",
-    },
     features: {
       eyebrow: "The page",
       title: <>Six findings <Accent tone="mute">on the design before you</Accent></>,
@@ -231,11 +219,6 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     logosTitle: "Picked up by stations at",
     logos: ["Relay 7", "Northgate Array", "Kestrel Obs.", "Field Unit 12", "Low Band", "Station Echo"],
     statement: { eyebrow: "Channel open", before: "Channel", afterSwitch: "open. Press", button: "Send", afterButton: "to transmit, tune the", afterSlider: "gain, rate the", end: <>reception — <Accent tone="mute">over.</Accent></> },
-    modules: {
-      eyebrow: "Bench inventory",
-      line: "Instruments on a bench with no end. Drag to scan the bench; every scope is live.",
-      action: "Open the bench",
-    },
     features: {
       eyebrow: "Channels",
       title: <>Six channels, <Accent tone="mute">all of them this page</Accent></>,
@@ -320,11 +303,6 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     logosTitle: "Trusted by teams who also have a landing page",
     logos: ["Linearly", "Vercelish", "Notional", "Figmental", "Rayform", "Arcade"],
     statement: { eyebrow: "The whole product, in one line", before: "Flip the", afterSwitch: "flag, hit", button: "Deploy", afterButton: "and drag the", afterSlider: "rollout, then watch the", end: <>reviews — <Accent tone="mute">that's the product.</Accent></> },
-    modules: {
-      eyebrow: "New: modules",
-      line: "Every control, shipped as its own block, on an infinite canvas. Drag it. They work right here.",
-      action: "Read the changelog",
-    },
     features: {
       eyebrow: "Features",
       title: <>Everything a landing page <Accent tone="mute">pretends to have</Accent></>,
@@ -405,10 +383,6 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     logosTitle: "Used by",
     logos: ["Mono", "Plain", "Grid", "Line", "Space", "Type"],
     statement: { eyebrow: "In full", before: "Switch", afterSwitch: "on, press", button: "Here", afterButton: "once, slide", afterSlider: "a little, rate", end: <>— <Accent tone="mute">that's it.</Accent></> },
-    modules: {
-      eyebrow: "Controls",
-      line: "Many. Separately. Drag.",
-    },
     features: {
       eyebrow: "Page",
       title: <>Six things, <Accent tone="mute">then nothing</Accent></>,
