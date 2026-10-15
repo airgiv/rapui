@@ -4,9 +4,13 @@
    buttons, pill keys, faders, sliding switches, speaker grilles).
 
    layout="hero" (default) is the 15-tile composition to sit beside a headline.
-   layout="field" is a wide 16:7 band of 26 scattered tiles that leaves the left
-   FIELD_TEXT (40%) of the picture as empty floor for a block's headline; below
-   896 px wide (56rem, where a block stacks) it frames the tiles alone, for text stacked above it.
+   layout="field" is a full-bleed band: about 50 tiles in clusters round the hero
+   composition, more control kinds (rockers, tiny keys, pad grids, LCDs, joystick
+   nubs, LED strips, jog wheels, vertical faders), drawn "slice" so the band
+   fills its box (height: --cm-field-h) and bleeds off the sides. Pass `marks`
+   ({ id, n } with tile ids, e.g. FIELD_MARKS) to put numbered footnote marks
+   over controls; they follow the drawing as it scales, hide when cropped out,
+   and report hover/focus through `onActive` (and light up with `active`).
 
    Frameless by default (transparent, grounded by soft halos, none in a dark
    theme). `framed` wraps it in the kit's Plate with a title, a hint and a live
@@ -36,7 +40,8 @@ import { ModulesLive, type ModulesHandle } from "./live";
 import type { Layout } from "./view";
 
 export type { ModulesHandle } from "./live";
-export { FIELD_TEXT } from "./world";
+export { FIELD_BOX } from "./world";
+export { FIELD_MARKS } from "./view";
 
 export interface ControlModulesProps {
   className?: string;
@@ -45,12 +50,18 @@ export interface ControlModulesProps {
   framed?: boolean;
   /** Change this number to restart the idle sequence (an alternative to ref.run()). */
   runKey?: number;
-  /** "hero" (default): beside a headline. "field": a wide band with empty floor on its left for text. */
+  /** "hero" (default): beside a headline. "field": a full-bleed band of many tiles. */
   layout?: Layout;
+  /** Numbered footnote marks over controls (tile ids). */
+  marks?: { id: string; n: number }[];
+  /** The mark to highlight (a footnote under hover or focus). */
+  active?: number | null;
+  /** Hover or focus on a mark. */
+  onActive?: (n: number | null) => void;
 }
 
 export const ControlModules = React.forwardRef<ModulesHandle, ControlModulesProps>(function ControlModules(
-  { className, style, framed = false, runKey, layout = "hero" },
+  { className, style, framed = false, runKey, layout = "hero", marks, active, onActive },
   ref,
 ) {
   const outer = useSound();
@@ -65,7 +76,17 @@ export const ControlModules = React.forwardRef<ModulesHandle, ControlModulesProp
   }, [local, outer.fun, outer.volume]);
   const live = (
     <SoundProvider enabled={enabled} volume={outer.volume || 0.6} fun={outer.fun || 25} haptics={outer.haptics}>
-      <ModulesLive key={layout} ref={ref} runKey={runKey} layout={layout} soundOn={enabled} onSound={onSound} />
+      <ModulesLive
+        key={layout}
+        ref={ref}
+        runKey={runKey}
+        layout={layout}
+        soundOn={enabled}
+        onSound={onSound}
+        marks={marks}
+        active={active}
+        onActive={onActive}
+      />
     </SoundProvider>
   );
   const cls = ["iso", "cm", `cm-${layout}`, framed ? "cm-framed" : "", className ?? ""].filter(Boolean).join(" ");

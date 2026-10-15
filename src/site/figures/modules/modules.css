@@ -68,3 +68,59 @@
   --anatomy-halo-opacity: 0 !important;
   --cm-veil: #000;
 }
+
+/* ---------- the field: a full-bleed band of a fixed height, the drawing sliced to fill it */
+.cm-field .cm-stage {
+  height: var(--cm-field-h, clamp(440px, 68vh, 760px));
+  overflow: hidden;
+  /* the sides bleed off the page; the top and bottom fade into the floor instead of a hard cut */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+}
+.cm-field .cm-svg-field { width: 100%; height: 100%; }
+
+/* pads light up; the last two LEDs of a strip are the peak */
+.cm-pads .cm-subkey[data-on] > .iso-top { fill: var(--anatomy-lit); }
+.cm-pads .cm-subkey[data-on] > .iso-edge { stroke: var(--anatomy-lit); }
+.cm-stage[tabindex] [data-ctl^="stick"] { cursor: grab; touch-action: none; }
+
+/* the LCD: a pale glass (shade), digits in the ink, a ghost of unlit segments behind them */
+.cm-lcd .cm-recess-floor { fill: var(--anatomy-shade-1); }
+.cm-lcd-text text { font-family: var(--anatomy-mono); font-variant-numeric: tabular-nums; stroke: none; }
+.cm-lcd-text .cm-lcd-digits { fill: var(--anatomy-hi); font-weight: 600; letter-spacing: 0.04em; }
+.cm-lcd-text .cm-lcd-ghost { fill: var(--anatomy-hi); opacity: 0.07; font-weight: 600; letter-spacing: 0.04em; }
+.cm-lcd-text .cm-lcd-unit { fill: var(--anatomy-mid); letter-spacing: 0.1em; }
+
+/* the joystick: a slender shaft and a round ball */
+.iso-svg path.cm-shaft { fill: var(--anatomy-shade-2); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.cm-ball { stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+
+/* ---------- footnote marks: small numbered rings over controls, in HTML above the drawing */
+.cm-mark {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--cm-mark-ink, var(--anatomy-lit));
+  border-radius: 999px;
+  background: var(--anatomy-card, #fff);
+  color: var(--cm-mark-ink, var(--anatomy-lit));
+  font: 600 11px/1 var(--anatomy-mono);
+  font-variant-numeric: tabular-nums;
+  transform: translate(-50%, calc(-100% - 10px));
+  cursor: help;
+  transition: transform 160ms var(--anatomy-ease), background-color 160ms linear, color 160ms linear;
+}
+/* a short stem from the ring down toward its control, outside the drawing */
+.cm-mark::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: currentColor; opacity: 0.6; }
+.cm-mark[data-active], .cm-mark:hover, .cm-mark:focus-visible {
+  background: var(--cm-mark-ink, var(--anatomy-lit));
+  color: var(--anatomy-card, #fff);
+  transform: translate(-50%, calc(-100% - 10px)) scale(1.12);
+  outline: none;
+}
+@media (prefers-reduced-motion: reduce) { .cm-mark { transition: none; } }

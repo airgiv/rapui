@@ -41,16 +41,36 @@ export const GRILLE = { n: 14, pitch: 6.5, hole: 1.85, corner: 24 };
 export const FADER = { len: 92, slot: 6, depth: 3, cap: { w: 15, d: 28, h: 8.5, r: 2.6 }, scale: 18.5 };
 /* the sliding switches: a thumb in a stadium slot, a small lamp at the "on" end */
 export const SWITCH = { len: 38, d: 17, depth: 2.4, thumb: { len: 19, d: 12.4, h: 5.2 }, lamp: 24.5 };
+/* the rocker: a bezel and a cap of two halves that tip, the lamp beside it */
+export const ROCKER = { len: 40, w: 27, depth: 1.8, half: 19.4, hw: 22.5, lo: 3, hi: 7.6, lamp: 25 };
+/* four tiny keys on a 2×1 tile */
+export const KEYS = { n: 4, pitch: 25, w: 20.5, d: 27, h: 5, travel: 2.2 };
+/* a 3×3 pad grid */
+export const PADS = { pitch: 16.2, s: 13.6, h: 2.8, travel: 1.3 };
+/* the LCD: a bezel sunk in a 2×1 tile, digits in the glass's plane */
+export const LCD = { w: 100, d: 38, depth: 1.5 };
+/* the joystick nub: a socket, a rubber boot, a shaft and a ball that tilt */
+export const STICK = { socket: 17, boot: 11.5, bootH: 3.2, shaft: 3.3, shaftH: 13, ball: 7.2, tilt: 7 };
+/* ten LEDs along a 2×1 tile */
+export const LEDS = { n: 10, pitch: 9.6, r: 2.6 };
+/* the jog wheel: a big flat dial with a finger dimple, on a 1×1 (r 25) or a 2×2 tile (r 46) */
+export const JOG = { h: 5, small: 25, big: 46 };
 
 export type Icon = "loop" | "tape" | "wave";
 export type Ctl =
-  | { kind: "knob"; cap: number | null } // cap: index of a coloured cap (0, 1, 2) or null for a plain white knob
+  // cap: index of a coloured cap (0, 1, 2) or null for a plain white knob; jog: a big flat dial with a finger dimple
+  | { kind: "knob"; cap: number | null; jog?: boolean }
   | { kind: "disc" }
   | { kind: "soft"; icon: Icon }
   | { kind: "pill" }
   | { kind: "grille" }
-  | { kind: "fader" } // runs along +x
-  | { kind: "switch"; axis: "x" | "y" };
+  | { kind: "fader"; axis?: "x" | "y" } // runs along +x unless axis is "y"
+  | { kind: "switch"; axis: "x" | "y"; rocker?: boolean } // a sliding switch, or a rocker that tips
+  | { kind: "keys" } // a row of four tiny keys along +x (a 2×1 tile)
+  | { kind: "pads" } // a 3×3 grid of small pads
+  | { kind: "display" } // a small LCD with digits (a 2×1 tile along +x)
+  | { kind: "stick" } // a joystick nub
+  | { kind: "leds" }; // a strip of ten LEDs along +x (a 2×1 tile)
 
 export interface Tile {
   id: string;
@@ -96,42 +116,84 @@ export const centreOf = (t: Tile): [number, number] => {
 };
 export const topOf = (t: Tile) => TILE_H + t.lift;
 
-/* the field: a wide scattered band of 26 tiles for a landing block. Everything sits right of the
-   x − y = −5 diagonal, so the left of the picture stays empty floor for a headline (see FIELD_TEXT in world.ts);
-   a few gaps and two small islands keep the outline loose. */
-const k = (id: string, x: number, y: number, cap: number | null, size = 1, lift = 0): Tile => ({ id, cell: [x, y, size, size], lift, ctl: { kind: "knob", cap } });
-const one = (id: string, x: number, y: number, ctl: Ctl, lift = 0): Tile => ({ id, cell: [x, y, 1, 1], lift, ctl });
-export const FIELD_TILES: Tile[] = [
-  // the far island
-  k("f-k1", 3, -2, null),
-  one("f-s1", 4, -2, { kind: "switch", axis: "y" }),
-  k("f-ka", 5, -2, 0, 2),
-  one("f-d1", 7, -1, { kind: "disc" }, 2),
-  // the main field
-  one("f-l1", 2, 0, { kind: "soft", icon: "loop" }),
-  k("f-k2", 3, 0, null, 1, 3),
-  one("f-d2", 4, 0, { kind: "disc" }),
-  { id: "f-fd1", cell: [5, 0, 2, 1], lift: 0, ctl: { kind: "fader" } },
-  k("f-k3", 7, 0, 1),
-  one("f-t1", 1, 1, { kind: "soft", icon: "tape" }),
-  { id: "f-p1", cell: [2, 1, 2, 1], lift: 0, ctl: { kind: "pill" } },
-  { id: "f-g1", cell: [4, 1, 2, 2], lift: 0, ctl: { kind: "grille" } },
-  k("f-kb", 6, 1, 2, 2),
-  one("f-s2", 1, 2, { kind: "switch", axis: "x" }, 1.5),
-  k("f-k4", 2, 2, null),
-  one("f-w1", 3, 2, { kind: "soft", icon: "wave" }),
-  one("f-d3", 8, 2, { kind: "disc" }),
-  { id: "f-fd2", cell: [1, 3, 2, 1], lift: 0, ctl: { kind: "fader" } },
-  k("f-kc", 3, 3, 0, 2),
-  one("f-l2", 5, 3, { kind: "soft", icon: "loop" }),
-  k("f-k5", 6, 3, 1, 1, 2),
-  one("f-s3", 7, 3, { kind: "switch", axis: "y" }),
-  // the near island
-  { id: "f-p2", cell: [2, 5, 2, 1], lift: 0, ctl: { kind: "pill" } },
-  one("f-d4", 4, 5, { kind: "disc" }),
-  k("f-k6", 5, 5, null),
-  one("f-t2", 6, 5, { kind: "soft", icon: "tape" }, 2),
+/* the field: a full-bleed band for a landing block. The hero composition sits in the middle (the subject, and
+   where the footnote marks land); clusters of tiles spread out to both sides with floor between them, a few
+   tiles stand alone and a couple are raised. Clusters are placed by their centre in screen terms — d = x − y
+   across, s = x + y down — and a tile that would overlap one already placed is left out. */
+type Local = Omit<Tile, "id"> & { id: string };
+const L = (id: string, x: number, y: number, w: number, d: number, ctl: Ctl, lift = 0): Local => ({ id, cell: [x, y, w, d], lift, ctl });
+const KN = (cap: number | null = null): Ctl => ({ kind: "knob", cap });
+const TEMPLATES: Record<string, Local[]> = {
+  studio: [L("lcd", 0, 0, 2, 1, { kind: "display" }), L("kn", 2, 0, 1, 1, KN(1)), L("keys", 0, 1, 2, 1, { kind: "keys" }), L("rk", 2, 1, 1, 1, { kind: "switch", axis: "y", rocker: true })],
+  pads: [L("pads", 0, 0, 1, 1, { kind: "pads" }), L("jog", 1, 0, 1, 1, { kind: "knob", cap: null, jog: true }), L("leds", 0, 1, 2, 1, { kind: "leds" })],
+  mixer: [L("vf1", 0, 0, 1, 2, { kind: "fader", axis: "y" }), L("vf2", 1, 0, 1, 2, { kind: "fader", axis: "y" }), L("kn", 2, 0, 1, 1, KN()), L("sw", 2, 1, 1, 1, { kind: "switch", axis: "x" })],
+  big: [L("kn", 0, 0, 2, 2, KN(0)), L("st", 2, 0, 1, 1, { kind: "stick" }, 3), L("dc", 2, 1, 1, 1, { kind: "disc" })],
+  jog2: [L("jog", 0, 0, 2, 2, { kind: "knob", cap: null, jog: true })],
+  pair: [L("so", 0, 0, 1, 1, { kind: "soft", icon: "wave" }), L("rk", 1, 0, 1, 1, { kind: "switch", axis: "x", rocker: true })],
+  speaker: [L("gr", 0, 0, 2, 2, { kind: "grille" }), L("leds", 0, 2, 2, 1, { kind: "leds" })],
+  trio: [L("st", 0, 0, 1, 1, { kind: "stick" }), L("pads", 1, 0, 1, 1, { kind: "pads" }), L("lcd", 0, 1, 2, 1, { kind: "display" })],
+  knob: [L("kn", 0, 0, 1, 1, KN())],
+  wave: [L("so", 0, 0, 1, 1, { kind: "soft", icon: "loop" })],
+  disc: [L("dc", 0, 0, 1, 1, { kind: "disc" }, 4)],
+  rocker: [L("rk", 0, 0, 1, 1, { kind: "switch", axis: "y", rocker: true })],
+  pad: [L("pads", 0, 0, 1, 1, { kind: "pads" })],
+  vfader: [L("vf", 0, 0, 1, 2, { kind: "fader", axis: "y" })],
+};
+/* [template, d, s] — where each cluster's centre goes */
+const PLACES: [string, number, number][] = [
+  // hugging the hero on the left, with floor between the clusters
+  ["studio", -6.2, 1.2],
+  ["big", -7.3, 6.6],
+  ["pair", -4.4, 11.8],
+  ["trio", -8.6, 11.2],
+  ["rocker", -3.4, -0.8],
+  ["pad", -9.9, 3.2],
+  // and on the right
+  ["mixer", 6.4, 1.0],
+  ["speaker", 9.0, 7.0],
+  ["pads", 5.6, 5.6],
+  ["trio", 6.0, 10.6],
+  ["wave", 3.4, -0.4],
+  ["pair", 5.0, -1.0],
+  ["disc", 9.6, 1.8],
+  // under the hero
+  ["mixer", 2.2, 12.6],
+  ["pair", -1.6, 13.6],
+  // a far column, for wide screens (cropped at the edges of most)
+  ["vfader", -11.4, 5.4],
+  ["knob", -10.8, 8.8],
+  ["jog2", -12.8, 12.0],
+  ["pads", 10.8, 10.8],
+  ["knob", 11.0, 4.6],
+  ["vfader", 11.8, 0.8],
+  ["big", 13.0, 8.0],
+  ["jog2", -13.2, 1.0],
 ];
+const overlaps = (a: Tile, b: Tile, clear = -0.01) =>
+  a.cell[0] < b.cell[0] + b.cell[2] + clear &&
+  b.cell[0] < a.cell[0] + a.cell[2] + clear &&
+  a.cell[1] < b.cell[1] + b.cell[3] + clear &&
+  b.cell[1] < a.cell[1] + a.cell[3] + clear;
+const snap = (v: number) => Math.round(v * 20) / 20;
+function placeField(): Tile[] {
+  const out: Tile[] = HERO_TILES.map((t) => ({ ...t, id: `h-${t.id}` }));
+  PLACES.forEach(([name, d, s], c) => {
+    const tpl = TEMPLATES[name]!;
+    const w = Math.max(...tpl.map((t) => t.cell[0] + t.cell[2]));
+    const h = Math.max(...tpl.map((t) => t.cell[1] + t.cell[3]));
+    // the cluster's centre in cells, from its place on screen (the hero's middle, cell 3, 3, is d 0, s 6)
+    const ox = snap((s + d) / 2 - w / 2);
+    const oy = snap((s - d) / 2 - h / 2);
+    for (const t of tpl) {
+      const tile: Tile = { ...t, id: `c${c}-${t.id}`, cell: [ox + t.cell[0], oy + t.cell[1], t.cell[2], t.cell[3]] };
+      if (!out.some((o) => overlaps(o, tile))) out.push(tile);
+    }
+  });
+  return out;
+}
+export const FIELD_TILES: Tile[] = placeField();
+/* the controls the landing's footnotes point at: the hero's lit knob, its fader, the grille (the sound switch) and a switch */
+export const FIELD_MARKS = ["h-ka", "h-fd", "h-gr", "h-s1"];
 
 /* the furthest points of a set of tiles, knob tops included, for framing */
 export function extremesOf(tiles: Tile[]): Point3[] {
