@@ -141,7 +141,27 @@ function build(layout: Layout, set: TileSet): World {
   };
 }
 
+/* a dev check: no two tiles of a field may overlap, copies across the wrap (both ways) included */
+function assertNoOverlap(w: World) {
+  const t = w.tiles;
+  const bad: string[] = [];
+  for (let a = 0; a < t.length; a++)
+    for (let b = a; b < t.length; b++)
+      for (const k of [-1, 0, 1])
+        for (const j of [-1, 0, 1]) {
+          if (a === b && !k && !j) continue;
+          const px = (k * PERIOD_D) / 2 + (j * PERIOD_S) / 2;
+          const py = (-k * PERIOD_D) / 2 + (j * PERIOD_S) / 2;
+          const A = t[a]!.cell;
+          const B = t[b]!.cell;
+          const e = 1e-3;
+          if (A[0] < B[0] + px + B[2] - e && B[0] + px < A[0] + A[2] - e && A[1] < B[1] + py + B[3] - e && B[1] + py < A[1] + A[3] - e)
+            bad.push(`${t[a]!.id} × ${t[b]!.id} (${k}, ${j})`);
+        }
+  if (bad.length) console.error(`ControlModules: ${bad.length} overlapping tiles in the ${w.set} field`, bad);
+}
 function ranked(w: World): World {
+  if (w.layout === "field" && import.meta.env?.DEV) assertNoOverlap(w);
   w.tileOrder.forEach((ti, r) => (w.tileRank[ti] = r));
   w.ctlOrder.forEach((ti, r) => (w.ctlRank[ti] = r));
   return w;

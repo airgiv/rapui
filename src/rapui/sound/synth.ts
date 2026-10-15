@@ -29,7 +29,8 @@ export type SoundName =
   | "whoosh" // a sheet or page slides
   | "success"
   | "error"
-  | "type"; // a keystroke
+  | "type" // a keystroke
+  | "bell"; // a desk bell: a bright struck ding that rings on
 
 export interface PlayOptions {
   /** 0..1 — how firm: a detent on the hour is firmer than on a minute. */
@@ -189,6 +190,22 @@ export function synth(name: SoundName, fun: number, volume: number, opts: PlayOp
     case "error": {
       voice(c, out, t, { wave: f > 0.5 ? "square" : "triangle", from: lerp(170, 300, f) * p, to: lerp(150, 180, f) * p, dur: lerp(0.12, 0.2, f), gain: lerp(0.4, 0.18, f) * s });
       voice(c, out, t + 0.1, { wave: f > 0.5 ? "square" : "triangle", from: lerp(150, 260, f) * p, to: lerp(120, 140, f) * p, dur: lerp(0.12, 0.2, f), gain: lerp(0.35, 0.16, f) * s });
+      break;
+    }
+    case "bell": {
+      // a reception desk bell: a short metal strike, then a few inharmonic partials (the ratios of a
+      // small bell) that ring out for over a second; it bypasses the soft low-pass so it stays bright
+      const ring = c.createGain();
+      ring.gain.value = volume * 0.5;
+      ring.connect(c.destination);
+      const f0 = lerp(2100, 2500, f) * p;
+      click(c, ring, t, { freq: 5200, q: 1.2, dur: 0.008, gain: 0.35 * s, type: "highpass" });
+      [
+        [1, 0.42, 1.6],
+        [2.32, 0.18, 0.9],
+        [4.25, 0.1, 0.5],
+        [6.63, 0.05, 0.3],
+      ].forEach(([r, g, d]) => voice(c, ring, t, { wave: "sine", from: f0 * r, to: f0 * r * 0.998, dur: d, gain: g * s, attack: 0.001 }));
       break;
     }
     case "type": {

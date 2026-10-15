@@ -96,6 +96,7 @@ import {
 import { LOOP, STILL_T, idleAt } from "./model";
 import { KNOB_H, P, RAD, STICK, ctlFill, subFill, tileFill, type Layout, type Tile, type TileSet } from "./view";
 import { FIELD_BOX, PERIOD_H, PERIOD_W, worldOf, type World } from "./world";
+import { PERIOD_D, PERIOD_S } from "./view";
 import { useSound } from "../../../rapui";
 
 export interface ModulesHandle {
@@ -119,6 +120,8 @@ function motionOf(node: Element | null): Motion {
 }
 
 const QUIET = 3.6;
+/* a rotary dial goes home at this many degrees a second */
+const DIAL_SPEED = 330;
 /* a field animates ACTIVE controls in view at a time, a new handful every ACT_EVERY seconds */
 const ACTIVE = 4;
 const ACT_EVERY = 2.4;
@@ -270,6 +273,13 @@ interface State {
   pick: number[]; // per pressable: the tiny key or pad being pressed
   tilt: Spring[][]; // per stick: x and y
   tiltHand: ([number, number] | null)[]; // per stick: where the hand holds it
+  dialTurn: number[]; // per knob that is a rotary dial: how far it is wound (degrees, ≥ 0)
+  dialBack: boolean[]; // springing back
+  dialDigit: number[]; // the digit it will dial when it gets home
+  dialled: number; // what the counters have added up
+  gaugeKick: Spring[]; // per gauge: a tap on the glass
+  dOpen: boolean[]; // per pressable that is a drawer: pulled out
+  scopeKind: number[]; // per scope: its waveform
   act: number[]; // per tile: how much the idle life moves it (eases 0 ↔ 1; a field animates a few at a time)
   actEpoch: number;
 }
@@ -298,6 +308,13 @@ function initial(W: World, t: number, calm: boolean): State {
       { at: y, rate: 0 },
     ]),
     tiltHand: W.sticks.map(() => null),
+    dialTurn: W.knobs.map(() => 0),
+    dialBack: W.knobs.map(() => false),
+    dialDigit: W.knobs.map(() => 0),
+    dialled: 0,
+    gaugeKick: W.gauges.map(() => ({ at: 0, rate: 0 })),
+    dOpen: W.pressable.map(() => false),
+    scopeKind: W.scopes.map((_, i) => i % 3),
     act: W.tiles.map(() => (W.layout === "field" ? 0 : 1)),
     actEpoch: -1,
   };
@@ -409,6 +426,8 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     lastX: "",
     lastY: "",
     order: null as null | true, // painter's order put in place once
+    checks: 0, // how many times the order was redone (for checks)
+    movedNodes: 0, // and how many nodes that moved
     vx: 0,
     vy: 0,
     nx: TILES.map(() => 0),
@@ -456,12 +475,10 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       layerRef.current?.style.setProperty("transform", `translate3d(${px}px, ${py}px, 0)`);
     }
     let moved = false;
-    const wrappedDown: number[] = [];
     for (let i = 0; i < TILES.length; i++) {
       const kx = Math.ceil((left - W.sx[i]! - p.ox) / PERIOD_W);
       const ky = Math.ceil((top - W.sy[i]! - p.oy) / PERIOD_H);
       if (kx !== p.nx[i] || ky !== p.ny[i]) {
-        if (ky !== p.ny[i] && !Number.isNaN(p.ny[i]!)) wrappedDown.push(i);
         p.nx[i] = kx;
         p.ny[i] = ky;
         moved = true;
@@ -473,30 +490,35 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const y = W.sy[i]! + p.oy + ky * PERIOD_H;
       p.vis[i] = Math.abs(x - midX) < bw / 2 + 170 && y > midY - bh / 2 - 120 && y < midY + bh / 2 + 240;
     }
-    if (wrappedDown.length || p.order === null) {
-      // back in painter's order: periods down first, then the order within a period. Only the tiles that
-      // wrapped are moved, each in front of the first tile that now follows it (moving a whole drawing's
-      // nodes would restyle all of them); on the first placement everything is put in order once.
-      const place = (els: (SVGGElement | null)[], rank: number[], only: number[] | null) => {
-        const list = TILES.map((_, i) => i).filter((i) => els[i]);
-        list.sort((a, b) => p.ny[a]! - p.ny[b]! || rank[a]! - rank[b]!);
-        if (!only) {
-          for (const i of list) els[i]!.parentNode?.appendChild(els[i]!);
-          return;
-        }
-        const at = new Map(list.map((i, k) => [i, k]));
-        for (const i of only) {
-          const el = els[i];
-          const k = at.get(i);
-          if (!el || k === undefined) continue;
-          const next = k + 1 < list.length ? els[list[k + 1]!]! : null;
-          if (el.nextSibling !== next) el.parentNode?.insertBefore(el, next);
+    if (moved || p.order === null) {
+      // Back in painter's order, from where each tile sits now (its own cell plus the periods it was moved).
+      // A tile that wraps lands next to tiles it was a whole period away from before, so the order within
+      // one period says nothing about it: the visible order is sorted afresh from the placed footprints
+      // (a tile wholly behind a near neighbour goes first, else by depth), and only nodes out of place move.
+      const order = placedOrder(W, p.nx, p.ny);
+      const fix = (els: (SVGGElement | null)[], list: number[]) => {
+        // move as few nodes as can be: keep the longest run that is already in order, move the rest
+        const want = list.map((i) => els[i]).filter((el): el is SVGGElement => Boolean(el));
+        if (!want.length) return;
+        const parent = want[0]!.parentNode!;
+        const at = new Map<Element, number>();
+        [...parent.children].forEach((el, k) => at.set(el, k));
+        const keep = longestRising(want.map((el) => at.get(el) ?? -1));
+        let anchor: ChildNode | null = want[want.length - 1]!.nextSibling;
+        if (!keep.has(want.length - 1)) anchor = null;
+        for (let k = want.length - 1; k >= 0; k--) {
+          const el = want[k]!;
+          if (!keep.has(k)) {
+            parent.insertBefore(el, anchor);
+            p.movedNodes++;
+          }
+          anchor = el;
         }
       };
-      const only = p.order === null ? null : wrappedDown;
-      place(m.tileG, W.tileRank, only);
-      place(m.ctlG, W.ctlRank, only);
+      fix(m.tileG, order.tiles);
+      fix(m.ctlG, order.ctls);
       p.order = true;
+      p.checks++;
     }
     // the shadows: one path per wrap position (two across, two down), rebuilt only when a tile changes place
     const sig = `${p.nx.join("")}|${p.ny.join("")}`;
@@ -644,11 +666,11 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     // the office's gauges and counters
     for (let i = 0; i < G.GAUGE_GEO.length; i++) {
       if (!vis[G.GAUGE_TI[i]!]) continue;
-      const gv = FIRST.gauges[i]! + (idle.gauges[i]! - FIRST.gauges[i]!) * s.act[G.GAUGE_TI[i]!]!;
+      const gv = Math.min(0.99, Math.max(0.01, FIRST.gauges[i]! + (idle.gauges[i]! - FIRST.gauges[i]!) * s.act[G.GAUGE_TI[i]!]! + s.gaugeKick[i]!.at));
       if (changed(`gg${i}`, gv, 0.002)) m.needles[i]?.setAttribute("d", gaugeNeedle(G.GAUGE_GEO[i]!, gv));
     }
     if (m.counters.length) {
-      const count = String(1000 + Math.floor(s.t / 1.6) + Math.floor(s.clock * 0)).slice(-4);
+      const count = String(1000 + Math.floor(s.t / 1.6) + s.dialled).slice(-4);
       for (const c of m.counters) if (c && c.textContent !== count) c.textContent = count;
     }
     // the lab's screens: a live trace on each scope, a moving spectrum on each dot-matrix
@@ -657,9 +679,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const g = G.SCOPE_GEO[i]!;
       // traces move slowly: twenty redraws a second are plenty, and leave the frame to the rest
       const ph = Math.floor(s.t * 20) / 20 * (calm ? 0.12 : 0.3) + i * 0.37;
-      if (!changed(`sc${i}`, ph, 0.002)) continue;
+      if (!changed(`sc${i}`, ph + s.scopeKind[i]! * 100, 0.002)) continue;
       const amp = 0.62 + 0.28 * Math.sin(s.t * 0.7 + i * 1.3);
-      m.traces[i]?.setAttribute("d", scopeTrace(g, amp, 2 + (i % 3), ph, i));
+      m.traces[i]?.setAttribute("d", scopeTrace(g, amp, 2 + (i % 3), ph, s.scopeKind[i]!));
     }
     for (let i = 0; i < G.MATRIX_GEO.length; i++) {
       if (!vis[G.MATRIX_TI[i]!]) continue;
@@ -799,7 +821,29 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         s.target[i] = nearest(s.target[i]!, to);
       }
     for (let i = 0; i < KNOBS.length; i++) s.angles[i] = ease(s.angles[i]!, s.target[i]!, dt, 0.12);
-    for (let i = 0; i < PRESSABLE.length; i++) spring(s.hand[i]!, s.handHeld[i] ? 1 : 0, dt, 900, 26);
+    // rotary dials: wound by hand, then home again at a constant speed, ticking once per digit
+    for (let i = 0; i < KNOBS.length; i++) {
+      if (!G.DIAL_GEO[i]) continue;
+      if (s.dialBack[i]) {
+        const before = s.dialTurn[i]!;
+        const after = Math.max(0, before - DIAL_SPEED * dt);
+        if (Math.floor(before / 30 - 1e-6) !== Math.floor(after / 30 - 1e-6) && before > 0) snd.current.detent(0.8);
+        s.dialTurn[i] = after;
+        if (after === 0) {
+          s.dialBack[i] = false;
+          if (s.dialDigit[i]) {
+            s.dialled += s.dialDigit[i]!;
+            snd.current.play("tick");
+          }
+          s.dialDigit[i] = 0;
+        }
+      }
+      s.angles[i] = FIRST.angles[i]! + s.dialTurn[i]!;
+    }
+    for (let i = 0; i < G.GAUGE_GEO.length; i++) spring(s.gaugeKick[i]!, 0, dt, 140, 5);
+    for (let i = 0; i < PRESSABLE.length; i++)
+      if (PRESSABLE[i]!.ctl.kind === "drawer") spring(s.hand[i]!, s.dOpen[i] ? 1 : 0, dt, 160, 22);
+      else spring(s.hand[i]!, s.handHeld[i] ? 1 : 0, dt, 900, 26);
     if (idleOn) for (let i = 0; i < FADERS.length; i++) s.faderTarget[i] = FIRST.faders[i]! + (idle.faders[i]! - FIRST.faders[i]!) * w[G.FADER_TI[i]!]!;
     for (let i = 0; i < FADERS.length; i++) s.fader[i] = ease(s.fader[i]!, s.faderTarget[i]!, dt, 0.14);
     for (let i = 0; i < SWITCHES.length; i++) {
@@ -886,16 +930,40 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       pan.current.vy = 0;
       placeTiles();
     };
+    // checks of the painter's order: "cm-check" compares the DOM with a fresh sort (data-order: ok or the
+    // number of tiles out of place); "cm-reorder" puts every tile back from scratch, as a first render would
+    const check = () => {
+      const m = n.current;
+      const want = placedOrder(W, pan.current.nx, pan.current.ny).tiles.filter((i) => m.tileG[i]);
+      const parent = m.tileG[want[0]!]?.parentNode;
+      const have = parent ? [...parent.children].map((el) => m.tileG.indexOf(el as SVGGElement)).filter((i) => i >= 0) : [];
+      const off = want.filter((i, k) => have[k] !== i).length;
+      node.setAttribute("data-order", off ? String(off) : "ok");
+      node.setAttribute("data-reorders", `${pan.current.checks}/${pan.current.movedNodes}`);
+    };
+    const reorder = () => {
+      pan.current.nx = TILES.map(() => NaN);
+      pan.current.ny = TILES.map(() => NaN);
+      pan.current.order = null;
+      const m = n.current;
+      // the first render's DOM order: the order within one period
+      for (const i of W.tileOrder) m.tileG[i]?.parentNode?.appendChild(m.tileG[i]!);
+      placeTiles();
+    };
+    node.addEventListener("cm-check", check);
+    node.addEventListener("cm-reorder", reorder);
     node.addEventListener("cm-seek", seek);
     node.addEventListener("cm-pan", panTo);
     return () => {
+      node.removeEventListener("cm-check", check);
+      node.removeEventListener("cm-reorder", reorder);
       node.removeEventListener("cm-seek", seek);
       node.removeEventListener("cm-pan", panTo);
     };
   }, [draw, kick, placeTiles]);
 
   /* ---------------------------------------------------------- pointer */
-  const drag = React.useRef<{ kind: string; i: number; id: number; last: number } | null>(null);
+  const drag = React.useRef<{ kind: string; i: number; id: number; last: number; max?: number; digit?: number } | null>(null);
   const toSvg = (e: React.PointerEvent) => {
     const svg = svgRef.current;
     const ctm = svg?.getScreenCTM();
@@ -904,8 +972,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     return [p.x, p.y] as const;
   };
   const angleAt = (i: number, x: number, y: number) => {
-    const g = KNOB_GEO[i]!;
-    const [wx, wy] = toWorld(x, y, g.z0 + KNOB_H);
+    const g = KNOB_GEO[i] ?? JOG_GEO[i] ?? G.DIAL_GEO[i]!;
+    const top = KNOB_GEO[i] ? KNOB_H : JOG_GEO[i] ? 5 : 5.4;
+    const [wx, wy] = toWorld(x, y, g.z0 + top);
     return Math.atan2(wy - g.cy, wx - g.cx) / RAD;
   };
   const faderAt = (i: number, x: number, y: number) => {
@@ -915,9 +984,15 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   };
   const press = (i: number) => {
     const s = st.current;
+    if (PRESSABLE[i]?.ctl.kind === "drawer") {
+      // a drawer stays where it is put: a click pulls it out, the next pushes it home
+      s.dOpen[i] = !s.dOpen[i];
+      snd.current.play(s.dOpen[i] ? "tap" : "drop");
+      return;
+    }
     s.handHeld[i] = true;
     s.handAt.push(s.clock);
-    if (PRESSABLE[i]?.ctl.kind === "bell") snd.current.play("success", { strength: 0.45 });
+    if (PRESSABLE[i]?.ctl.kind === "bell") snd.current.play("bell");
     else snd.current.play("tap");
   };
   const lift = (i: number) => {
@@ -994,6 +1069,54 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       press(i);
     }
     if (kind === "sw") flip(i);
+    if (kind === "gauge") {
+      // a tap on the glass: the needle jumps and settles
+      st.current.gaugeKick[i]!.rate += 4.5;
+      snd.current.play("tick");
+      e.preventDefault();
+      return;
+    }
+    if (kind === "ctr") {
+      st.current.dialled += 1;
+      snd.current.play("tick");
+      e.preventDefault();
+      return;
+    }
+    if (kind === "scope") {
+      st.current.scopeKind[i] = (st.current.scopeKind[i]! + 1) % 3;
+      snd.current.play("tick");
+      e.preventDefault();
+      return;
+    }
+    if (kind === "jack") {
+      // the probe moves to the next binding post
+      const posts = (ctl as Element).querySelectorAll("[data-post-i]");
+      const hot = [...posts].findIndex((el) => el.hasAttribute("data-post"));
+      posts.forEach((el, k) => el.toggleAttribute("data-post", k === (hot + 1) % posts.length));
+      if (posts[(hot + 1) % posts.length]) posts[(hot + 1) % posts.length]!.setAttribute("data-post", "hot");
+      snd.current.play("tap");
+      e.preventDefault();
+      return;
+    }
+    if (kind === "knob" && G.DIAL_GEO[i]) {
+      // a rotary dial: a finger in the nearest hole winds it clockwise, as far as the finger stop
+      const g = G.DIAL_GEO[i]!;
+      const s = st.current;
+      if (s.dialBack[i]) return;
+      const a = angleAt(i, x, y);
+      const rest = FIRST.angles[i]!;
+      let k = Math.round((((a - rest - 100) % 360) + 360) % 360 / 30);
+      k = Math.min(9, Math.max(0, k));
+      drag.current = { kind: "dial", i, id: e.pointerId, last: a, max: 330 - 30 * k, digit: (k + 1) % 10 || 10 };
+      void g;
+      try {
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+      } catch {
+        /* synthetic */
+      }
+      e.preventDefault();
+      return;
+    }
     if (kind === "stick") {
       snd.current.play("tap");
       stickTo(i, x, y);
@@ -1097,6 +1220,19 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       touch();
       return;
     }
+    if (d.kind === "dial") {
+      const a = angleAt(d.i, x, y);
+      let delta = a - d.last;
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
+      d.last = a;
+      const s = st.current;
+      const before = s.dialTurn[d.i]!;
+      s.dialTurn[d.i] = Math.min(d.max!, Math.max(0, before + delta));
+      if (before < d.max! && s.dialTurn[d.i]! >= d.max!) snd.current.play("tick"); // the finger stop
+      touch();
+      return;
+    }
     if (d.kind !== "knob") return;
     const a = angleAt(d.i, x, y);
     let delta = a - d.last;
@@ -1137,6 +1273,12 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const d = drag.current;
     if (!d || d.id !== e.pointerId) return;
     if (d.kind === "btn") lift(d.i);
+    if (d.kind === "dial") {
+      // let go: home again at a constant speed; a digit counts only if it was wound to the stop
+      const s = st.current;
+      s.dialDigit[d.i] = s.dialTurn[d.i]! >= d.max! - 12 ? d.digit! : 0;
+      s.dialBack[d.i] = s.dialTurn[d.i]! > 0;
+    }
     if (d.kind === "stick") {
       st.current.tiltHand[d.i] = null;
       snd.current.play("release");
@@ -1235,7 +1377,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       // the first gauge (the office's big one in the middle) carries the one red needle
       const lit = i === 0;
       return (
-        <g key={t.id} className="cm-gauge">
+        <g key={t.id} data-ctl={`gauge-${i}`} className="cm-gauge">
           <path className="cm-soft-halo" d={g.halo} />
           <Round paths={g.bezel} paint={paint} tone="mid" crease="faint" fill="brass" />
           <path className="cm-gauge-face" d={g.face} />
@@ -1422,7 +1564,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const g = LCD_GEO[i]!;
       const cw = g.w / 4;
       return (
-        <g key={t.id} className="cm-display cm-counter">
+        <g key={t.id} data-ctl={`ctr-${i}`} className="cm-display cm-counter">
           <g className="cm-lcd">
             <RecessArt r={g.recess} id={`${paint}-ctr-${t.id}`} wall={0} />
           </g>
@@ -1464,7 +1606,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const g = isScope ? G.SCOPE_GEO[i]! : G.MATRIX_GEO[i]!;
       const clip = `${paint}-glass-${t.id}`;
       return (
-        <g key={t.id} className="cm-screen">
+        <g key={t.id} className="cm-screen" data-ctl={isScope ? `scope-${i}` : undefined}>
           <RecessArt r={g.recess} id={`${paint}-scr-${t.id}`} wall={0} />
           <g transform={g.at}>
             <clipPath id={clip}>
@@ -1493,9 +1635,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     if (t.ctl.kind === "jacks") {
       const g = G.JACK_GEO[W.jacks.indexOf(t)]!;
       return (
-        <g key={t.id} className="cm-jacks">
+        <g key={t.id} data-ctl={`jack-${W.jacks.indexOf(t)}`} className="cm-jacks">
           {g.posts.map((p, k) => (
-            <g key={k} data-post={k === 0 ? "hot" : undefined}>
+            <g key={k} data-post-i={k} data-post={k === 0 ? "hot" : undefined}>
               <Round paths={p.collar} paint={paint} tone="mid" crease="faint" className="cm-collar" />
               <Round paths={p.nut} paint={paint} tone="mid" crease="faint">
                 <path className="iso-line" data-tone="lo" d={p.ridges} />
@@ -1846,4 +1988,66 @@ function writeDimple(els: (SVGPathElement | null)[], r: { rim: string; floor: st
   els[1]?.setAttribute("d", r.rim);
   els[2]?.setAttribute("d", r.floor);
   els[3]?.setAttribute("d", r.rim);
+}
+
+/* the painter's order of a field's tiles and controls as they sit now: each tile at its cell moved by
+   (nx, ny) periods. Tiles: a topological sort where a tile wholly behind a near neighbour (smaller x or y,
+   their other ranges overlapping, less than two cells apart) goes first, the rest by depth (x + y of the
+   middle, the camera's 45°). Controls stand on their tiles, so by the depth of their tile's middle. */
+export function placedOrder(W: World, nx: number[], ny: number[]) {
+  const n = W.tiles.length;
+  const cells = W.tiles.map((t, i) => {
+    const sx = (nx[i]! * PERIOD_D) / 2 + (ny[i]! * PERIOD_S) / 2;
+    const sy = (-nx[i]! * PERIOD_D) / 2 + (ny[i]! * PERIOD_S) / 2;
+    return [t.cell[0] + sx, t.cell[1] + sy, t.cell[2], t.cell[3]] as const;
+  });
+  const depth = cells.map((c) => c[0] + c[2] / 2 + c[1] + c[3] / 2);
+  const indeg = new Array<number>(n).fill(0);
+  const next: number[][] = Array.from({ length: n }, () => []);
+  for (let a = 0; a < n; a++)
+    for (let b = 0; b < n; b++) {
+      if (a === b) continue;
+      const A = cells[a]!;
+      const B = cells[b]!;
+      const ox = A[0] < B[0] + B[2] - 1e-3 && B[0] < A[0] + A[2] - 1e-3;
+      const oy = A[1] < B[1] + B[3] - 1e-3 && B[1] < A[1] + A[3] - 1e-3;
+      const gx = B[0] - (A[0] + A[2]);
+      const gy = B[1] - (A[1] + A[3]);
+      if ((oy && gx > -1e-3 && gx < 2) || (ox && gy > -1e-3 && gy < 2)) {
+        next[a]!.push(b);
+        indeg[b]!++;
+      }
+    }
+  const done = new Array<boolean>(n).fill(false);
+  const tiles: number[] = [];
+  for (let k = 0; k < n; k++) {
+    let pick = -1;
+    for (let i = 0; i < n; i++) if (!done[i] && indeg[i] === 0 && (pick < 0 || depth[i]! < depth[pick]!)) pick = i;
+    if (pick < 0) for (let i = 0; i < n; i++) if (!done[i] && (pick < 0 || depth[i]! < depth[pick]!)) pick = i; // a cycle: by depth
+    done[pick] = true;
+    tiles.push(pick);
+    for (const b of next[pick]!) indeg[b]!--;
+  }
+  const ctls = W.tiles.map((_, i) => i).sort((a, b) => depth[a]! - depth[b]! || a - b);
+  return { tiles, ctls };
+}
+
+/* the positions of the longest strictly rising run in a list (patience sorting), as a set of indexes */
+function longestRising(xs: number[]) {
+  const tails: number[] = [];
+  const prev = new Array<number>(xs.length).fill(-1);
+  for (let i = 0; i < xs.length; i++) {
+    let lo = 0;
+    let hi = tails.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (xs[tails[mid]!]! < xs[i]!) lo = mid + 1;
+      else hi = mid;
+    }
+    if (lo > 0) prev[i] = tails[lo - 1]!;
+    tails[lo] = i;
+  }
+  const keep = new Set<number>();
+  for (let k = tails.length ? tails[tails.length - 1]! : -1; k >= 0; k = prev[k]!) keep.add(k);
+  return keep;
 }

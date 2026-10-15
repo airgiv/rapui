@@ -818,8 +818,8 @@ export function stampGeo(t: Tile): StampGeo {
   const [cx, cy] = centreOf(t);
   const z0 = topOf(t);
   const px = cx - 25;
-  const sx = cx + 22;
-  const zs = z0 + 7; // the stamp at rest hovers this high
+  const sx = px; // the stamp hovers over its ink pad and comes down onto it
+  const zs = z0 + 3.6 + 7; // the stamp at rest hovers this high over the pad
   return {
     tin: slabOf({ x: px - 21, y: cy - 17, w: 42, d: 34, r: 3 }, z0, 3.6, P, 6, 0.6),
     ink: planOutline({ x: px - 17, y: cy - 13, w: 34, d: 26, r: 2 }, z0 + 3.6, P, 6),
