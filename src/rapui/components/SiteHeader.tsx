@@ -12,7 +12,8 @@
 
    fun      a floating pill bar in the inverted theme (ink ground,
             paper words), like the rapui landing's own header
-   civic    a bar on the page's own grey, no rule: sans links, a navy
+   civic    a bar on the page's own grey, no rule, padded evenly by the
+            section inset above and below: sans links, a navy
             button (a white card under it stands clear of it);
             folded, a navy "Menu" pill, and the menu's links set big in
             the serif. A `notice` reads like a government site's
@@ -86,7 +87,7 @@ function Clock() {
 /* per look: the bar, its links, and the menu button */
 const BAR: Record<BlockLook, string> = {
   fun: "h-16 @3xl:h-20 pl-6 pr-2.5 @3xl:pl-7 @3xl:pr-3.5 gap-(--rap-space-md) rounded-pill bg-paper text-ink",
-  civic: "h-20 gap-(--rap-space-xl)",
+  civic: "min-h-10 gap-(--rap-space-xl)",
   signal: "h-14 gap-(--rap-space-lg)",
   product: "h-16 gap-(--rap-space-md) @3xl:grid @3xl:grid-cols-[1fr_auto_1fr]",
   minimal: "h-20 gap-(--rap-space-xl)",
@@ -94,7 +95,7 @@ const BAR: Record<BlockLook, string> = {
 
 const ROOT: Record<BlockLook, string> = {
   fun: "pt-2.5",
-  civic: "bg-paper text-ink",
+  civic: "bg-paper text-ink py-(--rap-section-inset)",
   signal: "bg-paper text-ink border-b border-line",
   product: "bg-paper/75 text-ink border-b border-line backdrop-blur-md backdrop-saturate-150",
   minimal: "bg-paper text-ink",

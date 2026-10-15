@@ -44,6 +44,9 @@
   .rap-section:not([data-tone="plain"]) + .rap-section:not([data-tone="plain"]) { margin-top: var(--rap-section-inset); }
   /* a card right under the site header stands clear of it, rather than butting into its edge */
   [data-slot="site-header"] + .rap-section:not([data-tone="plain"]) { margin-top: var(--rap-section-inset); }
+  /* civic's header carries that inset as its own even padding (top = bottom = the card's side
+     inset), so the card under it adds none */
+  [data-slot="site-header"][data-look="civic"] + .rap-section:not([data-tone="plain"]) { margin-top: 0; }
   .rap-section[data-tone="surface"] { background: var(--rap-surface); }
   .rap-section[data-tone="muted"] { background: var(--rap-paper-3); }
   /* dark: a dark island (data-rap-theme="dark" on the element) — its own paper */
