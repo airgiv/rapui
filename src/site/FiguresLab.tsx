@@ -1,22 +1,23 @@
 /* #figures — a lab page for Anatomy figures in rapui presets, laid out the way
-   they're meant to be used: big, beside a hero's words. The chain reaction (a
-   marble machine drawn for rapui with the anatomy skill) sits on the right of
-   a hero; the preset picker restyles the section, words and machine together,
+   they're meant to be used: big, beside a hero's words. The rapui OP (a flat
+   pocket instrument drawn for rapui with the anatomy skill, its keys, encoders,
+   fader and switch being rapui components made physical) lies on the right of
+   a hero; the preset picker restyles the section, words and device together,
    through the per-preset --anatomy-* looks in figures/looks.ts. */
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Accent, Button, Display, RAP_PRESETS, RapStyle, type RapPreset } from "../rapui";
 import "../rapui/fonts/all";
 import { FIGURE_LOOKS } from "./figures/looks";
-import { ChainReaction, type ChainHandle } from "./figures/chain";
+import { RapOP, type OPHandle } from "./figures/op";
 import { PresetPicker } from "./PresetsShowcase";
 
 export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => void }) {
   const [preset, setPreset] = useState<RapPreset>("fun");
-  const machine = useRef<ChainHandle>(null);
+  const device = useRef<OPHandle>(null);
   const look = FIGURE_LOOKS[preset];
   const label = RAP_PRESETS.find((p) => p.value === preset)?.label;
   useEffect(() => {
-    document.title = "Figures — a chain reaction in rapui presets";
+    document.title = "Figures — the rapui OP in rapui presets";
     window.scrollTo(0, 0);
   }, []);
   return (
@@ -33,20 +34,20 @@ export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: bool
             </Button>
           </div>
         </div>
-        {/* a hero: the words on the left, the machine big on the right (stacked when narrow) */}
+        {/* a hero: the words on the left, the device big on the right (stacked when narrow) */}
         <section className="@container mx-auto max-w-(--rap-container) px-(--rap-gutter) py-[clamp(2rem,6vw,5rem)]">
           <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-[clamp(1.5rem,4vw,3rem)] @4xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
             <div className="flex flex-col gap-6">
               <Display as="h1" size="xl">
-                One thing leads <Accent>to another</Accent>
+                Interfaces you can <Accent>almost touch</Accent>
               </Display>
               <p className="m-0 max-w-[44ch] text-[1.125rem] leading-relaxed text-ink-2">
-                A marble drops, rolls down the steps, knocks the dominoes, trips the lever and sets the next ball going — a chain reaction drawn
-                with the Anatomy skill, here in {label}. Pick another preset above and the same machine changes character.
+                Buttons, knobs, sliders and switches from rapui, made into a little instrument you could pick up: the keys press, the encoders
+                turn, the fader glides. Here in {label} — pick another preset above and the same device changes character.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button variant="accent" icon onClick={() => machine.current?.run()}>
-                  Start the run
+                <Button variant="accent" icon onClick={() => device.current?.run()}>
+                  Play
                 </Button>
                 <Button variant="soft">How it's drawn</Button>
               </div>
@@ -55,7 +56,7 @@ export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: bool
               className={look.dark ? "relative rounded-[var(--rap-radius-lg,1.25rem)] bg-paper p-[clamp(0.75rem,2vw,1.5rem)]" : "relative"}
               {...(look.dark ? { "data-rap-theme": "dark" } : {})}
             >
-              <ChainReaction ref={machine} style={look.tokens as CSSProperties} />
+              <RapOP ref={device} style={look.tokens as CSSProperties} />
             </div>
           </div>
         </section>

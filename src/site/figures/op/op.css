@@ -1,0 +1,44 @@
+/* the rapui OP: the stage, the panel's darker plate, slots, wells, LEDs and the screen.
+   Every colour is an --anatomy-* token, so each rapui look restyles it. */
+.op { position: relative; }
+.op .iso-figure { margin: 0; }
+.op-stage { position: relative; outline: none; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.op-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; border-radius: 4px; }
+.op-svg { display: block; width: 100%; height: auto; overflow: visible; user-select: none; -webkit-user-select: none; }
+.op-stage[tabindex] [data-ctl] { cursor: pointer; }
+.op-stage[tabindex] [data-ctl^="knob"], .op-stage[tabindex] [data-ctl="fader"] { cursor: grab; touch-action: none; }
+
+/* the top plate: one step darker than the frame around it */
+.op-panel > .iso-top { fill: var(--anatomy-shade-3); }
+
+/* sunk into the panel: slots and key wells */
+.iso-svg path.op-slot { fill: var(--anatomy-shade-0); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.op-well { fill: var(--anatomy-shade-1); stroke: var(--anatomy-lo); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+
+/* one LED behind each key: a ring at rest, filled while its key is down */
+.iso-svg path.op-led { fill: var(--anatomy-shade-2); stroke: var(--anatomy-lo); stroke-width: var(--anatomy-weight); transition: fill 90ms linear, stroke 90ms linear; }
+.iso-svg path.op-led[data-on] { fill: var(--anatomy-hi); stroke: var(--anatomy-hi); }
+
+/* encoders */
+.iso-svg path.op-hub { fill: var(--anatomy-paper); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.op-knob .iso-solid[data-lit] path.op-hub { stroke: var(--anatomy-lit); }
+.iso-svg path.op-pointer { stroke-width: calc(var(--anatomy-weight) * 2.2); }
+
+/* key numbers, a touch heavier than the other print */
+.op-key-num { font-weight: 600; letter-spacing: 0; }
+.op-brand { font-weight: 700; letter-spacing: 0; }
+
+/* the screen: a bezel, dark glass (a tint of the ink), and the picture in the glass's plane */
+.iso-svg path.op-bezel { fill: var(--anatomy-shade-1); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.op-glass { fill: color-mix(in oklab, var(--anatomy-hi) 7%, var(--anatomy-shade-0)); stroke: var(--anatomy-lo); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.op-screen text { font-family: var(--anatomy-mono); font-variant-numeric: tabular-nums; fill: var(--anatomy-hi); stroke: none; }
+.op-screen .op-digits { font-weight: 600; letter-spacing: 0.02em; }
+.op-screen .op-unit { fill: var(--anatomy-mid); letter-spacing: 0.06em; }
+.iso-svg .op-screen path.op-trace { fill: none; stroke: var(--anatomy-hi); stroke-width: calc(var(--anatomy-weight) * 1.9); stroke-linecap: round; stroke-linejoin: round; }
+.iso-svg .op-screen path.op-mid { fill: none; stroke: var(--anatomy-lo); stroke-width: var(--anatomy-weight); stroke-dasharray: 1 2.5; }
+.iso-svg .op-screen rect.op-step { fill: none; stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; transition: fill 90ms linear; }
+.iso-svg .op-screen rect.op-step[data-on] { fill: var(--anatomy-hi); stroke: var(--anatomy-hi); }
+
+@media (prefers-reduced-motion: reduce) {
+  .iso-svg path.op-led, .iso-svg .op-screen rect.op-step { transition: none; }
+}
