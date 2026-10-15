@@ -51,7 +51,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     statement: { eyebrow: "A sentence that does things", before: "This sentence has a", afterSwitch: "switch in it, a", button: "Button", afterButton: "you can press, a", afterSlider: "slider and", end: <>stars — <Accent tone="mute">because a sentence can.</Accent></> },
     modules: {
       eyebrow: "Desk of noisy things",
-      line: "An endless desk of knobs, keys and faders. Drag it sideways; it never runs out. Click a grille for sound.",
+      line: "An endless desk of knobs, keys and faders. Drag it any way you like; it never runs out. Click a grille for sound.",
       action: "Poke them all",
     },
     features: {
@@ -140,7 +140,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     statement: { eyebrow: "Let the record show", before: "Let the record show the", afterSwitch: "switch was on, the", button: "Motion", afterButton: "was carried, the", afterSlider: "was moved and", end: <>four stars were entered into evidence.</> },
     modules: {
       eyebrow: "Exhibit M",
-      line: "The office equipment of record, filed in an endless row. Drag to review; the bell is for emergencies.",
+      line: "The office equipment of record, filed without end in every direction. Drag to review; the bell is for emergencies.",
       action: "Examine the exhibits",
     },
     features: {

@@ -8,12 +8,14 @@
              repeats sideways on screen. Its viewBox is FIELD_BOX.h tall and as wide
              as the stage asks; live.tsx wraps each tile into view as the strip pans. */
 import { depthOf, iso, slabOf, type Plan, type SolidPaths } from "../iso/iso-kit";
-import { BEVEL, HEIGHT, HERO_TILES, P, PERIOD_D, U, WIDTH, centreOf, extremesOf, fieldTiles, planOf, topOf, type Layout, type Tile, type TileSet } from "./view";
+import { BEVEL, HEIGHT, HERO_TILES, P, PERIOD_D, PERIOD_S, U, WIDTH, centreOf, extremesOf, fieldTiles, planOf, topOf, type Layout, type Tile, type TileSet } from "./view";
 
 /* the field's frame, in drawing units: wide enough for an ultra-wide page, its middle on the hero's */
 export const FIELD_BOX = { w: 1680, h: 560 };
 /* one period of a field on screen, in drawing units (a pure sideways shift: see PERIOD_D) */
 export const PERIOD_W = iso([(PERIOD_D / 2) * U, (-PERIOD_D / 2) * U, 0], P)[0] - iso([0, 0, 0], P)[0];
+/* and its period down the screen (a pure downward shift: see PERIOD_S) */
+export const PERIOD_H = iso([(PERIOD_S / 2) * U, (PERIOD_S / 2) * U, 0], P)[1] - iso([0, 0, 0], P)[1];
 
 export type Box = [number, number, number, number]; // x, y, w, h in drawing units
 
@@ -21,6 +23,9 @@ export interface World {
   layout: Layout;
   set: TileSet;
   sx: number[]; // each tile's middle across the screen, unpanned
+  sy: number[]; // and down it
+  tileRank: number[]; // each tile's place in the painter's order of tiles
+  ctlRank: number[]; // and of controls
   halos: string[]; // each tile's soft shadow, so it can wrap with its tile
   tiles: Tile[];
   knobs: Tile[];
@@ -99,6 +104,12 @@ function build(layout: Layout, set: TileSet): World {
       const [cx, cy] = centreOf(t);
       return iso([cx, cy, 0], P)[0];
     }),
+    sy: tiles.map((t) => {
+      const [cx, cy] = centreOf(t);
+      return iso([cx, cy, 0], P)[1];
+    }),
+    tileRank: [] as number[],
+    ctlRank: [] as number[],
     halos,
     tiles,
     knobs,
@@ -130,9 +141,14 @@ function build(layout: Layout, set: TileSet): World {
   };
 }
 
+function ranked(w: World): World {
+  w.tileOrder.forEach((ti, r) => (w.tileRank[ti] = r));
+  w.ctlOrder.forEach((ti, r) => (w.ctlRank[ti] = r));
+  return w;
+}
 const WORLDS = new Map<string, World>();
 export function worldOf(layout: Layout, set: TileSet = "synth"): World {
   const key = layout === "hero" ? "hero" : `field-${set}`;
-  if (!WORLDS.has(key)) WORLDS.set(key, build(layout, layout === "hero" ? "synth" : set));
+  if (!WORLDS.has(key)) WORLDS.set(key, ranked(build(layout, layout === "hero" ? "synth" : set)));
   return WORLDS.get(key)!;
 }

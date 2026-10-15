@@ -78,7 +78,7 @@ export type Ctl =
   // the office (civic)
   | { kind: "gauge" } // a round gauge with a needle (1×1, or 2×2 for a big pressure gauge)
   | { kind: "stamp" } // a rubber stamp over its ink pad (2×1)
-  | { kind: "drawer" } // a card-catalogue drawer that slides out
+  | { kind: "drawer"; split?: boolean; ajar?: boolean } // a card-catalogue drawer (or two half drawers); ajar: left open
   | { kind: "bell" }; // a desk bell
 
 export interface Tile {
@@ -94,6 +94,10 @@ export type TileSet = "synth" | "lab" | "office";
 /* a field repeats every PERIOD_D cells across the screen (d = x − y), so it can scroll forever: shifting a tile
    by (PERIOD_D / 2, −PERIOD_D / 2) cells moves it straight sideways on screen and keeps its depth */
 export const PERIOD_D = 34;
+/* and every PERIOD_S cells down the screen (s = x + y): a shift by (PERIOD_S / 2, PERIOD_S / 2) cells moves a tile
+   straight down on screen. That one does change depth, so live.tsx re-sorts the tiles when one wraps that way. */
+export const PERIOD_S = 24;
+const S_MID = 6; // the hero composition's middle, in s
 
 /* the hero: 15 tiles, flat ones toward the headline on the left, the tall knobs in the middle and right */
 export const HERO_TILES: Tile[] = [
@@ -195,12 +199,32 @@ const overlaps = (a: Tile, b: Tile, clear = -0.01) =>
   a.cell[1] < b.cell[1] + b.cell[3] + clear &&
   b.cell[1] < a.cell[1] + a.cell[3] + clear;
 const snap = (v: number) => Math.round(v * 20) / 20;
-/* a tile's extent across the screen, in d */
-const dSpan = (t: Tile): [number, number] => [t.cell[0] - (t.cell[1] + t.cell[3]), t.cell[0] + t.cell[2] - t.cell[1]];
+/* does a tile overlap any placed tile, or any of their copies one period away (the field wraps both ways)? */
+const PERIODS: [number, number][] = [];
+for (const k of [-1, 0, 1]) for (const j of [-1, 0, 1]) PERIODS.push([(k * PERIOD_D) / 2 + (j * PERIOD_S) / 2, (-k * PERIOD_D) / 2 + (j * PERIOD_S) / 2]);
+const hits = (out: Tile[], t: Tile, clear: number) =>
+  PERIODS.some(([px, py]) => out.some((o) => overlaps({ ...o, cell: [o.cell[0] + px, o.cell[1] + py, o.cell[2], o.cell[3]] }, t, clear)));
+/* is a tile's middle inside one period (so each tile has exactly one home)? */
+const homeIn = (t: Tile) => {
+  const d = t.cell[0] + t.cell[2] / 2 - (t.cell[1] + t.cell[3] / 2);
+  const s = t.cell[0] + t.cell[2] / 2 + t.cell[1] + t.cell[3] / 2;
+  return d >= -PERIOD_D / 2 && d < PERIOD_D / 2 && s >= S_MID - PERIOD_S / 2 && s < S_MID + PERIOD_S / 2;
+};
 function placeField(centre: Tile[], places: [string, number, number][], templates: Record<string, Local[]>): Tile[] {
   const out: Tile[] = centre.map((t) => ({ ...t, id: `h-${t.id}` }));
-  const half = PERIOD_D / 2 - 0.4;
-  places.forEach(([name, d, s], c) => {
+  // after the hand-placed clusters, fill the rest of the period (both ways) from a jittered grid of clusters,
+  // so the field has no empty band where it wraps; a cluster that would overlap is skipped tile by tile
+  const fill: [string, number, number][] = [];
+  const names = Object.keys(templates);
+  let q = 0;
+  for (let sc = S_MID - PERIOD_S / 2 + 1.2; sc < S_MID + PERIOD_S / 2 - 0.8; sc += 3.1)
+    for (let dc = -PERIOD_D / 2 + 2; dc < PERIOD_D / 2 - 1; dc += 3.9) {
+      const h = (Math.imul(q + 1, 2654435761) >>> 0) / 4294967296;
+      const h2 = (Math.imul(q + 7, 1597334677) >>> 0) / 4294967296;
+      fill.push([names[q % names.length]!, dc + (h - 0.5) * 1.6 + ((Math.round(sc) % 2) * 2.2), sc + (h2 - 0.5) * 1.2]);
+      q += 5;
+    }
+  [...places, ...fill].forEach(([name, d, s], c) => {
     const tpl = templates[name]!;
     const w = Math.max(...tpl.map((t) => t.cell[0] + t.cell[2]));
     const h = Math.max(...tpl.map((t) => t.cell[1] + t.cell[3]));
@@ -209,10 +233,21 @@ function placeField(centre: Tile[], places: [string, number, number][], template
     const oy = snap((s - d) / 2 - h / 2);
     for (const t of tpl) {
       const tile: Tile = { ...t, id: `c${c}-${t.id}`, cell: [ox + t.cell[0], oy + t.cell[1], t.cell[2], t.cell[3]] };
-      const [a, b] = dSpan(tile);
-      if (a > -half && b < half && !out.some((o) => overlaps(o, tile))) out.push(tile);
+      if (homeIn(tile) && !hits(out, tile, -0.01)) out.push(tile);
     }
   });
+  // then single tiles on the free cells of the lattice, about two in five, so no stretch of floor is too wide
+  const singles = ["knob", "wave", "disc", "rocker", "pad", "vfader", "knob", "pair"].filter((n) => templates[n]);
+  for (let x = -20; x < 26; x++)
+    for (let y = -20; y < 26; y++) {
+      const h = (Math.imul((x + 40) * 131 + (y + 40), 2654435761) >>> 0) / 4294967296;
+      if (h > 0.62) continue;
+      const name = singles[Math.floor(((h * 1000) % 1) * singles.length)]!;
+      const tpl = templates[name]!;
+      const tiles = tpl.map((t) => ({ ...t, id: `f${x}_${y}-${t.id}`, cell: [x + t.cell[0], y + t.cell[1], t.cell[2], t.cell[3]] as Tile["cell"] }));
+      const ok = tiles.every((tile) => homeIn(tile) && !hits(out, tile, 0.12));
+      if (ok) out.push(...tiles);
+    }
   return out;
 }
 /* ---------------------------------------------------------------- the office (civic) */
@@ -224,13 +259,15 @@ const BAT: Ctl = { kind: "switch", axis: "y", bat: true };
 const TYPE: Ctl = { kind: "keys", round: true };
 const STAMP: Ctl = { kind: "stamp" };
 const DRAWER: Ctl = { kind: "drawer" };
+const DRAWER2: Ctl = { kind: "drawer", split: true };
+const AJAR: Ctl = { kind: "drawer", ajar: true };
 const BELL: Ctl = { kind: "bell" };
 const KNIFE: Ctl = { kind: "switch", axis: "x", knife: true };
 const COUNTER: Ctl = { kind: "display", counter: true };
 const OFFICE_TEMPLATES: Record<string, Local[]> = {
   studio: [L("ct", 0, 0, 2, 1, COUNTER), L("gg", 2, 0, 1, 1, GAUGE), L("ty", 0, 1, 2, 1, TYPE), L("bt", 2, 1, 1, 1, BAT)],
   pads: [L("bl", 0, 0, 1, 1, BELL), L("dl", 1, 0, 1, 1, DIAL), L("kf", 0, 1, 2, 1, KNIFE)],
-  mixer: [L("d1", 0, 0, 1, 1, DRAWER), L("d2", 1, 0, 1, 1, DRAWER), L("d3", 0, 1, 1, 1, DRAWER), L("d4", 1, 1, 1, 1, DRAWER), L("gg", 2, 0, 1, 1, GAUGE), L("bt", 2, 1, 1, 1, BAT)],
+  mixer: [L("d1", 0, 0, 1, 1, DRAWER2), L("d2", 1, 0, 1, 1, DRAWER), L("d3", 0, 1, 1, 1, AJAR), L("d4", 1, 1, 1, 1, DRAWER2), L("gg", 2, 0, 1, 1, GAUGE), L("bt", 2, 1, 1, 1, BAT)],
   big: [L("gg", 0, 0, 2, 2, GAUGE), L("bl", 2, 0, 1, 1, BELL), L("dl", 2, 1, 1, 1, DIAL)],
   jog2: [L("gg", 0, 0, 2, 2, GAUGE)],
   pair: [L("dl", 0, 0, 1, 1, DIAL), L("bt", 1, 0, 1, 1, BAT)],
@@ -240,8 +277,8 @@ const OFFICE_TEMPLATES: Record<string, Local[]> = {
   wave: [L("bl", 0, 0, 1, 1, BELL)],
   disc: [L("gg", 0, 0, 1, 1, GAUGE, 3)],
   rocker: [L("bt", 0, 0, 1, 1, BAT)],
-  pad: [L("dr", 0, 0, 1, 1, DRAWER)],
-  vfader: [L("d1", 0, 0, 1, 1, DRAWER), L("d2", 0, 1, 1, 1, DRAWER)],
+  pad: [L("dr", 0, 0, 1, 1, AJAR)],
+  vfader: [L("d1", 0, 0, 1, 1, DRAWER2), L("d2", 0, 1, 1, 1, DRAWER)],
 };
 /* the office's middle: the big pressure gauge (its needle the one red part), a dial, the typewriter, the stamp */
 const OFFICE_CENTRE: Tile[] = [
@@ -255,11 +292,11 @@ const OFFICE_CENTRE: Tile[] = [
   { id: "g2", cell: [4, 2, 1, 1], lift: 0, ctl: GAUGE },
   { id: "st", cell: [0, 3, 2, 1], lift: 0, ctl: STAMP },
   { id: "kf", cell: [2, 3, 2, 1], lift: 0, ctl: KNIFE },
-  { id: "dr2", cell: [4, 3, 1, 1], lift: 0, ctl: DRAWER },
+  { id: "dr2", cell: [4, 3, 1, 1], lift: 0, ctl: DRAWER2 },
   { id: "dl2", cell: [1, 4, 1, 1], lift: 0, ctl: DIAL },
   { id: "bt2", cell: [2, 4, 1, 1], lift: 0, ctl: { kind: "switch", axis: "y", bat: true } },
-  { id: "dr3", cell: [3, 4, 1, 1], lift: 1.5, ctl: DRAWER },
-  { id: "dr4", cell: [4, 4, 1, 1], lift: 1.5, ctl: DRAWER },
+  { id: "dr3", cell: [3, 4, 1, 1], lift: 1.5, ctl: AJAR },
+  { id: "dr4", cell: [4, 4, 1, 1], lift: 1.5, ctl: DRAWER2 },
 ];
 
 /* ---------------------------------------------------------------- the lab bench (signal) */
@@ -311,7 +348,7 @@ export function fieldTiles(set: TileSet): Tile[] {
         ? placeField(LAB_CENTRE, SYNTH_PLACES, LAB_TEMPLATES)
         : set === "office"
           ? placeField(OFFICE_CENTRE, SYNTH_PLACES, OFFICE_TEMPLATES)
-          : placeField(HERO_TILES, SYNTH_PLACES, TEMPLATES),
+          : colourField(placeField(HERO_TILES, SYNTH_PLACES, TEMPLATES)),
     );
   return FIELDS.get(set)!;
 }
@@ -387,18 +424,48 @@ const hash = (s: string) => {
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   return h >>> 0;
 };
-const TILE_FILLS = [3, 4, 2, 6, 3, 4, 2]; // sky, bubble, acid, blue: light fills for slabs
-const CTL_FILLS = [1, 5, 6, 2, 4, 3, 1]; // flame, plum, blue, acid, bubble, sky: the controls
-export function tileFill(t: Tile): number {
-  const h = hash(t.id);
-  if (t.ctl.kind === "grille") return 0;
-  return h % 10 < 4 ? TILE_FILLS[(h >> 4) % TILE_FILLS.length]! : 0;
+/* fills: 1 flame, 2 acid, 3 sky, 4 bubble, 5 plum, 6 blue (0: none, the plain paper). A field's tiles are coloured
+   once, greedily, so a tile rarely wears the colour of a tile it touches (copies across the wrap included), and
+   each control takes a colour that stands out on its tile. The hero stays plain. */
+const ON: Record<number, number[]> = {
+  0: [1, 6, 2, 5, 4, 3],
+  1: [6, 2, 3, 5],
+  2: [6, 5, 1, 4],
+  3: [1, 5, 6, 4],
+  4: [1, 6, 5, 2],
+  5: [2, 1, 3, 4],
+  6: [2, 1, 4, 3],
+};
+const FILLS = new WeakMap<Tile, { tile: number; ctl: number }>();
+function colourize(tiles: Tile[]) {
+  const done: Tile[] = [];
+  for (const t of tiles) {
+    const h = hash(t.id);
+    const near = new Set<number>();
+    for (const o of done) {
+      if (PERIODS.some(([px, py]) => overlaps({ ...o, cell: [o.cell[0] + px, o.cell[1] + py, o.cell[2], o.cell[3]] }, t, 0.3))) near.add(FILLS.get(o)!.tile);
+    }
+    // about one tile in nine stays white; the rest take the first of a shuffled palette that no neighbour wears
+    let tile = 0;
+    if (h % 9 !== 0) {
+      const order = [1, 2, 3, 4, 5, 6].sort((a, b) => hash(`${t.id}${a}`) - hash(`${t.id}${b}`));
+      tile = order.find((c) => !near.has(c)) ?? order[0]!;
+    }
+    const pick = ON[tile]!;
+    FILLS.set(t, { tile, ctl: pick[(h >>> 5) % pick.length]! });
+    done.push(t);
+  }
 }
-export function ctlFill(t: Tile): number {
-  const h = hash(`${t.id}:c`);
-  if (h % 10 >= 8) return 0;
-  const tf = tileFill(t);
-  let f = CTL_FILLS[(h >> 4) % CTL_FILLS.length]!;
-  if (f === tf) f = CTL_FILLS[((h >> 4) + 1) % CTL_FILLS.length]!;
-  return f;
-}
+export const colourField = (tiles: Tile[]) => {
+  colourize(tiles);
+  return tiles;
+};
+export const tileFill = (t: Tile): number => FILLS.get(t)?.tile ?? 0;
+export const ctlFill = (t: Tile): number => FILLS.get(t)?.ctl ?? 0;
+/* the j-th key or pad of a multi-key tile: the controls' colours in turn */
+export const subFill = (t: Tile, j: number): number => {
+  const f = FILLS.get(t);
+  if (!f) return 0;
+  const pick = ON[f.tile]!;
+  return pick[(j + (hash(t.id) >>> 5)) % pick.length]!;
+};
