@@ -31,23 +31,27 @@ export function LandingPreview({ dark, setDark }: { dark: boolean; setDark: (v: 
         <LandingTemplate />
         <GridOverlay visible={grid} />
       </div>
-      {/* the preview's own controls: a dark pill in the page's own preset */}
-      <div
-        data-rap-theme="dark"
-        className="fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-1/2 z-[2147483001] flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-center gap-3 overflow-x-auto rounded-pill bg-paper py-2 pr-2 pl-4 font-sans text-ink shadow-pop"
-      >
-        <a href="#" className="shrink-0 text-[0.875rem] font-medium text-ink-2 hover:text-ink">
-          ← Home
-        </a>
-        <StyleControls preset={preset} setPreset={setPreset} motion={motion ?? PRESET_MOTION[preset]} setMotion={setMotion} />
-        <label className="flex shrink-0 items-center gap-2 text-[0.8125rem] text-ink-2">
-          Grid
-          <Switch checked={grid} onCheckedChange={setGrid} aria-label="Show the layout grid (Shift+G)" />
-        </label>
-        <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" aria-label="Dark theme" />
-        <Button size="sm" variant="soft" className="shrink-0 max-[640px]:hidden" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          Top
-        </Button>
+      {/* the preview's own controls: a dark pill in the page's own preset. It is centred in a
+          full-width fixed row marked width-before-scroll-bar, so when a menu locks the page's
+          scroll (and the scrollbar goes away) the row keeps its width and the pill stays put */}
+      <div className="width-before-scroll-bar pointer-events-none fixed inset-x-0 bottom-[calc(12px+env(safe-area-inset-bottom,0px))] z-[2147483001] flex justify-center px-3">
+        <div
+          data-rap-theme="dark"
+          className="pointer-events-auto flex max-w-full items-center gap-3 overflow-x-auto rounded-pill bg-paper py-2 pr-2 pl-4 font-sans text-ink shadow-pop"
+        >
+          <a href="#" className="shrink-0 text-[0.875rem] font-medium text-ink-2 hover:text-ink">
+            ← Home
+          </a>
+          <StyleControls preset={preset} setPreset={setPreset} motion={motion ?? PRESET_MOTION[preset]} setMotion={setMotion} />
+          <label className="flex shrink-0 items-center gap-2 text-[0.8125rem] text-ink-2">
+            Grid
+            <Switch checked={grid} onCheckedChange={setGrid} aria-label="Show the layout grid (Shift+G)" />
+          </label>
+          <Switch checked={dark} onCheckedChange={setDark} onText="☾" offText="☀" aria-label="Dark theme" />
+          <Button size="sm" variant="soft" className="shrink-0 max-[640px]:hidden" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+            Top
+          </Button>
+        </div>
       </div>
     </RapStyle>
   );
