@@ -5,14 +5,12 @@ import * as React from "react";
 import { Solid } from "../iso/react/draw";
 import type { SolidPaths, Tone } from "../iso/iso-kit";
 import {
-  HALO,
-  TILE_ORDER,
-  TILE_PATHS,
   circleRecess,
   grilleGeo,
   type Recess,
 } from "./geometry";
-import { SOCKET_R, TILES, centreOf, topOf } from "./view";
+import { SOCKET_R, centreOf, topOf, type Tile } from "./view";
+import type { World } from "./world";
 
 /* shared paint: a smooth turn of tone across any round body (left lit, right in shade), and the
    same as a darkening veil for coloured caps; both span the body's own box */
@@ -50,21 +48,33 @@ export function RecessArt({ r, id, wall = 2 }: { r: Recess; id: string; wall?: n
   );
 }
 
-/* the tiles, back to front, each with what is sunk into its face */
-export function Tiles({ id, hole }: { id: string; hole: (k: number, el: SVGPathElement | null) => void }) {
+/* the tiles, back to front, each with what is sunk into its face. A grille tile is also the figure's sound
+   switch (data-ctl "snd-…"), with a small lamp in its front corner. */
+export function Tiles({
+  id,
+  world,
+  hole,
+  lamp,
+}: {
+  id: string;
+  world: World;
+  hole: (g: number, k: number, el: SVGPathElement | null) => void;
+  lamp: (g: number, el: SVGPathElement | null) => void;
+}) {
   return (
     <g data-part="tiles">
-      <path className="iso-halo cm-halo" d={HALO} />
-      {TILE_ORDER.map((i) => {
-        const t = TILES[i]!;
+      <path className="iso-halo cm-halo" d={world.halo} />
+      {world.tileOrder.map((i) => {
+        const t = world.tiles[i]!;
         const [cx, cy] = centreOf(t);
         const z = topOf(t);
         let face: React.ReactNode = null;
         if (t.ctl.kind === "knob" && t.cell[2] === 1) face = <RecessArt r={circleRecess(cx, cy, SOCKET_R, z, 3)} id={`${id}-sock-${t.id}`} wall={0} />;
-        if (t.ctl.kind === "grille") face = <Grille i={i} hole={hole} />;
+        const gi = world.grilles.indexOf(t);
+        if (gi >= 0) face = <Grille t={t} hole={(k, el) => hole(gi, k, el)} lamp={(el) => lamp(gi, el)} />;
         return (
-          <g key={t.id} data-tile={t.id}>
-            <Solid paths={TILE_PATHS[i]!} tone="mid" crease="faint" className="cm-tile" />
+          <g key={t.id} data-tile={t.id} data-ctl={gi >= 0 ? `snd-${gi}` : undefined}>
+            <Solid paths={world.tilePaths[i]!} tone="mid" crease="faint" className="cm-tile" />
             {face}
           </g>
         );
@@ -73,20 +83,22 @@ export function Tiles({ id, hole }: { id: string; hole: (k: number, el: SVGPathE
   );
 }
 
-const GRILLES = new Map<number, ReturnType<typeof grilleGeo>>();
-export const grilleOf = (i: number) => {
-  if (!GRILLES.has(i)) GRILLES.set(i, grilleGeo(TILES[i]!));
-  return GRILLES.get(i)!;
+const GRILLES = new Map<Tile, ReturnType<typeof grilleGeo>>();
+export const grilleOf = (t: Tile) => {
+  if (!GRILLES.has(t)) GRILLES.set(t, grilleGeo(t));
+  return GRILLES.get(t)!;
 };
 
-/* the speaker grille's holes: one path per ring, so a ripple can darken them ring by ring */
-function Grille({ i, hole }: { i: number; hole: (k: number, el: SVGPathElement | null) => void }) {
-  const g = grilleOf(i);
+/* the speaker grille's holes: one path per ring, so a ripple can darken them ring by ring; and its sound lamp */
+function Grille({ t, hole, lamp }: { t: Tile; hole: (k: number, el: SVGPathElement | null) => void; lamp: (el: SVGPathElement | null) => void }) {
+  const g = grilleOf(t);
   return (
     <g className="cm-grille">
       {g.rings.map((d, k) => (
         <path key={k} ref={(el) => hole(k, el)} className="cm-hole" d={d} />
       ))}
+      <path className="iso-line" data-tone="faint" d={g.lampRing} />
+      <path ref={lamp} className="cm-lamp" d={g.lamp} />
     </g>
   );
 }

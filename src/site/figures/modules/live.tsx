@@ -12,7 +12,6 @@ import { Dots } from "../iso/react/draw";
 import { useInView, useLoop, spring, type Spring } from "../iso/react/live";
 import { IconArt, LiveSolid, Paints, RecessArt, Round, Tiles, grilleOf, writeRound, writeSolid } from "./art";
 import {
-  CTL_ORDER,
   DOT_BUCKETS,
   discFace,
   discGeo,
@@ -43,7 +42,9 @@ import {
   type SoftGeo,
 } from "./geometry";
 import { LOOP, STILL_T, idleAt } from "./model";
-import { CAPPED, FADERS, HEIGHT, KNOBS, KNOB_H, P, PRESSABLE, RAD, SWITCHES, TILES, WIDTH } from "./view";
+import { KNOB_H, P, RAD, type Layout } from "./view";
+import { worldOf, type World } from "./world";
+import { useSound } from "../../../rapui";
 
 export interface ModulesHandle {
   /** Restart the idle sequence from its start (the controls glide there; nothing jumps). */
@@ -53,7 +54,7 @@ export interface ModulesHandle {
 export const DESCRIPTION =
   "A composition of separate square control tiles butted together on a table, drawn in isometric line work: tall knurled knobs covered in fine dimples (three with coloured caps, one in the accent colour, two standing in wide shallow round recesses on large tiles), dark round buttons sunk in soft rims, soft round buttons printed with a loop, a cassette and a wave icon, a long pill key in a stadium recess, and a speaker grille of round holes, a fader with a printed scale and two sliding switches with small lamps. The knobs turn by themselves, the buttons press in turn, the fader glides, the switches flip now and then, the grille ripples with each press and the accent moves from cap to cap.";
 const HINT =
-  "Control modules — drag a knob to turn it, drag the fader, click a button, the key or a switch; arrow keys turn the lit knob, 1 to 6 press the buttons, S and Shift+S flip the switches, F and Shift+F move the fader, Enter restarts";
+  "Control modules — drag a knob to turn it, drag the fader, click a button, the key or a switch; arrow keys turn the lit knob, 1 to 9 press the buttons, S and Shift+S flip the switches, F and Shift+F move the fader, M or a click on the speaker grille turns sound on or off, Enter restarts";
 
 type Motion = "fun" | "calm" | "still";
 function motionOf(node: Element | null): Motion {
@@ -66,17 +67,34 @@ function motionOf(node: Element | null): Motion {
 const QUIET = 3.6; // seconds after the last touch before the idle life comes back
 const ease = (cur: number, target: number, dt: number, tau: number) => cur + (target - cur) * (1 - Math.exp(-dt / tau));
 
-/* the geometry of every control, once */
-const KNOB_GEO: KnobGeo[] = KNOBS.map(knobGeo);
-const CAP_OF: (number | null)[] = KNOBS.map((k) => (k.ctl.kind === "knob" ? (CAPPED.indexOf(k) >= 0 ? CAPPED.indexOf(k) : null) : null));
+/* the geometry of every control of a layout, once */
 type PressGeo = { kind: "disc"; g: DiscGeo } | { kind: "soft"; g: SoftGeo; icon: "loop" | "tape" | "wave" } | { kind: "pill"; g: PillGeo };
-const PRESS_GEO: PressGeo[] = PRESSABLE.map((t) =>
-  t.ctl.kind === "disc" ? { kind: "disc", g: discGeo(t) } : t.ctl.kind === "soft" ? { kind: "soft", g: softGeo(t), icon: t.ctl.icon } : { kind: "pill", g: pillGeo(t) },
-);
-const FADER_GEO: FaderGeo[] = FADERS.map(faderGeo);
-const SWITCH_GEO: SwitchGeo[] = SWITCHES.map(switchGeo);
-const GRILLE_I = TILES.findIndex((t) => t.ctl.kind === "grille");
-const GRILLE = grilleOf(GRILLE_I);
+function build(W: World) {
+  const KNOBS = W.knobs;
+  const CAPPED = W.capped;
+  const PRESSABLE = W.pressable;
+  return {
+    TILES: W.tiles,
+    KNOBS,
+    CAPPED,
+    PRESSABLE,
+    FADERS: W.faders,
+    SWITCHES: W.switches,
+    KNOB_GEO: KNOBS.map(knobGeo) as KnobGeo[],
+    CAP_OF: KNOBS.map((k) => (CAPPED.indexOf(k) >= 0 ? CAPPED.indexOf(k) : null)) as (number | null)[],
+    PRESS_GEO: PRESSABLE.map((t) =>
+      t.ctl.kind === "disc" ? { kind: "disc", g: discGeo(t) } : t.ctl.kind === "soft" ? { kind: "soft", g: softGeo(t), icon: t.ctl.icon } : { kind: "pill", g: pillGeo(t) },
+    ) as PressGeo[],
+    FADER_GEO: W.faders.map(faderGeo) as FaderGeo[],
+    SWITCH_GEO: W.switches.map(switchGeo) as SwitchGeo[],
+    GRILLE_GEO: W.grilles.map(grilleOf),
+  };
+}
+const GEOS = new Map<World, ReturnType<typeof build>>();
+const geosOf = (W: World) => {
+  if (!GEOS.has(W)) GEOS.set(W, build(W));
+  return GEOS.get(W)!;
+};
 const TONES = ["lit", "a", "b"] as const;
 
 interface Nodes {
@@ -87,7 +105,8 @@ interface Nodes {
   pressFace: (SVGPathElement | null)[]; // a disc's face, a cushion's dome ring, a key's face ring
   pressShine: (SVGPathElement | null)[];
   icons: (SVGGElement | null)[];
-  holes: (SVGPathElement | null)[];
+  holes: (SVGPathElement | null)[][]; // per grille, per ring
+  sndLamps: (SVGPathElement | null)[]; // the sound lamp on each grille
   caps: (SVGGElement | null)[]; // fader caps
   grips: (SVGPathElement | null)[];
   capHalos: (SVGPathElement | null)[];
@@ -115,8 +134,8 @@ interface State {
   thumb: Spring[]; // switch thumbs, 0 off .. 1 on
 }
 
-function initial(t: number, calm: boolean): State {
-  const idle = idleAt(t, calm);
+function initial(W: World, t: number, calm: boolean): State {
+  const idle = idleAt(t, calm, W);
   return {
     t,
     clock: 0,
@@ -125,8 +144,8 @@ function initial(t: number, calm: boolean): State {
     seq: 1,
     angles: [...idle.angles],
     target: [...idle.angles],
-    hand: PRESSABLE.map(() => ({ at: 0, rate: 0 })),
-    handHeld: PRESSABLE.map(() => false),
+    hand: W.pressable.map(() => ({ at: 0, rate: 0 })),
+    handHeld: W.pressable.map(() => false),
     handAt: [],
     fader: [...idle.faders],
     faderTarget: [...idle.faders],
@@ -136,7 +155,6 @@ function initial(t: number, calm: boolean): State {
   };
 }
 
-const FIRST = idleAt(STILL_T, false);
 
 /* where a pointer lands on the plane z, in world x, y */
 function toWorld(sx: number, sy: number, z: number): [number, number] {
@@ -148,7 +166,23 @@ function toWorld(sx: number, sy: number, z: number): [number, number] {
   return [u * Math.sin(a) + v * Math.cos(a), -u * Math.cos(a) + v * Math.sin(a)];
 }
 
-export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(function ModulesLive({ runKey }, ref) {
+export interface ModulesLiveProps {
+  runKey?: number;
+  layout?: Layout;
+  /** the figure's own sound switch (the grille): whether it is on, and how to flip it */
+  soundOn?: boolean;
+  onSound?: () => void;
+}
+
+export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(function ModulesLive({ runKey, layout = "hero", soundOn = false, onSound }, ref) {
+  const W = worldOf(layout);
+  const { TILES, KNOBS, CAPPED, PRESSABLE, FADERS, SWITCHES, KNOB_GEO, CAP_OF, PRESS_GEO, FADER_GEO, SWITCH_GEO, GRILLE_GEO } = geosOf(W);
+  const FIRST = React.useMemo(() => idleAt(STILL_T, false, W), [W]);
+  // sound only ever answers the hand, never the idle loop
+  const sound = useSound();
+  const snd = React.useRef(sound);
+  snd.current = sound;
+  const notch = React.useRef<number[]>([]); // the last notch each knob or fader sounded
   const paint = React.useId().replace(/:/g, "");
   const root = React.useRef<HTMLDivElement | null>(null);
   const svgRef = React.useRef<SVGSVGElement | null>(null);
@@ -160,7 +194,8 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     pressFace: [],
     pressShine: [],
     icons: [],
-    holes: [],
+    holes: W.grilles.map(() => []),
+    sndLamps: [],
     caps: [],
     grips: [],
     capHalos: [],
@@ -169,7 +204,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     lamps: [],
     readout: null,
   });
-  const st = React.useRef<State>(initial(STILL_T, false));
+  const st = React.useRef<State>(initial(W, STILL_T, false));
   const [motion, setMotion] = React.useState<Motion>("fun");
   const visible = useInView(root);
   const said = React.useRef("");
@@ -178,7 +213,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
   const draw = React.useCallback((calm: boolean) => {
     const s = st.current;
     const m = n.current;
-    const idle = idleAt(s.t, calm);
+    const idle = idleAt(s.t, calm, W);
     for (let i = 0; i < KNOBS.length; i++) {
       const dots = knurlDots(KNOB_GEO[i]!, s.angles[i]!);
       for (let b = 0; b < DOT_BUCKETS; b++) m.dots[i]![b]?.setAttribute("d", dots[b]!);
@@ -220,20 +255,21 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
       m.thumbGrips[i]?.setAttribute("d", switchGrip(g, v));
       m.lamps[i]?.toggleAttribute("data-on", s.on[i]!);
     }
-    // the grille: idle ripples plus the ones the hand made
-    for (let k = 0; k < GRILLE.radii.length; k++) {
-      const r = GRILLE.radii[k]!;
-      let v = idle.ripple(r) * s.seq;
-      for (const at0 of s.handAt) {
-        const age = s.clock - at0;
-        const d = (r - age * 46) / 7;
-        v += Math.exp(-d * d) * Math.exp(-age / 0.55);
+    // the grilles: idle ripples plus the ones the hand made
+    for (let gi = 0; gi < GRILLE_GEO.length; gi++) {
+      const G = GRILLE_GEO[gi]!;
+      for (let k = 0; k < G.radii.length; k++) {
+        const r = G.radii[k]!;
+        let v = idle.ripple(r) * s.seq;
+        for (const at0 of s.handAt) {
+          const age = s.clock - at0;
+          const d = (r - age * 46) / 7;
+          v += Math.exp(-d * d) * Math.exp(-age / 0.55);
+        }
+        m.holes[gi]![k]?.style.setProperty("--v", Math.min(1, v).toFixed(3));
       }
-      m.holes[k]?.setAttribute("data-v", "");
-      m.holes[k]?.style.setProperty("--v", Math.min(1, v).toFixed(3));
     }
-    const active = CAPPED[idle.active]!;
-    const ai = KNOBS.indexOf(active);
+    const ai = Math.max(0, KNOBS.indexOf(CAPPED[idle.active]!));
     const deg = Math.round((((s.angles[ai]! % 360) + 360) % 360));
     const text = `knob ${ai + 1} lit · ${deg}°`;
     if (text !== said.current) {
@@ -242,6 +278,28 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
       if (m.readout) m.readout.textContent = text;
     }
   }, []);
+
+  // the sound lamps follow the switch
+  React.useEffect(() => {
+    for (const l of n.current.sndLamps) l?.toggleAttribute("data-on", soundOn);
+  }, [soundOn]);
+  const toggleSound = () => {
+    const s = st.current;
+    s.handAt.push(s.clock); // a brief ripple through the holes
+    onSound?.();
+    touch();
+  };
+
+  // a field on a narrow screen frames its tiles alone (the text stacks above it there)
+  const [narrow, setNarrow] = React.useState(false);
+  React.useEffect(() => {
+    const node = root.current;
+    if (!node || W.layout !== "field" || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((e) => setNarrow((e[0]?.contentRect.width ?? 1000) < 896));
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [W]);
+  const box = narrow ? W.tight : W.viewBox;
 
   // watch the motion level: OS reduced motion, or the page's data-rap-motion
   React.useEffect(() => {
@@ -261,7 +319,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
   const calm = motion === "calm";
   React.useEffect(() => {
     if (still) {
-      st.current = initial(STILL_T, false);
+      st.current = initial(W, STILL_T, false);
       draw(false);
     }
   }, [still, draw]);
@@ -278,7 +336,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     s.touched += dt;
     const idleOn = s.touched > QUIET;
     s.seq = ease(s.seq, idleOn ? 1 : 0, dt, 0.3);
-    const idle = idleAt(s.t, calm);
+    const idle = idleAt(s.t, calm, W);
     if (idleOn) for (let i = 0; i < KNOBS.length; i++) s.target[i] = nearest(s.target[i]!, idle.angles[i]!);
     for (let i = 0; i < KNOBS.length; i++) s.angles[i] = ease(s.angles[i]!, s.target[i]!, dt, 0.12);
     for (let i = 0; i < PRESSABLE.length; i++) spring(s.hand[i]!, s.handHeld[i] ? 1 : 0, dt, 900, 26);
@@ -327,7 +385,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
         kick();
         return;
       }
-      st.current = { ...initial(t, Boolean(c)), held: true };
+      st.current = { ...initial(W, t, Boolean(c)), held: true };
       draw(Boolean(c));
     };
     node.addEventListener("cm-seek", seek);
@@ -356,6 +414,34 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     const s = st.current;
     s.handHeld[i] = true;
     s.handAt.push(s.clock);
+    snd.current.play("tap");
+  };
+  const lift = (i: number) => {
+    const s = st.current;
+    if (!s.handHeld[i]) return;
+    s.handHeld[i] = false;
+    snd.current.play("release");
+  };
+  const flip = (i: number) => {
+    const s = st.current;
+    if (i >= s.on.length) return;
+    s.on[i] = !s.on[i];
+    snd.current.play(s.on[i] ? "toggleOn" : "toggleOff");
+  };
+  /* a knob notches every 15°, firmer every 90°; a fader on each dot of its scale, firmer on the big ones and the ends */
+  const knobNotch = (i: number) => {
+    const k = Math.floor(st.current.target[i]! / 15);
+    const prev = notch.current[i];
+    notch.current[i] = k;
+    if (prev !== undefined && prev !== k) snd.current.detent(((k % 6) + 6) % 6 === 0 ? 0.95 : 0.5);
+  };
+  const faderNotch = (i: number) => {
+    const v = st.current.faderTarget[i]!;
+    const k = Math.round(v * 10);
+    const key = 100 + i;
+    const prev = notch.current[key];
+    notch.current[key] = k;
+    if (prev !== undefined && prev !== k) snd.current.detent(k === 0 || k === 10 ? 1 : k === 5 ? 0.85 : 0.5, { pitch: 0.9 + 0.3 * v });
   };
   const onPointerDown = (e: React.PointerEvent) => {
     const ctl = (e.target as Element).closest("[data-ctl]");
@@ -364,10 +450,17 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     const i = Number(idx ?? 0);
     const [x, y] = toSvg(e);
     touch();
+    if (kind === "snd") {
+      toggleSound();
+      e.preventDefault();
+      return;
+    }
     if (kind === "btn") press(i);
-    if (kind === "sw") st.current.on[i] = !st.current.on[i];
+    if (kind === "sw") flip(i);
     // a fader keeps its grab offset, so the cap doesn't jump to the pointer
     const last = kind === "knob" ? angleAt(i, x, y) : kind === "fd" ? st.current.faderTarget[i]! - faderAt(i, x, y) : 0;
+    if (kind === "knob") notch.current[i] = Math.floor(st.current.target[i]! / 15);
+    if (kind === "fd") notch.current[100 + i] = Math.round(st.current.faderTarget[i]! * 10);
     drag.current = { kind: kind!, i, id: e.pointerId, last };
     try {
       (e.currentTarget as Element).setPointerCapture(e.pointerId);
@@ -382,6 +475,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     const [x, y] = toSvg(e);
     if (d.kind === "fd") {
       st.current.faderTarget[d.i] = Math.min(1, Math.max(0, d.last + faderAt(d.i, x, y)));
+      faderNotch(d.i);
       touch();
       return;
     }
@@ -392,12 +486,13 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     if (delta < -180) delta += 360;
     d.last = a;
     st.current.target[d.i] = st.current.target[d.i]! + delta;
+    knobNotch(d.i);
     touch();
   };
   const onPointerUp = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d || d.id !== e.pointerId) return;
-    if (d.kind === "btn") st.current.handHeld[d.i] = false;
+    if (d.kind === "btn") lift(d.i);
     drag.current = null;
     touch();
   };
@@ -413,24 +508,32 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
       heldKeys.current.add(k);
       // a quick tap still shows a whole press
       window.setTimeout(() => {
-        if (!heldKeys.current.has(k)) s.handHeld[k - 1] = false;
+        if (!heldKeys.current.has(k)) lift(k - 1);
       }, 120);
       touch();
     } else if (e.key.startsWith("Arrow")) {
       e.preventDefault();
-      const active = KNOBS.indexOf(CAPPED[idleAt(s.t, calm).active]!);
+      const active = Math.max(0, KNOBS.indexOf(CAPPED[idleAt(s.t, calm, W).active]!));
       const by = (e.shiftKey ? 45 : 15) * (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1);
+      notch.current[active] = Math.floor(s.target[active]! / 15);
       s.target[active] = s.target[active]! + by;
+      knobNotch(active);
       touch();
     } else if (e.key === "s" || e.key === "S") {
       e.preventDefault();
-      const i = e.shiftKey ? 1 : 0;
-      s.on[i] = !s.on[i];
+      flip(e.shiftKey ? 1 : 0);
       touch();
+    } else if (e.key === "m" || e.key === "M") {
+      e.preventDefault();
+      toggleSound();
     } else if (e.key === "f" || e.key === "F") {
       e.preventDefault();
       // F slides the fader up a step, Shift+F down
-      s.faderTarget[0] = Math.min(1, Math.max(0, s.faderTarget[0]! + (e.shiftKey ? -0.2 : 0.2)));
+      if (s.faderTarget.length) {
+        notch.current[100] = Math.round(s.faderTarget[0]! * 10);
+        s.faderTarget[0] = Math.min(1, Math.max(0, s.faderTarget[0]! + (e.shiftKey ? -0.2 : 0.2)));
+        faderNotch(0);
+      }
       touch();
     } else if (e.key === "Enter") {
       e.preventDefault();
@@ -443,14 +546,14 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
       heldKeys.current.delete(k);
       const s = st.current;
       window.setTimeout(() => {
-        if (!heldKeys.current.has(k)) s.handHeld[k - 1] = false;
+        if (!heldKeys.current.has(k) && s.handHeld[k - 1]) lift(k - 1);
       }, 60);
     }
   };
 
   /* ---------------------------------------------------------- the controls, far to near */
   const m = n.current;
-  const controls = CTL_ORDER.map((ti) => {
+  const controls = W.ctlOrder.map((ti) => {
     const t = TILES[ti]!;
     if (t.ctl.kind === "knob") {
       const i = KNOBS.indexOf(t);
@@ -601,14 +704,22 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
       <svg
         ref={svgRef}
         className="iso-svg cm-svg"
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+        viewBox={box.map((v) => Math.round(v * 10) / 10).join(" ")}
         role="img"
         aria-label={DESCRIPTION}
         aria-hidden={still ? undefined : true}
         focusable="false"
       >
         <Paints id={paint} />
-        <Tiles id={paint} hole={(k, el) => void (m.holes[k] = el)} />
+        <Tiles
+          id={paint}
+          world={W}
+          hole={(g, k, el) => void (m.holes[g]![k] = el)}
+          lamp={(g, el) => {
+            m.sndLamps[g] = el;
+            el?.toggleAttribute("data-on", soundOn);
+          }}
+        />
         {controls}
       </svg>
     </div>

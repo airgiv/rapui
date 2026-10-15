@@ -3,7 +3,6 @@
    of a turning knob, a button or key that goes down, the grille's rings. */
 import {
   cylinder,
-  depthOf,
   iso,
   onTop,
   pathOf,
@@ -35,12 +34,9 @@ import {
   RECESS_R,
   SOCKET_R,
   SOFT,
-  TILES,
-  BEVEL,
   FADER,
   SWITCH,
   centreOf,
-  planOf,
   topOf,
   type Tile,
 } from "./view";
@@ -48,43 +44,6 @@ import {
 const VIEW: Plane = [Math.cos((P.azimuth ?? 45) * RAD), Math.sin((P.azimuth ?? 45) * RAD)];
 const { cos, sin } = Math;
 const COS_E = cos((P.elevation ?? 30) * RAD);
-
-/* ---------------------------------------------------------------- tiles */
-/* painter's order for boxes on a grid: a tile wholly behind another (smaller x or y, ranges overlapping) goes first */
-export const TILE_ORDER: number[] = (() => {
-  const n = TILES.length;
-  const plans = TILES.map(planOf);
-  const behind = (a: Plan, b: Plan) => {
-    const overlapX = a.x < b.x + b.w && b.x < a.x + a.w;
-    const overlapY = a.y < b.y + b.d && b.y < a.y + a.d;
-    return (overlapY && a.x + a.w <= b.x + 0.01) || (overlapX && a.y + a.d <= b.y + 0.01);
-  };
-  const depth = TILES.map((t) => {
-    const [cx, cy] = centreOf(t);
-    return depthOf([cx, cy, 0], P);
-  });
-  const done = new Set<number>();
-  const out: number[] = [];
-  while (out.length < n) {
-    const ready = [...Array(n).keys()].filter((i) => !done.has(i) && [...Array(n).keys()].every((j) => j === i || done.has(j) || !behind(plans[j]!, plans[i]!)));
-    const pick = (ready.length ? ready : [...Array(n).keys()].filter((i) => !done.has(i))).sort((a, b) => depth[a]! - depth[b]!)[0]!;
-    done.add(pick);
-    out.push(pick);
-  }
-  return out;
-})();
-
-export const TILE_PATHS: SolidPaths[] = TILES.map((t) => slabOf(planOf(t), 0, topOf(t), P, 6, BEVEL));
-/* one soft shadow under the whole field, and a deeper one under the raised tiles */
-export const HALO = TILES.map((t) => slabOf({ ...planOf(t), x: planOf(t).x + 4, y: planOf(t).y + 5 }, 0, 0.1, P, 6).fill).join("");
-
-/* the controls in painter's order (all stand on tile tops, so far-to-near by their centres) */
-export const CTL_ORDER: number[] = TILES.map((t, i) => {
-  const [cx, cy] = centreOf(t);
-  return { i, d: depthOf([cx, cy, topOf(t)], P) };
-})
-  .sort((a, b) => a.d - b.d)
-  .map((o) => o.i);
 
 /* ---------------------------------------------------------------- round recesses */
 export interface Recess {
@@ -266,6 +225,8 @@ export const pillFace = (g: PillGeo, p: number) =>
 export interface GrilleGeo {
   rings: string[]; // holes grouped by distance from the centre
   radii: number[];
+  lamp: string; // the sound lamp in the tile's front corner
+  lampRing: string;
 }
 export function grilleGeo(t: Tile): GrilleGeo {
   const [cx, cy] = centreOf(t);
@@ -286,7 +247,13 @@ export function grilleGeo(t: Tile): GrilleGeo {
       groups.set(k, list);
     }
   const keys = [...groups.keys()].sort((a, b) => a - b);
-  return { rings: keys.map((k) => groups.get(k)!.join("")), radii: keys.map((k) => k * GRILLE.pitch) };
+  const c = half + 7.5; // the front corner, clear of the field's rounded corner
+  return {
+    rings: keys.map((k) => groups.get(k)!.join("")),
+    radii: keys.map((k) => k * GRILLE.pitch),
+    lamp: ring(cx + c, cy + c, 2.1, z, P, 24),
+    lampRing: ring(cx + c, cy + c, 3.4, z, P, 28),
+  };
 }
 
 /* ---------------------------------------------------------------- the fader */
