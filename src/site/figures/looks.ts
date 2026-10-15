@@ -26,10 +26,10 @@ const lines = (ink: string, mid: number, lo: number, faint: number): FigureToken
 });
 
 export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: string; dark?: boolean }> = {
-  // fun: line work like the rest, only bolder — thick round lines, faces kept white
+  // fun: line work like the rest, a touch heavier than the others — round lines, faces kept white
   // with a whisper of shade, and the one moving part in flame
   fun: {
-    note: "Bold, round line work on white — thick strokes, a whisper of shade, the moving part in flame.",
+    note: "Round line work on white, a touch heavier than the others, a whisper of shade, the moving part in flame.",
     tokens: {
       "--anatomy-card": v("surface"),
       "--anatomy-paper": v("surface"),
@@ -43,7 +43,7 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-lit-top": mix("flame", 14),
       "--anatomy-lit-shade": mix("flame", 30),
       ...lines("ink", 85, 62, 26),
-      "--anatomy-weight": "1.7px",
+      "--anatomy-weight": "1px",
       "--anatomy-halo": v("ink"),
       "--anatomy-halo-opacity": "0.12",
       "--anatomy-mono": v("font-sans"),
@@ -65,7 +65,7 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-lit-top": mix("flame", 14),
       "--anatomy-lit-shade": mix("flame", 32),
       ...lines("ink", 78, 58, 28),
-      "--anatomy-weight": "0.9px",
+      "--anatomy-weight": "0.8px",
       "--anatomy-halo": v("plum"),
       "--anatomy-halo-opacity": "0.18",
       "--anatomy-mono": v("font-sans"),
