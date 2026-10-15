@@ -108,8 +108,9 @@ export function idleAt(t: number, calm: boolean, w: World): Idle {
   const presses = w.pressable.map(() => 0);
   for (const e of events) presses[e.i] = Math.max(presses[e.i]!, pressEnvelope(tt - e.at) * (calm ? 0.8 : 1));
   // the accent: moves to the next cap during the last FADE seconds of each loop
-  const fade = smooth((lt - (LOOP - FADE)) / FADE);
-  const phase = loop + fade;
+  // in the field the accent stays on the hero's knob, the one the first footnote points at
+  const fade = w.layout === "field" ? 0 : smooth((lt - (LOOP - FADE)) / FADE);
+  const phase = w.layout === "field" ? 0 : loop + fade;
   const n0 = Math.floor(phase);
   const f = phase - n0;
   // the cap `phase` steps away from the lit one is lit; the others wear the two cap colours. With three caps

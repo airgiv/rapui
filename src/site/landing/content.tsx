@@ -14,8 +14,9 @@ export interface LandingContent {
   logos: string[];
   /** The Statement: words around four live parts — a switch, a button, a slider, stars. */
   statement: { eyebrow: string; before: string; afterSwitch: string; button: string; afterButton: string; afterSlider: string; end: ReactNode };
-  /** The modules band: words over the empty floor of a field of control tiles. */
-  modules: { eyebrow: string; title: ReactNode; lead: string; action: string };
+  /** The modules band: a full-bleed field of control tiles with a small header line and numbered
+      footnotes — 1 the lit knob, 2 the fader, 3 the speaker grille (the sound switch), 4 a switch. */
+  modules: { eyebrow: string; line: string; notes: { title?: string; text: string }[]; action?: string };
   features: { eyebrow: string; title: ReactNode; lead: string; items: FeatureItem[] };
   split: { eyebrow: string; title: ReactNode; lead: string; points: string[]; caption: string; board: { title: string; unit: string; rows: [string, number, string][] } };
   stats: { eyebrow: string; title: ReactNode; items: StatItem[] };
@@ -51,8 +52,13 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     statement: { eyebrow: "A sentence that does things", before: "This sentence has a", afterSwitch: "switch in it, a", button: "Button", afterButton: "you can press, a", afterSlider: "slider and", end: <>stars — <Accent tone="mute">because a sentence can.</Accent></> },
     modules: {
       eyebrow: "Desk of noisy things",
-      title: <>Twenty-six controls <Accent tone="mute">and not one of them is shy</Accent></>,
-      lead: "Knobs, keys, faders, switches — every rapui control as its own little block. Turn one. Click the grille if you want to hear it too.",
+      line: "Fifty-odd controls, every one of them begging to be touched. Go on.",
+      notes: [
+        { title: "The orange one", text: "Turn it. It clicks. It wants you to know it clicked." },
+        { title: "The fader", text: "Slide it all the way up. That's where we keep it." },
+        { title: "The grille", text: "Click it for sound. We said sound. You were warned." },
+        { title: "The switch", text: "Flip it twice. Nothing happens twice, loudly." },
+      ],
       action: "Poke them all",
     },
     features: {
@@ -141,8 +147,13 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     statement: { eyebrow: "Let the record show", before: "Let the record show the", afterSwitch: "switch was on, the", button: "Motion", afterButton: "was carried, the", afterSlider: "was moved and", end: <>four stars were entered into evidence.</> },
     modules: {
       eyebrow: "Exhibit M",
-      title: <>The controls, <Accent tone="mute">laid out for inspection</Accent></>,
-      lead: "Each control of the library, entered separately and tagged. The court may turn the knobs. Sound is off until the grille is pressed, as is proper.",
+      line: "The library’s controls, entered into the record one tile at a time.",
+      notes: [
+        { title: "The knob", text: "Turns in fifteen-degree increments, each one duly noted by the clerk." },
+        { title: "The fader", text: "A sliding scale, as provided for under the relevant statute." },
+        { title: "The grille", text: "Sound is off unless and until the speaker is pressed by the user." },
+        { title: "The switch", text: "Binary. Counsel has confirmed there is no third position." },
+      ],
       action: "Examine the exhibits",
     },
     features: {
@@ -235,8 +246,13 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     statement: { eyebrow: "Channel open", before: "Channel", afterSwitch: "open. Press", button: "Send", afterButton: "to transmit, tune the", afterSlider: "gain, rate the", end: <>reception — <Accent tone="mute">over.</Accent></> },
     modules: {
       eyebrow: "Bench inventory",
-      title: <>Twenty-six modules, <Accent tone="mute">all patched in</Accent></>,
-      lead: "Every control on the bench, one per tile. Turn, press, slide. Tap the speaker grille to open the audio channel — over.",
+      line: "Every module on the bench, patched in and idling. Readings below.",
+      notes: [
+        { title: "CH 1 · tune", text: "Detents every 15°. The lit cap is the live channel." },
+        { title: "CH 2 · gain", text: "Eleven marks on the scale. Ride it, don't clip it." },
+        { title: "CH 3 · monitor", text: "Tap the grille to open audio. Quiet by default — over." },
+        { title: "CH 4 · power", text: "Lamp lit means transmitting. Lamp dark means listening." },
+      ],
       action: "Open the bench",
     },
     features: {
@@ -325,9 +341,14 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     statement: { eyebrow: "The whole product, in one line", before: "Flip the", afterSwitch: "flag, hit", button: "Deploy", afterButton: "and drag the", afterSlider: "rollout, then watch the", end: <>reviews — <Accent tone="mute">that's the product.</Accent></> },
     modules: {
       eyebrow: "New: modules",
-      title: <>Every control, <Accent tone="mute">shipped as its own block</Accent></>,
-      lead: "Knobs, keys, faders and switches you can drop anywhere. They work right here — and the grille turns on sound, behind a flag of course.",
-      action: "Try the controls",
+      line: "Every control, shipped as its own block. They work right here.",
+      notes: [
+        { title: "Knob", text: "Drag to turn. Arrow keys work too. Detents included, no config." },
+        { title: "Fader", text: "A slider with opinions: snaps to marks, fires on change." },
+        { title: "Grille", text: "Sound ships off. This is the feature flag." },
+        { title: "Switch", text: "Boolean state, one click, zero re-renders." },
+      ],
+      action: "Read the changelog",
     },
     features: {
       eyebrow: "Features",
@@ -411,9 +432,13 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     statement: { eyebrow: "In full", before: "Switch", afterSwitch: "on, press", button: "Here", afterButton: "once, slide", afterSlider: "a little, rate", end: <>— <Accent tone="mute">that's it.</Accent></> },
     modules: {
       eyebrow: "Controls",
-      title: <>All of them. <Accent tone="mute">Separately.</Accent></>,
-      lead: "Turn, press, slide. Grille for sound.",
-      action: "Touch",
+      line: "Many. Separately.",
+      notes: [
+        { text: "Turn." },
+        { text: "Slide." },
+        { text: "Sound, if you press here." },
+        { text: "On. Off." },
+      ],
     },
     features: {
       eyebrow: "Page",

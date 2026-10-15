@@ -24,6 +24,12 @@ export function Paints({ id }: { id: string }) {
         <stop offset="0.8" style={{ stopColor: "var(--anatomy-shade-1)" }} />
         <stop offset="1" style={{ stopColor: "var(--anatomy-shade-0)" }} />
       </linearGradient>
+      <radialGradient id={`${id}-ball`} cx="0.38" cy="0.34" r="0.72">
+        <stop offset="0" style={{ stopColor: "var(--anatomy-top)" }} />
+        <stop offset="0.45" style={{ stopColor: "var(--anatomy-shade-3)" }} />
+        <stop offset="0.8" style={{ stopColor: "var(--anatomy-shade-1)" }} />
+        <stop offset="1" style={{ stopColor: "var(--anatomy-shade-0)" }} />
+      </radialGradient>
       <linearGradient id={`${id}-veil`} x1="0" x2="1" y1="0" y2="0">
         <stop offset="0" style={{ stopColor: "var(--anatomy-top)", stopOpacity: 0.28 }} />
         <stop offset="0.3" style={{ stopColor: "var(--anatomy-top)", stopOpacity: 0 }} />

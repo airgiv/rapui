@@ -11,7 +11,7 @@ import { depthOf, iso, slabOf, type Plan, type SolidPaths } from "../iso/iso-kit
 import { BEVEL, FIELD_TILES, HEIGHT, HERO_TILES, P, WIDTH, centreOf, extremesOf, planOf, topOf, type Layout, type Tile } from "./view";
 
 /* the field's frame, in drawing units: wide enough for an ultra-wide page, its middle on the hero's */
-export const FIELD_BOX = { w: 2100, h: 700 };
+export const FIELD_BOX = { w: 1680, h: 560 };
 
 export type Box = [number, number, number, number]; // x, y, w, h in drawing units
 
@@ -78,7 +78,7 @@ function build(layout: Layout): World {
   if (layout === "field") {
     const [hx, hy, hw, hh] = boundsOf(HERO_TILES, 0);
     const cx = hx + hw / 2;
-    const cy = hy + hh / 2 + 6;
+    const cy = hy + hh / 2 + 4;
     viewBox = [cx - FIELD_BOX.w / 2, cy - FIELD_BOX.h / 2, FIELD_BOX.w, FIELD_BOX.h];
     tight = boundsOf(HERO_TILES, 12);
   }

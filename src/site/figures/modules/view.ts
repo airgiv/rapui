@@ -141,28 +141,35 @@ const TEMPLATES: Record<string, Local[]> = {
 };
 /* [template, d, s] — where each cluster's centre goes */
 const PLACES: [string, number, number][] = [
-  // left of the hero
-  ["studio", -9.2, 2.6],
-  ["big", -8.6, 9.6],
-  ["pads", -13.4, 6.4],
-  ["pair", -15.6, 1.4],
-  ["jog2", -12.6, -0.8],
-  ["knob", -6.6, 13.2],
-  ["rocker", -17.2, 9.4],
-  ["vfader", -11.2, 12.4],
-  // right of the hero
-  ["mixer", 9.4, 2.2],
-  ["speaker", 12.6, 8.6],
-  ["trio", 8.4, 10.6],
-  ["pads", 15.8, 3.2],
-  ["jog2", 16.8, 11.4],
-  ["disc", 6.8, -1.4],
-  ["wave", 11.6, -1.2],
-  // above and below the hero
-  ["pair", -1.4, 13.6],
-  ["pad", 3.6, 13.4],
+  // hugging the hero on the left, with floor between the clusters
+  ["studio", -6.2, 1.2],
+  ["big", -7.3, 6.6],
+  ["pair", -4.4, 11.8],
+  ["trio", -8.6, 11.2],
+  ["rocker", -3.4, -0.8],
+  ["pad", -9.9, 3.2],
+  // and on the right
+  ["mixer", 6.4, 1.0],
+  ["speaker", 9.0, 7.0],
+  ["pads", 5.6, 5.6],
+  ["trio", 6.0, 10.6],
+  ["wave", 3.4, -0.4],
+  ["pair", 5.0, -1.0],
+  ["disc", 9.6, 1.8],
+  // under the hero
+  ["mixer", 2.2, 12.6],
+  ["pair", -1.6, 13.6],
+  // a far column, for wide screens (cropped at the edges of most)
+  ["vfader", -11.4, 5.4],
+  ["knob", -10.8, 8.8],
+  ["jog2", -12.8, 12.0],
+  ["pads", 10.8, 10.8],
+  ["knob", 11.0, 4.6],
+  ["vfader", 11.8, 0.8],
+  ["big", 13.0, 8.0],
+  ["jog2", -13.2, 1.0],
 ];
-const overlaps = (a: Tile, b: Tile, clear = 0.04) =>
+const overlaps = (a: Tile, b: Tile, clear = -0.01) =>
   a.cell[0] < b.cell[0] + b.cell[2] + clear &&
   b.cell[0] < a.cell[0] + a.cell[2] + clear &&
   a.cell[1] < b.cell[1] + b.cell[3] + clear &&
