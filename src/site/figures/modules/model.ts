@@ -61,6 +61,10 @@ export interface Idle {
   ripple: (r: number) => number; // the grille's darkening at a distance r from its centre (world units), 0..1
   faders: number[]; // per fader, 0..1
   switches: boolean[]; // per switch, on or off
+  picks: number[]; // per pressable: which tiny key or pad a press lands on
+  sticks: [number, number][]; // per joystick, its tilt in −1..1
+  leds: number[]; // per LED strip, its level 0..1
+  beat: number; // the pads' step: a count that rises every 0.6 s (slower when calm)
 }
 
 /* when each switch flips in the loop: the first twice a loop, the second once (so it alternates loop to loop) */
@@ -89,7 +93,9 @@ export function idleAt(t: number, calm: boolean, w: World): Idle {
   const loop = Math.floor(tt / LOOP);
   const lt = tt - loop * LOOP;
   const sweep = calm ? 0.6 : 1;
-  const angles = w.knobs.map((k, i) => knobAngle(stopsOf(k.id, i), lt, sweep));
+  // in the field, knobs turn on a slower cycle (two loops) so only a few move at once
+  const slow = w.layout === "field" ? ((tt % (LOOP * 2)) + LOOP * 2) % (LOOP * 2) / 2 : lt;
+  const angles = w.knobs.map((k, i) => knobAngle(stopsOf(k.id, i), slow, sweep));
   // presses from this loop and the tail of the one before
   const events: { at: number; i: number }[] = [];
   for (const back of [1, 0]) {
@@ -142,7 +148,29 @@ export function idleAt(t: number, calm: boolean, w: World): Idle {
     const before = loop * at.length + at.filter((x) => x <= lt).length; // flips so far
     return (before + (sw.id === "s2" || i % 2 === 1 ? 1 : 0)) % 2 === 1; // the second starts on, so the still shows one of each
   });
-  return { angles, presses, tones, active, ripple, faders, switches };
+  const picks = w.pressable.map((t, i) => {
+    const n = t.ctl.kind === "keys" ? 4 : t.ctl.kind === "pads" ? 9 : 1;
+    return ((loop * 3 + i) % n + n) % n;
+  });
+  // a joystick wanders in a slow circle for two seconds of its loop, then springs home
+  const sticks = w.sticks.map((_, i): [number, number] => {
+    const start = (1.2 + i * 2.9) % LOOP;
+    const u = (((lt - start) % LOOP) + LOOP) % LOOP;
+    const env = u < 2.2 ? Math.sin((Math.PI * u) / 2.2) : 0;
+    const a = u * 2.6 + i;
+    return [env * Math.cos(a) * (calm ? 0.5 : 0.85), env * Math.sin(a) * (calm ? 0.5 : 0.85)];
+  });
+  // the LED strips follow the presses like a level meter, over a low hum
+  const leds = w.leds.map((_, i) => {
+    let v = 0.18 + 0.1 * Math.sin(tt * 1.7 + i * 2.1);
+    for (const e of events) {
+      const age = tt - e.at;
+      if (age > 0 && age < 1.5) v = Math.max(v, 0.95 * Math.exp(-age / 0.45));
+    }
+    return Math.min(1, v * (calm ? 0.8 : 1));
+  });
+  const beat = Math.floor(tt / (calm ? 1 : 0.6));
+  return { angles, presses, tones, active, ripple, faders, switches, picks, sticks, leds, beat };
 }
 
 /* a composed still: the pill key down, the ripple leaving the grille's centre */

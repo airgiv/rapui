@@ -4,12 +4,14 @@
    same everywhere; a layout only chooses its tiles and its frame.
 
    "hero"  — the 15-tile composition beside a headline (640 × 560).
-   "field" — a wide band (16:7) of 26 scattered tiles that keeps the left of the
-             picture empty floor; FIELD_TEXT says how much, so a block can put
-             its headline there. `tight` is the frame of the tiles alone, for
-             narrow screens where the text stacks above the picture. */
+   "field" — a full-bleed 3:1 band of about 50 tiles in clusters round the hero
+             composition, drawn with preserveAspectRatio "slice" so a page of any
+             width shows its middle and lets the sides bleed off. */
 import { depthOf, iso, slabOf, type Plan, type SolidPaths } from "../iso/iso-kit";
 import { BEVEL, FIELD_TILES, HEIGHT, HERO_TILES, P, WIDTH, centreOf, extremesOf, planOf, topOf, type Layout, type Tile } from "./view";
+
+/* the field's frame, in drawing units: wide enough for an ultra-wide page, its middle on the hero's */
+export const FIELD_BOX = { w: 2100, h: 700 };
 
 export type Box = [number, number, number, number]; // x, y, w, h in drawing units
 
@@ -18,7 +20,10 @@ export interface World {
   tiles: Tile[];
   knobs: Tile[];
   capped: Tile[]; // knobs with coloured caps, in the order the lit accent visits them
-  pressable: Tile[]; // discs, soft buttons and pill keys (keys 1..9)
+  pressable: Tile[]; // discs, soft buttons, pill keys, tiny-key rows and pad grids (keys 1..9)
+  sticks: Tile[];
+  displays: Tile[];
+  leds: Tile[];
   faders: Tile[];
   switches: Tile[];
   grilles: Tile[];
@@ -30,8 +35,6 @@ export interface World {
   tight: Box;
 }
 
-/* the share of a field's width on the left that stays empty floor for text */
-export const FIELD_TEXT = 0.4;
 
 /* painter's order for boxes on a grid: a tile wholly behind another (smaller x or y, ranges overlapping) goes first */
 function orderOf(tiles: Tile[]) {
@@ -73,19 +76,21 @@ function build(layout: Layout): World {
   let viewBox: Box = [0, 0, WIDTH, HEIGHT];
   let tight: Box = viewBox;
   if (layout === "field") {
-    tight = boundsOf(tiles, 12);
-    // a 16:7 band with the tiles at its right, the left FIELD_TEXT of it left empty
-    const [tx, ty, tw, th] = tight;
-    const w = Math.max(tw / (1 - FIELD_TEXT), (th * 16) / 7);
-    const h = (w * 7) / 16;
-    viewBox = [tx + tw - w, ty - (h - th) / 2, w, h];
+    const [hx, hy, hw, hh] = boundsOf(HERO_TILES, 0);
+    const cx = hx + hw / 2;
+    const cy = hy + hh / 2 + 6;
+    viewBox = [cx - FIELD_BOX.w / 2, cy - FIELD_BOX.h / 2, FIELD_BOX.w, FIELD_BOX.h];
+    tight = boundsOf(HERO_TILES, 12);
   }
   return {
     layout,
     tiles,
     knobs,
     capped: knobs.filter((t) => t.ctl.kind === "knob" && t.ctl.cap !== null),
-    pressable: tiles.filter((t) => t.ctl.kind === "disc" || t.ctl.kind === "soft" || t.ctl.kind === "pill"),
+    pressable: tiles.filter((t) => ["disc", "soft", "pill", "keys", "pads"].includes(t.ctl.kind)),
+    sticks: tiles.filter((t) => t.ctl.kind === "stick"),
+    displays: tiles.filter((t) => t.ctl.kind === "display"),
+    leds: tiles.filter((t) => t.ctl.kind === "leds"),
     faders: tiles.filter((t) => t.ctl.kind === "fader"),
     switches: tiles.filter((t) => t.ctl.kind === "switch"),
     grilles: tiles.filter((t) => t.ctl.kind === "grille"),

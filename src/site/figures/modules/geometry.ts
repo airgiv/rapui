@@ -5,6 +5,7 @@ import {
   cylinder,
   iso,
   onTop,
+  planOutline,
   pathOf,
   ring,
   ringOf,
@@ -14,6 +15,7 @@ import {
   topMatrix,
   translateAlong,
   type Flat,
+  type Point3,
   type Plan,
   type Plane,
   type SolidPaths,
@@ -36,6 +38,13 @@ import {
   SOFT,
   FADER,
   SWITCH,
+  ROCKER,
+  KEYS,
+  PADS,
+  LCD,
+  STICK,
+  LEDS,
+  JOG,
   centreOf,
   topOf,
   type Tile,
@@ -256,50 +265,57 @@ export function grilleGeo(t: Tile): GrilleGeo {
   };
 }
 
-/* ---------------------------------------------------------------- the fader */
+/* ---------------------------------------------------------------- the faders */
 export interface FaderGeo {
   cx: number;
   cy: number;
   z0: number;
+  axis: "x" | "y";
   recess: Recess; // the long slot
   scale: Flat[]; // the printed dots beside the travel
   major: Flat[];
   halo: (v: number) => string;
 }
+/* a point `u` along a control's axis and `w` across it, on the table */
+const at2 = (g: { cx: number; cy: number; axis: "x" | "y" }, u: number, w: number): [number, number] => (g.axis === "x" ? [g.cx + u, g.cy + w] : [g.cx + w, g.cy + u]);
 export function faderGeo(t: Tile): FaderGeo {
   const [cx, cy] = centreOf(t);
   const z0 = topOf(t);
+  const axis = t.ctl.kind === "fader" && t.ctl.axis === "y" ? "y" : "x";
+  const base = { cx, cy, axis } as const;
   const { len, slot, depth, scale } = FADER;
-  const plan: Plan = { x: cx - len / 2 - slot / 2, y: cy - slot / 2, w: len + slot, d: slot, r: slot / 2 - 0.05 };
   const dots: Flat[] = [];
   const major: Flat[] = [];
-  for (let k = 0; k <= 10; k++) (k % 5 === 0 ? major : dots).push(iso([cx - len / 2 + (k * len) / 10, cy + scale, z0], P));
+  for (let k = 0; k <= 10; k++) {
+    const [x, y] = at2(base, -len / 2 + (k * len) / 10, scale);
+    (k % 5 === 0 ? major : dots).push(iso([x, y, z0], P));
+  }
   return {
     cx,
     cy,
     z0,
-    recess: planRecess(plan, z0, depth),
+    axis,
+    recess: planRecess(along(base, 0, len + slot, slot, slot / 2 - 0.05), z0, depth),
     scale: dots,
     major,
-    halo: (v) => slabOf(capPlan(cx, cy, v, 2.5, 3), z0, 0.1, P, 5).fill,
+    halo: (v) => {
+      const p = capPlan(base, v);
+      return slabOf({ ...p, x: p.x + 2.5, y: p.y + 3 }, z0, 0.1, P, 5).fill;
+    },
   };
 }
-const capX = (cx: number, v: number) => cx - FADER.len / 2 + v * FADER.len;
-const capPlan = (cx: number, cy: number, v: number, dx = 0, dy = 0): Plan => ({
-  x: capX(cx, v) - FADER.cap.w / 2 + dx,
-  y: cy - FADER.cap.d / 2 + dy,
-  w: FADER.cap.w,
-  d: FADER.cap.d,
-  r: FADER.cap.r,
-});
-export const faderCap = (g: FaderGeo, v: number) => slabOf(capPlan(g.cx, g.cy, v), g.z0, FADER.cap.h, P, 5, 0.8);
+const capU = (v: number) => -FADER.len / 2 + v * FADER.len;
+const capPlan = (g: { cx: number; cy: number; axis: "x" | "y" }, v: number): Plan => along(g, capU(v), FADER.cap.w, FADER.cap.d, FADER.cap.r);
+export const faderCap = (g: FaderGeo, v: number) => slabOf(capPlan(g, v), g.z0, FADER.cap.h, P, 5, 0.8);
 /* three grip lines across the cap's top, edge to edge (inside the corner rounding) */
 export const faderGrip = (g: FaderGeo, v: number) =>
   [-3.2, 0, 3.2]
-    .map((dx) => onTop([[capX(g.cx, v) + dx, g.cy - FADER.cap.d / 2], [capX(g.cx, v) + dx, g.cy + FADER.cap.d / 2]], g.z0 + FADER.cap.h, P))
+    .map((du) => onTop([at2(g, capU(v) + du, -FADER.cap.d / 2), at2(g, capU(v) + du, FADER.cap.d / 2)], g.z0 + FADER.cap.h, P))
     .join("");
 /* the fader's value under a point on its tile's plane */
-export const faderValueAt = (g: FaderGeo, wx: number) => (wx - (g.cx - FADER.len / 2)) / FADER.len;
+export const faderValueAt = (g: FaderGeo, wx: number, wy: number) => ((g.axis === "x" ? wx - g.cx : wy - g.cy) + FADER.len / 2) / FADER.len;
+/* where a mark points at a fader: its cap's top in the middle of the travel */
+export const faderTop = (g: FaderGeo, v: number): Point3 => [...at2(g, capU(v), 0), g.z0 + FADER.cap.h] as Point3;
 
 /* ---------------------------------------------------------------- the sliding switches */
 export interface SwitchGeo {
@@ -348,3 +364,185 @@ export const switchGrip = (g: SwitchGeo, v: number) => {
     )
     .join("");
 };
+
+/* ---------------------------------------------------------------- the rocker */
+export interface RockerGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  axis: "x" | "y";
+  recess: Recess;
+  lamp: string;
+  lampRing: string;
+}
+export function rockerGeo(t: Tile): RockerGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const axis = t.ctl.kind === "switch" ? t.ctl.axis : "y";
+  const base = { cx, cy, axis };
+  const [lx, ly] = at2(base, ROCKER.lamp, 0);
+  return {
+    cx,
+    cy,
+    z0,
+    axis,
+    recess: planRecess(along(base, 0, ROCKER.len, ROCKER.w, 4), z0, ROCKER.depth),
+    lamp: ring(lx, ly, 2.1, z0, P, 24),
+    lampRing: ring(lx, ly, 3.4, z0, P, 28),
+  };
+}
+/* the two halves, back one first; `v` 1 tips the front half down (on) */
+export function rockerHalves(g: RockerGeo, v: number): [SolidPaths, SolidPaths] {
+  const z = g.z0 - ROCKER.depth;
+  const hBack = ROCKER.lo + (ROCKER.hi - ROCKER.lo) * v;
+  const hFront = ROCKER.hi - (ROCKER.hi - ROCKER.lo) * v;
+  const off = ROCKER.half / 2 + 0.3;
+  return [
+    slabOf(along(g, -off, ROCKER.half, ROCKER.hw, 3), z, ROCKER.depth + hBack, P, 6, 0.9),
+    slabOf(along(g, off, ROCKER.half, ROCKER.hw, 3), z, ROCKER.depth + hFront, P, 6, 0.9),
+  ];
+}
+
+/* ---------------------------------------------------------------- tiny keys and pads */
+export interface MultiGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  plans: Plan[]; // back to front
+  h: number;
+  travel: number;
+}
+export function keysGeo(t: Tile): MultiGeo {
+  const [cx, cy] = centreOf(t);
+  const plans = Array.from({ length: KEYS.n }, (_, j) => ({ x: cx + (j - (KEYS.n - 1) / 2) * KEYS.pitch - KEYS.w / 2, y: cy - KEYS.d / 2, w: KEYS.w, d: KEYS.d, r: 3.2 }));
+  return { cx, cy, z0: topOf(t), plans, h: KEYS.h, travel: KEYS.travel };
+}
+export function padsGeo(t: Tile): MultiGeo {
+  const [cx, cy] = centreOf(t);
+  const plans: Plan[] = [];
+  // back to front: rows of equal x + y
+  for (let sum = 0; sum <= 4; sum++)
+    for (let i = 0; i < 3; i++) {
+      const j = sum - i;
+      if (j < 0 || j > 2) continue;
+      plans.push({ x: cx + (i - 1) * PADS.pitch - PADS.s / 2, y: cy + (j - 1) * PADS.pitch - PADS.s / 2, w: PADS.s, d: PADS.s, r: 2.6 });
+    }
+  return { cx, cy, z0: topOf(t), plans, h: PADS.h, travel: PADS.travel };
+}
+export const multiCap = (g: MultiGeo, j: number, p: number) => slabOf(g.plans[j]!, g.z0, g.h - p * g.travel, P, 4, 0.6);
+/* the sub-key nearest a point on the tile */
+export const multiNearest = (g: MultiGeo, wx: number, wy: number) => {
+  let best = 0;
+  let bd = Infinity;
+  g.plans.forEach((p, j) => {
+    const d = Math.hypot(p.x + p.w / 2 - wx, p.y + p.d / 2 - wy);
+    if (d < bd) (bd = d), (best = j);
+  });
+  return best;
+};
+
+/* ---------------------------------------------------------------- the LCD */
+export interface LcdGeo {
+  recess: Recess;
+  at: string; // the glass's own plane: x along +x, y toward the viewer, origin at its back-left corner
+  w: number;
+  d: number;
+}
+export function lcdGeo(t: Tile): LcdGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const plan: Plan = { x: cx - LCD.w / 2, y: cy - LCD.d / 2, w: LCD.w, d: LCD.d, r: 5 };
+  return { recess: planRecess(plan, z0, LCD.depth), at: topMatrix([plan.x, plan.y], z0 - LCD.depth, P, "x"), w: LCD.w, d: LCD.d };
+}
+
+/* ---------------------------------------------------------------- the joystick nub */
+export interface StickGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  recess: Recess;
+  boot: SolidPaths;
+  halo: string;
+}
+export function stickGeo(t: Tile): StickGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  return {
+    cx,
+    cy,
+    z0,
+    recess: circleRecess(cx, cy, STICK.socket, z0, 2),
+    boot: cylinder(cx, cy, STICK.boot, z0 - 2, STICK.bootH + 2, P, 48, 1.4),
+    halo: cylinder(cx + 2.5, cy + 3, STICK.boot + 3, z0, 0.1, P, 32).fill,
+  };
+}
+/* the shaft (a slanted rod as a band on screen) and the ball on top, tilted by tx, ty in −1..1 */
+export function stickParts(g: StickGeo, tx: number, ty: number) {
+  const zb = g.z0 + STICK.bootH;
+  const top: Point3 = [g.cx + tx * STICK.tilt, g.cy + ty * STICK.tilt, zb + STICK.shaftH];
+  const pa = iso([g.cx, g.cy, zb], P);
+  const pb = iso(top, P);
+  const dx = pb[0] - pa[0];
+  const dy = pb[1] - pa[1];
+  const l = Math.hypot(dx, dy) || 1;
+  const h = STICK.shaft * K;
+  const nx = (-dy / l) * h;
+  const ny = (dx / l) * h;
+  const shaft = pathOf([[pa[0] + nx, pa[1] + ny], [pb[0] + nx, pb[1] + ny], [pb[0] - nx, pb[1] - ny], [pa[0] - nx, pa[1] - ny]], true);
+  const r = STICK.ball * K;
+  const ball = `M${(pb[0] - r).toFixed(2)} ${pb[1].toFixed(2)}a${r.toFixed(2)} ${r.toFixed(2)} 0 1 0 ${(2 * r).toFixed(2)} 0a${r.toFixed(2)} ${r.toFixed(2)} 0 1 0 ${(-2 * r).toFixed(2)} 0`;
+  // the shaft's foot on the boot: an ellipse it stands in
+  const foot = ring(g.cx, g.cy, STICK.shaft + 0.6, zb, P, 20);
+  return { shaft, ball, foot, top };
+}
+
+/* ---------------------------------------------------------------- the LED strip */
+export interface LedGeo {
+  leds: string[];
+  rings: string[];
+  frame: string;
+}
+export function ledGeo(t: Tile): LedGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const xs = Array.from({ length: LEDS.n }, (_, j) => cx + (j - (LEDS.n - 1) / 2) * LEDS.pitch);
+  const half = ((LEDS.n - 1) / 2) * LEDS.pitch + 8;
+  return {
+    leds: xs.map((x) => ring(x, cy, LEDS.r, z0, P, 20)),
+    rings: xs.map((x) => ring(x, cy, LEDS.r + 1.4, z0, P, 22)),
+    frame: planOutline({ x: cx - half, y: cy - 9, w: half * 2, d: 18, r: 9 }, z0, P, 8),
+  };
+}
+
+/* ---------------------------------------------------------------- the jog wheel */
+export interface JogGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  r: number;
+  socket: string;
+  body: SolidPaths;
+  rim: string; // a ring inset on the face
+  halo: string;
+}
+export function jogGeo(t: Tile): JogGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const r = t.cell[2] > 1 ? JOG.big : JOG.small;
+  return {
+    cx,
+    cy,
+    z0,
+    r,
+    socket: ring(cx, cy, r + 2.6, z0, P, 72),
+    body: cylinder(cx, cy, r, z0, JOG.h, P, 96, 1.8),
+    rim: ring(cx, cy, r - 3.6, z0 + JOG.h, P, 96),
+    halo: cylinder(cx + 3, cy + 3.5, r + 2, z0, 0.1, P, 48).fill,
+  };
+}
+/* the finger dimple, turned by `deg`: a little round recess near the rim */
+export function jogDimple(g: JogGeo, deg: number): Recess {
+  const a = deg * RAD;
+  const rr = g.r * 0.64;
+  return circleRecess(g.cx + rr * cos(a), g.cy + rr * sin(a), g.r * 0.17, g.z0 + JOG.h, 1.4);
+}
