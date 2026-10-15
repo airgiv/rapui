@@ -36,8 +36,8 @@ export function LandingPreview({ dark, setDark }: { dark: boolean; setDark: (v: 
         data-rap-theme="dark"
         className="fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-1/2 z-[2147483001] flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-center gap-3 overflow-x-auto rounded-pill bg-paper py-2 pr-2 pl-4 font-sans text-ink shadow-pop"
       >
-        <a href="#docs.hero" className="shrink-0 text-[0.875rem] font-medium text-ink-2 hover:text-ink">
-          ← Docs
+        <a href="#" className="shrink-0 text-[0.875rem] font-medium text-ink-2 hover:text-ink">
+          ← Home
         </a>
         <StyleControls preset={preset} setPreset={setPreset} motion={motion ?? PRESET_MOTION[preset]} setMotion={setMotion} />
         <label className="flex shrink-0 items-center gap-2 text-[0.8125rem] text-ink-2">
