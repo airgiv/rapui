@@ -182,6 +182,7 @@ const SOUNDS: { name: SoundName; hint: string }[] = [
   { name: "success", hint: "done" },
   { name: "error", hint: "nope" },
   { name: "type", hint: "keystroke" },
+  { name: "bell", hint: "desk bell" },
 ];
 
 const soundControls: Control[] = [
