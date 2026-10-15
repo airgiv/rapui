@@ -19,7 +19,6 @@
 /* the field's shadow is softer than the kit's default */
 .iso-svg .cm-halo { filter: blur(7px); transform: translateY(2px); }
 .iso-svg path.cm-soft-halo { fill: var(--anatomy-halo); opacity: calc(var(--anatomy-halo-opacity) * 0.9); filter: blur(2.5px); stroke: none; }
-.iso-svg .cm-prop-halo { filter: blur(3px); transform: none; opacity: calc(var(--anatomy-halo-opacity) * 0.7); }
 
 /* recesses: the far wall in shade, the floor a touch darker than the face */
 .iso-svg path.cm-recess-wall { stroke: none; fill: var(--anatomy-shade-2); }
@@ -56,11 +55,16 @@
 /* the speaker grille: holes in the ink, darker as a ripple passes */
 .iso-svg path.cm-hole { fill: var(--anatomy-hi); stroke: none; opacity: calc(0.72 + 0.28 * var(--v, 0)); }
 
-/* the props: tubes drawn as an outline stroke under a body stroke (widths in drawing units) */
-.iso-svg path.cm-tube-edge, .iso-svg path.cm-tube, .iso-svg path.cm-wire-shadow { fill: none; vector-effect: none; stroke-linecap: round; stroke-linejoin: round; }
-.iso-svg path.cm-tube-edge { stroke: var(--anatomy-mid); }
-.iso-svg path.cm-tube { stroke: var(--anatomy-shade-3); }
-.iso-svg path.cm-plug { fill: var(--anatomy-shade-3); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
-.iso-svg path.cm-plug[data-tone="metal"] { fill: var(--anatomy-shade-1); }
-.iso-svg path.cm-plug[data-tone="band"] { fill: var(--anatomy-mid); }
-.iso-svg path.cm-wire-shadow { stroke: var(--anatomy-halo); opacity: calc(var(--anatomy-halo-opacity) * 0.6); filter: blur(2px); }
+
+/* the switches' lamps: a ring at rest, lit while the switch is on */
+.iso-svg path.cm-lamp { fill: var(--anatomy-shade-1); stroke: var(--anatomy-lo); stroke-width: var(--anatomy-weight); transition: fill 160ms linear, stroke 160ms linear; }
+.iso-svg path.cm-lamp[data-on] { fill: var(--anatomy-lit); stroke: var(--anatomy-lit); }
+.cm-stage[tabindex] [data-ctl^="fd"] { cursor: grab; touch-action: none; }
+@media (prefers-reduced-motion: reduce) { .iso-svg path.cm-lamp { transition: none; } }
+
+/* in a dark theme the soft shadows under parts would read as a light glow: drop them (the !important
+   beats the look's inline token), and shade coloured caps toward black, not toward the halo ink */
+:where([data-rap-theme="dark"]) .cm:not(:where([data-rap-theme="light"]) .cm) {
+  --anatomy-halo-opacity: 0 !important;
+  --cm-veil: #000;
+}

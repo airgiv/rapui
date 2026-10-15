@@ -2,8 +2,8 @@
    together on a grid on the table, each tile carrying one large control: tall
    knurled knobs (some standing in a wide shallow recess on a 2×2 tile), dark
    round buttons sunk in a rim, soft round buttons with a printed icon, a long
-   pill key in a stadium recess, a speaker grille, and two loose props lying on
-   the table (a wire loop and a short jack cable). World units: x, y on the
+   pill key in a stadium recess, a speaker grille, a fader and two sliding
+   switches. World units: x, y on the
    table, z up; one grid cell is 60 units.
 
    The camera looks from the +x/+y corner, so the grid's diagonal runs across
@@ -37,6 +37,10 @@ export const DISC = { rim: 24.5, rimH: 2.8, well: 20.5, disc: 19.4, sink: 1.2, t
 export const SOFT = { r: 23.5, h: 5.2, travel: 2.8 };
 export const PILL = { w: 96, d: 33, h: 4.6, travel: 2.8, pad: 4.4, sink: 1.5 };
 export const GRILLE = { n: 14, pitch: 6.5, hole: 1.85, corner: 24 };
+/* the fader: a long slot along the tile with a cap that glides, a printed dot scale beside it */
+export const FADER = { len: 92, slot: 6, depth: 3, cap: { w: 15, d: 28, h: 8.5, r: 2.6 }, scale: 18.5 };
+/* the sliding switches: a thumb in a stadium slot, a small lamp at the "on" end */
+export const SWITCH = { len: 38, d: 17, depth: 2.4, thumb: { len: 19, d: 12.4, h: 5.2 }, lamp: 24.5 };
 
 export type Icon = "loop" | "tape" | "wave";
 export type Ctl =
@@ -44,7 +48,9 @@ export type Ctl =
   | { kind: "disc" }
   | { kind: "soft"; icon: Icon }
   | { kind: "pill" }
-  | { kind: "grille" };
+  | { kind: "grille" }
+  | { kind: "fader" } // runs along +x
+  | { kind: "switch"; axis: "x" | "y" };
 
 export interface Tile {
   id: string;
@@ -66,6 +72,9 @@ export const TILES: Tile[] = [
   { id: "gr", cell: [3, 3, 2, 2], lift: 0, ctl: { kind: "grille" } },
   { id: "sw", cell: [0, 3, 1, 1], lift: 0, ctl: { kind: "soft", icon: "wave" } },
   { id: "p1", cell: [1, 4, 2, 1], lift: 0, ctl: { kind: "pill" } },
+  { id: "fd", cell: [2, 5, 2, 1], lift: 0, ctl: { kind: "fader" } },
+  { id: "s1", cell: [4, 5, 1, 1], lift: 1.5, ctl: { kind: "switch", axis: "x" } },
+  { id: "s2", cell: [5, 3, 1, 1], lift: 0, ctl: { kind: "switch", axis: "y" } },
 ];
 
 export const planOf = (t: Tile): Plan => {
@@ -86,17 +95,12 @@ export const topOf = (t: Tile) => TILE_H + t.lift;
 
 /* the knobs, in TILES order, and the controls you can press (keys 1..n) */
 export const KNOBS = TILES.filter((t) => t.ctl.kind === "knob");
+export const FADERS = TILES.filter((t) => t.ctl.kind === "fader");
+export const SWITCHES = TILES.filter((t) => t.ctl.kind === "switch");
 export const PRESSABLE = TILES.filter((t) => t.ctl.kind === "disc" || t.ctl.kind === "soft" || t.ctl.kind === "pill");
 /* the knobs whose caps take colour, in the order the lit accent visits them */
 export const CAPPED = KNOBS.filter((t) => t.ctl.kind === "knob" && t.ctl.cap !== null);
 
-/* loose props on the table, beside the right-hand tiles */
-const cellPt = (cx: number, cy: number): [number, number] => [(cx - ORIGIN_CELL[0]) * U, (cy - ORIGIN_CELL[1]) * U];
-export const CLIP = { a: cellPt(5.2, 2.3), b: cellPt(6.05, 2.3), w: 15, wire: 1.15 }; // a long wire loop
-export const JACK = {
-  plug: cellPt(5.2, 3.75), // the tip of the plug, which lies along +x
-  wire: 1.25,
-};
 
 /* camera: the kit's 45° azimuth, looking down a little steeper than 30° */
 export const AZIMUTH = 45;
@@ -114,7 +118,6 @@ for (const t of TILES) {
     }
   }
 }
-extremes.push([CLIP.b[0], CLIP.a[1], 0], [JACK.plug[0] + 75, JACK.plug[1] - 10, 0]);
 
 function fit(points: Point3[], pad: number): Projection {
   const unit: Projection = { origin: [0, 0], scale: 1, azimuth: AZIMUTH, elevation: ELEVATION };

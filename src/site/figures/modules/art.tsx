@@ -1,15 +1,11 @@
 /* The static art of ControlModules as JSX, built once from geometry.ts: the
-   props on the table, the tiles and everything sunk into their faces. The
+   tiles and everything sunk into their faces. The
    controls standing on the tiles are drawn by live.tsx with the pieces here. */
 import * as React from "react";
 import { Solid } from "../iso/react/draw";
 import type { SolidPaths, Tone } from "../iso/iso-kit";
 import {
-  CLIP_HALO,
-  CLIP_PATH,
-  CLIP_W,
   HALO,
-  JACK_PARTS,
   TILE_ORDER,
   TILE_PATHS,
   circleRecess,
@@ -50,23 +46,6 @@ export function RecessArt({ r, id, wall = 2 }: { r: Recess; id: string; wall?: n
       <path className="cm-recess-wall" data-shade={wall} d={r.rim} />
       <path className="cm-recess-floor" d={r.floor} clipPath={`url(#${id})`} />
       <path className="iso-line" data-tone="lo" d={r.rim} />
-    </g>
-  );
-}
-
-/* the loose props: a wire loop and a short jack cable lying on the table */
-export function Props() {
-  return (
-    <g data-part="props" className="cm-props">
-      <path className="iso-halo cm-prop-halo" d={CLIP_HALO} />
-      <path className="cm-wire-shadow" d={JACK_PARTS.halo} style={{ strokeWidth: JACK_PARTS.cableW * 1.6 }} />
-      <path className="cm-tube-edge" d={CLIP_PATH} style={{ strokeWidth: CLIP_W + 1.1 }} />
-      <path className="cm-tube" d={CLIP_PATH} style={{ strokeWidth: Math.max(0.4, CLIP_W - 1.1) }} />
-      <path className="cm-tube-edge" d={JACK_PARTS.cable} style={{ strokeWidth: JACK_PARTS.cableW + 1.1 }} />
-      <path className="cm-tube" d={JACK_PARTS.cable} style={{ strokeWidth: Math.max(0.4, JACK_PARTS.cableW - 1.1) }} />
-      {JACK_PARTS.plugs.map((s, i) => (
-        <path key={i} className="cm-plug" data-tone={s.tone} d={s.d} />
-      ))}
     </g>
   );
 }

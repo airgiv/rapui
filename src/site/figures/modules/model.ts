@@ -4,7 +4,7 @@
    buttons press in a slow sequence (down fast, back up on a light spring), each
    press sends a ripple through the speaker grille, and once per loop the lit
    accent crossfades from one coloured cap to the next. */
-import { CAPPED, KNOBS, PRESSABLE } from "./view";
+import { CAPPED, FADERS, KNOBS, PRESSABLE, SWITCHES } from "./view";
 
 export const LOOP = 7.2;
 export const CALM = 1.6; // calm runs this much slower, with smaller sweeps
@@ -53,7 +53,12 @@ export interface Idle {
   tones: number[][]; // per capped knob (CAPPED order): weights of [lit, cap A, cap B]
   active: number; // the capped knob that holds the accent (CAPPED order)
   ripple: (r: number) => number; // the grille's darkening at a distance r from its centre (world units), 0..1
+  faders: number[]; // per fader, 0..1
+  switches: boolean[]; // per switch, on or off
 }
+
+/* when each switch flips in the loop: the first twice a loop, the second once (so it alternates loop to loop) */
+const FLIPS: Record<string, number[]> = { s1: [2.1, 5.3], s2: [3.9] };
 
 function knobAngle(stops: [number, number][], lt: number, sweep: number) {
   // the most recent stop (wrapping into the loop before), and the angle it turned from
@@ -109,7 +114,14 @@ export function idleAt(t: number, calm: boolean): Idle {
     }
     return Math.min(1, v * strength);
   };
-  return { angles, presses, tones, active, ripple };
+  // the fader glides through a slow swell, twice as long as the loop
+  const faders = FADERS.map((_, i) => 0.5 + (calm ? 0.22 : 0.36) * Math.sin((2 * Math.PI * tt) / (LOOP * 2) + 0.4 + i));
+  const switches = SWITCHES.map((sw) => {
+    const at = FLIPS[sw.id] ?? [];
+    const before = loop * at.length + at.filter((x) => x <= lt).length; // flips so far
+    return (before + (sw.id === "s2" ? 1 : 0)) % 2 === 1; // the second starts on, so the still shows one of each
+  });
+  return { angles, presses, tones, active, ripple, faders, switches };
 }
 
 /* a composed still: the pill key down, the ripple leaving the grille's centre */

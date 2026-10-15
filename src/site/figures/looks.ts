@@ -3,8 +3,9 @@
    --rap-* colours, line weight and type. The values are var()s, so a figure
    follows the preset's light and dark palettes by itself. Spread a look's
    tokens onto the figure (the package's `tokens` prop, or a style on the
-   wrapper of a skill-built figure); signal's phosphor screen wants a dark
-   island around it (`dark`). */
+   wrapper of a skill-built figure). Every look reads on its preset's own
+   paper in both themes; `dark` (a dark island around the figure) is kept in
+   the type for figures that need one, and no look sets it now. */
 import type { RapPreset } from "../../rapui";
 
 export type FigureTokens = Partial<Record<`--anatomy-${string}`, string>>;
@@ -71,33 +72,34 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-mono": v("font-sans"),
     },
   },
-  // signal: a phosphor screen — green lines on near-black, faces barely lit, the live part in acid
+  // signal: a field instrument — green-black line work on sage paper, faces in paper tints, the live
+  // part in phosphor green. Every value is a var(), so in the dark theme the same tokens turn into
+  // pale phosphor lines on a green-black screen.
   signal: {
-    dark: true,
-    note: "A phosphor screen: green line work on near-black, scanlines over it, the live part in acid.",
+    note: "A field instrument: green-black line work on sage paper, faces in paper tints, the live part in phosphor green; phosphor on near-black at night.",
     tokens: {
       "--anatomy-card": v("paper"),
-      "--anatomy-paper": v("paper"),
-      "--anatomy-top": mix("flame", 16, v("paper")),
-      "--anatomy-face": mix("flame", 12, v("paper")),
-      "--anatomy-shade-3": mix("flame", 12, v("paper")),
-      "--anatomy-shade-2": mix("flame", 9, v("paper")),
-      "--anatomy-shade-1": mix("flame", 6, v("paper")),
-      "--anatomy-shade-0": mix("flame", 3, v("paper")),
-      "--anatomy-lit": v("acid"),
-      "--anatomy-lit-top": mix("acid", 35, v("paper")),
-      "--anatomy-lit-shade": mix("acid", 20, v("paper")),
-      "--anatomy-hi": v("flame"),
-      "--anatomy-strong": v("flame"),
-      "--anatomy-mid": mix("flame", 65, v("paper")),
-      "--anatomy-lo": mix("flame", 45, v("paper")),
-      "--anatomy-faint": mix("flame", 22, v("paper")),
-      "--anatomy-dot": mix("flame", 60, v("paper")),
-      "--anatomy-text": v("flame"),
-      "--anatomy-muted": mix("flame", 60, v("paper")),
+      "--anatomy-paper": mix("paper", 35, v("surface")),
+      "--anatomy-top": mix("paper", 25, v("surface")),
+      "--anatomy-face": mix("paper", 35, v("surface")),
+      "--anatomy-shade-3": mix("plum", 5, mix("paper", 35, v("surface"))),
+      "--anatomy-shade-2": mix("plum", 10, mix("paper", 35, v("surface"))),
+      "--anatomy-shade-1": mix("plum", 16, mix("paper", 35, v("surface"))),
+      "--anatomy-shade-0": mix("plum", 23, mix("paper", 35, v("surface"))),
+      "--anatomy-lit": v("flame"),
+      "--anatomy-lit-top": mix("flame", 14, v("surface")),
+      "--anatomy-lit-shade": mix("flame", 30, v("surface")),
+      "--anatomy-hi": mix("plum", 78, v("flame")),
+      "--anatomy-strong": mix("plum", 78, v("flame")),
+      "--anatomy-mid": mix("plum", 62, v("paper")),
+      "--anatomy-lo": mix("plum", 40, v("paper")),
+      "--anatomy-faint": mix("plum", 20, v("paper")),
+      "--anatomy-dot": mix("plum", 62, v("paper")),
+      "--anatomy-text": v("ink-2"),
+      "--anatomy-muted": v("mute"),
       "--anatomy-weight": "0.75px",
-      "--anatomy-halo": "#000",
-      "--anatomy-halo-opacity": "0.5",
+      "--anatomy-halo": v("plum"),
+      "--anatomy-halo-opacity": "0.16",
       "--anatomy-mono": v("font-mono"),
     },
   },
