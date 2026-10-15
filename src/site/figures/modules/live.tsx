@@ -339,10 +339,12 @@ export interface ModulesLiveProps {
   onSound?: () => void;
   /** a field's tile set */
   set?: TileSet;
+  /** a field can be dragged around (and drifts when idle); false holds it as a fixed composition */
+  pan?: boolean;
 }
 
 export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(function ModulesLive(
-  { runKey, layout = "hero", set = "synth", soundOn = false, onSound },
+  { runKey, layout = "hero", set = "synth", soundOn = false, onSound, pan: canPan = true },
   ref,
 ) {
   const W = worldOf(layout, set);
@@ -859,7 +861,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       spring(s.tilt[i]![0]!, hand ? hand[0] : ix * k, dt, 260, 16);
       spring(s.tilt[i]![1]!, hand ? hand[1] : iy * k, dt, 260, 16);
     }
-    if (field) {
+    if (field && canPan) {
       const p = pan.current;
       if (!p.drag?.started) {
         if (Math.hypot(p.vx, p.vy) > 2) {
@@ -1026,7 +1028,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const ctl = (e.target as Element).closest("[data-ctl]");
     if (!ctl) {
       // the floor: pan the strip (a touch only once it is clearly sideways, so the page still scrolls)
-      if (!field) return;
+      if (!field || !canPan) return;
       const p = pan.current;
       const touchy = e.pointerType === "touch";
       p.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), touch: touchy, started: !touchy };
@@ -1301,7 +1303,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         if (!heldKeys.current.has(k)) lift(k - 1);
       }, 120);
       touch();
-    } else if (field && e.key.startsWith("Arrow")) {
+    } else if (field && canPan && e.key.startsWith("Arrow")) {
       e.preventDefault();
       // the arrows glide the field a step that way (Shift: further)
       const by = e.shiftKey ? 1500 : 600;
@@ -1858,9 +1860,10 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     <div
       ref={root}
       className="cm-stage"
+      data-pan={field && !canPan ? "off" : undefined}
       tabIndex={still ? undefined : 0}
       role={still ? undefined : "group"}
-      aria-label={still ? undefined : field ? FIELD_HINT : HINT}
+      aria-label={still ? undefined : field && canPan ? FIELD_HINT : HINT}
       onPointerDown={still ? undefined : onPointerDown}
       onPointerMove={still ? undefined : onPointerMove}
       onPointerUp={still ? undefined : onPointerUp}

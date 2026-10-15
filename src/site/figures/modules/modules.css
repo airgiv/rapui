@@ -251,3 +251,8 @@
 .iso-svg .cm-poly-round > path.iso-shade[data-shade="2"] { stroke: var(--f-s2, var(--anatomy-shade-2)); }
 .iso-svg .cm-poly-round > path.iso-shade[data-shade="3"] { stroke: var(--f-s3, var(--anatomy-shade-3)); }
 .iso-svg .cm-poly-round > path.iso-top { stroke: var(--f-top, var(--anatomy-top)); }
+
+/* ---------- a fixed field (pan off): it fills its box, nothing fades, and the page scrolls over it as usual */
+.cm-fixed { height: 100%; }
+.cm-field.cm-fixed .cm-stage { height: 100%; touch-action: pan-y; -webkit-mask-image: none; mask-image: none; }
+.cm-field.cm-fixed .cm-stage[tabindex] { cursor: default; }

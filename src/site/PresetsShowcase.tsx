@@ -49,7 +49,7 @@ export function PresetScope({ preset, children }: { preset: RapPreset; children:
 }
 
 /* open the full Docket landing in this preset (the docs and the landing share the choice) */
-function openLanding(p: RapPreset) {
+export function openLanding(p: RapPreset) {
   try {
     localStorage.setItem("rapui-preset", p);
   } catch {

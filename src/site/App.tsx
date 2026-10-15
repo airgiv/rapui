@@ -47,6 +47,8 @@ import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
 import { PresetPicker, PresetScope, PresetsSection } from "./PresetsShowcase";
+import { ModulesSection } from "./ModulesSection";
+import { LandingCards } from "./LandingCards";
 import "../rapui/fonts/all";
 import type { RapPreset } from "../rapui";
 import { isCalm } from "../rapui/hooks/useGlide";
@@ -1218,6 +1220,8 @@ export function App({
         <Hero />
         <Bands />
         <PresetsSection copyClass={COPY} />
+        <ModulesSection copyClass={COPY} />
+        <LandingCards copyClass={COPY} />
         <SameApi />
         <Stats />
         <Wall />

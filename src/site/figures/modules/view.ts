@@ -296,7 +296,8 @@ const OFFICE_CENTRE: Tile[] = [
   { id: "dl2", cell: [1, 4, 1, 1], lift: 0, ctl: DIAL },
   { id: "bt2", cell: [2, 4, 1, 1], lift: 0, ctl: { kind: "switch", axis: "y", bat: true } },
   { id: "dr3", cell: [3, 4, 1, 1], lift: 1.5, ctl: AJAR },
-  { id: "dr4", cell: [4, 4, 1, 1], lift: 1.5, ctl: DRAWER2 },
+  // the intercom: its speaker grille is the desk's sound switch
+  { id: "ic", cell: [4, 4, 2, 2], lift: 0, ctl: { kind: "grille" } },
 ];
 
 /* ---------------------------------------------------------------- the lab bench (signal) */
