@@ -99,8 +99,10 @@ export function ModulesSection({ copyClass }: { copyClass?: string }) {
             ) : null}
             {/* the picker sits on the card, centred at the top */}
             <div className="pointer-events-none absolute inset-x-0 top-[clamp(0.75rem,2vw,1.5rem)] z-10 flex justify-center px-3">
-              <div className="pointer-events-auto max-w-full">
-                <PresetPicker value={preset} onChange={setPreset} size="sm" />
+              {/* an opaque pill with a shadow so it reads over the drawing; it scrolls sideways
+                  inside itself when the card is narrower than the five names */}
+              <div className="pointer-events-auto max-w-full rounded-pill bg-surface p-1 shadow-pop">
+                <PresetPicker value={preset} onChange={setPreset} size="sm" className="max-w-full" />
               </div>
             </div>
           </div>
