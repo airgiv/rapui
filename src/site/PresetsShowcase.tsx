@@ -90,7 +90,7 @@ export function PresetsSection({ copyClass }: { copyClass: string }) {
             if (!(e.target as HTMLElement).closest(OWN)) next();
           }}
           title="Click to try the next preset"
-          className="relative flex min-h-[clamp(36.5rem,58vw,50rem)] cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-paper pt-6 text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)] [&>[data-slot=statement]]:my-auto [&>[data-slot=statement]]:w-full"
+          className="relative flex min-h-[clamp(36.5rem,58vw,50rem)] cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-paper pt-[clamp(1.75rem,4vw,3.5rem)] text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)] [&>[data-slot=statement]]:my-auto [&>[data-slot=statement]]:w-full"
         >
           <div className="flex max-w-full justify-center px-3">
             <PresetPicker value={preset} onChange={setPreset} />

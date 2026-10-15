@@ -3,11 +3,14 @@
    talks about itself in that preset's voice — and its own hero picture made of
    live components. What changes between them is the preset on <html> and the
    words; the layout is the blocks' own doing. */
-import { isValidElement, useRef, useState, type ReactNode } from "react";
+import { isValidElement, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { usePreset } from "../../rapui/hooks/usePreset";
 import { cn } from "../../rapui/utils";
 import {
   AILoader,
+  BlockKicker,
+  Display,
+  Section,
   BudgetBar,
   Button,
   Container,
@@ -40,6 +43,33 @@ import {
 import { Foliage } from "./foliage";
 import house from "./house.webp";
 import { CONTENT, type LandingContent } from "./content";
+import { ControlModules } from "../figures/modules";
+import { FIGURE_LOOKS } from "../figures/looks";
+
+/* the modules band: a wide field of control tiles (the Anatomy figure, layout "field") with the block's words
+   laid on the empty floor it keeps at its left (its left 40%) from @4xl up; narrower, the words stack above and
+   the figure frames its tiles alone */
+function ModulesBand({ preset, content }: { preset: RapPreset; content: LandingContent["modules"] }) {
+  return (
+    <Section id="modules" tone="plain" width="full" className="overflow-x-clip">
+      <div className="@container">
+        <div className="relative">
+          <div className="relative z-[1] flex max-w-[34rem] flex-col items-start gap-5 @4xl:pointer-events-none @4xl:absolute @4xl:inset-y-0 @4xl:left-0 @4xl:w-[37%] @4xl:justify-center">
+            <BlockKicker look={preset}>{content.eyebrow}</BlockKicker>
+            <Display as="h2" size="lg">
+              {content.title}
+            </Display>
+            <p className="m-0 max-w-[40ch] text-[1.0625rem] leading-relaxed text-ink-2">{content.lead}</p>
+            <Button variant="accent" className="@4xl:pointer-events-auto">
+              {content.action}
+            </Button>
+          </div>
+          <ControlModules layout="field" className="mt-8 @4xl:mt-0" style={FIGURE_LOOKS[preset].tokens as CSSProperties} />
+        </div>
+      </div>
+    </Section>
+  );
+}
 
 /* a UI shot as a picture: centred on a soft wash of the preset's own colours,
    filling whatever box the block gives its media */
@@ -87,18 +117,6 @@ function Playground() {
         <Button icon>Poke me</Button>
       </div>
     </div>
-  );
-}
-
-/* the little striped flag in front of civic's "unofficial website" line */
-function Pennant() {
-  return (
-    <svg viewBox="0 0 16 11" width="16" height="11" aria-hidden className="shrink-0 rounded-[1px]">
-      {Array.from({ length: 7 }, (_, i) => (
-        <rect key={i} y={(i * 11) / 7} width="16" height={11 / 14} fill="var(--rap-flame)" />
-      ))}
-      <rect width="7" height="6" fill="var(--rap-plum)" />
-    </svg>
   );
 }
 
@@ -259,16 +277,6 @@ export function LandingTemplate() {
     <div ref={ref} data-slot="landing" className="bg-paper text-ink font-sans">
       <SiteHeader
         logo={logo}
-        notice={
-          preset === "civic" ? (
-            <>
-              <Pennant />
-              <span>
-                An unofficial website of the Precedent landing page. <a href="#faq" className="text-blue underline underline-offset-2">Here’s how you know</a>
-              </span>
-            </>
-          ) : undefined
-        }
         links={[
           { label: lFeatures, href: "#features" },
           { label: lSplit, href: "#split" },
@@ -340,6 +348,7 @@ export function LandingTemplate() {
         {gap(c.statement.end)}
         {c.statement.end}
       </Statement>
+      <ModulesBand preset={preset} content={c.modules} />
       <FeatureSplit
         id="split"
         index="02"

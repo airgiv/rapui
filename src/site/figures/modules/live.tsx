@@ -295,7 +295,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   React.useEffect(() => {
     const node = root.current;
     if (!node || W.layout !== "field" || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver((e) => setNarrow((e[0]?.contentRect.width ?? 1000) < 720));
+    const ro = new ResizeObserver((e) => setNarrow((e[0]?.contentRect.width ?? 1000) < 896));
     ro.observe(node);
     return () => ro.disconnect();
   }, [W]);

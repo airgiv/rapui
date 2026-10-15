@@ -6,7 +6,7 @@
    layout="hero" (default) is the 15-tile composition to sit beside a headline.
    layout="field" is a wide 16:7 band of 26 scattered tiles that leaves the left
    FIELD_TEXT (40%) of the picture as empty floor for a block's headline; below
-   720 px wide it frames the tiles alone, for text stacked above it.
+   896 px wide (56rem, where a block stacks) it frames the tiles alone, for text stacked above it.
 
    Frameless by default (transparent, grounded by soft halos, none in a dark
    theme). `framed` wraps it in the kit's Plate with a title, a hint and a live
