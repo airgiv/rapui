@@ -96,6 +96,7 @@ import {
 import { LOOP, STILL_T, idleAt } from "./model";
 import { KNOB_H, P, RAD, STICK, ctlFill, subFill, tileFill, type Layout, type Tile, type TileSet } from "./view";
 import { FIELD_BOX, PERIOD_H, PERIOD_W, worldOf, type World } from "./world";
+import { PERIOD_D, PERIOD_S } from "./view";
 import { useSound } from "../../../rapui";
 
 export interface ModulesHandle {
@@ -409,6 +410,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     lastX: "",
     lastY: "",
     order: null as null | true, // painter's order put in place once
+    checks: 0, // how many times the order was redone (for checks)
     vx: 0,
     vy: 0,
     nx: TILES.map(() => 0),
@@ -456,12 +458,10 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       layerRef.current?.style.setProperty("transform", `translate3d(${px}px, ${py}px, 0)`);
     }
     let moved = false;
-    const wrappedDown: number[] = [];
     for (let i = 0; i < TILES.length; i++) {
       const kx = Math.ceil((left - W.sx[i]! - p.ox) / PERIOD_W);
       const ky = Math.ceil((top - W.sy[i]! - p.oy) / PERIOD_H);
       if (kx !== p.nx[i] || ky !== p.ny[i]) {
-        if (ky !== p.ny[i] && !Number.isNaN(p.ny[i]!)) wrappedDown.push(i);
         p.nx[i] = kx;
         p.ny[i] = ky;
         moved = true;
@@ -473,30 +473,27 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const y = W.sy[i]! + p.oy + ky * PERIOD_H;
       p.vis[i] = Math.abs(x - midX) < bw / 2 + 170 && y > midY - bh / 2 - 120 && y < midY + bh / 2 + 240;
     }
-    if (wrappedDown.length || p.order === null) {
-      // back in painter's order: periods down first, then the order within a period. Only the tiles that
-      // wrapped are moved, each in front of the first tile that now follows it (moving a whole drawing's
-      // nodes would restyle all of them); on the first placement everything is put in order once.
-      const place = (els: (SVGGElement | null)[], rank: number[], only: number[] | null) => {
-        const list = TILES.map((_, i) => i).filter((i) => els[i]);
-        list.sort((a, b) => p.ny[a]! - p.ny[b]! || rank[a]! - rank[b]!);
-        if (!only) {
-          for (const i of list) els[i]!.parentNode?.appendChild(els[i]!);
-          return;
-        }
-        const at = new Map(list.map((i, k) => [i, k]));
-        for (const i of only) {
+    if (moved || p.order === null) {
+      // Back in painter's order, from where each tile sits now (its own cell plus the periods it was moved).
+      // A tile that wraps lands next to tiles it was a whole period away from before, so the order within
+      // one period says nothing about it: the visible order is sorted afresh from the placed footprints
+      // (a tile wholly behind a near neighbour goes first, else by depth), and only nodes out of place move.
+      const order = placedOrder(W, p.nx, p.ny);
+      const fix = (els: (SVGGElement | null)[], list: number[]) => {
+        let prev: Element | null = null;
+        for (const i of list) {
           const el = els[i];
-          const k = at.get(i);
-          if (!el || k === undefined) continue;
-          const next = k + 1 < list.length ? els[list[k + 1]!]! : null;
-          if (el.nextSibling !== next) el.parentNode?.insertBefore(el, next);
+          if (!el) continue;
+          const parent = el.parentNode!;
+          const want: ChildNode | null = prev ? prev.nextSibling : parent.firstChild;
+          if (el !== want) parent.insertBefore(el, want);
+          prev = el;
         }
       };
-      const only = p.order === null ? null : wrappedDown;
-      place(m.tileG, W.tileRank, only);
-      place(m.ctlG, W.ctlRank, only);
+      fix(m.tileG, order.tiles);
+      fix(m.ctlG, order.ctls);
       p.order = true;
+      p.checks++;
     }
     // the shadows: one path per wrap position (two across, two down), rebuilt only when a tile changes place
     const sig = `${p.nx.join("")}|${p.ny.join("")}`;
@@ -917,7 +914,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const s = st.current;
     s.handHeld[i] = true;
     s.handAt.push(s.clock);
-    if (PRESSABLE[i]?.ctl.kind === "bell") snd.current.play("success", { strength: 0.45 });
+    if (PRESSABLE[i]?.ctl.kind === "bell") snd.current.play("bell");
     else snd.current.play("tap");
   };
   const lift = (i: number) => {
@@ -1846,4 +1843,46 @@ function writeDimple(els: (SVGPathElement | null)[], r: { rim: string; floor: st
   els[1]?.setAttribute("d", r.rim);
   els[2]?.setAttribute("d", r.floor);
   els[3]?.setAttribute("d", r.rim);
+}
+
+/* the painter's order of a field's tiles and controls as they sit now: each tile at its cell moved by
+   (nx, ny) periods. Tiles: a topological sort where a tile wholly behind a near neighbour (smaller x or y,
+   their other ranges overlapping, less than two cells apart) goes first, the rest by depth (x + y of the
+   middle, the camera's 45°). Controls stand on their tiles, so by the depth of their tile's middle. */
+export function placedOrder(W: World, nx: number[], ny: number[]) {
+  const n = W.tiles.length;
+  const cells = W.tiles.map((t, i) => {
+    const sx = (nx[i]! * PERIOD_D) / 2 + (ny[i]! * PERIOD_S) / 2;
+    const sy = (-nx[i]! * PERIOD_D) / 2 + (ny[i]! * PERIOD_S) / 2;
+    return [t.cell[0] + sx, t.cell[1] + sy, t.cell[2], t.cell[3]] as const;
+  });
+  const depth = cells.map((c) => c[0] + c[2] / 2 + c[1] + c[3] / 2);
+  const indeg = new Array<number>(n).fill(0);
+  const next: number[][] = Array.from({ length: n }, () => []);
+  for (let a = 0; a < n; a++)
+    for (let b = 0; b < n; b++) {
+      if (a === b) continue;
+      const A = cells[a]!;
+      const B = cells[b]!;
+      const ox = A[0] < B[0] + B[2] - 1e-3 && B[0] < A[0] + A[2] - 1e-3;
+      const oy = A[1] < B[1] + B[3] - 1e-3 && B[1] < A[1] + A[3] - 1e-3;
+      const gx = B[0] - (A[0] + A[2]);
+      const gy = B[1] - (A[1] + A[3]);
+      if ((oy && gx > -1e-3 && gx < 2) || (ox && gy > -1e-3 && gy < 2)) {
+        next[a]!.push(b);
+        indeg[b]!++;
+      }
+    }
+  const done = new Array<boolean>(n).fill(false);
+  const tiles: number[] = [];
+  for (let k = 0; k < n; k++) {
+    let pick = -1;
+    for (let i = 0; i < n; i++) if (!done[i] && indeg[i] === 0 && (pick < 0 || depth[i]! < depth[pick]!)) pick = i;
+    if (pick < 0) for (let i = 0; i < n; i++) if (!done[i] && (pick < 0 || depth[i]! < depth[pick]!)) pick = i; // a cycle: by depth
+    done[pick] = true;
+    tiles.push(pick);
+    for (const b of next[pick]!) indeg[b]!--;
+  }
+  const ctls = W.tiles.map((_, i) => i).sort((a, b) => depth[a]! - depth[b]! || a - b);
+  return { tiles, ctls };
 }
