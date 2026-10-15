@@ -128,8 +128,11 @@ export function synth(name: SoundName, fun: number, volume: number, opts: PlayOp
       break;
     }
     case "tap": {
-      click(c, out, t, { freq: lerp(700, 2400, f) * p, q: 1.4, dur: 0.025, gain: 0.45 * s });
-      voice(c, out, t, { wave: f > 0.5 ? "sine" : "triangle", from: lerp(180, 520, f) * p, to: lerp(120, 780, f) * p, dur: lerp(0.05, 0.09, f), gain: 0.5 * s });
+      // a crisp switch click, not a thump: a tight bright transient, a hair of top end after
+      // it, and only a very short high body — the low, long body made a press sound hollow
+      click(c, out, t, { freq: lerp(1800, 3800, f) * p, q: 3, dur: 0.012, gain: 0.5 * s });
+      click(c, out, t + 0.004, { freq: lerp(3600, 6200, f) * p, q: 0.8, dur: 0.006, gain: 0.22 * s, type: "highpass" });
+      voice(c, out, t, { wave: f > 0.5 ? "sine" : "triangle", from: lerp(420, 1100, f) * p, to: lerp(340, 1400, f) * p, dur: lerp(0.018, 0.035, f), gain: 0.22 * s });
       break;
     }
     case "release": {
