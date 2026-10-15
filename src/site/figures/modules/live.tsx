@@ -125,6 +125,9 @@ const DIAL_SPEED = 330;
 /* a field animates ACTIVE controls in view at a time, a new handful every ACT_EVERY seconds */
 const ACTIVE = 4;
 const ACT_EVERY = 2.4;
+/* a held-still field (pan off, e.g. a card on a page) is quieter and cheaper: fewer controls at once, idled at a lower rate */
+const ACTIVE_FIXED = 2;
+const IDLE_HZ = 30;
 const ANIMATED = new Set(["knob", "disc", "soft", "pill", "keys", "pads", "fader", "switch", "stick", "gauge", "stamp", "drawer", "bell", "grille", "leds"]);
 const mix = (i: number, e: number) => (Math.imul(i * 2654435761 + e * 40503, 2246822519) >>> 0) / 4294967296;
 /* a field's coarse pan steps, in drawing units (see placeTiles) */
@@ -491,6 +494,15 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const x = W.sx[i]! + p.ox + kx * PERIOD_W;
       const y = W.sy[i]! + p.oy + ky * PERIOD_H;
       p.vis[i] = Math.abs(x - midX) < bw / 2 + 170 && y > midY - bh / 2 - 120 && y < midY + bh / 2 + 240;
+      // a fixed field never moves, so a tile outside its box is never seen: take it out of the drawing
+      // altogether (no layout, no paint, no hit tests); a held still card keeps only what shows
+      if (!canPan) {
+        const shown = p.vis[i] ? "" : "none";
+        const tg = m.tileG[i];
+        const cg = m.ctlG[i];
+        if (tg && tg.style.display !== shown) tg.style.display = shown;
+        if (cg && cg.style.display !== shown) cg.style.display = shown;
+      }
     }
     if (moved || p.order === null) {
       // Back in painter's order, from where each tile sits now (its own cell plus the periods it was moved).
@@ -523,7 +535,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       p.checks++;
     }
     // the shadows: one path per wrap position (two across, two down), rebuilt only when a tile changes place
-    const sig = `${p.nx.join("")}|${p.ny.join("")}`;
+    const sig = `${p.nx.join("")}|${p.ny.join("")}` + (canPan ? "" : `|${p.vis.map(Number).join("")}`);
     if (moved || sig !== p.split) {
       p.split = sig;
       const lx = Math.min(...p.nx);
@@ -531,14 +543,14 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       for (let g = 0; g < 4; g++) {
         const gx = lx + (g & 1);
         const gy = ly + (g >> 1);
-        const d = W.halos.filter((_, i) => p.nx[i] === gx && p.ny[i] === gy).join("");
+        const d = W.halos.filter((_, i) => p.nx[i] === gx && p.ny[i] === gy && (canPan || p.vis[i])).join("");
         const el = m.halos[g];
         el?.setAttribute("d", d);
         el?.setAttribute("transform", `translate(${(gx * PERIOD_W).toFixed(2)} ${(gy * PERIOD_H).toFixed(2)})`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [W, field]);
+  }, [W, field, canPan]);
   /* where a control's tile is now, so pointer maths happens in its own (unpanned) place */
   const shiftOf = (ti: number): [number, number] =>
     field ? [pan.current.cx + pan.current.nx[ti]! * PERIOD_W, pan.current.cy + pan.current.ny[ti]! * PERIOD_H] : [0, 0];
@@ -790,9 +802,20 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   // the first paint of the live parts that aren't in the markup (grille levels)
   React.useEffect(() => draw(false), [draw]);
 
-  const kick = useLoop((dt, reduced) => {
+  const slow = React.useRef(0);
+  const kick = useLoop((frameDt, reduced) => {
     if (reduced || still) return false;
     const s = st.current;
+    // A held-still card (a field with pan off) runs its idle life at IDLE_HZ: nobody's hand is on it, the
+    // motion is slow, and every frame it skips is a repaint of a big drawing saved. A touch (touched → 0)
+    // brings back every frame until the desk has been quiet for QUIET seconds again.
+    let dt = frameDt;
+    if (field && !canPan && s.touched > QUIET && !s.held && !pan.current.drag) {
+      slow.current += frameDt;
+      if (slow.current < 1 / IDLE_HZ - 0.002) return true;
+      dt = Math.min(slow.current, 1 / 15);
+    }
+    slow.current = 0;
     if (!s.held) s.t += dt;
     if (s.t > LOOP * 3000) s.t -= LOOP * 3000; // keep the clock small, same phase (3000 is a multiple of the accent's 3 loops)
     s.clock += dt;
@@ -810,7 +833,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         const vis = pan.current.vis;
         const pool = W.tiles.map((_, i) => i).filter((i) => vis[i] && ANIMATED.has(W.tiles[i]!.ctl.kind));
         pool.sort((a, b) => mix(a, epoch) - mix(b, epoch));
-        const on = new Set(pool.slice(0, ACTIVE));
+        const on = new Set(pool.slice(0, canPan ? ACTIVE : ACTIVE_FIXED));
         actOn.current = on;
       }
       for (let i = 0; i < s.act.length; i++) s.act[i] = ease(s.act[i]!, actOn.current.has(i) ? 1 : 0, dt, 0.5);

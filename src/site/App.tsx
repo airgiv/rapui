@@ -49,6 +49,7 @@ import { Wordmark } from "./Wordmark";
 import { PresetPicker, PresetScope, PresetsSection } from "./PresetsShowcase";
 import { ModulesSection } from "./ModulesSection";
 import { LandingCards } from "./LandingCards";
+import { usePauseOffscreen } from "./usePauseOffscreen";
 import "../rapui/fonts/all";
 import type { RapPreset } from "../rapui";
 import { isCalm } from "../rapui/hooks/useGlide";
@@ -300,14 +301,14 @@ function Bands() {
   return (
     <div className="py-16 overflow-hidden">
       {/* the bands overhang the page by 2rem each side so their tilted ends never show */}
-      <Marquee className="py-[1.1rem] -mx-8 relative z-1 bg-acid text-[#282828]" rotate={-2.5} duration={34} gap="2.5rem">
+      <Marquee className="py-[1.1rem] -mx-8 relative z-1 bg-acid text-[#282828]" rotate={-2.5} duration={34} gap="2.5rem" repeat={1}>
         {NAMES.map((n) => (
           <span className={BAND_WORD} key={n}>
             {n} <span className="inline-block text-flame fun:animate-[spin_6s_linear_infinite]">✳</span>
           </span>
         ))}
       </Marquee>
-      <Marquee className="py-[1.1rem] -mx-8 -mt-[1.2rem] bg-ink text-paper" rotate={1.8} duration={40} reverse gap="2.5rem">
+      <Marquee className="py-[1.1rem] -mx-8 -mt-[1.2rem] bg-ink text-paper" rotate={1.8} duration={40} reverse gap="2.5rem" repeat={1}>
         {NAMES.map((n) => (
           <span className={BAND_WORD} key={n}>
             {n} <span className="size-[0.4em] rounded-full bg-flame" />
@@ -729,7 +730,7 @@ function MediaChat() {
 
 function Wall() {
   return (
-    <div id="wall" className="px-(--gutter)">
+    <div id="wall" data-pause-split className="px-(--gutter)">
       <Showcase
         id="commit"
         presets
@@ -1212,8 +1213,11 @@ export function App({
   sound: SoundSettings;
   setSound: (v: SoundSettings) => void;
 }) {
+  // the looping CSS animations of a block out of view hold still (usePauseOffscreen)
+  const page = useRef<HTMLDivElement>(null);
+  usePauseOffscreen(page);
   return (
-    <div className="rap-root min-h-screen overflow-x-clip [--gutter:clamp(1rem,4vw,3.5rem)]">
+    <div ref={page} className="rap-root min-h-screen overflow-x-clip [--gutter:clamp(1rem,4vw,3.5rem)]">
       <Cursor />
       <Header dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
       <main>
