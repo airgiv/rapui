@@ -79,6 +79,7 @@
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
 }
+.cm-field .cm-layer { position: absolute; left: 0; top: 0; will-change: transform; contain: layout style; }
 .cm-field .cm-svg-field { width: 100%; height: 100%; }
 
 /* pads light up; the last two LEDs of a strip are the peak */
@@ -99,7 +100,9 @@
 
 /* ---------- the strip: grab the floor to pan it */
 .cm-field .cm-stage[tabindex] { cursor: grab; }
-.cm-field .cm-stage[data-grabbing], .cm-field .cm-stage[data-grabbing] * { cursor: grabbing; }
+.cm-field .cm-stage[data-grabbing] { cursor: grabbing; }
+/* while the floor is held, the drawing takes no hit tests (the stage has the pointer captured) */
+.cm-field .cm-stage[data-grabbing] .cm-layer { pointer-events: none; }
 
 /* ---------- colour: a look may give six fills (--mod-fill-1..6); everything falls back to the plain tones */
 .cm [data-fill="1"] { --f: color-mix(in oklab, var(--mod-fill-1) var(--cm-fill-k, 100%), #000); }
@@ -112,6 +115,8 @@
 .cm [data-fill="wood"] { --f: var(--mod-wood); }
 .cm [data-fill="slate"] { --f: var(--mod-slate); }
 .cm [data-fill="cream"] { --f: var(--mod-cream); }
+/* a joystick's rubber boot: a dark rubber in every look */
+.cm [data-fill="boot"] { --f: color-mix(in oklab, var(--anatomy-hi) 70%, var(--anatomy-paper)); }
 .cm [data-tfill="1"] { --t: var(--mod-fill-1); }
 .cm [data-tfill="2"] { --t: var(--mod-fill-2); }
 .cm [data-tfill="3"] { --t: var(--mod-fill-3); }
@@ -225,3 +230,24 @@
   --f-s1: color-mix(in oklab, var(--f) 45%, var(--anatomy-shade-1));
   --f-s0: color-mix(in oklab, var(--f) 40%, var(--anatomy-shade-0));
 }
+
+/* ---------- line colour on coloured parts (a look with fills: fun)
+   --mod-line-own: how much of a part's own fill its lines keep. 55% (the default) draws each part's lines in a
+   darker shade of its own colour, toy-illustration style; 0% draws them in plain ink. Parts without a fill keep
+   the look's line tones. */
+.cm [data-fill] { --f-line: color-mix(in oklab, var(--f) var(--mod-line-own, 55%), var(--anatomy-hi)); }
+.cm [data-tfill] { --t-line: color-mix(in oklab, var(--t) var(--mod-line-own, 55%), var(--anatomy-hi)); }
+.cm .iso-solid[data-fill] > .iso-line,
+.cm [data-fill] > .cm-tile > .iso-line,
+.cm [data-fill] > .cm-recess > .iso-line,
+.cm .cm-poly[data-fill] > .iso-line { stroke: var(--f-line, var(--anatomy-mid)); }
+.cm [data-tfill] .cm-recess > .iso-line,
+.cm [data-tfill] > g > .iso-line { stroke: var(--t-line, var(--anatomy-mid)); }
+.iso-svg .cm-poly[data-fill] > path.iso-shade, .iso-svg .cm-poly[data-fill] > path.iso-top { stroke: color-mix(in oklab, var(--f-line) 45%, transparent); }
+.iso-svg path.cm-dark[data-fill] { stroke: var(--f-line, var(--anatomy-hi)); }
+/* a round solid's faces meet without a drawn seam: each face's edge in its own tone, so the shading reads as a turn */
+.iso-svg .cm-poly-round > path.iso-shade[data-shade="0"] { stroke: var(--f-s0, var(--anatomy-shade-0)); }
+.iso-svg .cm-poly-round > path.iso-shade[data-shade="1"] { stroke: var(--f-s1, var(--anatomy-shade-1)); }
+.iso-svg .cm-poly-round > path.iso-shade[data-shade="2"] { stroke: var(--f-s2, var(--anatomy-shade-2)); }
+.iso-svg .cm-poly-round > path.iso-shade[data-shade="3"] { stroke: var(--f-s3, var(--anatomy-shade-3)); }
+.iso-svg .cm-poly-round > path.iso-top { stroke: var(--f-top, var(--anatomy-top)); }

@@ -55,6 +55,8 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--mod-fill-4": v("bubble"),
       "--mod-fill-5": v("plum"),
       "--mod-fill-6": v("blue"),
+      // lines on coloured parts: "55%" keeps that much of the part's own colour (a darker shade of it); "0%" is plain ink
+      "--mod-line-own": "55%",
       "--anatomy-cap-a": v("blue"),
       "--anatomy-cap-b": v("acid"),
     },

@@ -118,7 +118,15 @@ function motionOf(node: Element | null): Motion {
   return m === "still" ? "still" : m === "calm" ? "calm" : "fun";
 }
 
-const QUIET = 3.6; // seconds after the last touch before the idle life comes back
+const QUIET = 3.6;
+/* a field animates ACTIVE controls in view at a time, a new handful every ACT_EVERY seconds */
+const ACTIVE = 4;
+const ACT_EVERY = 2.4;
+const ANIMATED = new Set(["knob", "disc", "soft", "pill", "keys", "pads", "fader", "switch", "stick", "gauge", "stamp", "drawer", "bell", "grille", "leds"]);
+const mix = (i: number, e: number) => (Math.imul(i * 2654435761 + e * 40503, 2246822519) >>> 0) / 4294967296;
+/* a field's coarse pan steps, in drawing units (see placeTiles) */
+const STEP_X = 640;
+const STEP_Y = 400; // seconds after the last touch before the idle life comes back
 const ease = (cur: number, target: number, dt: number, tau: number) => cur + (target - cur) * (1 - Math.exp(-dt / tau));
 
 /* the geometry of every control of a layout, once */
@@ -223,7 +231,8 @@ interface Nodes {
   rockers: (SVGGElement | null)[][]; // per switch that is a rocker: its two halves
   multi: (SVGGElement | null)[][]; // per pressable that is a key row or pad grid: each key or pad
   dimples: (SVGPathElement | null)[][]; // per jog: clip, wall, floor, rim
-  sticks: (SVGPathElement | null)[][]; // per stick: shaft, ball, foot
+  sticks: (SVGPathElement | null)[][]; // per stick: (unused), ball
+  stickPolys: (SVGGElement | null)[]; // per stick: the shaft
   lcds: (SVGTextElement | null)[];
   tileG: (SVGGElement | null)[]; // per tile: its tile group and its control group, moved together when it wraps
   ctlG: (SVGGElement | null)[];
@@ -261,6 +270,8 @@ interface State {
   pick: number[]; // per pressable: the tiny key or pad being pressed
   tilt: Spring[][]; // per stick: x and y
   tiltHand: ([number, number] | null)[]; // per stick: where the hand holds it
+  act: number[]; // per tile: how much the idle life moves it (eases 0 ↔ 1; a field animates a few at a time)
+  actEpoch: number;
 }
 
 function initial(W: World, t: number, calm: boolean): State {
@@ -287,6 +298,8 @@ function initial(W: World, t: number, calm: boolean): State {
       { at: y, rate: 0 },
     ]),
     tiltHand: W.sticks.map(() => null),
+    act: W.tiles.map(() => (W.layout === "field" ? 0 : 1)),
+    actEpoch: -1,
   };
 }
 
@@ -328,6 +341,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   const paint = React.useId().replace(/:/g, "");
   const root = React.useRef<HTMLDivElement | null>(null);
   const svgRef = React.useRef<SVGSVGElement | null>(null);
+  const layerRef = React.useRef<HTMLDivElement | null>(null); // a field's composited layer: the pan's fine shift
   const n = React.useRef<Nodes>({
     dots: KNOBS.map(() => []),
     pointers: [],
@@ -348,6 +362,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     multi: W.pressable.map(() => []),
     dimples: KNOBS.map(() => []),
     sticks: W.sticks.map(() => []),
+    stickPolys: [],
     lcds: [],
     tileG: [],
     ctlG: [],
@@ -376,6 +391,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   const st = React.useRef<State>(initial(W, STILL_T, false));
   const [motion, setMotion] = React.useState<Motion>("fun");
   const visible = useInView(root);
+  const actOn = React.useRef(new Set<number>());
 
   /* ---------------------------------------------------------- the endless field (a field only)
      The field pans by (ox, oy) drawing units, each kept within one period. It repeats every PERIOD_W across
@@ -387,8 +403,12 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   const pan = React.useRef({
     ox: 0,
     oy: 0,
-    cx: NaN, // the offset last written to the drawing
+    cx: NaN, // the coarse offset, last written to the drawing
     cy: NaN,
+    k: 1, // screen px per drawing unit
+    lastX: "",
+    lastY: "",
+    order: null as null | true, // painter's order put in place once
     vx: 0,
     vy: 0,
     nx: TILES.map(() => 0),
@@ -415,18 +435,33 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const midY = by + bh / 2;
     p.ox = ((p.ox % PERIOD_W) + PERIOD_W) % PERIOD_W;
     p.oy = ((p.oy % PERIOD_H) + PERIOD_H) % PERIOD_H;
-    if (p.ox !== p.cx || p.oy !== p.cy) {
-      p.cx = p.ox;
-      p.cy = p.oy;
-      m.pan?.setAttribute("transform", `translate(${p.ox.toFixed(2)} ${p.oy.toFixed(2)})`);
+    // The offset is split in two. A coarse part, in big steps (STEP_X × STEP_Y drawing units), moves the
+    // drawing itself, which restyles and repaints it; the rest moves the whole <svg> as a composited layer,
+    // which costs neither. The <svg> is drawn STEP larger than the view on the left and the top, so that
+    // shift never shows an edge. A drag or a glide so repaints a few times a second at most, not every frame.
+    const fx = ((p.ox % STEP_X) + STEP_X) % STEP_X;
+    const fy = ((p.oy % STEP_Y) + STEP_Y) % STEP_Y;
+    const cx = p.ox - fx;
+    const cy = p.oy - fy;
+    if (cx !== p.cx || cy !== p.cy) {
+      p.cx = cx;
+      p.cy = cy;
+      m.pan?.setAttribute("transform", `translate(${cx.toFixed(2)} ${cy.toFixed(2)})`);
+    }
+    const px = ((fx - STEP_X) * p.k).toFixed(2);
+    const py = ((fy - STEP_Y) * p.k).toFixed(2);
+    if (px !== p.lastX || py !== p.lastY) {
+      p.lastX = px;
+      p.lastY = py;
+      layerRef.current?.style.setProperty("transform", `translate3d(${px}px, ${py}px, 0)`);
     }
     let moved = false;
-    let down = false;
+    const wrappedDown: number[] = [];
     for (let i = 0; i < TILES.length; i++) {
       const kx = Math.ceil((left - W.sx[i]! - p.ox) / PERIOD_W);
       const ky = Math.ceil((top - W.sy[i]! - p.oy) / PERIOD_H);
       if (kx !== p.nx[i] || ky !== p.ny[i]) {
-        if (ky !== p.ny[i]) down = true;
+        if (ky !== p.ny[i] && !Number.isNaN(p.ny[i]!)) wrappedDown.push(i);
         p.nx[i] = kx;
         p.ny[i] = ky;
         moved = true;
@@ -438,15 +473,30 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const y = W.sy[i]! + p.oy + ky * PERIOD_H;
       p.vis[i] = Math.abs(x - midX) < bw / 2 + 170 && y > midY - bh / 2 - 120 && y < midY + bh / 2 + 240;
     }
-    if (down) {
-      // back in painter's order: periods down first, then the order within a period
-      const reorder = (els: (SVGGElement | null)[], rank: number[]) => {
+    if (wrappedDown.length || p.order === null) {
+      // back in painter's order: periods down first, then the order within a period. Only the tiles that
+      // wrapped are moved, each in front of the first tile that now follows it (moving a whole drawing's
+      // nodes would restyle all of them); on the first placement everything is put in order once.
+      const place = (els: (SVGGElement | null)[], rank: number[], only: number[] | null) => {
         const list = TILES.map((_, i) => i).filter((i) => els[i]);
         list.sort((a, b) => p.ny[a]! - p.ny[b]! || rank[a]! - rank[b]!);
-        for (const i of list) els[i]!.parentNode?.appendChild(els[i]!);
+        if (!only) {
+          for (const i of list) els[i]!.parentNode?.appendChild(els[i]!);
+          return;
+        }
+        const at = new Map(list.map((i, k) => [i, k]));
+        for (const i of only) {
+          const el = els[i];
+          const k = at.get(i);
+          if (!el || k === undefined) continue;
+          const next = k + 1 < list.length ? els[list[k + 1]!]! : null;
+          if (el.nextSibling !== next) el.parentNode?.insertBefore(el, next);
+        }
       };
-      reorder(m.tileG, W.tileRank);
-      reorder(m.ctlG, W.ctlRank);
+      const only = p.order === null ? null : wrappedDown;
+      place(m.tileG, W.tileRank, only);
+      place(m.ctlG, W.ctlRank, only);
+      p.order = true;
     }
     // the shadows: one path per wrap position (two across, two down), rebuilt only when a tile changes place
     const sig = `${p.nx.join("")}|${p.ny.join("")}`;
@@ -499,13 +549,14 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     }
     for (let i = 0; i < PRESSABLE.length; i++) {
       if (!vis[G.PRESS_TI[i]!]) continue;
-      const p = Math.min(1, Math.max(idle.presses[i]! * s.seq, s.hand[i]!.at));
+      const p = Math.min(1, Math.max(idle.presses[i]! * s.seq * s.act[G.PRESS_TI[i]!]!, s.hand[i]!.at));
       const pg = PRESS_GEO[i]!;
       if (pg.kind === "pads") {
         // the pads light in a walking pattern, and the pressed one too
         const pick = s.hand[i]!.at > 0.02 ? s.pick[i]! : idle.picks[i]!;
         for (let j = 0; j < 9; j++) {
-          const lit = (j * 4 + idle.beat + i * 3) % 9 < 2 || (j === pick && p > 0.2);
+          const walk = s.act[G.PRESS_TI[i]!]! > 0.5 ? idle.beat : 0;
+          const lit = (j * 4 + walk + i * 3) % 9 < 2 || (j === pick && p > 0.2);
           if (changed(`pl${i}.${j}`, lit ? 1 : 0)) m.multi[i]![j]?.toggleAttribute("data-on", lit);
         }
       }
@@ -558,7 +609,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const g = SWITCH_GEO[i];
       if (G.BAT_GEO[i]) {
         const lv = batLever(G.BAT_GEO[i]!, v);
-        m.levers[i]![0]?.setAttribute("d", lv.rod);
+        writePoly(m.polys[i]![0] ?? null, lv.rod);
         m.levers[i]![1]?.setAttribute("d", lv.ball);
       } else if (G.KNIFE_GEO[i]) {
         const kb = knifeBlade(G.KNIFE_GEO[i]!, v);
@@ -580,19 +631,21 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const ty = s.tilt[i]![1]!.at;
       if (!changed(`x${i}`, tx * 1000 + ty, 0.5)) continue;
       const parts = stickParts(STICK_GEO[i]!, tx, ty);
-      m.sticks[i]![0]?.setAttribute("d", parts.shaft);
+      writePoly(m.stickPolys[i] ?? null, parts.shaft);
       m.sticks[i]![1]?.setAttribute("d", parts.ball);
     }
     for (let i = 0; i < LED_GEO.length; i++) {
       if (!vis[G.LED_TI[i]!]) continue;
-      const lit = Math.round(idle.leds[i]! * 10);
+      // a strip at rest shows a steady low level; in the animated handful it meters the presses
+      const lit = Math.round((0.2 + (idle.leds[i]! - 0.2) * s.act[G.LED_TI[i]!]!) * 10);
       if (!changed(`e${i}`, lit)) continue;
       for (let j = 0; j < 10; j++) m.leds[i]![j]?.toggleAttribute("data-on", j < lit);
     }
     // the office's gauges and counters
     for (let i = 0; i < G.GAUGE_GEO.length; i++) {
       if (!vis[G.GAUGE_TI[i]!]) continue;
-      if (changed(`gg${i}`, idle.gauges[i]!, 0.002)) m.needles[i]?.setAttribute("d", gaugeNeedle(G.GAUGE_GEO[i]!, idle.gauges[i]!));
+      const gv = FIRST.gauges[i]! + (idle.gauges[i]! - FIRST.gauges[i]!) * s.act[G.GAUGE_TI[i]!]!;
+      if (changed(`gg${i}`, gv, 0.002)) m.needles[i]?.setAttribute("d", gaugeNeedle(G.GAUGE_GEO[i]!, gv));
     }
     if (m.counters.length) {
       const count = String(1000 + Math.floor(s.t / 1.6) + Math.floor(s.clock * 0)).slice(-4);
@@ -628,7 +681,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const GG = GRILLE_GEO[gi]!;
       for (let k = 0; k < GG.radii.length; k++) {
         const r = GG.radii[k]!;
-        let v = idle.ripple(r) * s.seq;
+        let v = idle.ripple(r) * s.seq * s.act[G.GRILLE_TI[gi]!]!;
         for (const at0 of s.handAt) {
           const age = s.clock - at0;
           const d = (r - age * 46) / 7;
@@ -670,7 +723,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const ro = new ResizeObserver((e) => {
       const r = e[0]?.contentRect;
       if (r && r.height > 0) {
+        pan.current.k = r.height / FIELD_BOX.h;
         pan.current.cx = NaN;
+        pan.current.lastX = "";
         setVbW(Math.round((FIELD_BOX.h * r.width) / r.height));
       }
     });
@@ -680,6 +735,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   React.useLayoutEffect(() => {
     pan.current.nx = TILES.map(() => NaN);
     pan.current.ny = TILES.map(() => NaN);
+    pan.current.order = null;
     pan.current.split = "";
     placeTiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -721,22 +777,43 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const idleOn = s.touched > QUIET;
     s.seq = ease(s.seq, idleOn ? 1 : 0, dt, 0.3);
     const idle = idleAt(s.t, calm, W);
-    if (idleOn) for (let i = 0; i < KNOBS.length; i++) s.target[i] = nearest(s.target[i]!, idle.angles[i]!);
+    // a field animates only a few of the controls in view at a time: every ACT_EVERY seconds a new handful
+    // (picked by a hash of the moment), each easing in and out of its idle life, so nothing jumps
+    if (field) {
+      const epoch = Math.floor(s.clock / ACT_EVERY);
+      if (epoch !== s.actEpoch) {
+        s.actEpoch = epoch;
+        const vis = pan.current.vis;
+        const pool = W.tiles.map((_, i) => i).filter((i) => vis[i] && ANIMATED.has(W.tiles[i]!.ctl.kind));
+        pool.sort((a, b) => mix(a, epoch) - mix(b, epoch));
+        const on = new Set(pool.slice(0, ACTIVE));
+        actOn.current = on;
+      }
+      for (let i = 0; i < s.act.length; i++) s.act[i] = ease(s.act[i]!, actOn.current.has(i) ? 1 : 0, dt, 0.5);
+    }
+    const w = s.act;
+    if (idleOn)
+      for (let i = 0; i < KNOBS.length; i++) {
+        const rest = FIRST.angles[i]!;
+        const to = rest + (nearest(rest, idle.angles[i]!) - rest) * w[G.KNOB_TI[i]!]!;
+        s.target[i] = nearest(s.target[i]!, to);
+      }
     for (let i = 0; i < KNOBS.length; i++) s.angles[i] = ease(s.angles[i]!, s.target[i]!, dt, 0.12);
     for (let i = 0; i < PRESSABLE.length; i++) spring(s.hand[i]!, s.handHeld[i] ? 1 : 0, dt, 900, 26);
-    if (idleOn) for (let i = 0; i < FADERS.length; i++) s.faderTarget[i] = idle.faders[i]!;
+    if (idleOn) for (let i = 0; i < FADERS.length; i++) s.faderTarget[i] = FIRST.faders[i]! + (idle.faders[i]! - FIRST.faders[i]!) * w[G.FADER_TI[i]!]!;
     for (let i = 0; i < FADERS.length; i++) s.fader[i] = ease(s.fader[i]!, s.faderTarget[i]!, dt, 0.14);
     for (let i = 0; i < SWITCHES.length; i++) {
       // the idle life flips a switch only at its own flips, so a hand-set switch stays put until then
-      if (idle.switches[i] !== s.lastIdleOn[i] && s.touched > QUIET) s.on[i] = idle.switches[i]!;
+      if (idle.switches[i] !== s.lastIdleOn[i] && s.touched > QUIET && w[G.SWITCH_TI[i]!]! > 0.5) s.on[i] = idle.switches[i]!;
       s.lastIdleOn[i] = idle.switches[i]!;
       spring(s.thumb[i]!, s.on[i] ? 1 : 0, dt, 520, 30);
     }
     for (let i = 0; i < STICK_GEO.length; i++) {
       const hand = s.tiltHand[i];
       const [ix, iy] = idle.sticks[i]!;
-      spring(s.tilt[i]![0]!, hand ? hand[0] : ix * s.seq, dt, 260, 16);
-      spring(s.tilt[i]![1]!, hand ? hand[1] : iy * s.seq, dt, 260, 16);
+      const k = s.seq * w[G.STICK_TI[i]!]!;
+      spring(s.tilt[i]![0]!, hand ? hand[0] : ix * k, dt, 260, 16);
+      spring(s.tilt[i]![1]!, hand ? hand[1] : iy * k, dt, 260, 16);
     }
     if (field) {
       const p = pan.current;
@@ -759,7 +836,8 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       }
       placeTiles();
     }
-    draw(calm);
+    // while the floor is dragged nothing else moves: the frame is the pan's alone
+    if (!pan.current.drag?.started) draw(calm);
     return true;
   }, visible && !still);
 
@@ -1281,7 +1359,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           <Round paths={g.bush} paint={paint} tone="mid" crease="faint" fill="brass">
             <path className="iso-line" data-tone="lo" d={g.nut} />
           </Round>
-          <path ref={(el) => void (m.levers[i]![0] = el)} className="cm-lever" d={lv.rod} />
+          <PolyLive ref={(el) => void (m.polys[i]![0] = el)} poly={lv.rod} fill="brass" round />
           <path ref={(el) => void (m.levers[i]![1] = el)} className="cm-ball" d={lv.ball} style={{ fill: `url(#${paint}-ball)` }} />
           <path ref={(el) => void (m.lamps[i] = el)} className="cm-lamp cm-hidden-lamp" d="" />
         </g>
@@ -1301,7 +1379,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           <LiveSolid paths={g.farJaw} tone="mid" crease="faint" fill="brass" />
           <PolyLive ref={(el) => void (m.polys[i]![0] = el)} poly={kb.blade} fill="brass" />
           <PolyLive ref={(el) => void (m.polys[i]![1] = el)} poly={kb.cross} fill="slate" />
-          <PolyLive ref={(el) => void (m.polys[i]![2] = el)} poly={kb.grip} fill="slate" />
+          <PolyLive ref={(el) => void (m.polys[i]![2] = el)} poly={kb.grip} fill="slate" round />
           <LiveSolid paths={g.nearJaw} tone="mid" crease="faint" fill="brass" />
           <LiveSolid paths={g.nearCheek} tone="mid" crease="faint" fill="brass" />
           <path className="cm-pin" d={g.pin} />
@@ -1332,10 +1410,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         <g key={t.id} data-ctl={`stick-${i}`} className="cm-stick">
           <RecessArt r={g.recess} id={`${paint}-stk-${t.id}`} wall={0} />
           <path className="cm-soft-halo" d={g.halo} />
-          <Round paths={g.boot} paint={paint} tone="mid" crease="faint">
-            <path className="iso-line" data-tone="lo" d={parts.foot} />
-          </Round>
-          <path ref={(el) => void (m.sticks[i]![0] = el)} className="cm-shaft" d={parts.shaft} />
+          <Round paths={g.boot} paint={paint} tone="mid" crease="faint" />
+          <PolyLive poly={g.dome} fill="boot" round />
+          <PolyLive ref={(el) => void (m.stickPolys[i] = el)} poly={parts.shaft} round />
           <path ref={(el) => void (m.sticks[i]![1] = el)} className="cm-ball" d={parts.ball} style={{ fill: `url(#${paint}-ball)` }} />
         </g>
       );
@@ -1649,10 +1726,17 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       onKeyDown={still ? undefined : onKeyDown}
       onKeyUp={still ? undefined : onKeyUp}
     >
+      {field ? (
+        <div
+          ref={layerRef}
+          className="cm-layer"
+          // STEP larger on the left and the top: placeTiles shifts it by (fine − STEP), so the view is always covered
+          style={{ width: `${(100 * (box[2] + STEP_X)) / box[2]}%`, height: `${(100 * (box[3] + STEP_Y)) / box[3]}%` }}
+        >
       <svg
         ref={svgRef}
         className={field ? "iso-svg cm-svg cm-svg-field" : "iso-svg cm-svg"}
-        viewBox={box.map((v) => Math.round(v * 10) / 10).join(" ")}
+        viewBox={(field ? [box[0] - STEP_X, box[1] - STEP_Y, box[2] + STEP_X, box[3] + STEP_Y] : box).map((v) => Math.round(v * 10) / 10).join(" ")}
         role="img"
         aria-label={DESCRIPTION}
         aria-hidden={still ? undefined : true}
@@ -1660,6 +1744,29 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       >
         {art}
       </svg>
+        </div>
+      ) : (
+      <svg
+        ref={svgRef}
+        className={field ? "iso-svg cm-svg cm-svg-field" : "iso-svg cm-svg"}
+        viewBox={(field ? [box[0] - STEP_X, box[1] - STEP_Y, box[2] + STEP_X, box[3] + STEP_Y] : box).map((v) => Math.round(v * 10) / 10).join(" ")}
+        style={
+          field
+            ? {
+                // STEP larger on the left and the top: placeTiles shifts it by (fine − STEP), so the view is always covered
+                width: `${(100 * (box[2] + STEP_X)) / box[2]}%`,
+                height: `${(100 * (box[3] + STEP_Y)) / box[3]}%`,
+              }
+            : undefined
+        }
+        role="img"
+        aria-label={DESCRIPTION}
+        aria-hidden={still ? undefined : true}
+        focusable="false"
+      >
+        {art}
+      </svg>
+      )}
     </div>
   );
 });
@@ -1705,9 +1812,9 @@ function DrawerFace({ label, small = false }: { label: string; small?: boolean }
 }
 
 /* a convex solid that turns: one path per face (shaded by facing, or a top) and the outline over them */
-const PolyLive = React.forwardRef<SVGGElement, { poly: Poly; fill?: string }>(function PolyLive({ poly, fill }, ref) {
+const PolyLive = React.forwardRef<SVGGElement, { poly: Poly; fill?: string; round?: boolean }>(function PolyLive({ poly, fill, round }, ref) {
   return (
-    <g ref={ref} className="iso-solid cm-poly" data-fill={fill}>
+    <g ref={ref} className={round ? "iso-solid cm-poly cm-poly-round" : "iso-solid cm-poly"} data-fill={fill}>
       {poly.faces.map((f, k) => (
         <path key={k} className={f.top ? "iso-top" : "iso-shade"} data-shade={f.top ? undefined : f.shade} d={f.d} />
       ))}
@@ -1721,10 +1828,14 @@ function writePoly(g: SVGGElement | null, p: Poly) {
   p.faces.forEach((f, k) => {
     const el = c[k];
     if (!el) return;
-    el.setAttribute("d", f.d);
-    el.setAttribute("class", f.top ? "iso-top" : "iso-shade");
-    if (f.top) el.removeAttribute("data-shade");
-    else el.setAttribute("data-shade", String(f.shade));
+    if (el.getAttribute("d") !== f.d) el.setAttribute("d", f.d);
+    const cls = f.top ? "iso-top" : "iso-shade";
+    if (el.getAttribute("class") !== cls) el.setAttribute("class", cls);
+    const sh = f.top ? null : String(f.shade);
+    if (el.getAttribute("data-shade") !== sh) {
+      if (sh === null) el.removeAttribute("data-shade");
+      else el.setAttribute("data-shade", sh);
+    }
   });
   c[p.faces.length]?.setAttribute("d", p.outline);
 }
