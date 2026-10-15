@@ -1,0 +1,66 @@
+/* ControlModules: the stage, recesses, holes, the dark discs, coloured caps, icons and the props.
+   Every colour is an --anatomy-* token (or a mix of them), so each rapui look restyles it. */
+.cm {
+  position: relative;
+  /* the two caps that aren't the accent: a deep purple and a green, from the kit's channel colours;
+     a page can set --anatomy-cap-a / --anatomy-cap-b (minimal sets greys) */
+  --cm-cap-a: var(--anatomy-cap-a, color-mix(in oklab, color-mix(in oklab, var(--anatomy-blue) 55%, var(--anatomy-red)) 78%, var(--anatomy-hi)));
+  --cm-cap-b: var(--anatomy-cap-b, color-mix(in oklab, var(--anatomy-green) 82%, var(--anatomy-top)));
+  --cm-dark: var(--anatomy-disc, color-mix(in oklab, var(--anatomy-hi) 90%, var(--anatomy-paper)));
+  --cm-veil: var(--anatomy-halo, #000);
+}
+.cm .iso-figure { margin: 0; }
+.cm-stage { position: relative; outline: none; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.cm-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; border-radius: 4px; }
+.cm-svg { display: block; width: 100%; height: auto; overflow: visible; user-select: none; -webkit-user-select: none; }
+.cm-stage[tabindex] [data-ctl] { cursor: pointer; }
+.cm-stage[tabindex] [data-ctl^="knob"] { cursor: grab; touch-action: none; }
+
+/* the field's shadow is softer than the kit's default */
+.iso-svg .cm-halo { filter: blur(7px); transform: translateY(2px); }
+.iso-svg path.cm-soft-halo { fill: var(--anatomy-halo); opacity: calc(var(--anatomy-halo-opacity) * 0.9); filter: blur(2.5px); stroke: none; }
+.iso-svg .cm-prop-halo { filter: blur(3px); transform: none; opacity: calc(var(--anatomy-halo-opacity) * 0.7); }
+
+/* recesses: the far wall in shade, the floor a touch darker than the face */
+.iso-svg path.cm-recess-wall { stroke: none; fill: var(--anatomy-shade-2); }
+.iso-svg path.cm-recess-wall[data-shade="0"] { fill: var(--anatomy-shade-0); }
+.iso-svg path.cm-recess-wall[data-shade="1"] { fill: var(--anatomy-shade-1); }
+.iso-svg path.cm-recess-floor { fill: var(--anatomy-shade-3); stroke: var(--anatomy-faint); stroke-width: var(--anatomy-weight); }
+
+/* the knob's dimples: four strengths, faint at the silhouette */
+.iso-svg path.cm-dots { fill: var(--anatomy-mid); stroke: none; opacity: 0.62; }
+.iso-svg path.cm-dots[data-b="0"] { opacity: 0.12; }
+.iso-svg path.cm-dots[data-b="1"] { opacity: 0.27; }
+.iso-svg path.cm-dots[data-b="2"] { opacity: 0.44; }
+.iso-svg path.cm-pointer { fill: var(--anatomy-shade-1); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.iso-svg path.cm-pointer-on-cap { fill: color-mix(in oklab, var(--anatomy-paper) 55%, transparent); stroke: none; }
+
+/* coloured caps: a side and a top per tone, crossfaded by the loop */
+.iso-svg path.cm-cap-side, .iso-svg path.cm-cap-top { stroke: none; }
+.iso-svg path.cm-cap-side[data-cap="lit"] { fill: var(--anatomy-lit); }
+.iso-svg path.cm-cap-top[data-cap="lit"] { fill: color-mix(in oklab, var(--anatomy-lit) 86%, var(--anatomy-top)); }
+.iso-svg path.cm-cap-side[data-cap="a"] { fill: var(--cm-cap-a); }
+.iso-svg path.cm-cap-top[data-cap="a"] { fill: color-mix(in oklab, var(--cm-cap-a) 86%, var(--anatomy-top)); }
+.iso-svg path.cm-cap-side[data-cap="b"] { fill: var(--cm-cap-b); }
+.iso-svg path.cm-cap-top[data-cap="b"] { fill: color-mix(in oklab, var(--cm-cap-b) 86%, var(--anatomy-top)); }
+.iso-svg path.cm-cap-line { stroke: color-mix(in oklab, var(--anatomy-hi) 30%, transparent); }
+.iso-svg path.cm-cap-edge { stroke: var(--anatomy-mid); }
+
+/* the dark round buttons */
+.iso-svg path.cm-dark { fill: var(--cm-dark); stroke: var(--anatomy-hi); stroke-width: var(--anatomy-weight); }
+.iso-svg path.cm-shine { fill: none; stroke: var(--anatomy-paper); stroke-opacity: 0.28; stroke-width: calc(var(--anatomy-weight) * 1.6); stroke-linecap: round; }
+
+/* printed icons on the soft buttons */
+.cm-icon rect, .cm-icon circle, .cm-icon path { fill: none; stroke: var(--anatomy-hi); stroke-width: calc(var(--anatomy-weight) * 1.25); stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+
+/* the speaker grille: holes in the ink, darker as a ripple passes */
+.iso-svg path.cm-hole { fill: var(--anatomy-hi); stroke: none; opacity: calc(0.72 + 0.28 * var(--v, 0)); }
+
+/* the props: tubes drawn as an outline stroke under a body stroke (widths in drawing units) */
+.iso-svg path.cm-tube-edge, .iso-svg path.cm-tube, .iso-svg path.cm-wire-shadow { fill: none; vector-effect: none; stroke-linecap: round; stroke-linejoin: round; }
+.iso-svg path.cm-tube-edge { stroke: var(--anatomy-mid); }
+.iso-svg path.cm-tube { stroke: var(--anatomy-shade-3); }
+.iso-svg path.cm-plug { fill: var(--anatomy-shade-3); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.cm-plug[data-tone="metal"] { fill: var(--anatomy-shade-1); }
+.iso-svg path.cm-plug[data-tone="band"] { fill: var(--anatomy-mid); }
+.iso-svg path.cm-wire-shadow { stroke: var(--anatomy-halo); opacity: calc(var(--anatomy-halo-opacity) * 0.6); filter: blur(2px); }
