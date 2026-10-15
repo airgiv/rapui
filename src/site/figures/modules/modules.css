@@ -11,6 +11,8 @@
 }
 .cm .iso-figure { margin: 0; }
 .cm-stage { position: relative; outline: none; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+/* the field reads every touch itself: a swipe more than ~25° off vertical pans it, the rest scroll the page */
+.cm-field .cm-stage { touch-action: none; }
 .cm-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; border-radius: 4px; }
 .cm-svg { display: block; width: 100%; height: auto; overflow: visible; user-select: none; -webkit-user-select: none; }
 .cm-stage[tabindex] [data-ctl] { cursor: pointer; }
@@ -100,12 +102,12 @@
 .cm-field .cm-stage[data-grabbing], .cm-field .cm-stage[data-grabbing] * { cursor: grabbing; }
 
 /* ---------- colour: a look may give six fills (--mod-fill-1..6); everything falls back to the plain tones */
-.cm [data-fill="1"] { --f: var(--mod-fill-1); }
-.cm [data-fill="2"] { --f: var(--mod-fill-2); }
-.cm [data-fill="3"] { --f: var(--mod-fill-3); }
-.cm [data-fill="4"] { --f: var(--mod-fill-4); }
-.cm [data-fill="5"] { --f: var(--mod-fill-5); }
-.cm [data-fill="6"] { --f: var(--mod-fill-6); }
+.cm [data-fill="1"] { --f: color-mix(in oklab, var(--mod-fill-1) var(--cm-fill-k, 100%), #000); }
+.cm [data-fill="2"] { --f: color-mix(in oklab, var(--mod-fill-2) var(--cm-fill-k, 100%), #000); }
+.cm [data-fill="3"] { --f: color-mix(in oklab, var(--mod-fill-3) var(--cm-fill-k, 100%), #000); }
+.cm [data-fill="4"] { --f: color-mix(in oklab, var(--mod-fill-4) var(--cm-fill-k, 100%), #000); }
+.cm [data-fill="5"] { --f: color-mix(in oklab, var(--mod-fill-5) var(--cm-fill-k, 100%), #000); }
+.cm [data-fill="6"] { --f: color-mix(in oklab, var(--mod-fill-6) var(--cm-fill-k, 100%), #000); }
 .cm [data-fill="brass"] { --f: var(--mod-brass); }
 .cm [data-fill="wood"] { --f: var(--mod-wood); }
 .cm [data-fill="slate"] { --f: var(--mod-slate); }
@@ -200,3 +202,26 @@
 .cm-counter-text .cm-counter-cuts { fill: none; stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
 .cm-counter-text .cm-counter-band { fill: none; stroke: var(--anatomy-faint); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
 .iso-svg .cm-screen .cm-glass-edge { fill: none; stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+
+/* in a dark theme the fills sit a little lower, so the toy colours don't glare on the dark page */
+:where([data-rap-theme="dark"]) .cm:not(:where([data-rap-theme="light"]) .cm) { --cm-fill-k: 84%; }
+/* an LCD keeps its pale glass on a coloured tile */
+.iso-svg [data-tfill] .cm-display .cm-lcd path.cm-recess-floor { fill: color-mix(in oklab, var(--anatomy-top) 88%, var(--anatomy-mid)); }
+/* a turning solid: its faces carry thin edges so the bar reads as a bar */
+.iso-svg .cm-poly > path.iso-shade, .iso-svg .cm-poly > path.iso-top { stroke: var(--anatomy-faint); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.cm .cm-poly[data-fill] > .iso-shade[data-shade="0"] { fill: var(--f-s0); }
+.cm .cm-poly[data-fill] > .iso-shade[data-shade="1"] { fill: var(--f-s1); }
+.cm .cm-poly[data-fill] > .iso-shade[data-shade="2"] { fill: var(--f-s2); }
+.cm .cm-poly[data-fill] > .iso-shade[data-shade="3"] { fill: var(--f-s3); }
+.cm .cm-poly[data-fill] > .iso-top { fill: var(--f-top); }
+/* an open drawer's tray and the tops of the index cards standing in it */
+.iso-svg path.cm-tray { fill: var(--anatomy-shade-1); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.cm-cards { fill: none; stroke: var(--anatomy-mid); stroke-width: calc(var(--anatomy-weight) * 1.3); stroke-linecap: butt; }
+/* the office's materials shade toward the look's own pale greys, not toward black */
+.cm-set-office [data-fill] {
+  --f-top: color-mix(in oklab, var(--f) 70%, var(--anatomy-top));
+  --f-s3: color-mix(in oklab, var(--f) 55%, var(--anatomy-shade-3));
+  --f-s2: color-mix(in oklab, var(--f) 50%, var(--anatomy-shade-2));
+  --f-s1: color-mix(in oklab, var(--f) 45%, var(--anatomy-shade-1));
+  --f-s0: color-mix(in oklab, var(--f) 40%, var(--anatomy-shade-0));
+}

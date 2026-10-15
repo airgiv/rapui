@@ -858,6 +858,8 @@ export interface DrawerGeo {
   cabinet: SolidPaths;
   halo: string;
   face: string; // the drawer front's plane (x along +x, y down), at rest
+  faceTop: string; // the two half drawers' fronts
+  faceBottom: string;
   cx: number;
   cy: number;
   z0: number;
@@ -869,14 +871,41 @@ export function drawerGeo(t: Tile): DrawerGeo {
     cabinet: slabOf({ x: cx - 23, y: cy - 22, w: 46, d: 40, r: 2 }, z0, 24, P, 4, 0.8),
     halo: slabOf({ x: cx - 20, y: cy - 18, w: 46, d: 44, r: 2 }, z0, 0.1, P, 4).fill,
     face: sideMatrix([cx - 19, cy + 21], z0 + 21, P, "left"),
+    faceTop: sideMatrix([cx - 19, cy + 21], z0 + 21.4, P, "left"),
+    faceBottom: sideMatrix([cx - 19, cy + 21], z0 + 11.8, P, "left"),
     cx,
     cy,
     z0,
   };
 }
 /* the drawer's front, pulled out by p (0..1) */
-export const drawerFront = (g: DrawerGeo, p: number) => slabOf({ x: g.cx - 20, y: g.cy + 16, w: 40, d: 2.6 + p * 13, r: 1 }, g.z0 + 3, 19, P, 2, 0.5);
-export const drawerSlide = (p: number) => translateAlong(P, [0, p * 13, 0]);
+/* how far a drawer slides at full press */
+export const DRAWER_TRAVEL = 22;
+/* the drawer pulled out by p (0..1): a tray as tall as its front (19), or as one of two half-height drawers
+   (`half`: "top" or "bottom", 9 tall) */
+export const drawerFront = (g: DrawerGeo, p: number, half?: "top" | "bottom") =>
+  slabOf(
+    { x: g.cx - 20, y: g.cy + 16, w: 40, d: 2.6 + p * DRAWER_TRAVEL, r: 1 },
+    g.z0 + (half === "top" ? 12.6 : 3),
+    half ? 9 : 19,
+    P,
+    2,
+    0.5,
+  );
+export const drawerSlide = (p: number) => translateAlong(P, [0, p * DRAWER_TRAVEL, 0]);
+/* an open tray: the opening on top between the cabinet's face and the drawer's front panel, and the index cards
+   standing in it (their top edges, rim to rim) */
+export function drawerTray(g: DrawerGeo, p: number) {
+  const y0 = g.cy + 18;
+  const y1 = g.cy + 16 + p * DRAWER_TRAVEL;
+  if (y1 - y0 < 1.2) return { rim: "", cards: "" };
+  const z = g.z0 + 22;
+  const rim = planOutline({ x: g.cx - 18.4, y: y0, w: 36.8, d: y1 - y0, r: 0.6 }, z, P, 2);
+  const cards: string[] = [];
+  for (let y = y0 + 1.1; y < y1 - 0.5; y += 1.4) cards.push(pathOf([iso([g.cx - 18.4, y, z], P), iso([g.cx + 18.4, y, z], P)]));
+  // a taller guide card with a tab, a third of the way in
+  return { rim, cards: cards.join("") };
+}
 
 /* the desk bell: a base, a dome and the plunger on top */
 export interface BellGeo {
@@ -910,38 +939,137 @@ export function bellGeo(t: Tile): BellGeo {
   };
 }
 
-/* the knife switch: a slate base, a hinge block and a jaw, and a blade that swings up about the hinge */
+
+/* ---------------------------------------------------------------- convex solids in any orientation */
+/* A convex polyhedron (vertices and faces, each face's corners in any winding) drawn the kit's way: faces that
+   look toward the viewer, shaded by facing (up-facing faces are tops), plus the silhouette as the outline.
+   Used for parts that turn in 3D: the knife switch's blade, crossbar and grip. */
+export interface Poly {
+  faces: { d: string; shade: number; top: boolean }[]; // one per face, "" when it faces away
+  outline: string;
+}
+const VIEW3 = (() => {
+  const a = (P.azimuth ?? 45) * RAD;
+  const e = (P.elevation ?? 30) * RAD;
+  return [cos(a) * cos(e), sin(a) * cos(e), sin(e)] as const;
+})();
+export function polyOf(verts: Point3[], faces: number[][]): Poly {
+  const c = verts.reduce((acc, v) => [acc[0] + v[0] / verts.length, acc[1] + v[1] / verts.length, acc[2] + v[2] / verts.length], [0, 0, 0]);
+  const flat = verts.map((v) => iso(v, P));
+  const out: Poly["faces"] = faces.map((f) => {
+    const [a0, a1, a2] = [verts[f[0]!]!, verts[f[1]!]!, verts[f[2]!]!];
+    const u = [a1[0] - a0[0], a1[1] - a0[1], a1[2] - a0[2]];
+    const w = [a2[0] - a0[0], a2[1] - a0[1], a2[2] - a0[2]];
+    let n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+    const fc = f.reduce((acc, i) => [acc[0] + verts[i]![0] / f.length, acc[1] + verts[i]![1] / f.length, acc[2] + verts[i]![2] / f.length], [0, 0, 0]);
+    // outward: away from the solid's centre
+    if (n[0] * (fc[0] - c[0]) + n[1] * (fc[1] - c[1]) + n[2] * (fc[2] - c[2]) < 0) n = [-n[0], -n[1], -n[2]];
+    const l = Math.hypot(n[0]!, n[1]!, n[2]!) || 1;
+    n = [n[0]! / l, n[1]! / l, n[2]! / l];
+    if (n[0]! * VIEW3[0] + n[1]! * VIEW3[1] + n[2]! * VIEW3[2] <= 1e-6) return { d: "", shade: 0, top: false };
+    const top = n[2]! > 0.72;
+    // lit from the kit's side light (the left of the picture), four steps
+    const lx = -sin((P.azimuth ?? 45) * RAD);
+    const ly = cos((P.azimuth ?? 45) * RAD);
+    const lit = (n[0]! * lx + n[1]! * ly + 1) / 2;
+    return { d: pathOf(f.map((i) => flat[i]!), true), shade: Math.min(3, Math.max(0, Math.floor(lit * 4))), top };
+  });
+  return { faces: out, outline: pathOf(hull(flat), true) };
+}
+/* a box from its centre and three half-axes */
+export function boxPoly(c: Point3, ax: Point3, ay: Point3, az: Point3): Poly {
+  const v: Point3[] = [];
+  for (const i of [-1, 1]) for (const j of [-1, 1]) for (const k of [-1, 1]) v.push([c[0] + i * ax[0] + j * ay[0] + k * az[0], c[1] + i * ax[1] + j * ay[1] + k * az[1], c[2] + i * ax[2] + j * ay[2] + k * az[2]]);
+  // vertex index = (i>0)*4 + (j>0)*2 + (k>0)
+  return polyOf(v, [
+    [0, 1, 3, 2],
+    [4, 5, 7, 6],
+    [0, 1, 5, 4],
+    [2, 3, 7, 6],
+    [0, 2, 6, 4],
+    [1, 3, 7, 5],
+  ]);
+}
+/* a round rod (a 12-sided prism) from a to b */
+export function rodPoly(a: Point3, b: Point3, r: number, n = 12): Poly {
+  const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const l = Math.hypot(d[0]!, d[1]!, d[2]!) || 1;
+  const t = [d[0]! / l, d[1]! / l, d[2]! / l];
+  const ref = Math.abs(t[2]!) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+  let u = [t[1]! * ref[2]! - t[2]! * ref[1]!, t[2]! * ref[0]! - t[0]! * ref[2]!, t[0]! * ref[1]! - t[1]! * ref[0]!];
+  const ul = Math.hypot(u[0]!, u[1]!, u[2]!);
+  u = [u[0]! / ul, u[1]! / ul, u[2]! / ul];
+  const w = [t[1]! * u[2]! - t[2]! * u[1]!, t[2]! * u[0]! - t[0]! * u[2]!, t[0]! * u[1]! - t[1]! * u[0]!];
+  const v: Point3[] = [];
+  for (const e of [a, b])
+    for (let k = 0; k < n; k++) {
+      const q = (k / n) * Math.PI * 2;
+      v.push([e[0] + r * (cos(q) * u[0]! + sin(q) * w[0]!), e[1] + r * (cos(q) * u[1]! + sin(q) * w[1]!), e[2] + r * (cos(q) * u[2]! + sin(q) * w[2]!)]);
+    }
+  const faces: number[][] = [];
+  for (let k = 0; k < n; k++) faces.push([k, (k + 1) % n, n + ((k + 1) % n), n + k]);
+  faces.push(Array.from({ length: n }, (_, k) => k), Array.from({ length: n }, (_, k) => n + k));
+  return polyOf(v, faces);
+}
+
+/* ---------------------------------------------------------------- the knife switch, rebuilt */
+/* A slate base; at the near end a hinge of two cheeks and a pivot pin; at the far end a jaw of two upright
+   contacts (a U) on a block; a blade (a thin bar on edge) that swings about the pin, with an insulated
+   crossbar and a round grip at its free end. The base, hinge and jaw are fixed solids; the blade, crossbar
+   and grip are rebuilt each frame from the blade's angle. Painted far to near: the far cheek and the far
+   upright, then the blade, then the near upright and the near cheek with the pin on it. */
 export interface KnifeGeo {
   base: SolidPaths;
-  hinge: SolidPaths;
-  jaw: SolidPaths;
-  slit: string;
+  farCheek: SolidPaths;
+  nearCheek: SolidPaths;
+  jawBlock: SolidPaths;
+  farJaw: SolidPaths;
+  nearJaw: SolidPaths;
+  pin: string; // the pin's end on the near cheek
+  screws: Flat[];
   hx: number;
   cy: number;
-  z: number;
+  zp: number; // the pin's height
   halo: string;
 }
+const KNIFE = { L: 66, h: 7, t: 1.5, gap: 2.4, cheek: 1.8, open: 72 };
 export function knifeGeo(t: Tile): KnifeGeo {
   const [cx, cy] = centreOf(t);
   const z0 = topOf(t);
-  const z = z0 + 3.5;
+  const zb = z0 + 4;
+  const hx = cx - 34;
+  const jx = hx + KNIFE.L - 7;
+  const g = KNIFE.gap;
+  const c = KNIFE.cheek;
   return {
-    base: slabOf({ x: cx - 48, y: cy - 16, w: 96, d: 32, r: 3 }, z0, 3.5, P, 6, 0.6),
-    hinge: slabOf({ x: cx - 40, y: cy - 6, w: 9, d: 12, r: 1 }, z, 9, P, 2, 0.4),
-    jaw: slabOf({ x: cx + 30, y: cy - 6, w: 9, d: 12, r: 1 }, z, 9, P, 2, 0.4),
-    slit: pathOf([iso([cx + 30, cy, z + 9], P), iso([cx + 39, cy, z + 9], P)]),
-    hx: cx - 35.5,
+    base: slabOf({ x: cx - 48, y: cy - 15, w: 96, d: 30, r: 3 }, z0, 4, P, 6, 0.8),
+    farCheek: slabOf({ x: hx - 5, y: cy - g - c, w: 10, d: c, r: 0.4 }, zb, 13, P, 2, 0.3),
+    nearCheek: slabOf({ x: hx - 5, y: cy + g, w: 10, d: c, r: 0.4 }, zb, 13, P, 2, 0.3),
+    jawBlock: slabOf({ x: jx - 6, y: cy - 7, w: 12, d: 14, r: 1 }, zb, 3, P, 2, 0.4),
+    farJaw: slabOf({ x: jx - 4, y: cy - g - c, w: 8, d: c, r: 0.4 }, zb + 3, 10.5, P, 2, 0.3),
+    nearJaw: slabOf({ x: jx - 4, y: cy + g, w: 8, d: c, r: 0.4 }, zb + 3, 10.5, P, 2, 0.3),
+    pin: ballAt([hx, cy + g + c, zb + 9], 1.5),
+    screws: [
+      iso([cx - 43, cy - 10, zb], P),
+      iso([cx - 43, cy + 10, zb], P),
+      iso([cx + 43, cy - 10, zb], P),
+      iso([cx + 43, cy + 10, zb], P),
+    ],
+    hx,
     cy,
-    z: z + 7,
-    halo: slabOf({ x: cx - 44, y: cy - 12, w: 96, d: 32, r: 3 }, z0, 0.1, P, 6).fill,
+    zp: zb + 9,
+    halo: slabOf({ x: cx - 44, y: cy - 11, w: 96, d: 30, r: 3 }, z0, 0.1, P, 6).fill,
   };
 }
-/* the blade at v (1 closed: down in the jaw; 0 open: swung up 70°), with its handle */
+/* the blade at v (1 closed: down in the jaw; 0 open: swung up), its crossbar and its grip */
 export function knifeBlade(g: KnifeGeo, v: number) {
-  const a = (1 - v) * 70 * RAD;
-  const L = 70;
-  const base: Point3 = [g.hx, g.cy, g.z];
-  const tip: Point3 = [g.hx + L * cos(a), g.cy, g.z + L * sin(a)];
-  const handleEnd: Point3 = [g.hx + (L + 12) * cos(a), g.cy, g.z + (L + 12) * sin(a)];
-  return { blade: rodBand(base, tip, 1.8), handle: rodBand(tip, handleEnd, 3.4), pin: ballAt(base, 2.2) };
+  const a = (1 - v) * KNIFE.open * RAD;
+  const dir: Point3 = [cos(a), 0, sin(a)];
+  const up: Point3 = [-sin(a), 0, cos(a)];
+  const at = (s: number, u = 0): Point3 => [g.hx + dir[0] * s + up[0] * u, g.cy, g.zp + dir[2] * s + up[2] * u];
+  const half = KNIFE.L / 2;
+  const blade = boxPoly(at(half - 2), [dir[0] * (half + 2), 0, dir[2] * (half + 2)], [0, KNIFE.t / 2, 0], [up[0] * (KNIFE.h / 2), 0, up[2] * (KNIFE.h / 2)]);
+  const cross = boxPoly(at(KNIFE.L + 2, 1), [dir[0] * 2.6, 0, dir[2] * 2.6], [0, 7, 0], [up[0] * 2.6, 0, up[2] * 2.6]);
+  const grip = rodPoly(at(KNIFE.L + 2, 3.6), at(KNIFE.L + 2, 19), 3.4);
+  return { blade, cross, grip };
 }

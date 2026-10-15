@@ -28,6 +28,7 @@ import {
   drawerFront,
   drawerGeo,
   drawerSlide,
+  drawerTray,
   gaugeGeo,
   gaugeNeedle,
   knifeBlade,
@@ -44,6 +45,7 @@ import {
   type KnifeGeo,
   type StampGeo,
   type TypeGeo,
+  type Poly,
   glassGeo,
   graticule,
   jacksGeo,
@@ -92,8 +94,8 @@ import {
   type SoftGeo,
 } from "./geometry";
 import { LOOP, STILL_T, idleAt } from "./model";
-import { KNOB_H, P, RAD, STICK, ctlFill, tileFill, type Layout, type Tile, type TileSet } from "./view";
-import { FIELD_BOX, PERIOD_W, worldOf, type World } from "./world";
+import { KNOB_H, P, RAD, STICK, ctlFill, subFill, tileFill, type Layout, type Tile, type TileSet } from "./view";
+import { FIELD_BOX, PERIOD_H, PERIOD_W, worldOf, type World } from "./world";
 import { useSound } from "../../../rapui";
 
 export interface ModulesHandle {
@@ -106,7 +108,7 @@ export const DESCRIPTION =
 const HINT =
   "Control modules — drag a knob to turn it, drag the fader, click a button, the key or a switch; arrow keys turn the lit knob, 1 to 9 press the buttons, S and Shift+S flip the switches, F and Shift+F move the fader, M or a click on the speaker grille turns sound on or off, Enter restarts";
 const FIELD_HINT =
-  "An endless strip of control modules — drag the floor or press Left and Right (Shift for further) to move along it; drag a knob, fader or joystick to work it, click a button, key or switch; Up and Down turn the lit knob, 1 to 9 press the first buttons, S flips a switch, M or a click on a speaker grille turns sound on or off, Enter restarts";
+  "An endless field of control modules — drag the floor in any direction or press the arrow keys (Shift for further) to move across it; drag a knob, fader or joystick to work it, click a button, key or switch; [ and ] turn the lit knob, 1 to 9 press the first buttons, S flips a switch, M or a click on a speaker grille turns sound on or off, Enter restarts";
 
 type Motion = "fun" | "calm" | "still";
 function motionOf(node: Element | null): Motion {
@@ -231,7 +233,8 @@ interface Nodes {
   traces: (SVGPathElement | null)[];
   holesDial: (SVGPathElement | null)[]; // per knob that is a rotary dial
   needles: (SVGPathElement | null)[];
-  levers: (SVGPathElement | null)[][]; // per switch that is a bat toggle or a knife: rod/blade, ball/handle, pin
+  levers: (SVGPathElement | null)[][]; // per switch that is a bat toggle: rod, ball
+  polys: (SVGGElement | null)[][]; // per knife switch: blade, crossbar, grip
   moves: (SVGGElement | null)[]; // per pressable that moves as a whole (typewriter key caps are per key, below)
   typeCaps: (SVGGElement | null)[][];
   counters: (SVGTextElement | null)[];
@@ -355,6 +358,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     holesDial: [],
     needles: [],
     levers: W.switches.map(() => []),
+    polys: W.switches.map(() => []),
     moves: [],
     typeCaps: W.pressable.map(() => []),
     counters: [],
@@ -373,12 +377,27 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   const [motion, setMotion] = React.useState<Motion>("fun");
   const visible = useInView(root);
 
-  /* ---------------------------------------------------------- the endless strip (a field only)
-     The strip pans sideways by `o` (drawing units, kept within one period). Each tile sits at its own
-     place plus n periods, n chosen so it lands in a window one period wide round the view: a tile that
-     leaves one side comes back on the other. A shift by a period keeps a tile's depth, so the painter's
-     order never changes. */
-  const pan = React.useRef({ o: 0, v: 0, n: TILES.map(() => 0), vis: TILES.map(() => true), split: "", drag: null as null | { id: number; x: number; y: number; o0: number; t: number; touch: boolean; started: boolean } });
+  /* ---------------------------------------------------------- the endless field (a field only)
+     The field pans by (ox, oy) drawing units, each kept within one period. It repeats every PERIOD_W across
+     and PERIOD_H down the screen, like a torus: each tile sits at its own place plus (nx, ny) periods, chosen
+     so it lands in a window one period each way round the view, so a tile that leaves one side comes back on
+     the other. A sideways shift keeps a tile's depth; a downward one doesn't, so when a tile wraps up or down
+     the tiles and the controls are put back in painter's order: first by how many periods down they sit, then
+     by their order within one period (the window spans exactly one period, so that is the order on screen). */
+  const pan = React.useRef({
+    ox: 0,
+    oy: 0,
+    cx: NaN, // the offset last written to the drawing
+    cy: NaN,
+    vx: 0,
+    vy: 0,
+    nx: TILES.map(() => 0),
+    ny: TILES.map(() => 0),
+    vis: TILES.map(() => true),
+    split: "",
+    drag: null as null | { id: number; x: number; y: number; t: number; touch: boolean; started: boolean; scroll?: boolean; sv?: number },
+    fling: 0, // the frame of a page-scroll glide after a vertical swipe
+  });
   const [vbW, setVbW] = React.useState(FIELD_BOX.w);
   const box: [number, number, number, number] = field
     ? [W.viewBox[0] + W.viewBox[2] / 2 - vbW / 2, W.viewBox[1], vbW, W.viewBox[3]]
@@ -389,39 +408,66 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     if (!field) return;
     const p = pan.current;
     const m = n.current;
-    const [bx, , bw] = boxRef.current;
-    const left = bx - (PERIOD_W - bw) / 2;
-    const mid = bx + bw / 2;
-    p.o = ((p.o % PERIOD_W) + PERIOD_W) % PERIOD_W;
-    m.pan?.setAttribute("transform", `translate(${p.o.toFixed(2)} 0)`);
+    const [bx, by, bw, bh] = boxRef.current;
+    const left = bx + bw / 2 - PERIOD_W / 2;
+    const top = by + bh / 2 - PERIOD_H / 2;
+    const midX = bx + bw / 2;
+    const midY = by + bh / 2;
+    p.ox = ((p.ox % PERIOD_W) + PERIOD_W) % PERIOD_W;
+    p.oy = ((p.oy % PERIOD_H) + PERIOD_H) % PERIOD_H;
+    if (p.ox !== p.cx || p.oy !== p.cy) {
+      p.cx = p.ox;
+      p.cy = p.oy;
+      m.pan?.setAttribute("transform", `translate(${p.ox.toFixed(2)} ${p.oy.toFixed(2)})`);
+    }
     let moved = false;
+    let down = false;
     for (let i = 0; i < TILES.length; i++) {
-      const k = Math.ceil((left - W.sx[i]! - p.o) / PERIOD_W);
-      if (k !== p.n[i]) {
-        p.n[i] = k;
+      const kx = Math.ceil((left - W.sx[i]! - p.ox) / PERIOD_W);
+      const ky = Math.ceil((top - W.sy[i]! - p.oy) / PERIOD_H);
+      if (kx !== p.nx[i] || ky !== p.ny[i]) {
+        if (ky !== p.ny[i]) down = true;
+        p.nx[i] = kx;
+        p.ny[i] = ky;
         moved = true;
-        const tf = k ? `translate(${(k * PERIOD_W).toFixed(2)} 0)` : "";
+        const tf = kx || ky ? `translate(${(kx * PERIOD_W).toFixed(2)} ${(ky * PERIOD_H).toFixed(2)})` : "";
         m.tileG[i]?.setAttribute("transform", tf);
         m.ctlG[i]?.setAttribute("transform", tf);
       }
-      p.vis[i] = Math.abs(W.sx[i]! + p.o + k * PERIOD_W - mid) < bw / 2 + 170;
+      const x = W.sx[i]! + p.ox + kx * PERIOD_W;
+      const y = W.sy[i]! + p.oy + ky * PERIOD_H;
+      p.vis[i] = Math.abs(x - midX) < bw / 2 + 170 && y > midY - bh / 2 - 120 && y < midY + bh / 2 + 240;
     }
-    // the shadows: one path per wrap position, rebuilt only when a tile changes place
-    const sig = p.n.join("");
+    if (down) {
+      // back in painter's order: periods down first, then the order within a period
+      const reorder = (els: (SVGGElement | null)[], rank: number[]) => {
+        const list = TILES.map((_, i) => i).filter((i) => els[i]);
+        list.sort((a, b) => p.ny[a]! - p.ny[b]! || rank[a]! - rank[b]!);
+        for (const i of list) els[i]!.parentNode?.appendChild(els[i]!);
+      };
+      reorder(m.tileG, W.tileRank);
+      reorder(m.ctlG, W.ctlRank);
+    }
+    // the shadows: one path per wrap position (two across, two down), rebuilt only when a tile changes place
+    const sig = `${p.nx.join("")}|${p.ny.join("")}`;
     if (moved || sig !== p.split) {
       p.split = sig;
-      const lo = Math.min(...p.n);
-      for (let g = 0; g < 2; g++) {
-        const d = W.halos.filter((_, i) => p.n[i] === lo + g).join("");
+      const lx = Math.min(...p.nx);
+      const ly = Math.min(...p.ny);
+      for (let g = 0; g < 4; g++) {
+        const gx = lx + (g & 1);
+        const gy = ly + (g >> 1);
+        const d = W.halos.filter((_, i) => p.nx[i] === gx && p.ny[i] === gy).join("");
         const el = m.halos[g];
         el?.setAttribute("d", d);
-        el?.setAttribute("transform", `translate(${((lo + g) * PERIOD_W).toFixed(2)} 0)`);
+        el?.setAttribute("transform", `translate(${(gx * PERIOD_W).toFixed(2)} ${(gy * PERIOD_H).toFixed(2)})`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [W, field]);
   /* where a control's tile is now, so pointer maths happens in its own (unpanned) place */
-  const shiftOf = (ti: number) => (field ? pan.current.o + pan.current.n[ti]! * PERIOD_W : 0);
+  const shiftOf = (ti: number): [number, number] =>
+    field ? [pan.current.cx + pan.current.nx[ti]! * PERIOD_W, pan.current.cy + pan.current.ny[ti]! * PERIOD_H] : [0, 0];
   const said = React.useRef("");
 
   /* write one frame from the state; only what changed since the last frame is rewritten */
@@ -470,8 +516,17 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       } else if (pg.kind === "stamp") m.moves[i]?.setAttribute("transform", stampDrop(p));
       else if (pg.kind === "bell") m.moves[i]?.setAttribute("transform", translateAlong(P, [0, 0, -p * 2.6]));
       else if (pg.kind === "drawer") {
-        writeSolid(m.press[i] ?? null, drawerFront(pg.g, p));
-        m.moves[i]?.setAttribute("transform", drawerSlide(p));
+        const c = PRESSABLE[i]!.ctl;
+        const split = c.kind === "drawer" && c.split;
+        // an ajar drawer rests half open and goes all the way when pressed
+        const q = c.kind === "drawer" && c.ajar ? 0.42 + 0.58 * p : p;
+        writeSolid(m.press[i] ?? null, drawerFront(pg.g, q, split ? "top" : undefined));
+        m.moves[i]?.setAttribute("transform", drawerSlide(q));
+        if (!split) {
+          const tr = drawerTray(pg.g, q);
+          m.pressFace[i]?.setAttribute("d", tr.rim);
+          m.pressShine[i]?.setAttribute("d", tr.cards);
+        }
       } else if (pg.kind === "disc") {
         m.pressFace[i]?.setAttribute("d", discFace(pg.g, p));
         m.pressShine[i]?.setAttribute("d", discShine(pg.g, p));
@@ -507,8 +562,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         m.levers[i]![1]?.setAttribute("d", lv.ball);
       } else if (G.KNIFE_GEO[i]) {
         const kb = knifeBlade(G.KNIFE_GEO[i]!, v);
-        m.levers[i]![0]?.setAttribute("d", kb.blade);
-        m.levers[i]![1]?.setAttribute("d", kb.handle);
+        writePoly(m.polys[i]![0] ?? null, kb.blade);
+        writePoly(m.polys[i]![1] ?? null, kb.cross);
+        writePoly(m.polys[i]![2] ?? null, kb.grip);
       } else if (g) {
         writeSolid(m.thumbs[i] ?? null, switchThumb(g, v));
         m.thumbGrips[i]?.setAttribute("d", switchGrip(g, v));
@@ -546,7 +602,8 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     for (let i = 0; i < G.SCOPE_GEO.length; i++) {
       if (!vis[G.SCOPE_TI[i]!]) continue;
       const g = G.SCOPE_GEO[i]!;
-      const ph = s.t * (calm ? 0.12 : 0.3) + i * 0.37;
+      // traces move slowly: twenty redraws a second are plenty, and leave the frame to the rest
+      const ph = Math.floor(s.t * 20) / 20 * (calm ? 0.12 : 0.3) + i * 0.37;
       if (!changed(`sc${i}`, ph, 0.002)) continue;
       const amp = 0.62 + 0.28 * Math.sin(s.t * 0.7 + i * 1.3);
       m.traces[i]?.setAttribute("d", scopeTrace(g, amp, 2 + (i % 3), ph, i));
@@ -612,13 +669,17 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     if (!node || !field || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver((e) => {
       const r = e[0]?.contentRect;
-      if (r && r.height > 0) setVbW(Math.round((FIELD_BOX.h * r.width) / r.height));
+      if (r && r.height > 0) {
+        pan.current.cx = NaN;
+        setVbW(Math.round((FIELD_BOX.h * r.width) / r.height));
+      }
     });
     ro.observe(node);
     return () => ro.disconnect();
   }, [field]);
   React.useLayoutEffect(() => {
-    pan.current.n = TILES.map(() => NaN);
+    pan.current.nx = TILES.map(() => NaN);
+    pan.current.ny = TILES.map(() => NaN);
     pan.current.split = "";
     placeTiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -680,13 +741,20 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     if (field) {
       const p = pan.current;
       if (!p.drag?.started) {
-        if (Math.abs(p.v) > 2) {
-          p.o += p.v * dt;
-          p.v *= Math.exp(-dt / 0.42);
+        if (Math.hypot(p.vx, p.vy) > 2) {
+          p.ox += p.vx * dt;
+          p.oy += p.vy * dt;
+          const f = Math.exp(-dt / 0.42);
+          p.vx *= f;
+          p.vy *= f;
         } else {
-          p.v = 0;
-          // a very slow drift while nobody touches it
-          if (s.touched > QUIET && !p.drag && !s.held) p.o -= (calm ? 4 : 9) * dt;
+          p.vx = 0;
+          p.vy = 0;
+          // a very slow diagonal drift while nobody touches it
+          if (s.touched > QUIET && !p.drag && !s.held) {
+            p.ox -= (calm ? 4 : 9) * dt;
+            p.oy -= (calm ? 1.6 : 3.6) * dt;
+          }
         }
       }
       placeTiles();
@@ -731,11 +799,13 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       st.current = { ...initial(W, t, Boolean(c)), held: true };
       draw(Boolean(c));
     };
-    // and "cm-pan" with { o } moves the strip to an offset (drawing units), for checks of the seam
+    // and "cm-pan" with { x, y } moves the field to an offset (drawing units), for checks of the seams
     const panTo = (e: Event) => {
-      const { o } = (e as CustomEvent<{ o: number }>).detail;
-      pan.current.o = o;
-      pan.current.v = 0;
+      const { x = 0, y = 0 } = (e as CustomEvent<{ x?: number; y?: number }>).detail;
+      pan.current.ox = x;
+      pan.current.oy = y;
+      pan.current.vx = 0;
+      pan.current.vy = 0;
       placeTiles();
     };
     node.addEventListener("cm-seek", seek);
@@ -806,8 +876,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       if (!field) return;
       const p = pan.current;
       const touchy = e.pointerType === "touch";
-      p.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, o0: p.o, t: performance.now(), touch: touchy, started: !touchy };
-      p.v = 0;
+      p.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), touch: touchy, started: !touchy };
+      p.vx = 0;
+      p.vy = 0;
       if (!touchy) {
         try {
           (e.currentTarget as Element).setPointerCapture(e.pointerId);
@@ -822,9 +893,11 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     }
     const [kind, idx] = (ctl.getAttribute("data-ctl") ?? "").split("-");
     const i = Number(idx ?? 0);
-    const [x0, y] = toSvg(e);
+    const [x0, y0] = toSvg(e);
     const ti = kind === "knob" ? G.KNOB_TI[i]! : kind === "btn" ? G.PRESS_TI[i]! : kind === "fd" ? G.FADER_TI[i]! : kind === "stick" ? G.STICK_TI[i]! : -1;
-    const x = ti >= 0 ? x0 - shiftOf(ti) : x0;
+    const [sx0, sy0] = ti >= 0 ? shiftOf(ti) : [0, 0];
+    const x = x0 - sx0;
+    const y = y0 - sy0;
     touch();
     if (kind === "snd") {
       toggleSound();
@@ -874,38 +947,67 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       const dx = e.clientX - p.drag.x;
       const dy = e.clientY - p.drag.y;
       if (!p.drag.started) {
-        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        // a touch grabs the field once it moves more than ~25° away from straight up or down
+        if (Math.hypot(dx, dy) > 8 && Math.abs(dx) > Math.abs(dy) * 0.47) {
           p.drag.started = true;
           p.drag.x = e.clientX;
-          p.drag.o0 = p.o;
+          p.drag.y = e.clientY;
           try {
             (e.currentTarget as Element).setPointerCapture(e.pointerId);
           } catch {
             /* synthetic */
           }
           root.current?.setAttribute("data-grabbing", "");
-        } else if (Math.abs(dy) > 8) p.drag = null; // a vertical swipe: the page scrolls
+        } else if (Math.abs(dy) > 8) {
+          // a swipe within ~25° of vertical is the page's: the field takes no touch gestures itself
+          // (touch-action: none, so a diagonal one can grab it), so it scrolls the page by hand
+          p.drag.scroll = true;
+          p.drag.started = true;
+          p.drag.sv = 0;
+          p.drag.y = e.clientY;
+          p.drag.t = performance.now();
+          cancelAnimationFrame(p.fling);
+          try {
+            (e.currentTarget as Element).setPointerCapture(e.pointerId);
+          } catch {
+            /* synthetic */
+          }
+        }
+        return;
+      }
+      if (p.drag.scroll) {
+        const now = performance.now();
+        const dyp = e.clientY - p.drag.y;
+        window.scrollBy(0, -dyp);
+        p.drag.sv = (p.drag.sv ?? 0) * 0.6 + (-dyp / (Math.max(1, now - p.drag.t) / 1000)) * 0.4;
+        p.drag.y = e.clientY;
+        p.drag.t = now;
         return;
       }
       const k = svgRef.current?.getScreenCTM()?.a || 1; // screen px per drawing unit
-      const o = p.drag.o0 + (e.clientX - p.drag.x) / k;
+      const mx = (e.clientX - p.drag.x) / k;
+      const my = (e.clientY - p.drag.y) / k;
       const now = performance.now();
       const dt = Math.max(1, now - p.drag.t) / 1000;
       // the release speed: a smoothed velocity of the last moves
-      p.v = p.v * 0.6 + ((o - p.o) / dt) * 0.4;
+      p.vx = p.vx * 0.6 + (mx / dt) * 0.4;
+      p.vy = p.vy * 0.6 + (my / dt) * 0.4;
       p.drag.t = now;
-      p.o = o;
-      p.drag.o0 = o;
+      p.ox += mx;
+      p.oy += my;
       p.drag.x = e.clientX;
+      p.drag.y = e.clientY;
       placeTiles();
       kick();
       return;
     }
     const d = drag.current;
     if (!d || d.id !== e.pointerId) return;
-    const [x0, y] = toSvg(e);
+    const [x0, y0] = toSvg(e);
     const ti = d.kind === "knob" ? G.KNOB_TI[d.i]! : d.kind === "fd" ? G.FADER_TI[d.i]! : d.kind === "stick" ? G.STICK_TI[d.i]! : -1;
-    const x = ti >= 0 ? x0 - shiftOf(ti) : x0;
+    const [sx0, sy0] = ti >= 0 ? shiftOf(ti) : [0, 0];
+    const x = x0 - sx0;
+    const y = y0 - sy0;
     if (d.kind === "stick") {
       stickTo(d.i, x, y);
       touch();
@@ -929,10 +1031,26 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   };
   const onPointerUp = (e: React.PointerEvent) => {
     const p = pan.current;
+    if (p.drag && p.drag.id === e.pointerId && p.drag.scroll) {
+      // let the page glide on like a native scroll
+      let v = performance.now() - p.drag.t > 90 ? 0 : (p.drag.sv ?? 0);
+      p.drag = null;
+      let last = performance.now();
+      const glide = (now: number) => {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        window.scrollBy(0, v * dt);
+        v *= Math.exp(-dt / 0.33);
+        if (Math.abs(v) > 20) p.fling = requestAnimationFrame(glide);
+      };
+      if (Math.abs(v) > 20) p.fling = requestAnimationFrame(glide);
+      return;
+    }
     if (p.drag && p.drag.id === e.pointerId) {
       // let go: glide on with the hand's speed (none if it rested before letting go)
-      if (!p.drag.started || performance.now() - p.drag.t > 90 || e.type === "pointercancel") p.v = 0;
-      p.v = Math.max(-3200, Math.min(3200, p.v));
+      if (!p.drag.started || performance.now() - p.drag.t > 90 || e.type === "pointercancel") p.vx = p.vy = 0;
+      const sp = Math.hypot(p.vx, p.vy);
+      if (sp > 3200) (p.vx *= 3200 / sp), (p.vy *= 3200 / sp);
       p.drag = null;
       root.current?.removeAttribute("data-grabbing");
       kick();
@@ -963,15 +1081,20 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         if (!heldKeys.current.has(k)) lift(k - 1);
       }, 120);
       touch();
-    } else if (field && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+    } else if (field && e.key.startsWith("Arrow")) {
       e.preventDefault();
-      // ←/→ glide the strip a step (Shift: further)
-      pan.current.v += (e.key === "ArrowLeft" ? 1 : -1) * (e.shiftKey ? 1500 : 600);
+      // the arrows glide the field a step that way (Shift: further)
+      const by = e.shiftKey ? 1500 : 600;
+      if (e.key === "ArrowLeft") pan.current.vx += by;
+      if (e.key === "ArrowRight") pan.current.vx -= by;
+      if (e.key === "ArrowUp") pan.current.vy += by;
+      if (e.key === "ArrowDown") pan.current.vy -= by;
       kick();
-    } else if (e.key.startsWith("Arrow")) {
+    } else if (e.key.startsWith("Arrow") || e.key === "[" || e.key === "]") {
       e.preventDefault();
+      // [ and ] (and, in the hero, the arrows) turn the lit knob
       const active = Math.max(0, KNOBS.indexOf(CAPPED[idleAt(s.t, calm, W).active]!));
-      const by = (e.shiftKey ? 45 : 15) * (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1);
+      const by = (e.shiftKey ? 45 : 15) * (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "]" ? 1 : -1);
       notch.current[active] = Math.floor(s.target[active]! / 15);
       s.target[active] = s.target[active]! + by;
       knobNotch(active);
@@ -1088,7 +1211,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
             ))}
           </Round>
           {cap === null ? (
-            <Round paths={g.cap} paint={paint} tone="mid" crease="faint">
+            <Round paths={g.cap} paint={paint} tone="mid" crease="faint" fill={ctlFill(t)}>
               <path className="iso-line" data-tone="faint" d={g.capRing} />
               <path ref={(el) => void (m.pointers[i] = el)} className="cm-pointer" d={knobPointer(g, FIRST.angles[i]!)} />
             </Round>
@@ -1172,13 +1295,16 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         <g key={t.id} data-ctl={`sw-${i}`} className="cm-switch cm-knife">
           <path className="cm-soft-halo" d={g.halo} />
           <LiveSolid paths={g.base} tone="mid" crease="faint" fill="slate" />
-          <LiveSolid paths={g.hinge} tone="mid" crease="faint" fill="brass" />
-          <LiveSolid paths={g.jaw} tone="mid" crease="faint" fill="brass">
-            <path className="iso-line" data-tone="hi" d={g.slit} />
-          </LiveSolid>
-          <path ref={(el) => void (m.levers[i]![0] = el)} className="cm-blade" d={kb.blade} />
-          <path ref={(el) => void (m.levers[i]![1] = el)} className="cm-handle" d={kb.handle} />
-          <path className="cm-pin" d={kb.pin} />
+          <Dots points={g.screws} size={1.2} tone="hi" />
+          <LiveSolid paths={g.farCheek} tone="mid" crease="faint" fill="brass" />
+          <LiveSolid paths={g.jawBlock} tone="mid" crease="faint" fill="slate" />
+          <LiveSolid paths={g.farJaw} tone="mid" crease="faint" fill="brass" />
+          <PolyLive ref={(el) => void (m.polys[i]![0] = el)} poly={kb.blade} fill="brass" />
+          <PolyLive ref={(el) => void (m.polys[i]![1] = el)} poly={kb.cross} fill="slate" />
+          <PolyLive ref={(el) => void (m.polys[i]![2] = el)} poly={kb.grip} fill="slate" />
+          <LiveSolid paths={g.nearJaw} tone="mid" crease="faint" fill="brass" />
+          <LiveSolid paths={g.nearCheek} tone="mid" crease="faint" fill="brass" />
+          <path className="cm-pin" d={g.pin} />
           <path ref={(el) => void (m.lamps[i] = el)} className="cm-lamp cm-hidden-lamp" d="" />
         </g>
       );
@@ -1376,18 +1502,28 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     }
     if (pg.kind === "drawer") {
       const g = pg.g;
+      const split = t.ctl.kind === "drawer" && t.ctl.split;
+      const q0 = t.ctl.kind === "drawer" && t.ctl.ajar ? 0.42 : 0;
       return (
         <g key={t.id} data-ctl={`btn-${i}`} className="cm-drawer">
           <path className="cm-soft-halo" d={g.halo} />
           <LiveSolid paths={g.cabinet} tone="mid" crease="faint" fill="wood" />
-          <LiveSolid ref={(el) => void (m.press[i] = el)} paths={drawerFront(g, 0)} tone="mid" crease="faint" fill="cream" />
-          <g ref={(el) => void (m.moves[i] = el)}>
-            <g transform={g.face}>
-              <rect className="cm-holder" x={11} y={1.6} width={16} height={6.2} rx={0.6} />
-              <text className="cm-holder-text" x={19} y={6.2} fontSize={3.6} textAnchor="middle">
-                {["A–C", "D–G", "H–L", "M–P", "Q–S", "T–Z"][(i * 5) % 6]}
-              </text>
-              <path className="cm-pull" d="M14.5 11.2a4.5 3.4 0 0 0 9 0Z" />
+          {split ? <LiveSolid paths={drawerFront(g, 0, "bottom")} tone="mid" crease="faint" fill="cream" /> : null}
+          {split ? (
+            <g transform={g.faceBottom}>
+              <DrawerFace label={LABELS[(i * 5 + 3) % 6]!} small />
+            </g>
+          ) : null}
+          <LiveSolid ref={(el) => void (m.press[i] = el)} paths={drawerFront(g, q0, split ? "top" : undefined)} tone="mid" crease="faint" fill="cream" />
+          {split ? null : (
+            <>
+              <path ref={(el) => void (m.pressFace[i] = el)} className="cm-tray" d={drawerTray(g, q0).rim} />
+              <path ref={(el) => void (m.pressShine[i] = el)} className="cm-cards" d={drawerTray(g, q0).cards} />
+            </>
+          )}
+          <g ref={(el) => void (m.moves[i] = el)} transform={drawerSlide(q0)}>
+            <g transform={split ? g.faceTop : g.face}>
+              <DrawerFace label={LABELS[(i * 5) % 6]!} small={Boolean(split)} />
             </g>
           </g>
         </g>
@@ -1413,7 +1549,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       return (
         <g key={t.id} data-ctl={`btn-${i}`} className={pg.kind === "pads" ? "cm-pads" : "cm-keys"}>
           {g.plans.map((_, j) => (
-            <LiveSolid key={j} ref={(el) => void (m.multi[i]![j] = el)} paths={multiCap(g, j, j === pick ? p0 : 0)} tone="mid" crease="faint" className="cm-subkey" fill={pg.kind === "keys" ? ctlFill(t) : (j + ctlFill(t)) % 3 === 0 ? ctlFill(t) : 0} />
+            <LiveSolid key={j} ref={(el) => void (m.multi[i]![j] = el)} paths={multiCap(g, j, j === pick ? p0 : 0)} tone="mid" crease="faint" className="cm-subkey" fill={subFill(t, j)} />
           ))}
         </g>
       );
@@ -1469,8 +1605,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         <g ref={(el) => void (m.pan = el)}>
           {field ? (
             <>
-              <path ref={(el) => void (m.halos[0] = el)} className="iso-halo cm-halo" />
-              <path ref={(el) => void (m.halos[1] = el)} className="iso-halo cm-halo" />
+              {[0, 1, 2, 3].map((g) => (
+                <path key={g} ref={(el) => void (m.halos[g] = el)} className="iso-halo cm-halo" />
+              ))}
             </>
           ) : null}
           <Tiles
@@ -1481,6 +1618,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
             hole={(g, k, el) => void (m.holes[g]![k] = el)}
             lamp={(g, el) => void (m.sndLamps[g] = el)}
           />
+          <g data-part="controls">
           {controls.map((c, k) => {
             const ti = W.ctlOrder[k]!;
             return c ? (
@@ -1489,6 +1627,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
               </g>
             ) : null;
           })}
+          </g>
         </g>
       </>
     );
@@ -1539,6 +1678,55 @@ function layered(w: number[]) {
 function nearest(from: number, to: number) {
   const d = ((((to - from) % 360) + 540) % 360) - 180;
   return from + d;
+}
+
+/* a drawer's front: a brass label holder with its card, and a cup pull; `small` for a half drawer */
+const LABELS = ["A–C", "D–G", "H–L", "M–P", "Q–S", "T–Z"];
+function DrawerFace({ label, small = false }: { label: string; small?: boolean }) {
+  if (small)
+    return (
+      <>
+        <rect className="cm-holder" x={6} y={1.3} width={13} height={4.6} rx={0.5} />
+        <text className="cm-holder-text" x={12.5} y={4.7} fontSize={3} textAnchor="middle">
+          {label}
+        </text>
+        <path className="cm-pull" d="M23.5 3.6a3.6 2.6 0 0 0 7.2 0Z" />
+      </>
+    );
+  return (
+    <>
+      <rect className="cm-holder" x={11} y={1.6} width={16} height={6.2} rx={0.6} />
+      <text className="cm-holder-text" x={19} y={6.2} fontSize={3.6} textAnchor="middle">
+        {label}
+      </text>
+      <path className="cm-pull" d="M14.5 11.2a4.5 3.4 0 0 0 9 0Z" />
+    </>
+  );
+}
+
+/* a convex solid that turns: one path per face (shaded by facing, or a top) and the outline over them */
+const PolyLive = React.forwardRef<SVGGElement, { poly: Poly; fill?: string }>(function PolyLive({ poly, fill }, ref) {
+  return (
+    <g ref={ref} className="iso-solid cm-poly" data-fill={fill}>
+      {poly.faces.map((f, k) => (
+        <path key={k} className={f.top ? "iso-top" : "iso-shade"} data-shade={f.top ? undefined : f.shade} d={f.d} />
+      ))}
+      <path className="iso-line iso-edge" data-tone="mid" d={poly.outline} />
+    </g>
+  );
+});
+function writePoly(g: SVGGElement | null, p: Poly) {
+  if (!g) return;
+  const c = g.children;
+  p.faces.forEach((f, k) => {
+    const el = c[k];
+    if (!el) return;
+    el.setAttribute("d", f.d);
+    el.setAttribute("class", f.top ? "iso-top" : "iso-shade");
+    if (f.top) el.removeAttribute("data-shade");
+    else el.setAttribute("data-shade", String(f.shade));
+  });
+  c[p.faces.length]?.setAttribute("d", p.outline);
 }
 
 /* move a jog's dimple: its clip, wall, floor and rim */

@@ -59,18 +59,18 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-cap-b": v("acid"),
     },
   },
-  // civic: an engraved plate — navy line work on white, faces tinted navy, one part in Old Glory red
+  // civic: an engraved plate — navy line work on white, faces in pale grey, one part in Old Glory red
   civic: {
-    note: "An engraved plate: navy line work on white, faces washed in navy, the one moving part in red.",
+    note: "An engraved plate: navy line work on white, faces in pale grey, the one moving part in red.",
     tokens: {
       "--anatomy-card": v("surface"),
       "--anatomy-paper": v("surface"),
       "--anatomy-top": v("surface"),
       "--anatomy-face": v("surface"),
-      "--anatomy-shade-3": mix("plum", 7),
-      "--anatomy-shade-2": mix("plum", 15),
-      "--anatomy-shade-1": mix("plum", 25),
-      "--anatomy-shade-0": mix("plum", 38),
+      "--anatomy-shade-3": mix("plum", 4),
+      "--anatomy-shade-2": mix("plum", 8),
+      "--anatomy-shade-1": mix("plum", 13),
+      "--anatomy-shade-0": mix("plum", 19),
       "--anatomy-lit": v("flame"),
       "--anatomy-lit-top": mix("flame", 14),
       "--anatomy-lit-shade": mix("flame", 32),
@@ -80,11 +80,12 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-halo-opacity": "0.18",
       "--anatomy-mono": v("font-sans"),
       // the office hardware (the modules figure's civic set): aged brass, navy wood, slate, cream card
-      "--mod-brass": mix("acid", 72, v("ink")),
-      "--mod-wood": mix("plum", 62, v("surface")),
-      "--mod-slate": mix("plum", 85, v("ink")),
-      "--mod-cream": mix("acid", 45, v("surface")),
-      "--mod-ink": v("plum"),
+      // quiet and near-monochrome, drawn in ink: light grey metal, pale grey bodies, white faces
+      "--mod-brass": mix("ink", 16),
+      "--mod-wood": mix("ink", 5),
+      "--mod-slate": mix("ink", 9),
+      "--mod-cream": v("surface"),
+      "--mod-ink": mix("ink", 45),
     },
   },
   // signal: a field instrument — green-black line work on sage paper, faces in paper tints, the live
