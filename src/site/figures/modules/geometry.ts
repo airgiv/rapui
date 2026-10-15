@@ -465,6 +465,7 @@ export interface StickGeo {
   z0: number;
   recess: Recess;
   boot: SolidPaths;
+  dome: Poly;
   halo: string;
 }
 export function stickGeo(t: Tile): StickGeo {
@@ -475,28 +476,18 @@ export function stickGeo(t: Tile): StickGeo {
     cy,
     z0,
     recess: circleRecess(cx, cy, STICK.socket, z0, 2),
-    boot: cylinder(cx, cy, STICK.boot, z0 - 2, STICK.bootH + 2, P, 48, 1.4),
+    boot: cylinder(cx, cy, STICK.boot, z0 - 2, 3.2, P, 48, 1.0), // the collar the boot sits in
+    dome: frustumPoly([cx, cy, z0 + 1.2], STICK.boot - 1.6, 4.4, STICK.bootH + 3.4), // the rubber boot
     halo: cylinder(cx + 2.5, cy + 3, STICK.boot + 3, z0, 0.1, P, 32).fill,
   };
 }
-/* the shaft (a slanted rod as a band on screen) and the ball on top, tilted by tx, ty in −1..1 */
+/* the shaft (a round rod from the top of the boot) and the ball on top, tilted by tx, ty in −1..1 */
 export function stickParts(g: StickGeo, tx: number, ty: number) {
-  const zb = g.z0 + STICK.bootH;
+  const zb = g.z0 + 1.2 + STICK.bootH + 3.4;
   const top: Point3 = [g.cx + tx * STICK.tilt, g.cy + ty * STICK.tilt, zb + STICK.shaftH];
-  const pa = iso([g.cx, g.cy, zb], P);
-  const pb = iso(top, P);
-  const dx = pb[0] - pa[0];
-  const dy = pb[1] - pa[1];
-  const l = Math.hypot(dx, dy) || 1;
-  const h = STICK.shaft * K;
-  const nx = (-dy / l) * h;
-  const ny = (dx / l) * h;
-  const shaft = pathOf([[pa[0] + nx, pa[1] + ny], [pb[0] + nx, pb[1] + ny], [pb[0] - nx, pb[1] - ny], [pa[0] - nx, pa[1] - ny]], true);
-  const r = STICK.ball * K;
-  const ball = `M${(pb[0] - r).toFixed(2)} ${pb[1].toFixed(2)}a${r.toFixed(2)} ${r.toFixed(2)} 0 1 0 ${(2 * r).toFixed(2)} 0a${r.toFixed(2)} ${r.toFixed(2)} 0 1 0 ${(-2 * r).toFixed(2)} 0`;
-  // the shaft's foot on the boot: an ellipse it stands in
-  const foot = ring(g.cx, g.cy, STICK.shaft + 0.6, zb, P, 20);
-  return { shaft, ball, foot, top };
+  const shaft = rodPoly([g.cx, g.cy, zb - 1], top, STICK.shaft * 0.62);
+  const ball = ballAt(top, STICK.ball);
+  return { shaft, ball, top };
 }
 
 /* ---------------------------------------------------------------- the LED strip */
@@ -644,18 +635,6 @@ export const labelAt = (t: Tile) => {
 };
 
 /* ---------------------------------------------------------------- the office (civic) */
-/* a slanted rod as a band on screen between two world points, `r` thick */
-function rodBand(a: Point3, b: Point3, r: number) {
-  const pa = iso(a, P);
-  const pb = iso(b, P);
-  const dx = pb[0] - pa[0];
-  const dy = pb[1] - pa[1];
-  const l = Math.hypot(dx, dy) || 1;
-  const h = r * K;
-  const nx = (-dy / l) * h;
-  const ny = (dx / l) * h;
-  return pathOf([[pa[0] + nx, pa[1] + ny], [pb[0] + nx, pb[1] + ny], [pb[0] - nx, pb[1] - ny], [pa[0] - nx, pa[1] - ny]], true);
-}
 /* a ball (a circle on screen) of world radius r at a point */
 function ballAt(c: Point3, r: number) {
   const [x, y] = iso(c, P);
@@ -801,7 +780,7 @@ export function batLever(g: BatGeo, v: number) {
   const a = (28 - 56 * v) * RAD;
   const base: Point3 = [g.cx, g.cy, g.z0 + 5.4];
   const tip: Point3 = [g.cx, g.cy + 15 * sin(a), g.z0 + 5.4 + 15 * cos(a)];
-  return { rod: rodBand(base, tip, 1.5), ball: ballAt(tip, 3.4) };
+  return { rod: rodPoly(base, tip, 1.5), ball: ballAt(tip, 3.4) };
 }
 
 /* typewriter keys: round caps with a chrome rim on stems, a letter on each */
@@ -1072,4 +1051,18 @@ export function knifeBlade(g: KnifeGeo, v: number) {
   const cross = boxPoly(at(KNIFE.L + 2, 1), [dir[0] * 2.6, 0, dir[2] * 2.6], [0, 7, 0], [up[0] * 2.6, 0, up[2] * 2.6]);
   const grip = rodPoly(at(KNIFE.L + 2, 3.6), at(KNIFE.L + 2, 19), 3.4);
   return { blade, cross, grip };
+}
+
+/* a round frustum (a cone cut flat, as a 16-sided solid): centre of its foot, foot and head radii, height */
+export function frustumPoly(c: Point3, r0: number, r1: number, h: number, n = 16): Poly {
+  const v: Point3[] = [];
+  for (const [r, z] of [[r0, c[2]], [r1, c[2] + h]] as const)
+    for (let k = 0; k < n; k++) {
+      const q = (k / n) * Math.PI * 2;
+      v.push([c[0] + r * cos(q), c[1] + r * sin(q), z]);
+    }
+  const faces: number[][] = [];
+  for (let k = 0; k < n; k++) faces.push([k, (k + 1) % n, n + ((k + 1) % n), n + k]);
+  faces.push(Array.from({ length: n }, (_, k) => k), Array.from({ length: n }, (_, k) => n + k));
+  return polyOf(v, faces);
 }
