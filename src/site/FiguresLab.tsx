@@ -12,15 +12,15 @@ import { FIGURE_LOOKS } from "./figures/looks";
 import { ControlModules, type ModulesHandle } from "./figures/modules";
 import { PresetPicker } from "./PresetsShowcase";
 
-/* the two caps that aren't the accent: kept colourless in minimal, phosphor tints in signal */
+/* the two caps that aren't the accent: kept colourless in minimal; in signal a deep green and the acid lime */
 const CAPS: Partial<Record<RapPreset, Record<string, string>>> = {
   minimal: {
     "--anatomy-cap-a": "color-mix(in oklab, var(--rap-ink) 78%, var(--rap-surface))",
     "--anatomy-cap-b": "color-mix(in oklab, var(--rap-ink) 22%, var(--rap-surface))",
   },
   signal: {
-    "--anatomy-cap-a": "color-mix(in oklab, var(--rap-flame) 55%, var(--rap-paper))",
-    "--anatomy-cap-b": "color-mix(in oklab, var(--rap-flame) 28%, var(--rap-paper))",
+    "--anatomy-cap-a": "color-mix(in oklab, var(--rap-flame) 40%, var(--rap-plum))",
+    "--anatomy-cap-b": "var(--rap-acid)",
   },
 };
 
@@ -66,10 +66,7 @@ export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: bool
                 <Button variant="soft">How it's drawn</Button>
               </div>
             </div>
-            <div
-              className={look.dark ? "relative rounded-[var(--rap-radius-lg,1.25rem)] bg-paper p-[clamp(0.75rem,2vw,1.5rem)]" : "relative"}
-              {...(look.dark ? { "data-rap-theme": "dark" } : {})}
-            >
+            <div className="relative">
               <ControlModules ref={device} style={{ ...look.tokens, ...CAPS[preset] } as CSSProperties} />
             </div>
           </div>

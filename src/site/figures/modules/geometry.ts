@@ -20,10 +20,8 @@ import {
   type SolidPaths,
 } from "../iso/iso-kit";
 import {
-  CLIP,
   DISC,
   GRILLE,
-  JACK,
   K,
   KNOB_BODY,
   KNOB_CAP,
@@ -39,6 +37,8 @@ import {
   SOFT,
   TILES,
   BEVEL,
+  FADER,
+  SWITCH,
   centreOf,
   planOf,
   topOf,
@@ -289,102 +289,95 @@ export function grilleGeo(t: Tile): GrilleGeo {
   return { rings: keys.map((k) => groups.get(k)!.join("")), radii: keys.map((k) => k * GRILLE.pitch) };
 }
 
-/* ---------------------------------------------------------------- loose props on the table */
-/* a wire lying on the table, drawn as a tube: a centreline in screen space at the wire's height */
-const floorLine = (pts: Plane[], r: number) => pathOf(pts.map(([x, y]) => iso([x, y, r], P)));
-function smoothRoute(pts: Plane[], per = 10): Plane[] {
-  // Catmull–Rom through the points
-  const out: Plane[] = [];
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[Math.max(0, i - 1)]!;
-    const p1 = pts[i]!;
-    const p2 = pts[i + 1]!;
-    const p3 = pts[Math.min(pts.length - 1, i + 2)]!;
-    for (let k = 0; k < per; k++) {
-      const t = k / per;
-      const t2 = t * t;
-      const t3 = t2 * t;
-      const f = (a: number, b: number, c: number, d: number) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
-      out.push([f(p0[0], p1[0], p2[0], p3[0]), f(p0[1], p1[1], p2[1], p3[1])]);
-    }
-  }
-  out.push(pts[pts.length - 1]!);
-  return out;
+/* ---------------------------------------------------------------- the fader */
+export interface FaderGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  recess: Recess; // the long slot
+  scale: Flat[]; // the printed dots beside the travel
+  major: Flat[];
+  halo: (v: number) => string;
 }
+export function faderGeo(t: Tile): FaderGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const { len, slot, depth, scale } = FADER;
+  const plan: Plan = { x: cx - len / 2 - slot / 2, y: cy - slot / 2, w: len + slot, d: slot, r: slot / 2 - 0.05 };
+  const dots: Flat[] = [];
+  const major: Flat[] = [];
+  for (let k = 0; k <= 10; k++) (k % 5 === 0 ? major : dots).push(iso([cx - len / 2 + (k * len) / 10, cy + scale, z0], P));
+  return {
+    cx,
+    cy,
+    z0,
+    recess: planRecess(plan, z0, depth),
+    scale: dots,
+    major,
+    halo: (v) => slabOf(capPlan(cx, cy, v, 2.5, 3), z0, 0.1, P, 5).fill,
+  };
+}
+const capX = (cx: number, v: number) => cx - FADER.len / 2 + v * FADER.len;
+const capPlan = (cx: number, cy: number, v: number, dx = 0, dy = 0): Plan => ({
+  x: capX(cx, v) - FADER.cap.w / 2 + dx,
+  y: cy - FADER.cap.d / 2 + dy,
+  w: FADER.cap.w,
+  d: FADER.cap.d,
+  r: FADER.cap.r,
+});
+export const faderCap = (g: FaderGeo, v: number) => slabOf(capPlan(g.cx, g.cy, v), g.z0, FADER.cap.h, P, 5, 0.8);
+/* three grip lines across the cap's top, edge to edge (inside the corner rounding) */
+export const faderGrip = (g: FaderGeo, v: number) =>
+  [-3.2, 0, 3.2]
+    .map((dx) => onTop([[capX(g.cx, v) + dx, g.cy - FADER.cap.d / 2], [capX(g.cx, v) + dx, g.cy + FADER.cap.d / 2]], g.z0 + FADER.cap.h, P))
+    .join("");
+/* the fader's value under a point on its tile's plane */
+export const faderValueAt = (g: FaderGeo, wx: number) => (wx - (g.cx - FADER.len / 2)) / FADER.len;
 
-/* the wire loop: two long legs joined by a round end, one leg a little shorter */
-export const CLIP_PATH = (() => {
-  const [ax, ay] = CLIP.a;
-  const [bx] = CLIP.b;
-  const r = CLIP.w / 2;
-  const pts: Plane[] = [[bx, ay]];
-  for (let k = 0; k <= 24; k++) {
-    const a = (-90 - (k * 180) / 24) * RAD;
-    pts.push([ax + r + r * cos(a), ay + r + r * sin(a)]);
-  }
-  pts.push([bx - 9, ay + CLIP.w]);
-  return floorLine(pts, CLIP.wire);
-})();
-export const CLIP_HALO = (() => {
-  const [ax, ay] = CLIP.a;
-  const [bx] = CLIP.b;
-  return slabOf({ x: ax, y: ay + 1.5, w: bx - ax + 2, d: CLIP.w + 2, r: CLIP.w / 2 }, 0, 0.1, P, 8).fill;
-})();
-
-/* the jack: a 3.5 mm plug lying along +x, its cable curling round to a second plug lying the other way */
-export interface Seg {
-  d: string; // a closed outline: the segment's silhouette with straight ends
-  tone: "body" | "band" | "metal";
+/* ---------------------------------------------------------------- the sliding switches */
+export interface SwitchGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  axis: "x" | "y";
+  recess: Recess;
+  lamp: string; // the small lamp beside the slot's "on" end
+  lampRing: string;
 }
-/* the silhouette of a short round rod lying on the table along a line: a band of the rod's width on screen */
-function rodOn(a: Plane, b: Plane, r: number) {
-  const pa = iso([a[0], a[1], r], P);
-  const pb = iso([b[0], b[1], r], P);
-  const dx = pb[0] - pa[0];
-  const dy = pb[1] - pa[1];
-  const l = Math.hypot(dx, dy) || 1;
-  const h = r * K;
-  const nx = (-dy / l) * h;
-  const ny = (dx / l) * h;
-  return pathOf(
-    [
-      [pa[0] + nx, pa[1] + ny],
-      [pb[0] + nx, pb[1] + ny],
-      [pb[0] - nx, pb[1] - ny],
-      [pa[0] - nx, pa[1] - ny],
-    ],
-    true,
-  );
+/* a plan stretched along the switch's axis: `u` along it, `w` across it */
+const along = (g: { cx: number; cy: number; axis: "x" | "y" }, u: number, len: number, w: number, r: number): Plan =>
+  g.axis === "x" ? { x: g.cx + u - len / 2, y: g.cy - w / 2, w: len, d: w, r } : { x: g.cx - w / 2, y: g.cy + u - len / 2, w, d: len, r };
+export function switchGeo(t: Tile): SwitchGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const axis = t.ctl.kind === "switch" ? t.ctl.axis : "x";
+  const base = { cx, cy, axis };
+  const slot = along(base, 0, SWITCH.len, SWITCH.d, SWITCH.d / 2 - 0.05);
+  const [lx, ly] = axis === "x" ? [cx + SWITCH.lamp, cy] : [cx, cy + SWITCH.lamp];
+  return {
+    cx,
+    cy,
+    z0,
+    axis,
+    recess: planRecess(slot, z0, SWITCH.depth),
+    lamp: ring(lx, ly, 2.1, z0, P, 24),
+    lampRing: ring(lx, ly, 3.4, z0, P, 28),
+  };
 }
-function plug(tip: Plane, dir: 1 | -1): { segs: Seg[]; end: Plane } {
-  const [x0, y] = tip;
-  const parts: [number, number, number, Seg["tone"]][] = [
-    // [from, to, radius, tone] along the plug from its tip
-    [0, 2.6, 1.55, "metal"],
-    [2.6, 3.4, 1.75, "band"],
-    [3.4, 7.2, 1.75, "metal"],
-    [7.2, 8.0, 1.75, "band"],
-    [8.0, 15.5, 1.75, "metal"],
-    [15.5, 30, 3.3, "body"],
-    [30, 37, 2.2, "body"],
-  ];
-  const segs = parts.map(([a, b, r, tone]) => ({ d: rodOn([x0 + dir * a, y], [x0 + dir * b, y], r), tone }));
-  return { segs, end: [x0 + dir * 37, y] };
-}
-export const JACK_PARTS = (() => {
-  const a = plug(JACK.plug, 1);
-  const [ex, ey] = a.end;
-  const back: Plane = [JACK.plug[0] + 8, JACK.plug[1] - 30];
-  const b = plug(back, 1);
-  const route = smoothRoute([
-    a.end,
-    [ex + 14, ey + 1],
-    [ex + 30, ey - 6],
-    [ex + 34, ey - 19],
-    [ex + 22, ey - 29.5],
-    [b.end[0] + 6, b.end[1]],
-    b.end,
-  ]);
-  return { plugs: [...a.segs, ...b.segs], cable: floorLine(route, JACK.wire), cableW: 2 * JACK.wire * K, halo: floorLine(route, 0) };
-})();
-export const CLIP_W = 2 * CLIP.wire * K;
+const thumbU = (v: number) => -SWITCH.len / 2 + 2.4 + SWITCH.thumb.len / 2 + v * (SWITCH.len - 4.8 - SWITCH.thumb.len);
+const thumbPlan = (g: SwitchGeo, v: number) => along(g, thumbU(v), SWITCH.thumb.len, SWITCH.thumb.d, SWITCH.thumb.d / 2 - 0.05);
+/* the thumb, standing up out of the slot's floor */
+export const switchThumb = (g: SwitchGeo, v: number) => slabOf(thumbPlan(g, v), g.z0 - SWITCH.depth, SWITCH.depth + SWITCH.thumb.h, P, 10, 1.1);
+/* two grip ridges across the thumb's top, edge to edge across its straight middle */
+export const switchGrip = (g: SwitchGeo, v: number) => {
+  const u = thumbU(v);
+  const z = g.z0 + SWITCH.thumb.h;
+  const h = SWITCH.thumb.d / 2;
+  return [-2.4, 2.4]
+    .map((du) =>
+      g.axis === "x"
+        ? onTop([[g.cx + u + du, g.cy - h], [g.cx + u + du, g.cy + h]], z, P)
+        : onTop([[g.cx - h, g.cy + u + du], [g.cx + h, g.cy + u + du]], z, P),
+    )
+    .join("");
+};

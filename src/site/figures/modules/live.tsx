@@ -8,13 +8,23 @@
    ancestor with data-rap-motion="still"; slower, smaller sweeps under
    data-rap-motion="calm". */
 import * as React from "react";
+import { Dots } from "../iso/react/draw";
 import { useInView, useLoop, spring, type Spring } from "../iso/react/live";
-import { IconArt, LiveSolid, Paints, Props, RecessArt, Round, Tiles, grilleOf, writeRound, writeSolid } from "./art";
+import { IconArt, LiveSolid, Paints, RecessArt, Round, Tiles, grilleOf, writeRound, writeSolid } from "./art";
 import {
   CTL_ORDER,
   DOT_BUCKETS,
   discFace,
   discGeo,
+  faderCap,
+  faderGeo,
+  faderGrip,
+  faderValueAt,
+  switchGeo,
+  switchGrip,
+  switchThumb,
+  type FaderGeo,
+  type SwitchGeo,
   discShine,
   knobGeo,
   knobPointer,
@@ -33,7 +43,7 @@ import {
   type SoftGeo,
 } from "./geometry";
 import { LOOP, STILL_T, idleAt } from "./model";
-import { CAPPED, HEIGHT, KNOBS, KNOB_H, P, PRESSABLE, RAD, TILES, WIDTH } from "./view";
+import { CAPPED, FADERS, HEIGHT, KNOBS, KNOB_H, P, PRESSABLE, RAD, SWITCHES, TILES, WIDTH } from "./view";
 
 export interface ModulesHandle {
   /** Restart the idle sequence from its start (the controls glide there; nothing jumps). */
@@ -41,8 +51,9 @@ export interface ModulesHandle {
 }
 
 export const DESCRIPTION =
-  "A composition of separate square control tiles butted together on a table, drawn in isometric line work: tall knurled knobs covered in fine dimples (three with coloured caps, one in the accent colour, two standing in wide shallow round recesses on large tiles), dark round buttons sunk in soft rims, soft round buttons printed with a loop, a cassette and a wave icon, a long pill key in a stadium recess, and a speaker grille of round holes; a wire loop and a short jack cable lie beside them. The knobs turn by themselves, the buttons press in turn, the grille ripples with each press and the accent moves from cap to cap.";
-const HINT = "Control modules — drag a knob to turn it, click a button or the key; arrow keys turn the lit knob, 1 to 6 press the buttons, Enter restarts";
+  "A composition of separate square control tiles butted together on a table, drawn in isometric line work: tall knurled knobs covered in fine dimples (three with coloured caps, one in the accent colour, two standing in wide shallow round recesses on large tiles), dark round buttons sunk in soft rims, soft round buttons printed with a loop, a cassette and a wave icon, a long pill key in a stadium recess, and a speaker grille of round holes, a fader with a printed scale and two sliding switches with small lamps. The knobs turn by themselves, the buttons press in turn, the fader glides, the switches flip now and then, the grille ripples with each press and the accent moves from cap to cap.";
+const HINT =
+  "Control modules — drag a knob to turn it, drag the fader, click a button, the key or a switch; arrow keys turn the lit knob, 1 to 6 press the buttons, S and Shift+S flip the switches, F and Shift+F move the fader, Enter restarts";
 
 type Motion = "fun" | "calm" | "still";
 function motionOf(node: Element | null): Motion {
@@ -62,6 +73,8 @@ type PressGeo = { kind: "disc"; g: DiscGeo } | { kind: "soft"; g: SoftGeo; icon:
 const PRESS_GEO: PressGeo[] = PRESSABLE.map((t) =>
   t.ctl.kind === "disc" ? { kind: "disc", g: discGeo(t) } : t.ctl.kind === "soft" ? { kind: "soft", g: softGeo(t), icon: t.ctl.icon } : { kind: "pill", g: pillGeo(t) },
 );
+const FADER_GEO: FaderGeo[] = FADERS.map(faderGeo);
+const SWITCH_GEO: SwitchGeo[] = SWITCHES.map(switchGeo);
 const GRILLE_I = TILES.findIndex((t) => t.ctl.kind === "grille");
 const GRILLE = grilleOf(GRILLE_I);
 const TONES = ["lit", "a", "b"] as const;
@@ -75,6 +88,12 @@ interface Nodes {
   pressShine: (SVGPathElement | null)[];
   icons: (SVGGElement | null)[];
   holes: (SVGPathElement | null)[];
+  caps: (SVGGElement | null)[]; // fader caps
+  grips: (SVGPathElement | null)[];
+  capHalos: (SVGPathElement | null)[];
+  thumbs: (SVGGElement | null)[]; // switch thumbs
+  thumbGrips: (SVGPathElement | null)[];
+  lamps: (SVGPathElement | null)[];
   readout: Element | null;
 }
 
@@ -89,6 +108,11 @@ interface State {
   hand: Spring[]; // hand presses
   handHeld: boolean[];
   handAt: number[]; // clock times of recent hand presses (for the grille)
+  fader: number[]; // shown
+  faderTarget: number[];
+  on: boolean[]; // switch states
+  lastIdleOn: boolean[];
+  thumb: Spring[]; // switch thumbs, 0 off .. 1 on
 }
 
 function initial(t: number, calm: boolean): State {
@@ -104,6 +128,11 @@ function initial(t: number, calm: boolean): State {
     hand: PRESSABLE.map(() => ({ at: 0, rate: 0 })),
     handHeld: PRESSABLE.map(() => false),
     handAt: [],
+    fader: [...idle.faders],
+    faderTarget: [...idle.faders],
+    on: [...idle.switches],
+    lastIdleOn: [...idle.switches],
+    thumb: idle.switches.map((o) => ({ at: o ? 1 : 0, rate: 0 })),
   };
 }
 
@@ -132,6 +161,12 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     pressShine: [],
     icons: [],
     holes: [],
+    caps: [],
+    grips: [],
+    capHalos: [],
+    thumbs: [],
+    thumbGrips: [],
+    lamps: [],
     readout: null,
   });
   const st = React.useRef<State>(initial(STILL_T, false));
@@ -171,6 +206,19 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
         writeSolid(m.press[i] ?? null, pillKey(pg.g, p));
         m.pressFace[i]?.setAttribute("d", pillFace(pg.g, p));
       }
+    }
+    for (let i = 0; i < FADERS.length; i++) {
+      const g = FADER_GEO[i]!;
+      writeSolid(m.caps[i] ?? null, faderCap(g, s.fader[i]!));
+      m.grips[i]?.setAttribute("d", faderGrip(g, s.fader[i]!));
+      m.capHalos[i]?.setAttribute("d", g.halo(s.fader[i]!));
+    }
+    for (let i = 0; i < SWITCHES.length; i++) {
+      const g = SWITCH_GEO[i]!;
+      const v = Math.min(1, Math.max(0, s.thumb[i]!.at));
+      writeSolid(m.thumbs[i] ?? null, switchThumb(g, v));
+      m.thumbGrips[i]?.setAttribute("d", switchGrip(g, v));
+      m.lamps[i]?.toggleAttribute("data-on", s.on[i]!);
     }
     // the grille: idle ripples plus the ones the hand made
     for (let k = 0; k < GRILLE.radii.length; k++) {
@@ -234,6 +282,14 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     if (idleOn) for (let i = 0; i < KNOBS.length; i++) s.target[i] = nearest(s.target[i]!, idle.angles[i]!);
     for (let i = 0; i < KNOBS.length; i++) s.angles[i] = ease(s.angles[i]!, s.target[i]!, dt, 0.12);
     for (let i = 0; i < PRESSABLE.length; i++) spring(s.hand[i]!, s.handHeld[i] ? 1 : 0, dt, 900, 26);
+    if (idleOn) for (let i = 0; i < FADERS.length; i++) s.faderTarget[i] = idle.faders[i]!;
+    for (let i = 0; i < FADERS.length; i++) s.fader[i] = ease(s.fader[i]!, s.faderTarget[i]!, dt, 0.14);
+    for (let i = 0; i < SWITCHES.length; i++) {
+      // the idle life flips a switch only at its own flips, so a hand-set switch stays put until then
+      if (idle.switches[i] !== s.lastIdleOn[i] && s.touched > QUIET) s.on[i] = idle.switches[i]!;
+      s.lastIdleOn[i] = idle.switches[i]!;
+      spring(s.thumb[i]!, s.on[i] ? 1 : 0, dt, 520, 30);
+    }
     draw(calm);
     return true;
   }, visible && !still);
@@ -292,6 +348,10 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     const [wx, wy] = toWorld(x, y, g.z0 + KNOB_H);
     return Math.atan2(wy - g.cy, wx - g.cx) / RAD;
   };
+  const faderAt = (i: number, x: number, y: number) => {
+    const g = FADER_GEO[i]!;
+    return faderValueAt(g, toWorld(x, y, g.z0)[0]);
+  };
   const press = (i: number) => {
     const s = st.current;
     s.handHeld[i] = true;
@@ -305,7 +365,10 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
     const [x, y] = toSvg(e);
     touch();
     if (kind === "btn") press(i);
-    drag.current = { kind: kind!, i, id: e.pointerId, last: kind === "knob" ? angleAt(i, x, y) : 0 };
+    if (kind === "sw") st.current.on[i] = !st.current.on[i];
+    // a fader keeps its grab offset, so the cap doesn't jump to the pointer
+    const last = kind === "knob" ? angleAt(i, x, y) : kind === "fd" ? st.current.faderTarget[i]! - faderAt(i, x, y) : 0;
+    drag.current = { kind: kind!, i, id: e.pointerId, last };
     try {
       (e.currentTarget as Element).setPointerCapture(e.pointerId);
     } catch {
@@ -315,8 +378,14 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
   };
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
-    if (!d || d.id !== e.pointerId || d.kind !== "knob") return;
+    if (!d || d.id !== e.pointerId) return;
     const [x, y] = toSvg(e);
+    if (d.kind === "fd") {
+      st.current.faderTarget[d.i] = Math.min(1, Math.max(0, d.last + faderAt(d.i, x, y)));
+      touch();
+      return;
+    }
+    if (d.kind !== "knob") return;
     const a = angleAt(d.i, x, y);
     let delta = a - d.last;
     if (delta > 180) delta -= 360;
@@ -352,6 +421,16 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
       const active = KNOBS.indexOf(CAPPED[idleAt(s.t, calm).active]!);
       const by = (e.shiftKey ? 45 : 15) * (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1);
       s.target[active] = s.target[active]! + by;
+      touch();
+    } else if (e.key === "s" || e.key === "S") {
+      e.preventDefault();
+      const i = e.shiftKey ? 1 : 0;
+      s.on[i] = !s.on[i];
+      touch();
+    } else if (e.key === "f" || e.key === "F") {
+      e.preventDefault();
+      // F slides the fader up a step, Shift+F down
+      s.faderTarget[0] = Math.min(1, Math.max(0, s.faderTarget[0]! + (e.shiftKey ? -0.2 : 0.2)));
       touch();
     } else if (e.key === "Enter") {
       e.preventDefault();
@@ -422,6 +501,37 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
               <path ref={(el) => void (m.pointers[i] = el)} className="cm-pointer cm-pointer-on-cap" d={knobPointer(g, FIRST.angles[i]!)} />
             </g>
           )}
+        </g>
+      );
+    }
+    if (t.ctl.kind === "fader") {
+      const i = FADERS.indexOf(t);
+      const g = FADER_GEO[i]!;
+      const v = st.current.fader[i]!;
+      return (
+        <g key={t.id} data-ctl={`fd-${i}`} className="cm-fader">
+          <RecessArt r={g.recess} id={`${paint}-fd-${t.id}`} wall={0} />
+          <Dots points={g.scale} size={0.9} tone="mid" />
+          <Dots points={g.major} size={1.5} tone="hi" />
+          <path ref={(el) => void (m.capHalos[i] = el)} className="cm-soft-halo" d={g.halo(v)} />
+          <LiveSolid ref={(el) => void (m.caps[i] = el)} paths={faderCap(g, v)} tone="mid" crease="faint">
+            <path ref={(el) => void (m.grips[i] = el)} className="iso-line" data-tone="lo" d={faderGrip(g, v)} />
+          </LiveSolid>
+        </g>
+      );
+    }
+    if (t.ctl.kind === "switch") {
+      const i = SWITCHES.indexOf(t);
+      const g = SWITCH_GEO[i]!;
+      const v = st.current.thumb[i]!.at;
+      return (
+        <g key={t.id} data-ctl={`sw-${i}`} className="cm-switch">
+          <path className="iso-line" data-tone="faint" d={g.lampRing} />
+          <path ref={(el) => void (m.lamps[i] = el)} className="cm-lamp" d={g.lamp} data-on={st.current.on[i] ? "" : undefined} />
+          <RecessArt r={g.recess} id={`${paint}-sw-${t.id}`} wall={0} />
+          <LiveSolid ref={(el) => void (m.thumbs[i] = el)} paths={switchThumb(g, v)} tone="mid" crease="faint">
+            <path ref={(el) => void (m.thumbGrips[i] = el)} className="iso-line" data-tone="lo" d={switchGrip(g, v)} />
+          </LiveSolid>
         </g>
       );
     }
@@ -500,8 +610,6 @@ export const ModulesLive = React.forwardRef<ModulesHandle, { runKey?: number }>(
         <Paints id={paint} />
         <Tiles id={paint} hole={(k, el) => void (m.holes[k] = el)} />
         {controls}
-        {/* the props lie on the table in front of the field's right-hand edge: nothing stands in front of them */}
-        <Props />
       </svg>
     </div>
   );
