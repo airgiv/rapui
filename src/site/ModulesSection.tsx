@@ -83,7 +83,9 @@ export function ModulesSection({ copyClass }: { copyClass?: string }) {
         <div className="relative">
           <div
             ref={ref}
-            className="relative h-[clamp(28rem,52vw,44rem)] overflow-hidden rounded-lg bg-paper text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)]"
+            /* the card's height is its own (not its drawing's), so it can be fully contained: the big SVG's
+               layout and paint never leak out, and off screen the browser skips it altogether */
+            className="relative h-[clamp(28rem,52vw,44rem)] overflow-hidden rounded-lg bg-paper text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)] [contain:strict] [content-visibility:auto]"
           >
             {near ? (
               <Suspense fallback={null}>
@@ -109,7 +111,7 @@ export function ModulesSection({ copyClass }: { copyClass?: string }) {
           {/* the plaque: in the card's corner where it covers least; under the card on phones */}
           <aside
             aria-label={`About the ${label} desk`}
-            className="relative z-10 mt-3 rounded-md border border-line bg-surface/90 p-4 text-ink shadow-pop backdrop-blur-sm sm:absolute sm:bottom-5 sm:left-5 sm:mt-0 sm:max-w-[19rem]"
+            className="relative z-10 mt-3 rounded-md border border-line bg-surface/95 p-4 text-ink shadow-pop sm:absolute sm:bottom-5 sm:left-5 sm:mt-0 sm:max-w-[19rem]"
           >
             <span className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] text-ink-2">{plaque.kicker}</span>
             <p className="m-0 mt-1.5 text-[0.9375rem] leading-snug text-ink">{plaque.line}</p>

@@ -25,23 +25,33 @@ export function Cursor({ blend = true, size = 18 }: CursorProps) {
     setEnabled(true);
     document.documentElement.classList.add("rap-has-cursor");
 
-    let x = -100, y = -100, cx = x, cy = y, raf = 0;
+    let x = -100, y = -100, cx = x, cy = y, raf = 0, target: EventTarget | null = null;
+    /* the trail runs only while the dot is catching up: once it sits on the pointer the
+       loop stops, and the next move starts it again — no frame is spent on a still mouse */
+    const loop = () => {
+      cx += (x - cx) * 0.2;
+      cy += (y - cy) * 0.2;
+      const done = Math.abs(x - cx) < 0.1 && Math.abs(y - cy) < 0.1;
+      if (done) {
+        cx = x;
+        cy = y;
+      }
+      if (dot.current) dot.current.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+      raf = done ? 0 : requestAnimationFrame(loop);
+    };
     const move = (e: PointerEvent) => {
       x = e.clientX;
       y = e.clientY;
+      if (!raf) raf = requestAnimationFrame(loop);
+      // what's under the pointer only changes when the target does
+      if (e.target === target) return;
+      target = e.target;
       const t = e.target as Element | null;
       const labelled = t?.closest?.("[data-rap-cursor]");
       setLabel(labelled?.getAttribute("data-rap-cursor") || null);
       setHover(!!t?.closest?.("a, button, [role=button], [role=tab], [role=switch], input, label, textarea, select"));
     };
-    const loop = () => {
-      cx += (x - cx) * 0.2;
-      cy += (y - cy) * 0.2;
-      if (dot.current) dot.current.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
-      raf = requestAnimationFrame(loop);
-    };
-    window.addEventListener("pointermove", move);
-    raf = requestAnimationFrame(loop);
+    window.addEventListener("pointermove", move, { passive: true });
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", move);
