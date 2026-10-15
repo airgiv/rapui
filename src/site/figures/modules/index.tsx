@@ -4,13 +4,10 @@
    buttons, pill keys, faders, sliding switches, speaker grilles).
 
    layout="hero" (default) is the 15-tile composition to sit beside a headline.
-   layout="field" is a full-bleed band: about 50 tiles in clusters round the hero
-   composition, more control kinds (rockers, tiny keys, pad grids, LCDs, joystick
-   nubs, LED strips, jog wheels, vertical faders), drawn "slice" so the band
-   fills its box (height: --cm-field-h) and bleeds off the sides. Pass `marks`
-   ({ id, n } with tile ids, e.g. FIELD_MARKS) to put numbered footnote marks
-   over controls; they follow the drawing as it scales, hide when cropped out,
-   and report hover/focus through `onActive` (and light up with `active`).
+   layout="field" is an endless strip (height: --cm-field-h) you drag sideways:
+   one period of tiles repeats forever, panned with inertia, each tile wrapping
+   into view. `set` picks its tiles: "synth" (knobs, keys, faders, pads…), "lab"
+   (a bench of instruments) or "office" (old courthouse hardware).
 
    Frameless by default (transparent, grounded by soft halos, none in a dark
    theme). `framed` wraps it in the kit's Plate with a title, a hint and a live
@@ -37,11 +34,10 @@ import { Plate } from "../iso/react/draw";
 import "../iso/iso.css";
 import "./modules.css";
 import { ModulesLive, type ModulesHandle } from "./live";
-import type { Layout } from "./view";
+import type { Layout, TileSet } from "./view";
 
 export type { ModulesHandle } from "./live";
 export { FIELD_BOX } from "./world";
-export { FIELD_MARKS } from "./view";
 
 export interface ControlModulesProps {
   className?: string;
@@ -52,16 +48,12 @@ export interface ControlModulesProps {
   runKey?: number;
   /** "hero" (default): beside a headline. "field": a full-bleed band of many tiles. */
   layout?: Layout;
-  /** Numbered footnote marks over controls (tile ids). */
-  marks?: { id: string; n: number }[];
-  /** The mark to highlight (a footnote under hover or focus). */
-  active?: number | null;
-  /** Hover or focus on a mark. */
-  onActive?: (n: number | null) => void;
+  /** A field's tile set (default "synth"). */
+  set?: TileSet;
 }
 
 export const ControlModules = React.forwardRef<ModulesHandle, ControlModulesProps>(function ControlModules(
-  { className, style, framed = false, runKey, layout = "hero", marks, active, onActive },
+  { className, style, framed = false, runKey, layout = "hero", set = "synth" },
   ref,
 ) {
   const outer = useSound();
@@ -77,19 +69,17 @@ export const ControlModules = React.forwardRef<ModulesHandle, ControlModulesProp
   const live = (
     <SoundProvider enabled={enabled} volume={outer.volume || 0.6} fun={outer.fun || 25} haptics={outer.haptics}>
       <ModulesLive
-        key={layout}
+        key={`${layout}-${set}`}
         ref={ref}
         runKey={runKey}
         layout={layout}
         soundOn={enabled}
         onSound={onSound}
-        marks={marks}
-        active={active}
-        onActive={onActive}
+        set={set}
       />
     </SoundProvider>
   );
-  const cls = ["iso", "cm", `cm-${layout}`, framed ? "cm-framed" : "", className ?? ""].filter(Boolean).join(" ");
+  const cls = ["iso", "cm", `cm-${layout}`, layout === "field" ? `cm-set-${set}` : "", framed ? "cm-framed" : "", className ?? ""].filter(Boolean).join(" ");
   if (!framed) {
     return (
       <div className={cls} data-theme="light" style={style}>

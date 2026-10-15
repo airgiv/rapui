@@ -64,6 +64,7 @@ export interface Idle {
   picks: number[]; // per pressable: which tiny key or pad a press lands on
   sticks: [number, number][]; // per joystick, its tilt in −1..1
   leds: number[]; // per LED strip, its level 0..1
+  gauges: number[]; // per gauge, its needle 0..1
   beat: number; // the pads' step: a count that rises every 0.6 s (slower when calm)
 }
 
@@ -171,7 +172,16 @@ export function idleAt(t: number, calm: boolean, w: World): Idle {
     return Math.min(1, v * (calm ? 0.8 : 1));
   });
   const beat = Math.floor(tt / (calm ? 1 : 0.6));
-  return { angles, presses, tones, active, ripple, faders, switches, picks, sticks, leds, beat };
+  // gauges breathe slowly round their own reading and kick up with each press, like a meter on a line
+  const gauges = w.gauges.map((_, i) => {
+    let v = 0.42 + 0.16 * Math.sin(tt * (0.35 + i * 0.07) + i * 1.9);
+    for (const e of events) {
+      const age = tt - e.at;
+      if (age > 0 && age < 2) v += 0.3 * Math.exp(-age / 0.6) * (1 - Math.exp(-age / 0.08));
+    }
+    return Math.min(0.97, Math.max(0.03, v * (calm ? 0.9 : 1)));
+  });
+  return { angles, presses, tones, active, ripple, faders, switches, picks, sticks, leds, gauges, beat };
 }
 
 /* a composed still: the pill key down, the ripple leaving the grille's centre */

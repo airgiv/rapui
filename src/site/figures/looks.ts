@@ -8,7 +8,7 @@
    the type for figures that need one, and no look sets it now. */
 import type { RapPreset } from "../../rapui";
 
-export type FigureTokens = Partial<Record<`--anatomy-${string}`, string>>;
+export type FigureTokens = Partial<Record<`--anatomy-${string}` | `--mod-${string}`, string>>;
 
 const v = (name: string) => `var(--rap-${name})`;
 /* a tint of a rapui colour over another colour */
@@ -48,6 +48,15 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-halo": v("ink"),
       "--anatomy-halo-opacity": "0.12",
       "--anatomy-mono": v("font-sans"),
+      // a toy set: the brand colours as fills for some tiles and most controls (the modules figure)
+      "--mod-fill-1": v("flame"),
+      "--mod-fill-2": v("acid"),
+      "--mod-fill-3": v("sky"),
+      "--mod-fill-4": v("bubble"),
+      "--mod-fill-5": v("plum"),
+      "--mod-fill-6": v("blue"),
+      "--anatomy-cap-a": v("blue"),
+      "--anatomy-cap-b": v("acid"),
     },
   },
   // civic: an engraved plate — navy line work on white, faces tinted navy, one part in Old Glory red
@@ -70,6 +79,12 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-halo": v("plum"),
       "--anatomy-halo-opacity": "0.18",
       "--anatomy-mono": v("font-sans"),
+      // the office hardware (the modules figure's civic set): aged brass, navy wood, slate, cream card
+      "--mod-brass": mix("acid", 72, v("ink")),
+      "--mod-wood": mix("plum", 62, v("surface")),
+      "--mod-slate": mix("plum", 85, v("ink")),
+      "--mod-cream": mix("acid", 45, v("surface")),
+      "--mod-ink": v("plum"),
     },
   },
   // signal: a field instrument — green-black line work on sage paper, faces in paper tints, the live

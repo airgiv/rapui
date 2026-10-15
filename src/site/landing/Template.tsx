@@ -42,73 +42,33 @@ import {
 import { Foliage } from "./foliage";
 import house from "./house.webp";
 import { CONTENT, type LandingContent } from "./content";
-import { ControlModules, FIELD_MARKS } from "../figures/modules";
+import { ControlModules } from "../figures/modules";
 import { FIGURE_LOOKS } from "../figures/looks";
 
-/* the modules band: a full-bleed field of control tiles (the Anatomy figure, layout "field") as the subject,
-   a small header line above it, and numbered footnotes under it whose marks sit on the controls they describe.
-   Hovering or focusing a note lights its mark, and the other way round. */
+/* the modules band: an endless strip of control tiles (the Anatomy figure, layout "field") you can drag
+   sideways, with a small kicker and one line above it. Each preset gets its own set of tiles: synth
+   modules (fun, product, minimal), a bench of lab instruments (signal), old office hardware (civic). */
+const MODULE_SET: Record<RapPreset, "synth" | "lab" | "office"> = { fun: "synth", product: "synth", minimal: "synth", signal: "lab", civic: "office" };
 function ModulesBand({ preset, content }: { preset: RapPreset; content: LandingContent["modules"] }) {
-  const [active, setActive] = useState<number | null>(null);
-  const marks = FIELD_MARKS.slice(0, content.notes.length).map((id, i) => ({ id, n: i + 1 }));
   return (
     <Section id="modules" tone="plain" width="bleed" className="overflow-x-clip">
       <Container>
         <div className="flex flex-col items-start gap-2 pb-(--rap-space-md)">
           <BlockKicker look={preset}>{content.eyebrow}</BlockKicker>
-          <p className="m-0 max-w-[62ch] text-[0.9375rem] leading-relaxed text-ink-2">{content.line}</p>
+          <p className="m-0 max-w-[70ch] text-[0.9375rem] leading-relaxed text-ink-2">
+            {content.line}
+            {content.action ? (
+              <>
+                {" "}
+                <a href="#modules" className="whitespace-nowrap font-medium text-ink underline decoration-from-font underline-offset-4 hover:text-ink-2">
+                  {content.action} →
+                </a>
+              </>
+            ) : null}
+          </p>
         </div>
       </Container>
-      <ControlModules
-        layout="field"
-        marks={marks}
-        active={active}
-        onActive={setActive}
-        style={{ ...FIGURE_LOOKS[preset].tokens, "--cm-mark-ink": "var(--rap-accent)" } as CSSProperties}
-      />
-      <Container>
-        <div className="@container pt-(--rap-space-md)">
-          <ol className="m-0 grid list-none grid-cols-1 gap-x-8 gap-y-5 p-0 @xl:grid-cols-2 @4xl:grid-cols-4">
-            {content.notes.map((note, i) => {
-              const n = i + 1;
-              const on = active === n;
-              return (
-                <li
-                  key={n}
-                  tabIndex={0}
-                  className="flex items-start gap-3 rounded-[6px] outline-none focus-visible:ring-1 focus-visible:ring-(--rap-ring)"
-                  onMouseEnter={() => setActive(n)}
-                  onMouseLeave={() => setActive(null)}
-                  onFocus={() => setActive(n)}
-                  onBlur={() => setActive(null)}
-                >
-                  <span
-                    aria-hidden
-                    className="mt-[1px] grid size-[22px] flex-none place-items-center rounded-full border font-mono text-[11px] font-semibold tabular-nums transition-colors duration-150"
-                    style={{
-                      borderColor: "var(--rap-accent)",
-                      background: on ? "var(--rap-accent)" : "transparent",
-                      color: on ? "var(--rap-accent-ink)" : "var(--rap-accent)",
-                    }}
-                  >
-                    {n}
-                  </span>
-                  <span className="text-[0.875rem] leading-snug">
-                    <span className="sr-only">Note {n}: </span>
-                    {note.title ? <span className="block font-medium text-ink">{note.title}</span> : null}
-                    <span className="text-ink-2">{note.text}</span>
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-          {content.action ? (
-            <a href="#modules" className="mt-5 inline-block text-[0.875rem] font-medium text-ink underline decoration-from-font underline-offset-4 hover:text-ink-2">
-              {content.action} →
-            </a>
-          ) : null}
-        </div>
-      </Container>
+      <ControlModules layout="field" set={MODULE_SET[preset]} style={FIGURE_LOOKS[preset].tokens as CSSProperties} />
     </Section>
   );
 }

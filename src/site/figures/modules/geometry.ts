@@ -12,6 +12,8 @@ import {
   roundedPlan,
   sideArc,
   slabOf,
+  knurl,
+  sideMatrix,
   topMatrix,
   translateAlong,
   type Flat,
@@ -46,6 +48,7 @@ import {
   LEDS,
   JOG,
   centreOf,
+  planOf,
   topOf,
   type Tile,
 } from "./view";
@@ -545,4 +548,400 @@ export function jogDimple(g: JogGeo, deg: number): Recess {
   const a = deg * RAD;
   const rr = g.r * 0.64;
   return circleRecess(g.cx + rr * cos(a), g.cy + rr * sin(a), g.r * 0.17, g.z0 + JOG.h, 1.4);
+}
+
+/* ---------------------------------------------------------------- the lab bench: screens, readouts, probes */
+export interface GlassGeo {
+  recess: Recess;
+  at: string; // the glass's plane: x along +x, y toward the viewer, origin at its back-left corner
+  w: number;
+  d: number;
+}
+/* a screen sunk in a 2×1 or 2×2 tile */
+export function glassGeo(t: Tile): GlassGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const w = 100;
+  const d = t.cell[3] > 1 ? 92 : 40;
+  const plan: Plan = { x: cx - w / 2, y: cy - d / 2, w, d, r: 5 };
+  return { recess: planRecess(plan, z0, 1.4), at: topMatrix([plan.x, plan.y], z0 - 1.4, P, "x"), w, d };
+}
+/* a scope's trace across its glass, edge to edge: amplitude 0..1, cycles, phase in turns; the ends taper to the midline */
+export function scopeTrace(g: GlassGeo, amp: number, cycles: number, phase: number, kind: number) {
+  const n = 64;
+  const pts: Flat[] = [];
+  for (let k = 0; k <= n; k++) {
+    const u = k / n;
+    const taper = Math.sin(Math.PI * u) ** 0.5;
+    const a = 2 * Math.PI * (u * cycles + phase);
+    const wave = kind % 3 === 0 ? Math.sin(a) : kind % 3 === 1 ? Math.sin(a) * 0.7 + Math.sin(3 * a) * 0.3 : Math.tanh(Math.sin(a) * 3);
+    pts.push([u * g.w, g.d / 2 - amp * (g.d * 0.36) * taper * wave]);
+  }
+  return pathOf(pts);
+}
+/* the graticule: a grid edge to edge, ten across and eight down */
+export function graticule(g: GlassGeo) {
+  const out: string[] = [];
+  for (let i = 1; i < 10; i++) out.push(`M${((i * g.w) / 10).toFixed(2)} 0V${g.d}`);
+  for (let j = 1; j < 8; j++) out.push(`M0 ${((j * g.d) / 8).toFixed(2)}H${g.w}`);
+  return out.join("");
+}
+/* a dot-matrix: the dots' centres in the glass's plane */
+export const MATRIX = { cols: 26, rows: 7, r: 1.15 };
+export function matrixDots(g: GlassGeo, lit: (c: number, r: number) => boolean) {
+  const px = g.w / (MATRIX.cols + 1);
+  const py = g.d / (MATRIX.rows + 1);
+  const out: string[] = [];
+  const rr = MATRIX.r;
+  for (let c = 0; c < MATRIX.cols; c++)
+    for (let r = 0; r < MATRIX.rows; r++)
+      if (lit(c, r)) {
+        const x = (c + 1) * px;
+        const y = (r + 1) * py;
+        out.push(`M${(x - rr).toFixed(2)} ${y.toFixed(2)}a${rr} ${rr} 0 1 0 ${2 * rr} 0a${rr} ${rr} 0 1 0 ${-2 * rr} 0`);
+      }
+  return out.join("");
+}
+
+/* three binding posts in a row: a collar, a knurled nut and a cap with the probe's hole */
+export interface JackGeo {
+  posts: { collar: SolidPaths; nut: SolidPaths; ridges: string; hole: string; cap: string }[];
+}
+export function jacksGeo(t: Tile): JackGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  return {
+    posts: [-17, 0, 17].map((dx) => {
+      const x = cx + dx;
+      return {
+        collar: cylinder(x, cy, 7, z0, 2.6, P, 40, 0.6),
+        nut: cylinder(x, cy, 5.2, z0 + 2.6, 7.4, P, 40, 0.6),
+        ridges: knurl(x, cy, 5.2, z0 + 2.6, z0 + 10, 22, P, 0), // from the collar to the cap edge, ending on both
+        cap: ring(x, cy, 3.4, z0 + 10, P, 28),
+        hole: ring(x, cy, 1.5, z0 + 10, P, 16),
+      };
+    }),
+  };
+}
+
+/* a printed dot scale round a 1×1 knob's socket: 270° of dots, the gap toward the tile's front-left edge (for its label) */
+export function knobScale(t: Tile): { minor: Flat[]; major: Flat[] } {
+  const [cx, cy] = centreOf(t);
+  const z = topOf(t);
+  const r = SOCKET_R + 3.6;
+  const minor: Flat[] = [];
+  const major: Flat[] = [];
+  for (let k = 0; k <= 10; k++) {
+    const a = (135 + k * 27) * RAD;
+    (k % 5 === 0 ? major : minor).push(iso([cx + r * cos(a), cy + r * sin(a), z], P));
+  }
+  return { minor, major };
+}
+/* where a tile's engraved label sits: along its front-left edge */
+export const labelAt = (t: Tile) => {
+  const p = planOf(t);
+  return topMatrix([p.x + 6, p.y + p.d - 3.6], topOf(t), P, "x");
+};
+
+/* ---------------------------------------------------------------- the office (civic) */
+/* a slanted rod as a band on screen between two world points, `r` thick */
+function rodBand(a: Point3, b: Point3, r: number) {
+  const pa = iso(a, P);
+  const pb = iso(b, P);
+  const dx = pb[0] - pa[0];
+  const dy = pb[1] - pa[1];
+  const l = Math.hypot(dx, dy) || 1;
+  const h = r * K;
+  const nx = (-dy / l) * h;
+  const ny = (dx / l) * h;
+  return pathOf([[pa[0] + nx, pa[1] + ny], [pb[0] + nx, pb[1] + ny], [pb[0] - nx, pb[1] - ny], [pa[0] - nx, pa[1] - ny]], true);
+}
+/* a ball (a circle on screen) of world radius r at a point */
+function ballAt(c: Point3, r: number) {
+  const [x, y] = iso(c, P);
+  const rr = r * K;
+  return `M${(x - rr).toFixed(2)} ${y.toFixed(2)}a${rr.toFixed(2)} ${rr.toFixed(2)} 0 1 0 ${(2 * rr).toFixed(2)} 0a${rr.toFixed(2)} ${rr.toFixed(2)} 0 1 0 ${(-2 * rr).toFixed(2)} 0`;
+}
+function hull(points: Flat[]): Flat[] {
+  const pts = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o: Flat, a: Flat, b: Flat) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower: Flat[] = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2]!, lower[lower.length - 1]!, p) <= 0) lower.pop();
+    lower.push(p);
+  }
+  const upper: Flat[] = [];
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const p = pts[i]!;
+    while (upper.length >= 2 && cross(upper[upper.length - 2]!, upper[upper.length - 1]!, p) <= 0) upper.pop();
+    upper.push(p);
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+
+/* the rotary telephone dial: a brass ring, a finger wheel with ten holes that turns, a finger stop */
+export interface DialGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  ring: SolidPaths;
+  wheel: SolidPaths;
+  card: string; // the number card in the middle
+  stop: SolidPaths;
+  halo: string;
+}
+export function dialGeo(t: Tile): DialGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const sa = 70 * RAD;
+  return {
+    cx,
+    cy,
+    z0,
+    ring: cylinder(cx, cy, 25.5, z0, 2.6, P, 72, 0.8),
+    wheel: cylinder(cx, cy, 22.5, z0 + 2.6, 2.8, P, 72, 0.8),
+    card: ring(cx, cy, 8.2, z0 + 5.4, P, 40),
+    stop: cylinder(cx + 23.2 * cos(sa), cy + 23.2 * sin(sa), 1.6, z0 + 2.6, 4.6, P, 16, 0.3),
+    halo: cylinder(cx + 2.5, cy + 3, 26, z0, 0.1, P, 48).fill,
+  };
+}
+/* the wheel's ten finger holes, turned by `deg` (they span 300°) */
+export function dialHoles(g: DialGeo, deg: number) {
+  const out: string[] = [];
+  for (let k = 0; k < 10; k++) {
+    const a = (deg + 100 + k * 30) * RAD;
+    out.push(ring(g.cx + 15.6 * cos(a), g.cy + 15.6 * sin(a), 3.7, g.z0 + 5.4, P, 20));
+  }
+  return out.join("");
+}
+
+/* the gauge: a brass bezel, a cream face with a dot scale (the last stretch the red zone), a needle */
+export const GAUGE_SPAN = { from: 150, to: 390 };
+export interface GaugeGeo {
+  cx: number;
+  cy: number;
+  z: number; // the face
+  r: number;
+  bezel: SolidPaths;
+  face: string;
+  minor: Flat[];
+  major: Flat[];
+  red: Flat[];
+  hub: string;
+  halo: string;
+  at: string; // the face's plane, for its printed word
+}
+export function gaugeGeo(t: Tile): GaugeGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const R = t.cell[2] > 1 ? 44 : 23.5;
+  const z = z0 + 5;
+  const minor: Flat[] = [];
+  const major: Flat[] = [];
+  const red: Flat[] = [];
+  const rs = R - 7;
+  for (let k = 0; k <= 20; k++) {
+    const a = (GAUGE_SPAN.from + (k * (GAUGE_SPAN.to - GAUGE_SPAN.from)) / 20) * RAD;
+    const pt = iso([cx + rs * cos(a), cy + rs * sin(a), z], P);
+    (k >= 17 ? red : k % 5 === 0 ? major : minor).push(pt);
+  }
+  return {
+    cx,
+    cy,
+    z,
+    r: R,
+    bezel: cylinder(cx, cy, R, z0, 5, P, 80, 1.2),
+    face: ring(cx, cy, R - 3, z, P, 80),
+    minor,
+    major,
+    red,
+    hub: ring(cx, cy, R > 30 ? 3 : 2, z, P, 20),
+    halo: cylinder(cx + 3, cy + 3.5, R + 1.5, z0, 0.1, P, 48).fill,
+    at: topMatrix([cx, cy + R * 0.42], z, P, "x"),
+  };
+}
+/* the needle at a value 0..1, from the hub to the scale */
+export function gaugeNeedle(g: GaugeGeo, v: number) {
+  const a = (GAUGE_SPAN.from + v * (GAUGE_SPAN.to - GAUGE_SPAN.from)) * RAD;
+  const l = g.r - 9;
+  return pathOf([iso([g.cx - 0.18 * l * cos(a), g.cy - 0.18 * l * sin(a), g.z + 0.6], P), iso([g.cx + l * cos(a), g.cy + l * sin(a), g.z + 0.6], P)]);
+}
+
+/* the bat-handle toggle: an engraved plate with two screws, a bushing, a lever that tips along y */
+export interface BatGeo {
+  cx: number;
+  cy: number;
+  z0: number;
+  plate: SolidPaths;
+  screws: Flat[];
+  bush: SolidPaths;
+  nut: string;
+  onAt: string;
+  offAt: string;
+  halo: string;
+}
+export function batGeo(t: Tile): BatGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  return {
+    cx,
+    cy,
+    z0,
+    plate: slabOf({ x: cx - 15, y: cy - 21, w: 30, d: 42, r: 3 }, z0, 1.4, P, 6, 0.4),
+    screws: [iso([cx, cy - 17, z0 + 1.4], P), iso([cx, cy + 17, z0 + 1.4], P)],
+    bush: cylinder(cx, cy, 5.4, z0 + 1.4, 4, P, 40, 0.6),
+    nut: ring(cx, cy, 3, z0 + 5.4, P, 24),
+    onAt: topMatrix([cx - 4, cy - 9.5], z0 + 1.4, P, "x"),
+    offAt: topMatrix([cx - 5.5, cy + 13], z0 + 1.4, P, "x"),
+    halo: slabOf({ x: cx - 13, y: cy - 18, w: 30, d: 42, r: 3 }, z0, 0.1, P, 6).fill,
+  };
+}
+/* the lever at `v` (1 on: tipped toward the back, 0 off: toward the front), and its ball */
+export function batLever(g: BatGeo, v: number) {
+  const a = (28 - 56 * v) * RAD;
+  const base: Point3 = [g.cx, g.cy, g.z0 + 5.4];
+  const tip: Point3 = [g.cx, g.cy + 15 * sin(a), g.z0 + 5.4 + 15 * cos(a)];
+  return { rod: rodBand(base, tip, 1.5), ball: ballAt(tip, 3.4) };
+}
+
+/* typewriter keys: round caps with a chrome rim on stems, a letter on each */
+export interface TypeGeo {
+  keys: { stem: SolidPaths; cap: SolidPaths; rim: string; at: string }[];
+}
+export function typeGeo(t: Tile): TypeGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  return {
+    keys: [-36, -12, 12, 36].map((dx) => {
+      const x = cx + dx;
+      return {
+        stem: cylinder(x, cy, 3, z0, 7, P, 20, 0),
+        cap: cylinder(x, cy, 9.6, z0 + 7, 3, P, 48, 0.8),
+        rim: ring(x, cy, 8.2, z0 + 10, P, 48),
+        at: topMatrix([x, cy], z0 + 10, P, "x"),
+      };
+    }),
+  };
+}
+export const typeDrop = (p: number) => translateAlong(P, [0, 0, -p * 3]);
+
+/* the rubber stamp and its ink pad; the stamp hovers and comes down when pressed */
+export interface StampGeo {
+  tin: SolidPaths;
+  ink: string;
+  rubber: SolidPaths;
+  block: SolidPaths;
+  handle: SolidPaths;
+  knob: string;
+  halo: string;
+}
+export function stampGeo(t: Tile): StampGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const px = cx - 25;
+  const sx = cx + 22;
+  const zs = z0 + 7; // the stamp at rest hovers this high
+  return {
+    tin: slabOf({ x: px - 21, y: cy - 17, w: 42, d: 34, r: 3 }, z0, 3.6, P, 6, 0.6),
+    ink: planOutline({ x: px - 17, y: cy - 13, w: 34, d: 26, r: 2 }, z0 + 3.6, P, 6),
+    rubber: slabOf({ x: sx - 14, y: cy - 11, w: 28, d: 22, r: 1.5 }, zs, 2.4, P, 4, 0.3),
+    block: slabOf({ x: sx - 15, y: cy - 12, w: 30, d: 24, r: 2 }, zs + 2.4, 7, P, 4, 0.8),
+    handle: cylinder(sx, cy, 3.4, zs + 9.4, 11, P, 24, 0.4),
+    knob: ballAt([sx, cy, zs + 23], 6.2),
+    halo: slabOf({ x: sx - 12, y: cy - 8, w: 28, d: 22, r: 2 }, z0, 0.1, P, 4).fill,
+  };
+}
+export const stampDrop = (p: number) => translateAlong(P, [0, 0, -p * 7]);
+
+/* a card-catalogue drawer: a cabinet, and a drawer front with a brass label holder and a pull that slides out */
+export interface DrawerGeo {
+  cabinet: SolidPaths;
+  halo: string;
+  face: string; // the drawer front's plane (x along +x, y down), at rest
+  cx: number;
+  cy: number;
+  z0: number;
+}
+export function drawerGeo(t: Tile): DrawerGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  return {
+    cabinet: slabOf({ x: cx - 23, y: cy - 22, w: 46, d: 40, r: 2 }, z0, 24, P, 4, 0.8),
+    halo: slabOf({ x: cx - 20, y: cy - 18, w: 46, d: 44, r: 2 }, z0, 0.1, P, 4).fill,
+    face: sideMatrix([cx - 19, cy + 21], z0 + 21, P, "left"),
+    cx,
+    cy,
+    z0,
+  };
+}
+/* the drawer's front, pulled out by p (0..1) */
+export const drawerFront = (g: DrawerGeo, p: number) => slabOf({ x: g.cx - 20, y: g.cy + 16, w: 40, d: 2.6 + p * 13, r: 1 }, g.z0 + 3, 19, P, 2, 0.5);
+export const drawerSlide = (p: number) => translateAlong(P, [0, p * 13, 0]);
+
+/* the desk bell: a base, a dome and the plunger on top */
+export interface BellGeo {
+  base: SolidPaths;
+  dome: string;
+  halo: string;
+  plunger: SolidPaths;
+  knob: string;
+}
+export function bellGeo(t: Tile): BellGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const zb = z0 + 4;
+  const pts: Flat[] = [];
+  const R = 17;
+  const H = 12;
+  for (let k = 0; k <= 12; k++) {
+    const h = (k / 12) * H;
+    const r = R * Math.sqrt(Math.max(0, 1 - (h / H) ** 2)) + 0.01;
+    for (let j = 0; j < 36; j++) {
+      const a = (j / 36) * Math.PI * 2;
+      pts.push(iso([cx + r * cos(a), cy + r * sin(a), zb + h], P));
+    }
+  }
+  return {
+    base: cylinder(cx, cy, 20, z0, 4, P, 64, 1),
+    dome: pathOf(hull(pts), true),
+    halo: cylinder(cx + 3, cy + 3.5, 21, z0, 0.1, P, 40).fill,
+    plunger: cylinder(cx, cy, 1.8, zb + H - 0.5, 4.5, P, 16, 0),
+    knob: ballAt([cx, cy, zb + H + 6], 3.2),
+  };
+}
+
+/* the knife switch: a slate base, a hinge block and a jaw, and a blade that swings up about the hinge */
+export interface KnifeGeo {
+  base: SolidPaths;
+  hinge: SolidPaths;
+  jaw: SolidPaths;
+  slit: string;
+  hx: number;
+  cy: number;
+  z: number;
+  halo: string;
+}
+export function knifeGeo(t: Tile): KnifeGeo {
+  const [cx, cy] = centreOf(t);
+  const z0 = topOf(t);
+  const z = z0 + 3.5;
+  return {
+    base: slabOf({ x: cx - 48, y: cy - 16, w: 96, d: 32, r: 3 }, z0, 3.5, P, 6, 0.6),
+    hinge: slabOf({ x: cx - 40, y: cy - 6, w: 9, d: 12, r: 1 }, z, 9, P, 2, 0.4),
+    jaw: slabOf({ x: cx + 30, y: cy - 6, w: 9, d: 12, r: 1 }, z, 9, P, 2, 0.4),
+    slit: pathOf([iso([cx + 30, cy, z + 9], P), iso([cx + 39, cy, z + 9], P)]),
+    hx: cx - 35.5,
+    cy,
+    z: z + 7,
+    halo: slabOf({ x: cx - 44, y: cy - 12, w: 96, d: 32, r: 3 }, z0, 0.1, P, 6).fill,
+  };
+}
+/* the blade at v (1 closed: down in the jaw; 0 open: swung up 70°), with its handle */
+export function knifeBlade(g: KnifeGeo, v: number) {
+  const a = (1 - v) * 70 * RAD;
+  const L = 70;
+  const base: Point3 = [g.hx, g.cy, g.z];
+  const tip: Point3 = [g.hx + L * cos(a), g.cy, g.z + L * sin(a)];
+  const handleEnd: Point3 = [g.hx + (L + 12) * cos(a), g.cy, g.z + (L + 12) * sin(a)];
+  return { blade: rodBand(base, tip, 1.8), handle: rodBand(tip, handleEnd, 3.4), pin: ballAt(base, 2.2) };
 }

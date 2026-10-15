@@ -4,19 +4,24 @@
    same everywhere; a layout only chooses its tiles and its frame.
 
    "hero"  — the 15-tile composition beside a headline (640 × 560).
-   "field" — a full-bleed 3:1 band of about 50 tiles in clusters round the hero
-             composition, drawn with preserveAspectRatio "slice" so a page of any
-             width shows its middle and lets the sides bleed off. */
+   "field" — an endless strip: one period of tiles (PERIOD_D cells across) that
+             repeats sideways on screen. Its viewBox is FIELD_BOX.h tall and as wide
+             as the stage asks; live.tsx wraps each tile into view as the strip pans. */
 import { depthOf, iso, slabOf, type Plan, type SolidPaths } from "../iso/iso-kit";
-import { BEVEL, FIELD_TILES, HEIGHT, HERO_TILES, P, WIDTH, centreOf, extremesOf, planOf, topOf, type Layout, type Tile } from "./view";
+import { BEVEL, HEIGHT, HERO_TILES, P, PERIOD_D, U, WIDTH, centreOf, extremesOf, fieldTiles, planOf, topOf, type Layout, type Tile, type TileSet } from "./view";
 
 /* the field's frame, in drawing units: wide enough for an ultra-wide page, its middle on the hero's */
 export const FIELD_BOX = { w: 1680, h: 560 };
+/* one period of a field on screen, in drawing units (a pure sideways shift: see PERIOD_D) */
+export const PERIOD_W = iso([(PERIOD_D / 2) * U, (-PERIOD_D / 2) * U, 0], P)[0] - iso([0, 0, 0], P)[0];
 
 export type Box = [number, number, number, number]; // x, y, w, h in drawing units
 
 export interface World {
   layout: Layout;
+  set: TileSet;
+  sx: number[]; // each tile's middle across the screen, unpanned
+  halos: string[]; // each tile's soft shadow, so it can wrap with its tile
   tiles: Tile[];
   knobs: Tile[];
   capped: Tile[]; // knobs with coloured caps, in the order the lit accent visits them
@@ -24,6 +29,10 @@ export interface World {
   sticks: Tile[];
   displays: Tile[];
   leds: Tile[];
+  scopes: Tile[];
+  matrices: Tile[];
+  jacks: Tile[];
+  gauges: Tile[];
   faders: Tile[];
   switches: Tile[];
   grilles: Tile[];
@@ -70,8 +79,8 @@ function boundsOf(tiles: Tile[], pad: number): Box {
   return [x0, y0, Math.max(...xs) + pad - x0, Math.max(...ys) + pad - y0];
 }
 
-function build(layout: Layout): World {
-  const tiles = layout === "field" ? FIELD_TILES : HERO_TILES;
+function build(layout: Layout, set: TileSet): World {
+  const tiles = layout === "field" ? fieldTiles(set) : HERO_TILES;
   const knobs = tiles.filter((t) => t.ctl.kind === "knob");
   let viewBox: Box = [0, 0, WIDTH, HEIGHT];
   let tight: Box = viewBox;
@@ -82,21 +91,32 @@ function build(layout: Layout): World {
     viewBox = [cx - FIELD_BOX.w / 2, cy - FIELD_BOX.h / 2, FIELD_BOX.w, FIELD_BOX.h];
     tight = boundsOf(HERO_TILES, 12);
   }
+  const halos = tiles.map((t) => slabOf({ ...planOf(t), x: planOf(t).x + 4, y: planOf(t).y + 5 }, 0, 0.1, P, 6).fill);
   return {
     layout,
+    set,
+    sx: tiles.map((t) => {
+      const [cx, cy] = centreOf(t);
+      return iso([cx, cy, 0], P)[0];
+    }),
+    halos,
     tiles,
     knobs,
     capped: knobs.filter((t) => t.ctl.kind === "knob" && t.ctl.cap !== null),
-    pressable: tiles.filter((t) => ["disc", "soft", "pill", "keys", "pads"].includes(t.ctl.kind)),
+    pressable: tiles.filter((t) => ["disc", "soft", "pill", "keys", "pads", "stamp", "drawer", "bell"].includes(t.ctl.kind)),
     sticks: tiles.filter((t) => t.ctl.kind === "stick"),
     displays: tiles.filter((t) => t.ctl.kind === "display"),
     leds: tiles.filter((t) => t.ctl.kind === "leds"),
+    scopes: tiles.filter((t) => t.ctl.kind === "scope"),
+    matrices: tiles.filter((t) => t.ctl.kind === "matrix"),
+    jacks: tiles.filter((t) => t.ctl.kind === "jacks"),
+    gauges: tiles.filter((t) => t.ctl.kind === "gauge"),
     faders: tiles.filter((t) => t.ctl.kind === "fader"),
     switches: tiles.filter((t) => t.ctl.kind === "switch"),
     grilles: tiles.filter((t) => t.ctl.kind === "grille"),
     tileOrder: orderOf(tiles),
     tilePaths: tiles.map((t) => slabOf(planOf(t), 0, topOf(t), P, 6, BEVEL)),
-    halo: tiles.map((t) => slabOf({ ...planOf(t), x: planOf(t).x + 4, y: planOf(t).y + 5 }, 0, 0.1, P, 6).fill).join(""),
+    halo: halos.join(""),
     // the controls in painter's order (all stand on tile tops, so far-to-near by their centres)
     ctlOrder: tiles
       .map((t, i) => {
@@ -110,8 +130,9 @@ function build(layout: Layout): World {
   };
 }
 
-const WORLDS = new Map<Layout, World>();
-export function worldOf(layout: Layout): World {
-  if (!WORLDS.has(layout)) WORLDS.set(layout, build(layout));
-  return WORLDS.get(layout)!;
+const WORLDS = new Map<string, World>();
+export function worldOf(layout: Layout, set: TileSet = "synth"): World {
+  const key = layout === "hero" ? "hero" : `field-${set}`;
+  if (!WORLDS.has(key)) WORLDS.set(key, build(layout, layout === "hero" ? "synth" : set));
+  return WORLDS.get(key)!;
 }
