@@ -95,32 +95,108 @@
 .iso-svg path.cm-shaft { fill: var(--anatomy-shade-2); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
 .iso-svg path.cm-ball { stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
 
-/* ---------- footnote marks: small numbered rings over controls, in HTML above the drawing */
-.cm-mark {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--cm-mark-ink, var(--anatomy-lit));
-  border-radius: 999px;
-  background: var(--anatomy-card, #fff);
-  color: var(--cm-mark-ink, var(--anatomy-lit));
-  font: 600 11px/1 var(--anatomy-mono);
-  font-variant-numeric: tabular-nums;
-  transform: translate(-50%, calc(-100% - 10px));
-  cursor: help;
-  transition: transform 160ms var(--anatomy-ease), background-color 160ms linear, color 160ms linear;
+/* ---------- the strip: grab the floor to pan it */
+.cm-field .cm-stage[tabindex] { cursor: grab; }
+.cm-field .cm-stage[data-grabbing], .cm-field .cm-stage[data-grabbing] * { cursor: grabbing; }
+
+/* ---------- colour: a look may give six fills (--mod-fill-1..6); everything falls back to the plain tones */
+.cm [data-fill="1"] { --f: var(--mod-fill-1); }
+.cm [data-fill="2"] { --f: var(--mod-fill-2); }
+.cm [data-fill="3"] { --f: var(--mod-fill-3); }
+.cm [data-fill="4"] { --f: var(--mod-fill-4); }
+.cm [data-fill="5"] { --f: var(--mod-fill-5); }
+.cm [data-fill="6"] { --f: var(--mod-fill-6); }
+.cm [data-fill="brass"] { --f: var(--mod-brass); }
+.cm [data-fill="wood"] { --f: var(--mod-wood); }
+.cm [data-fill="slate"] { --f: var(--mod-slate); }
+.cm [data-fill="cream"] { --f: var(--mod-cream); }
+.cm [data-tfill="1"] { --t: var(--mod-fill-1); }
+.cm [data-tfill="2"] { --t: var(--mod-fill-2); }
+.cm [data-tfill="3"] { --t: var(--mod-fill-3); }
+.cm [data-tfill="4"] { --t: var(--mod-fill-4); }
+.cm [data-tfill="5"] { --t: var(--mod-fill-5); }
+.cm [data-tfill="6"] { --t: var(--mod-fill-6); }
+/* tones of a fill by facing: the top a touch lighter, the sides toward black */
+.cm [data-fill] {
+  --f-top: color-mix(in oklab, var(--f) 86%, #fff);
+  --f-s3: color-mix(in oklab, var(--f) 95%, #000);
+  --f-s2: color-mix(in oklab, var(--f) 88%, #000);
+  --f-s1: color-mix(in oklab, var(--f) 80%, #000);
+  --f-s0: color-mix(in oklab, var(--f) 72%, #000);
 }
-/* a short stem from the ring down toward its control, outside the drawing */
-.cm-mark::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: currentColor; opacity: 0.6; }
-.cm-mark[data-active], .cm-mark:hover, .cm-mark:focus-visible {
-  background: var(--cm-mark-ink, var(--anatomy-lit));
-  color: var(--anatomy-card, #fff);
-  transform: translate(-50%, calc(-100% - 10px)) scale(1.12);
-  outline: none;
+.cm [data-tfill] {
+  --t-s3: color-mix(in oklab, var(--t) 94%, #000);
+  --t-s1: color-mix(in oklab, var(--t) 82%, #000);
+  --t-s0: color-mix(in oklab, var(--t) 74%, #000);
 }
-@media (prefers-reduced-motion: reduce) { .cm-mark { transition: none; } }
+.cm { 
+  --rf1-0: color-mix(in oklab, var(--mod-fill-1) 92%, #fff); --rf1-1: color-mix(in oklab, var(--mod-fill-1) 80%, #fff); --rf1-2: var(--mod-fill-1); --rf1-3: color-mix(in oklab, var(--mod-fill-1) 84%, #000); --rf1-4: color-mix(in oklab, var(--mod-fill-1) 72%, #000);
+  --rf2-0: color-mix(in oklab, var(--mod-fill-2) 92%, #fff); --rf2-1: color-mix(in oklab, var(--mod-fill-2) 80%, #fff); --rf2-2: var(--mod-fill-2); --rf2-3: color-mix(in oklab, var(--mod-fill-2) 84%, #000); --rf2-4: color-mix(in oklab, var(--mod-fill-2) 72%, #000);
+  --rf3-0: color-mix(in oklab, var(--mod-fill-3) 92%, #fff); --rf3-1: color-mix(in oklab, var(--mod-fill-3) 80%, #fff); --rf3-2: var(--mod-fill-3); --rf3-3: color-mix(in oklab, var(--mod-fill-3) 84%, #000); --rf3-4: color-mix(in oklab, var(--mod-fill-3) 72%, #000);
+  --rf4-0: color-mix(in oklab, var(--mod-fill-4) 92%, #fff); --rf4-1: color-mix(in oklab, var(--mod-fill-4) 80%, #fff); --rf4-2: var(--mod-fill-4); --rf4-3: color-mix(in oklab, var(--mod-fill-4) 84%, #000); --rf4-4: color-mix(in oklab, var(--mod-fill-4) 72%, #000);
+  --rf5-0: color-mix(in oklab, var(--mod-fill-5) 92%, #fff); --rf5-1: color-mix(in oklab, var(--mod-fill-5) 80%, #fff); --rf5-2: var(--mod-fill-5); --rf5-3: color-mix(in oklab, var(--mod-fill-5) 84%, #000); --rf5-4: color-mix(in oklab, var(--mod-fill-5) 72%, #000);
+  --rfbrass-0: color-mix(in oklab, var(--mod-brass) 92%, #fff); --rfbrass-1: color-mix(in oklab, var(--mod-brass) 78%, #fff); --rfbrass-2: var(--mod-brass); --rfbrass-3: color-mix(in oklab, var(--mod-brass) 84%, #000); --rfbrass-4: color-mix(in oklab, var(--mod-brass) 72%, #000);
+  --rfwood-0: color-mix(in oklab, var(--mod-wood) 92%, #fff); --rfwood-1: color-mix(in oklab, var(--mod-wood) 78%, #fff); --rfwood-2: var(--mod-wood); --rfwood-3: color-mix(in oklab, var(--mod-wood) 84%, #000); --rfwood-4: color-mix(in oklab, var(--mod-wood) 72%, #000);
+  --rfslate-0: color-mix(in oklab, var(--mod-slate) 92%, #fff); --rfslate-1: color-mix(in oklab, var(--mod-slate) 78%, #fff); --rfslate-2: var(--mod-slate); --rfslate-3: color-mix(in oklab, var(--mod-slate) 84%, #000); --rfslate-4: color-mix(in oklab, var(--mod-slate) 72%, #000);
+  --rfcream-0: color-mix(in oklab, var(--mod-cream) 92%, #fff); --rfcream-1: color-mix(in oklab, var(--mod-cream) 78%, #fff); --rfcream-2: var(--mod-cream); --rfcream-3: color-mix(in oklab, var(--mod-cream) 84%, #000); --rfcream-4: color-mix(in oklab, var(--mod-cream) 72%, #000);
+  --rf6-0: color-mix(in oklab, var(--mod-fill-6) 92%, #fff); --rf6-1: color-mix(in oklab, var(--mod-fill-6) 80%, #fff); --rf6-2: var(--mod-fill-6); --rf6-3: color-mix(in oklab, var(--mod-fill-6) 84%, #000); --rf6-4: color-mix(in oklab, var(--mod-fill-6) 72%, #000);
+}
+.cm .iso-solid[data-fill] > .iso-fill, .cm [data-fill] > .cm-tile > .iso-fill { fill: var(--f-s2, var(--anatomy-paper)); }
+.cm .iso-solid[data-fill] > .iso-top, .cm [data-fill] > .cm-tile > .iso-top { fill: var(--f-top, var(--anatomy-top)); }
+.cm .iso-solid[data-fill] > .iso-shade[data-shade="0"], .cm [data-fill] > .cm-tile > .iso-shade[data-shade="0"] { fill: var(--f-s0, var(--anatomy-shade-0)); }
+.cm .iso-solid[data-fill] > .iso-shade[data-shade="1"], .cm [data-fill] > .cm-tile > .iso-shade[data-shade="1"] { fill: var(--f-s1, var(--anatomy-shade-1)); }
+.cm .iso-solid[data-fill] > .iso-shade[data-shade="2"], .cm [data-fill] > .cm-tile > .iso-shade[data-shade="2"] { fill: var(--f-s2, var(--anatomy-shade-2)); }
+.cm .iso-solid[data-fill] > .iso-shade[data-shade="3"], .cm [data-fill] > .cm-tile > .iso-shade[data-shade="3"] { fill: var(--f-s3, var(--anatomy-shade-3)); }
+.cm .cm-round[data-fill] > .iso-top { fill: var(--f-top, var(--anatomy-top)); }
+/* recesses cut into a coloured tile take its colour */
+.iso-svg [data-fill] > .cm-recess > path.cm-recess-wall { fill: var(--f-s0, var(--anatomy-shade-0)); }
+.iso-svg [data-fill] > .cm-recess > path.cm-recess-floor { fill: var(--f-s3, var(--anatomy-shade-3)); }
+.iso-svg [data-tfill] path.cm-recess-wall { fill: var(--t-s1, var(--anatomy-shade-2)); }
+.iso-svg [data-tfill] path.cm-recess-wall[data-shade="0"] { fill: var(--t-s0, var(--anatomy-shade-0)); }
+.iso-svg [data-tfill] path.cm-recess-wall[data-shade="1"] { fill: var(--t-s1, var(--anatomy-shade-1)); }
+.iso-svg [data-tfill] path.cm-recess-floor { fill: var(--t-s3, var(--anatomy-shade-3)); }
+/* the round buttons wear a fill instead of the dark ink */
+.iso-svg path.cm-dark[data-fill] { fill: var(--f, var(--cm-dark)); }
+
+/* ---------- the lab bench (signal): phosphor screens, readouts, probes, engraved labels */
+.cm { --cm-glass: color-mix(in oklab, var(--anatomy-lit) 9%, #07100b); }
+.iso-svg .cm-screen path.cm-recess-floor, .iso-svg.cm-svg .cm-set-lab .cm-lcd path.cm-recess-floor, .cm-set-lab .iso-svg .cm-lcd path.cm-recess-floor { fill: var(--cm-glass); }
+.iso-svg .cm-screen path.cm-grat { fill: none; stroke: var(--anatomy-lit); stroke-opacity: 0.22; stroke-width: calc(var(--anatomy-weight) * 0.8); }
+.iso-svg .cm-screen path.cm-trace { fill: none; stroke: var(--anatomy-lit); stroke-width: calc(var(--anatomy-weight) * 2.2); stroke-linecap: round; stroke-linejoin: round; }
+.iso-svg .cm-screen path.cm-mx-off { fill: var(--anatomy-lit); opacity: 0.13; stroke: none; }
+.iso-svg .cm-screen path.cm-mx-on { fill: var(--anatomy-lit); stroke: none; }
+.iso-svg .cm-screen path.cm-scanlines { fill: none; stroke: #000; stroke-opacity: 0.3; stroke-width: 0.6; vector-effect: none; }
+.cm-set-lab .cm-lcd-text .cm-lcd-digits { fill: var(--anatomy-lit); }
+.cm-set-lab .cm-lcd-text .cm-lcd-ghost { fill: var(--anatomy-lit); opacity: 0.1; }
+.cm-set-lab .cm-lcd-text .cm-lcd-unit { fill: var(--anatomy-lit); opacity: 0.7; }
+.iso-svg path.cm-hole-dark { fill: var(--anatomy-hi); stroke: none; }
+.cm-jacks [data-post="hot"] .cm-collar > .iso-fill { fill: var(--anatomy-lit) !important; }
+.cm-jacks [data-post="hot"] .cm-collar > .iso-top { fill: color-mix(in oklab, var(--anatomy-lit) 80%, #fff); }
+.cm-set-lab .iso-face-text { font-family: var(--anatomy-mono); letter-spacing: 0.12em; }
+
+/* ---------- the office (civic): brass, wood and slate from the look (--mod-brass, --mod-wood, --mod-slate, --mod-cream) */
+.iso-svg path.cm-dial-holes { fill: var(--anatomy-shade-1); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.iso-svg path.cm-dial-card { fill: var(--mod-cream, var(--anatomy-top)); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.iso-svg path.cm-gauge-face { fill: var(--mod-cream, var(--anatomy-top)); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.cm-red-zone .iso-dots circle { fill: var(--anatomy-lit); opacity: 0.9; }
+.iso-svg path.cm-needle { fill: none; stroke: var(--anatomy-hi); stroke-width: calc(var(--anatomy-weight) * 1.8); stroke-linecap: round; }
+.iso-svg path.cm-needle[data-lit] { stroke: var(--anatomy-lit); stroke-width: calc(var(--anatomy-weight) * 2.2); }
+.iso-svg path.cm-hub { fill: var(--anatomy-hi); stroke: none; }
+.iso-svg path.cm-lever { fill: var(--mod-brass, var(--anatomy-shade-2)); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.cm-blade { fill: var(--mod-brass, var(--anatomy-shade-2)); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.cm-handle { fill: var(--anatomy-hi); stroke: var(--anatomy-hi); stroke-width: var(--anatomy-weight); stroke-linejoin: round; }
+.iso-svg path.cm-pin { fill: var(--anatomy-hi); stroke: none; }
+.iso-svg path.cm-dome { stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.iso-svg path.cm-ink { fill: var(--mod-ink, var(--anatomy-hi)); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.cm-hidden-lamp { display: none; }
+.cm-type-rim { fill: none; stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); }
+.cm-type-letter { fill: var(--anatomy-hi); font-family: var(--anatomy-mono); font-weight: 600; stroke: none; }
+.cm-holder { fill: var(--mod-brass, var(--anatomy-shade-1)); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+.cm-holder-text { fill: var(--anatomy-hi); font-family: var(--anatomy-mono); stroke: none; }
+.cm-pull { fill: var(--mod-brass, var(--anatomy-shade-1)); stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+.cm-counter .cm-recess-floor { fill: var(--mod-cream, var(--anatomy-top)); }
+.iso-svg .cm-counter path.cm-recess-floor { fill: var(--mod-cream, var(--anatomy-top)); }
+.cm-counter-text text { fill: var(--anatomy-hi); font-family: var(--anatomy-mono); font-weight: 600; stroke: none; }
+.cm-counter-text .cm-counter-cuts { fill: none; stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+.cm-counter-text .cm-counter-band { fill: none; stroke: var(--anatomy-faint); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+.iso-svg .cm-screen .cm-glass-edge { fill: none; stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }

@@ -59,18 +59,27 @@ export const JOG = { h: 5, small: 25, big: 46 };
 export type Icon = "loop" | "tape" | "wave";
 export type Ctl =
   // cap: index of a coloured cap (0, 1, 2) or null for a plain white knob; jog: a big flat dial with a finger dimple
-  | { kind: "knob"; cap: number | null; jog?: boolean }
+  | { kind: "knob"; cap: number | null; jog?: boolean; dial?: boolean } // dial: a rotary telephone dial
   | { kind: "disc" }
   | { kind: "soft"; icon: Icon }
   | { kind: "pill" }
   | { kind: "grille" }
   | { kind: "fader"; axis?: "x" | "y" } // runs along +x unless axis is "y"
-  | { kind: "switch"; axis: "x" | "y"; rocker?: boolean } // a sliding switch, or a rocker that tips
-  | { kind: "keys" } // a row of four tiny keys along +x (a 2×1 tile)
+  | { kind: "switch"; axis: "x" | "y"; rocker?: boolean; bat?: boolean; knife?: boolean } // sliding, rocker, bat-handle or knife
+  | { kind: "keys"; round?: boolean } // a row of four tiny keys along +x (a 2×1 tile); round: typewriter keys
   | { kind: "pads" } // a 3×3 grid of small pads
-  | { kind: "display" } // a small LCD with digits (a 2×1 tile along +x)
+  | { kind: "display"; counter?: boolean } // a small LCD with digits (2×1 along +x); counter: an odometer
   | { kind: "stick" } // a joystick nub
-  | { kind: "leds" }; // a strip of ten LEDs along +x (a 2×1 tile)
+  | { kind: "leds" } // a strip of ten LEDs along +x (a 2×1 tile)
+  // the lab bench (signal)
+  | { kind: "scope" } // a phosphor screen with a graticule and a live trace (2×1 or 2×2)
+  | { kind: "matrix" } // a dot-matrix readout showing a moving spectrum (2×1)
+  | { kind: "jacks" } // three binding posts for probes
+  // the office (civic)
+  | { kind: "gauge" } // a round gauge with a needle (1×1, or 2×2 for a big pressure gauge)
+  | { kind: "stamp" } // a rubber stamp over its ink pad (2×1)
+  | { kind: "drawer" } // a card-catalogue drawer that slides out
+  | { kind: "bell" }; // a desk bell
 
 export interface Tile {
   id: string;
@@ -80,6 +89,11 @@ export interface Tile {
 }
 
 export type Layout = "hero" | "field";
+/* which tile set a field is made of: synth modules, a bench of lab instruments, or old office hardware */
+export type TileSet = "synth" | "lab" | "office";
+/* a field repeats every PERIOD_D cells across the screen (d = x − y), so it can scroll forever: shifting a tile
+   by (PERIOD_D / 2, −PERIOD_D / 2) cells moves it straight sideways on screen and keeps its depth */
+export const PERIOD_D = 34;
 
 /* the hero: 15 tiles, flat ones toward the headline on the left, the tall knobs in the middle and right */
 export const HERO_TILES: Tile[] = [
@@ -140,7 +154,7 @@ const TEMPLATES: Record<string, Local[]> = {
   vfader: [L("vf", 0, 0, 1, 2, { kind: "fader", axis: "y" })],
 };
 /* [template, d, s] — where each cluster's centre goes */
-const PLACES: [string, number, number][] = [
+const SYNTH_PLACES: [string, number, number][] = [
   // hugging the hero on the left, with floor between the clusters
   ["studio", -6.2, 1.2],
   ["big", -7.3, 6.6],
@@ -168,6 +182,12 @@ const PLACES: [string, number, number][] = [
   ["vfader", 11.8, 0.8],
   ["big", 13.0, 8.0],
   ["jog2", -13.2, 1.0],
+  // out to the seam of the period (kept clear, so the strip joins without a mark)
+  ["pair", 15.0, 5.4],
+  ["studio", -14.6, 7.4],
+  ["mixer", 14.2, 12.0],
+  ["speaker", -15.2, 12.6],
+  ["rocker", 15.4, -0.6],
 ];
 const overlaps = (a: Tile, b: Tile, clear = -0.01) =>
   a.cell[0] < b.cell[0] + b.cell[2] + clear &&
@@ -175,10 +195,13 @@ const overlaps = (a: Tile, b: Tile, clear = -0.01) =>
   a.cell[1] < b.cell[1] + b.cell[3] + clear &&
   b.cell[1] < a.cell[1] + a.cell[3] + clear;
 const snap = (v: number) => Math.round(v * 20) / 20;
-function placeField(): Tile[] {
-  const out: Tile[] = HERO_TILES.map((t) => ({ ...t, id: `h-${t.id}` }));
-  PLACES.forEach(([name, d, s], c) => {
-    const tpl = TEMPLATES[name]!;
+/* a tile's extent across the screen, in d */
+const dSpan = (t: Tile): [number, number] => [t.cell[0] - (t.cell[1] + t.cell[3]), t.cell[0] + t.cell[2] - t.cell[1]];
+function placeField(centre: Tile[], places: [string, number, number][], templates: Record<string, Local[]>): Tile[] {
+  const out: Tile[] = centre.map((t) => ({ ...t, id: `h-${t.id}` }));
+  const half = PERIOD_D / 2 - 0.4;
+  places.forEach(([name, d, s], c) => {
+    const tpl = templates[name]!;
     const w = Math.max(...tpl.map((t) => t.cell[0] + t.cell[2]));
     const h = Math.max(...tpl.map((t) => t.cell[1] + t.cell[3]));
     // the cluster's centre in cells, from its place on screen (the hero's middle, cell 3, 3, is d 0, s 6)
@@ -186,14 +209,130 @@ function placeField(): Tile[] {
     const oy = snap((s - d) / 2 - h / 2);
     for (const t of tpl) {
       const tile: Tile = { ...t, id: `c${c}-${t.id}`, cell: [ox + t.cell[0], oy + t.cell[1], t.cell[2], t.cell[3]] };
-      if (!out.some((o) => overlaps(o, tile))) out.push(tile);
+      const [a, b] = dSpan(tile);
+      if (a > -half && b < half && !out.some((o) => overlaps(o, tile))) out.push(tile);
     }
   });
   return out;
 }
-export const FIELD_TILES: Tile[] = placeField();
-/* the controls the landing's footnotes point at: the hero's lit knob, its fader, the grille (the sound switch) and a switch */
-export const FIELD_MARKS = ["h-ka", "h-fd", "h-gr", "h-s1"];
+/* ---------------------------------------------------------------- the office (civic) */
+/* old public-office hardware in the same footprints: rotary dials, gauges, bat-handle toggles, typewriter keys,
+   rubber stamps, card drawers, counters, desk bells and knife switches */
+const DIAL: Ctl = { kind: "knob", cap: null, dial: true };
+const GAUGE: Ctl = { kind: "gauge" };
+const BAT: Ctl = { kind: "switch", axis: "y", bat: true };
+const TYPE: Ctl = { kind: "keys", round: true };
+const STAMP: Ctl = { kind: "stamp" };
+const DRAWER: Ctl = { kind: "drawer" };
+const BELL: Ctl = { kind: "bell" };
+const KNIFE: Ctl = { kind: "switch", axis: "x", knife: true };
+const COUNTER: Ctl = { kind: "display", counter: true };
+const OFFICE_TEMPLATES: Record<string, Local[]> = {
+  studio: [L("ct", 0, 0, 2, 1, COUNTER), L("gg", 2, 0, 1, 1, GAUGE), L("ty", 0, 1, 2, 1, TYPE), L("bt", 2, 1, 1, 1, BAT)],
+  pads: [L("bl", 0, 0, 1, 1, BELL), L("dl", 1, 0, 1, 1, DIAL), L("kf", 0, 1, 2, 1, KNIFE)],
+  mixer: [L("d1", 0, 0, 1, 1, DRAWER), L("d2", 1, 0, 1, 1, DRAWER), L("d3", 0, 1, 1, 1, DRAWER), L("d4", 1, 1, 1, 1, DRAWER), L("gg", 2, 0, 1, 1, GAUGE), L("bt", 2, 1, 1, 1, BAT)],
+  big: [L("gg", 0, 0, 2, 2, GAUGE), L("bl", 2, 0, 1, 1, BELL), L("dl", 2, 1, 1, 1, DIAL)],
+  jog2: [L("gg", 0, 0, 2, 2, GAUGE)],
+  pair: [L("dl", 0, 0, 1, 1, DIAL), L("bt", 1, 0, 1, 1, BAT)],
+  speaker: [L("st", 0, 0, 2, 1, STAMP), L("kf", 0, 1, 2, 1, KNIFE), L("ct", 0, 2, 2, 1, COUNTER)],
+  trio: [L("bl", 0, 0, 1, 1, BELL), L("dl", 1, 0, 1, 1, DIAL), L("ct", 0, 1, 2, 1, COUNTER)],
+  knob: [L("dl", 0, 0, 1, 1, DIAL)],
+  wave: [L("bl", 0, 0, 1, 1, BELL)],
+  disc: [L("gg", 0, 0, 1, 1, GAUGE, 3)],
+  rocker: [L("bt", 0, 0, 1, 1, BAT)],
+  pad: [L("dr", 0, 0, 1, 1, DRAWER)],
+  vfader: [L("d1", 0, 0, 1, 1, DRAWER), L("d2", 0, 1, 1, 1, DRAWER)],
+};
+/* the office's middle: the big pressure gauge (its needle the one red part), a dial, the typewriter, the stamp */
+const OFFICE_CENTRE: Tile[] = [
+  { id: "dl", cell: [0, 0, 1, 1], lift: 0, ctl: DIAL },
+  { id: "gg", cell: [1, 0, 2, 2], lift: 0, ctl: GAUGE },
+  { id: "bt", cell: [3, 0, 1, 1], lift: 2, ctl: BAT },
+  { id: "dr", cell: [3, 1, 1, 1], lift: 0, ctl: DRAWER },
+  { id: "bl", cell: [0, 1, 1, 1], lift: 0, ctl: BELL },
+  { id: "ty", cell: [0, 2, 2, 1], lift: 0, ctl: TYPE },
+  { id: "ct", cell: [2, 2, 2, 1], lift: 0, ctl: COUNTER },
+  { id: "g2", cell: [4, 2, 1, 1], lift: 0, ctl: GAUGE },
+  { id: "st", cell: [0, 3, 2, 1], lift: 0, ctl: STAMP },
+  { id: "kf", cell: [2, 3, 2, 1], lift: 0, ctl: KNIFE },
+  { id: "dr2", cell: [4, 3, 1, 1], lift: 0, ctl: DRAWER },
+  { id: "dl2", cell: [1, 4, 1, 1], lift: 0, ctl: DIAL },
+  { id: "bt2", cell: [2, 4, 1, 1], lift: 0, ctl: { kind: "switch", axis: "y", bat: true } },
+  { id: "dr3", cell: [3, 4, 1, 1], lift: 1.5, ctl: DRAWER },
+  { id: "dr4", cell: [4, 4, 1, 1], lift: 1.5, ctl: DRAWER },
+];
+
+/* ---------------------------------------------------------------- the lab bench (signal) */
+/* the same footprints as the synth clusters, filled with instruments, so the strip keeps its rhythm */
+const SCOPE: Ctl = { kind: "scope" };
+const MATRIX: Ctl = { kind: "matrix" };
+const JACKS: Ctl = { kind: "jacks" };
+const LAB_TEMPLATES: Record<string, Local[]> = {
+  studio: [L("sc", 0, 0, 2, 1, SCOPE), L("kn", 2, 0, 1, 1, KN()), L("mx", 0, 1, 2, 1, MATRIX), L("jk", 2, 1, 1, 1, JACKS)],
+  pads: [L("pads", 0, 0, 1, 1, { kind: "pads" }), L("kn", 1, 0, 1, 1, KN()), L("leds", 0, 1, 2, 1, { kind: "leds" })],
+  mixer: TEMPLATES.mixer!,
+  big: [L("sc", 0, 0, 2, 2, SCOPE), L("jk", 2, 0, 1, 1, JACKS), L("rk", 2, 1, 1, 1, { kind: "switch", axis: "y", rocker: true })],
+  jog2: TEMPLATES.jog2!,
+  pair: [L("kn", 0, 0, 1, 1, KN()), L("sw", 1, 0, 1, 1, { kind: "switch", axis: "x" })],
+  speaker: TEMPLATES.speaker!,
+  trio: [L("jk", 0, 0, 1, 1, JACKS), L("kn", 1, 0, 1, 1, KN()), L("mx", 0, 1, 2, 1, MATRIX)],
+  knob: TEMPLATES.knob!,
+  wave: [L("jk", 0, 0, 1, 1, JACKS)],
+  disc: [L("rk", 0, 0, 1, 1, { kind: "switch", axis: "x", rocker: true }, 3)],
+  rocker: TEMPLATES.rocker!,
+  pad: [L("kn", 0, 0, 1, 1, KN())],
+  vfader: TEMPLATES.vfader!,
+};
+/* the bench's middle: a big scope, a spectrum readout, the lit tuning knob, probes, meters, a tuner */
+const LAB_CENTRE: Tile[] = [
+  { id: "sc", cell: [1, 0, 2, 2], lift: 0, ctl: SCOPE },
+  { id: "ka", cell: [3, 0, 1, 1], lift: 2, ctl: { kind: "knob", cap: 0 } },
+  { id: "k2", cell: [3, 1, 1, 1], lift: 0, ctl: { kind: "knob", cap: null } },
+  { id: "k1", cell: [0, 0, 1, 1], lift: 0, ctl: { kind: "knob", cap: null } },
+  { id: "jk", cell: [0, 1, 1, 1], lift: 0, ctl: JACKS },
+  { id: "mx", cell: [0, 2, 2, 1], lift: 0, ctl: MATRIX },
+  { id: "le", cell: [2, 2, 2, 1], lift: 0, ctl: { kind: "leds" } },
+  { id: "sw", cell: [4, 2, 1, 1], lift: 0, ctl: { kind: "switch", axis: "y" } },
+  { id: "gr", cell: [3, 3, 2, 2], lift: 0, ctl: { kind: "grille" } },
+  { id: "lcd", cell: [0, 3, 2, 1], lift: 0, ctl: { kind: "display" } },
+  { id: "jg", cell: [2, 3, 1, 1], lift: 0, ctl: { kind: "knob", cap: null, jog: true } },
+  { id: "fd", cell: [1, 4, 2, 1], lift: 0, ctl: { kind: "fader" } },
+  { id: "rk", cell: [0, 4, 1, 1], lift: 1.5, ctl: { kind: "switch", axis: "x", rocker: true } },
+  { id: "pd", cell: [3, 5, 1, 1], lift: 0, ctl: { kind: "pads" } },
+  { id: "s1", cell: [4, 5, 1, 1], lift: 0, ctl: { kind: "switch", axis: "x" } },
+];
+
+const FIELDS = new Map<TileSet, Tile[]>();
+export function fieldTiles(set: TileSet): Tile[] {
+  if (!FIELDS.has(set))
+    FIELDS.set(
+      set,
+      set === "lab"
+        ? placeField(LAB_CENTRE, SYNTH_PLACES, LAB_TEMPLATES)
+        : set === "office"
+          ? placeField(OFFICE_CENTRE, SYNTH_PLACES, OFFICE_TEMPLATES)
+          : placeField(HERO_TILES, SYNTH_PLACES, TEMPLATES),
+    );
+  return FIELDS.get(set)!;
+}
+
+/* a tile's engraved label on the lab bench (mono, small, on the tile's front edge) */
+const LAB_WORDS: Partial<Record<Ctl["kind"], string[]>> = {
+  knob: ["FREQ", "GAIN", "TRIG", "OFFSET", "TIME/DIV", "V/DIV", "TUNE", "LEVEL"],
+  scope: ["CH 1", "CH 2", "X–Y"],
+  matrix: ["SPECTRUM", "FFT"],
+  jacks: ["PROBE", "IN · GND"],
+  leds: ["SIGNAL", "PEAK"],
+  fader: ["ATTEN", "SWEEP"],
+  switch: ["AC/DC", "POWER", "HOLD"],
+  pads: ["MEM"],
+  display: ["RATE"],
+  grille: ["MONITOR"],
+};
+export const labelOf = (t: Tile, i: number) => {
+  const list = LAB_WORDS[t.ctl.kind];
+  return list ? list[i % list.length]! : "";
+};
 
 /* the furthest points of a set of tiles, knob tops included, for framing */
 export function extremesOf(tiles: Tile[]): Point3[] {
@@ -239,3 +378,27 @@ export const P = fit(extremesOf(HERO_TILES), 16);
 export const at = (p: Point3): Flat => iso(p, P);
 export const K = P.scale * Math.sqrt(1.6); // screen units per world unit across the view
 export const RAD = Math.PI / 180;
+
+/* ---------------------------------------------------------------- colour (a look may give fills) */
+/* Which of the look's six fills (--mod-fill-1..6) a tile and its control wear; 0 is none. Looks that give no
+   fills fall back to their plain tones, so this only shows where a preset asks for colour (fun). */
+const hash = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
+};
+const TILE_FILLS = [3, 4, 2, 6, 3, 4, 2]; // sky, bubble, acid, blue: light fills for slabs
+const CTL_FILLS = [1, 5, 6, 2, 4, 3, 1]; // flame, plum, blue, acid, bubble, sky: the controls
+export function tileFill(t: Tile): number {
+  const h = hash(t.id);
+  if (t.ctl.kind === "grille") return 0;
+  return h % 10 < 4 ? TILE_FILLS[(h >> 4) % TILE_FILLS.length]! : 0;
+}
+export function ctlFill(t: Tile): number {
+  const h = hash(`${t.id}:c`);
+  if (h % 10 >= 8) return 0;
+  const tf = tileFill(t);
+  let f = CTL_FILLS[(h >> 4) % CTL_FILLS.length]!;
+  if (f === tf) f = CTL_FILLS[((h >> 4) + 1) % CTL_FILLS.length]!;
+  return f;
+}

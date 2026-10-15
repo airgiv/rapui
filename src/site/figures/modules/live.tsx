@@ -8,7 +8,8 @@
    ancestor with data-rap-motion="still"; slower, smaller sweeps under
    data-rap-motion="calm". */
 import * as React from "react";
-import { Dots } from "../iso/react/draw";
+import { Dots, FaceText } from "../iso/react/draw";
+import { translateAlong } from "../iso/iso-kit";
 import { useInView, useLoop, spring, type Spring } from "../iso/react/live";
 import { IconArt, LiveSolid, Paints, RecessArt, Round, Tiles, grilleOf, writeRound, writeSolid } from "./art";
 import {
@@ -19,7 +20,37 @@ import {
   faderGeo,
   faderGrip,
   faderValueAt,
-  faderTop,
+  batGeo,
+  batLever,
+  bellGeo,
+  dialGeo,
+  dialHoles,
+  drawerFront,
+  drawerGeo,
+  drawerSlide,
+  gaugeGeo,
+  gaugeNeedle,
+  knifeBlade,
+  knifeGeo,
+  stampDrop,
+  stampGeo,
+  typeDrop,
+  typeGeo,
+  type BatGeo,
+  type BellGeo,
+  type DialGeo,
+  type DrawerGeo,
+  type GaugeGeo,
+  type KnifeGeo,
+  type StampGeo,
+  type TypeGeo,
+  glassGeo,
+  graticule,
+  jacksGeo,
+  matrixDots,
+  scopeTrace,
+  type GlassGeo,
+  type JackGeo,
   jogDimple,
   jogGeo,
   keysGeo,
@@ -61,9 +92,8 @@ import {
   type SoftGeo,
 } from "./geometry";
 import { LOOP, STILL_T, idleAt } from "./model";
-import { iso, type Point3 } from "../iso/iso-kit";
-import { JOG, KNOB_H, P, RAD, STICK, SWITCH, centreOf, topOf, type Layout, type Tile } from "./view";
-import { worldOf, type World } from "./world";
+import { KNOB_H, P, RAD, STICK, ctlFill, tileFill, type Layout, type Tile, type TileSet } from "./view";
+import { FIELD_BOX, PERIOD_W, worldOf, type World } from "./world";
 import { useSound } from "../../../rapui";
 
 export interface ModulesHandle {
@@ -75,6 +105,8 @@ export const DESCRIPTION =
   "A composition of separate square control tiles butted together on a table, drawn in isometric line work: tall knurled knobs covered in fine dimples (three with coloured caps, one in the accent colour, two standing in wide shallow round recesses on large tiles), dark round buttons sunk in soft rims, soft round buttons printed with a loop, a cassette and a wave icon, a long pill key in a stadium recess, and a speaker grille of round holes, faders with printed scales, sliding switches and rockers with small lamps, rows of tiny keys, pad grids, small LCDs, joystick nubs, LED strips and big jog wheels. The knobs turn by themselves, the buttons press in turn, the fader glides, the switches flip now and then, the grille ripples with each press and the accent moves from cap to cap.";
 const HINT =
   "Control modules — drag a knob to turn it, drag the fader, click a button, the key or a switch; arrow keys turn the lit knob, 1 to 9 press the buttons, S and Shift+S flip the switches, F and Shift+F move the fader, M or a click on the speaker grille turns sound on or off, Enter restarts";
+const FIELD_HINT =
+  "An endless strip of control modules — drag the floor or press Left and Right (Shift for further) to move along it; drag a knob, fader or joystick to work it, click a button, key or switch; Up and Down turn the lit knob, 1 to 9 press the first buttons, S flips a switch, M or a click on a speaker grille turns sound on or off, Enter restarts";
 
 type Motion = "fun" | "calm" | "still";
 function motionOf(node: Element | null): Motion {
@@ -89,12 +121,19 @@ const ease = (cur: number, target: number, dt: number, tau: number) => cur + (ta
 
 /* the geometry of every control of a layout, once */
 type PressGeo =
+  | { kind: "type"; g: TypeGeo; pick: MultiGeo }
+  | { kind: "stamp"; g: StampGeo }
+  | { kind: "drawer"; g: DrawerGeo }
+  | { kind: "bell"; g: BellGeo }
   | { kind: "disc"; g: DiscGeo }
   | { kind: "soft"; g: SoftGeo; icon: "loop" | "tape" | "wave" }
   | { kind: "pill"; g: PillGeo }
   | { kind: "keys"; g: MultiGeo }
   | { kind: "pads"; g: MultiGeo };
 const isJog = (t: Tile) => t.ctl.kind === "knob" && Boolean(t.ctl.jog);
+const isDial = (t: Tile) => t.ctl.kind === "knob" && Boolean(t.ctl.dial);
+const isBat = (t: Tile) => t.ctl.kind === "switch" && Boolean(t.ctl.bat);
+const isKnife = (t: Tile) => t.ctl.kind === "switch" && Boolean(t.ctl.knife);
 const isRocker = (t: Tile) => t.ctl.kind === "switch" && Boolean(t.ctl.rocker);
 function build(W: World) {
   const KNOBS = W.knobs;
@@ -107,11 +146,20 @@ function build(W: World) {
     PRESSABLE,
     FADERS: W.faders,
     SWITCHES: W.switches,
-    KNOB_GEO: KNOBS.map((t) => (isJog(t) ? null : knobGeo(t))) as (KnobGeo | null)[],
+    KNOB_GEO: KNOBS.map((t) => (isJog(t) || isDial(t) ? null : knobGeo(t))) as (KnobGeo | null)[],
+    DIAL_GEO: KNOBS.map((t) => (isDial(t) ? dialGeo(t) : null)) as (DialGeo | null)[],
     JOG_GEO: KNOBS.map((t) => (isJog(t) ? jogGeo(t) : null)) as (JogGeo | null)[],
     CAP_OF: KNOBS.map((k) => (CAPPED.indexOf(k) >= 0 ? CAPPED.indexOf(k) : null)) as (number | null)[],
     PRESS_GEO: PRESSABLE.map((t) =>
-      t.ctl.kind === "disc"
+      t.ctl.kind === "keys" && t.ctl.round
+        ? { kind: "type", g: typeGeo(t), pick: keysGeo(t) }
+        : t.ctl.kind === "stamp"
+          ? { kind: "stamp", g: stampGeo(t) }
+          : t.ctl.kind === "drawer"
+            ? { kind: "drawer", g: drawerGeo(t) }
+            : t.ctl.kind === "bell"
+              ? { kind: "bell", g: bellGeo(t) }
+              : t.ctl.kind === "disc"
         ? { kind: "disc", g: discGeo(t) }
         : t.ctl.kind === "soft"
           ? { kind: "soft", g: softGeo(t), icon: t.ctl.icon }
@@ -122,12 +170,29 @@ function build(W: World) {
               : { kind: "pill", g: pillGeo(t) },
     ) as PressGeo[],
     FADER_GEO: W.faders.map(faderGeo) as FaderGeo[],
-    SWITCH_GEO: W.switches.map((t) => (isRocker(t) ? null : switchGeo(t))) as (SwitchGeo | null)[],
+    SWITCH_GEO: W.switches.map((t) => (isRocker(t) || isBat(t) || isKnife(t) ? null : switchGeo(t))) as (SwitchGeo | null)[],
+    BAT_GEO: W.switches.map((t) => (isBat(t) ? batGeo(t) : null)) as (BatGeo | null)[],
+    KNIFE_GEO: W.switches.map((t) => (isKnife(t) ? knifeGeo(t) : null)) as (KnifeGeo | null)[],
+    GAUGE_GEO: W.gauges.map(gaugeGeo) as GaugeGeo[],
+    GAUGE_TI: W.gauges.map((t) => W.tiles.indexOf(t)),
     ROCKER_GEO: W.switches.map((t) => (isRocker(t) ? rockerGeo(t) : null)) as (RockerGeo | null)[],
     STICK_GEO: W.sticks.map(stickGeo) as StickGeo[],
     LCD_GEO: W.displays.map(lcdGeo) as LcdGeo[],
     LED_GEO: W.leds.map(ledGeo) as LedGeo[],
+    SCOPE_GEO: W.scopes.map(glassGeo) as GlassGeo[],
+    MATRIX_GEO: W.matrices.map(glassGeo) as GlassGeo[],
+    JACK_GEO: W.jacks.map(jacksGeo) as JackGeo[],
+    SCOPE_TI: W.scopes.map((t) => W.tiles.indexOf(t)),
+    MATRIX_TI: W.matrices.map((t) => W.tiles.indexOf(t)),
     GRILLE_GEO: W.grilles.map(grilleOf),
+    // each control's tile, for wrapping and for skipping what is out of view
+    KNOB_TI: KNOBS.map((t) => W.tiles.indexOf(t)),
+    PRESS_TI: PRESSABLE.map((t) => W.tiles.indexOf(t)),
+    FADER_TI: W.faders.map((t) => W.tiles.indexOf(t)),
+    SWITCH_TI: W.switches.map((t) => W.tiles.indexOf(t)),
+    STICK_TI: W.sticks.map((t) => W.tiles.indexOf(t)),
+    LED_TI: W.leds.map((t) => W.tiles.indexOf(t)),
+    GRILLE_TI: W.grilles.map((t) => W.tiles.indexOf(t)),
   };
 }
 const GEOS = new Map<World, ReturnType<typeof build>>();
@@ -158,7 +223,19 @@ interface Nodes {
   dimples: (SVGPathElement | null)[][]; // per jog: clip, wall, floor, rim
   sticks: (SVGPathElement | null)[][]; // per stick: shaft, ball, foot
   lcds: (SVGTextElement | null)[];
+  tileG: (SVGGElement | null)[]; // per tile: its tile group and its control group, moved together when it wraps
+  ctlG: (SVGGElement | null)[];
+  pan: SVGGElement | null;
+  halos: (SVGPathElement | null)[]; // a field's shadows, one path per wrap position
   leds: (SVGPathElement | null)[][];
+  traces: (SVGPathElement | null)[];
+  holesDial: (SVGPathElement | null)[]; // per knob that is a rotary dial
+  needles: (SVGPathElement | null)[];
+  levers: (SVGPathElement | null)[][]; // per switch that is a bat toggle or a knife: rod/blade, ball/handle, pin
+  moves: (SVGGElement | null)[]; // per pressable that moves as a whole (typewriter key caps are per key, below)
+  typeCaps: (SVGGElement | null)[][];
+  counters: (SVGTextElement | null)[];
+  matrix: (SVGPathElement | null)[];
   readout: Element | null;
 }
 
@@ -227,19 +304,18 @@ export interface ModulesLiveProps {
   /** the figure's own sound switch (the grille): whether it is on, and how to flip it */
   soundOn?: boolean;
   onSound?: () => void;
-  /** footnote marks to place over controls (tile ids), the one to highlight, and hover/focus reports */
-  marks?: { id: string; n: number }[];
-  active?: number | null;
-  onActive?: (n: number | null) => void;
+  /** a field's tile set */
+  set?: TileSet;
 }
 
 export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(function ModulesLive(
-  { runKey, layout = "hero", soundOn = false, onSound, marks, active = null, onActive },
+  { runKey, layout = "hero", set = "synth", soundOn = false, onSound },
   ref,
 ) {
-  const W = worldOf(layout);
-  const { TILES, KNOBS, CAPPED, PRESSABLE, FADERS, SWITCHES, KNOB_GEO, JOG_GEO, CAP_OF, PRESS_GEO, FADER_GEO, SWITCH_GEO, ROCKER_GEO, STICK_GEO, LCD_GEO, LED_GEO, GRILLE_GEO } =
-    geosOf(W);
+  const W = worldOf(layout, set);
+  const field = W.layout === "field";
+  const G = geosOf(W);
+  const { TILES, KNOBS, CAPPED, PRESSABLE, FADERS, SWITCHES, KNOB_GEO, JOG_GEO, CAP_OF, PRESS_GEO, FADER_GEO, SWITCH_GEO, ROCKER_GEO, STICK_GEO, LCD_GEO, LED_GEO, GRILLE_GEO } = G;
   const FIRST = React.useMemo(() => idleAt(STILL_T, false, W), [W]);
   // sound only ever answers the hand, never the idle loop
   const sound = useSound();
@@ -270,7 +346,19 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     dimples: KNOBS.map(() => []),
     sticks: W.sticks.map(() => []),
     lcds: [],
+    tileG: [],
+    ctlG: [],
+    pan: null,
+    halos: [],
     leds: W.leds.map(() => []),
+    traces: [],
+    holesDial: [],
+    needles: [],
+    levers: W.switches.map(() => []),
+    moves: [],
+    typeCaps: W.pressable.map(() => []),
+    counters: [],
+    matrix: [],
     readout: null,
   });
   // what each live element last showed, so a frame only rewrites what changed
@@ -284,6 +372,56 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   const st = React.useRef<State>(initial(W, STILL_T, false));
   const [motion, setMotion] = React.useState<Motion>("fun");
   const visible = useInView(root);
+
+  /* ---------------------------------------------------------- the endless strip (a field only)
+     The strip pans sideways by `o` (drawing units, kept within one period). Each tile sits at its own
+     place plus n periods, n chosen so it lands in a window one period wide round the view: a tile that
+     leaves one side comes back on the other. A shift by a period keeps a tile's depth, so the painter's
+     order never changes. */
+  const pan = React.useRef({ o: 0, v: 0, n: TILES.map(() => 0), vis: TILES.map(() => true), split: "", drag: null as null | { id: number; x: number; y: number; o0: number; t: number; touch: boolean; started: boolean } });
+  const [vbW, setVbW] = React.useState(FIELD_BOX.w);
+  const box: [number, number, number, number] = field
+    ? [W.viewBox[0] + W.viewBox[2] / 2 - vbW / 2, W.viewBox[1], vbW, W.viewBox[3]]
+    : (W.viewBox as [number, number, number, number]);
+  const boxRef = React.useRef(box);
+  boxRef.current = box;
+  const placeTiles = React.useCallback(() => {
+    if (!field) return;
+    const p = pan.current;
+    const m = n.current;
+    const [bx, , bw] = boxRef.current;
+    const left = bx - (PERIOD_W - bw) / 2;
+    const mid = bx + bw / 2;
+    p.o = ((p.o % PERIOD_W) + PERIOD_W) % PERIOD_W;
+    m.pan?.setAttribute("transform", `translate(${p.o.toFixed(2)} 0)`);
+    let moved = false;
+    for (let i = 0; i < TILES.length; i++) {
+      const k = Math.ceil((left - W.sx[i]! - p.o) / PERIOD_W);
+      if (k !== p.n[i]) {
+        p.n[i] = k;
+        moved = true;
+        const tf = k ? `translate(${(k * PERIOD_W).toFixed(2)} 0)` : "";
+        m.tileG[i]?.setAttribute("transform", tf);
+        m.ctlG[i]?.setAttribute("transform", tf);
+      }
+      p.vis[i] = Math.abs(W.sx[i]! + p.o + k * PERIOD_W - mid) < bw / 2 + 170;
+    }
+    // the shadows: one path per wrap position, rebuilt only when a tile changes place
+    const sig = p.n.join("");
+    if (moved || sig !== p.split) {
+      p.split = sig;
+      const lo = Math.min(...p.n);
+      for (let g = 0; g < 2; g++) {
+        const d = W.halos.filter((_, i) => p.n[i] === lo + g).join("");
+        const el = m.halos[g];
+        el?.setAttribute("d", d);
+        el?.setAttribute("transform", `translate(${((lo + g) * PERIOD_W).toFixed(2)} 0)`);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [W, field]);
+  /* where a control's tile is now, so pointer maths happens in its own (unpanned) place */
+  const shiftOf = (ti: number) => (field ? pan.current.o + pan.current.n[ti]! * PERIOD_W : 0);
   const said = React.useRef("");
 
   /* write one frame from the state; only what changed since the last frame is rewritten */
@@ -291,14 +429,17 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const s = st.current;
     const m = n.current;
     const idle = idleAt(s.t, calm, W);
+    const vis = pan.current.vis;
     for (let i = 0; i < KNOBS.length; i++) {
+      if (!vis[G.KNOB_TI[i]!]) continue;
       if (!changed(`k${i}`, s.angles[i]!, 0.05)) continue;
       const kg = KNOB_GEO[i];
       if (kg) {
         const dots = knurlDots(kg, s.angles[i]!);
         for (let b = 0; b < DOT_BUCKETS; b++) m.dots[i]![b]?.setAttribute("d", dots[b]!);
         m.pointers[i]?.setAttribute("d", knobPointer(kg, s.angles[i]!));
-      } else writeDimple(m.dimples[i]!, jogDimple(JOG_GEO[i]!, s.angles[i]!));
+      } else if (G.DIAL_GEO[i]) m.holesDial[i]?.setAttribute("d", dialHoles(G.DIAL_GEO[i]!, s.angles[i]!));
+      else writeDimple(m.dimples[i]!, jogDimple(JOG_GEO[i]!, s.angles[i]!));
     }
     for (let j = 0; j < CAPPED.length; j++) {
       const wts = idle.tones[j]!;
@@ -311,6 +452,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       }
     }
     for (let i = 0; i < PRESSABLE.length; i++) {
+      if (!vis[G.PRESS_TI[i]!]) continue;
       const p = Math.min(1, Math.max(idle.presses[i]! * s.seq, s.hand[i]!.at));
       const pg = PRESS_GEO[i]!;
       if (pg.kind === "pads") {
@@ -322,7 +464,15 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         }
       }
       if (!changed(`p${i}`, p)) continue;
-      if (pg.kind === "disc") {
+      if (pg.kind === "type") {
+        const pick = s.hand[i]!.at > 0.02 ? s.pick[i]! : idle.picks[i]!;
+        for (let j = 0; j < 4; j++) m.typeCaps[i]![j]?.setAttribute("transform", typeDrop(j === pick ? p : 0));
+      } else if (pg.kind === "stamp") m.moves[i]?.setAttribute("transform", stampDrop(p));
+      else if (pg.kind === "bell") m.moves[i]?.setAttribute("transform", translateAlong(P, [0, 0, -p * 2.6]));
+      else if (pg.kind === "drawer") {
+        writeSolid(m.press[i] ?? null, drawerFront(pg.g, p));
+        m.moves[i]?.setAttribute("transform", drawerSlide(p));
+      } else if (pg.kind === "disc") {
         m.pressFace[i]?.setAttribute("d", discFace(pg.g, p));
         m.pressShine[i]?.setAttribute("d", discShine(pg.g, p));
       } else if (pg.kind === "soft") {
@@ -338,6 +488,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       }
     }
     for (let i = 0; i < FADERS.length; i++) {
+      if (!vis[G.FADER_TI[i]!]) continue;
       if (!changed(`f${i}`, s.fader[i]!)) continue;
       const g = FADER_GEO[i]!;
       writeSolid(m.caps[i] ?? null, faderCap(g, s.fader[i]!));
@@ -345,11 +496,20 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       m.capHalos[i]?.setAttribute("d", g.halo(s.fader[i]!));
     }
     for (let i = 0; i < SWITCHES.length; i++) {
+      if (!vis[G.SWITCH_TI[i]!]) continue;
       const v = Math.min(1, Math.max(0, s.thumb[i]!.at));
       if (changed(`l${i}`, s.on[i] ? 1 : 0)) m.lamps[i]?.toggleAttribute("data-on", s.on[i]!);
       if (!changed(`s${i}`, v)) continue;
       const g = SWITCH_GEO[i];
-      if (g) {
+      if (G.BAT_GEO[i]) {
+        const lv = batLever(G.BAT_GEO[i]!, v);
+        m.levers[i]![0]?.setAttribute("d", lv.rod);
+        m.levers[i]![1]?.setAttribute("d", lv.ball);
+      } else if (G.KNIFE_GEO[i]) {
+        const kb = knifeBlade(G.KNIFE_GEO[i]!, v);
+        m.levers[i]![0]?.setAttribute("d", kb.blade);
+        m.levers[i]![1]?.setAttribute("d", kb.handle);
+      } else if (g) {
         writeSolid(m.thumbs[i] ?? null, switchThumb(g, v));
         m.thumbGrips[i]?.setAttribute("d", switchGrip(g, v));
       } else {
@@ -359,6 +519,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       }
     }
     for (let i = 0; i < STICK_GEO.length; i++) {
+      if (!vis[G.STICK_TI[i]!]) continue;
       const tx = s.tilt[i]![0]!.at;
       const ty = s.tilt[i]![1]!.at;
       if (!changed(`x${i}`, tx * 1000 + ty, 0.5)) continue;
@@ -367,15 +528,49 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       m.sticks[i]![1]?.setAttribute("d", parts.ball);
     }
     for (let i = 0; i < LED_GEO.length; i++) {
+      if (!vis[G.LED_TI[i]!]) continue;
       const lit = Math.round(idle.leds[i]! * 10);
       if (!changed(`e${i}`, lit)) continue;
       for (let j = 0; j < 10; j++) m.leds[i]![j]?.toggleAttribute("data-on", j < lit);
     }
+    // the office's gauges and counters
+    for (let i = 0; i < G.GAUGE_GEO.length; i++) {
+      if (!vis[G.GAUGE_TI[i]!]) continue;
+      if (changed(`gg${i}`, idle.gauges[i]!, 0.002)) m.needles[i]?.setAttribute("d", gaugeNeedle(G.GAUGE_GEO[i]!, idle.gauges[i]!));
+    }
+    if (m.counters.length) {
+      const count = String(1000 + Math.floor(s.t / 1.6) + Math.floor(s.clock * 0)).slice(-4);
+      for (const c of m.counters) if (c && c.textContent !== count) c.textContent = count;
+    }
+    // the lab's screens: a live trace on each scope, a moving spectrum on each dot-matrix
+    for (let i = 0; i < G.SCOPE_GEO.length; i++) {
+      if (!vis[G.SCOPE_TI[i]!]) continue;
+      const g = G.SCOPE_GEO[i]!;
+      const ph = s.t * (calm ? 0.12 : 0.3) + i * 0.37;
+      if (!changed(`sc${i}`, ph, 0.002)) continue;
+      const amp = 0.62 + 0.28 * Math.sin(s.t * 0.7 + i * 1.3);
+      m.traces[i]?.setAttribute("d", scopeTrace(g, amp, 2 + (i % 3), ph, i));
+    }
+    for (let i = 0; i < G.MATRIX_GEO.length; i++) {
+      if (!vis[G.MATRIX_TI[i]!]) continue;
+      const step = Math.floor(s.t * (calm ? 5 : 10));
+      if (!changed(`mx${i}`, step)) continue;
+      const tt = step / 10;
+      const rows = 7;
+      m.matrix[i]?.setAttribute(
+        "d",
+        matrixDots(G.MATRIX_GEO[i]!, (c, r) => {
+          const level = 0.15 + 0.75 * Math.abs(Math.sin(c * 0.55 + tt * 1.9 + i)) * (0.55 + 0.45 * Math.sin(tt * 1.1 + c * 0.23 + i * 2));
+          return rows - 1 - r < Math.round(level * rows);
+        }),
+      );
+    }
     // the grilles: idle ripples plus the ones the hand made
     for (let gi = 0; gi < GRILLE_GEO.length; gi++) {
-      const G = GRILLE_GEO[gi]!;
-      for (let k = 0; k < G.radii.length; k++) {
-        const r = G.radii[k]!;
+      if (!vis[G.GRILLE_TI[gi]!]) continue;
+      const GG = GRILLE_GEO[gi]!;
+      for (let k = 0; k < GG.radii.length; k++) {
+        const r = GG.radii[k]!;
         let v = idle.ripple(r) * s.seq;
         for (const at0 of s.handAt) {
           const age = s.clock - at0;
@@ -410,7 +605,24 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     touch();
   };
 
-  const box = W.viewBox;
+
+  // a field's viewBox is as wide as the stage asks, so the strip fills it at the field's height
+  React.useEffect(() => {
+    const node = root.current;
+    if (!node || !field || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((e) => {
+      const r = e[0]?.contentRect;
+      if (r && r.height > 0) setVbW(Math.round((FIELD_BOX.h * r.width) / r.height));
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [field]);
+  React.useLayoutEffect(() => {
+    pan.current.n = TILES.map(() => NaN);
+    pan.current.split = "";
+    placeTiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vbW, placeTiles]);
 
   // watch the motion level: OS reduced motion, or the page's data-rap-motion
   React.useEffect(() => {
@@ -465,6 +677,20 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       spring(s.tilt[i]![0]!, hand ? hand[0] : ix * s.seq, dt, 260, 16);
       spring(s.tilt[i]![1]!, hand ? hand[1] : iy * s.seq, dt, 260, 16);
     }
+    if (field) {
+      const p = pan.current;
+      if (!p.drag?.started) {
+        if (Math.abs(p.v) > 2) {
+          p.o += p.v * dt;
+          p.v *= Math.exp(-dt / 0.42);
+        } else {
+          p.v = 0;
+          // a very slow drift while nobody touches it
+          if (s.touched > QUIET && !p.drag && !s.held) p.o -= (calm ? 4 : 9) * dt;
+        }
+      }
+      placeTiles();
+    }
     draw(calm);
     return true;
   }, visible && !still);
@@ -505,9 +731,20 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       st.current = { ...initial(W, t, Boolean(c)), held: true };
       draw(Boolean(c));
     };
+    // and "cm-pan" with { o } moves the strip to an offset (drawing units), for checks of the seam
+    const panTo = (e: Event) => {
+      const { o } = (e as CustomEvent<{ o: number }>).detail;
+      pan.current.o = o;
+      pan.current.v = 0;
+      placeTiles();
+    };
     node.addEventListener("cm-seek", seek);
-    return () => node.removeEventListener("cm-seek", seek);
-  }, [draw, kick]);
+    node.addEventListener("cm-pan", panTo);
+    return () => {
+      node.removeEventListener("cm-seek", seek);
+      node.removeEventListener("cm-pan", panTo);
+    };
+  }, [draw, kick, placeTiles]);
 
   /* ---------------------------------------------------------- pointer */
   const drag = React.useRef<{ kind: string; i: number; id: number; last: number } | null>(null);
@@ -532,7 +769,8 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     const s = st.current;
     s.handHeld[i] = true;
     s.handAt.push(s.clock);
-    snd.current.play("tap");
+    if (PRESSABLE[i]?.ctl.kind === "bell") snd.current.play("success", { strength: 0.45 });
+    else snd.current.play("tap");
   };
   const lift = (i: number) => {
     const s = st.current;
@@ -563,10 +801,30 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   };
   const onPointerDown = (e: React.PointerEvent) => {
     const ctl = (e.target as Element).closest("[data-ctl]");
-    if (!ctl) return;
+    if (!ctl) {
+      // the floor: pan the strip (a touch only once it is clearly sideways, so the page still scrolls)
+      if (!field) return;
+      const p = pan.current;
+      const touchy = e.pointerType === "touch";
+      p.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, o0: p.o, t: performance.now(), touch: touchy, started: !touchy };
+      p.v = 0;
+      if (!touchy) {
+        try {
+          (e.currentTarget as Element).setPointerCapture(e.pointerId);
+        } catch {
+          /* synthetic */
+        }
+        root.current?.setAttribute("data-grabbing", "");
+        e.preventDefault();
+      }
+      kick();
+      return;
+    }
     const [kind, idx] = (ctl.getAttribute("data-ctl") ?? "").split("-");
     const i = Number(idx ?? 0);
-    const [x, y] = toSvg(e);
+    const [x0, y] = toSvg(e);
+    const ti = kind === "knob" ? G.KNOB_TI[i]! : kind === "btn" ? G.PRESS_TI[i]! : kind === "fd" ? G.FADER_TI[i]! : kind === "stick" ? G.STICK_TI[i]! : -1;
+    const x = ti >= 0 ? x0 - shiftOf(ti) : x0;
     touch();
     if (kind === "snd") {
       toggleSound();
@@ -578,6 +836,9 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       if (pg.kind === "keys" || pg.kind === "pads") {
         const [wx, wy] = toWorld(x, y, pg.g.z0 + pg.g.h);
         st.current.pick[i] = multiNearest(pg.g, wx, wy);
+      } else if (pg.kind === "type") {
+        const [wx, wy] = toWorld(x, y, pg.pick.z0 + 10);
+        st.current.pick[i] = multiNearest(pg.pick, wx, wy);
       }
       press(i);
     }
@@ -608,9 +869,43 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     st.current.tiltHand[i] = [tx, ty];
   };
   const onPointerMove = (e: React.PointerEvent) => {
+    const p = pan.current;
+    if (p.drag && p.drag.id === e.pointerId) {
+      const dx = e.clientX - p.drag.x;
+      const dy = e.clientY - p.drag.y;
+      if (!p.drag.started) {
+        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+          p.drag.started = true;
+          p.drag.x = e.clientX;
+          p.drag.o0 = p.o;
+          try {
+            (e.currentTarget as Element).setPointerCapture(e.pointerId);
+          } catch {
+            /* synthetic */
+          }
+          root.current?.setAttribute("data-grabbing", "");
+        } else if (Math.abs(dy) > 8) p.drag = null; // a vertical swipe: the page scrolls
+        return;
+      }
+      const k = svgRef.current?.getScreenCTM()?.a || 1; // screen px per drawing unit
+      const o = p.drag.o0 + (e.clientX - p.drag.x) / k;
+      const now = performance.now();
+      const dt = Math.max(1, now - p.drag.t) / 1000;
+      // the release speed: a smoothed velocity of the last moves
+      p.v = p.v * 0.6 + ((o - p.o) / dt) * 0.4;
+      p.drag.t = now;
+      p.o = o;
+      p.drag.o0 = o;
+      p.drag.x = e.clientX;
+      placeTiles();
+      kick();
+      return;
+    }
     const d = drag.current;
     if (!d || d.id !== e.pointerId) return;
-    const [x, y] = toSvg(e);
+    const [x0, y] = toSvg(e);
+    const ti = d.kind === "knob" ? G.KNOB_TI[d.i]! : d.kind === "fd" ? G.FADER_TI[d.i]! : d.kind === "stick" ? G.STICK_TI[d.i]! : -1;
+    const x = ti >= 0 ? x0 - shiftOf(ti) : x0;
     if (d.kind === "stick") {
       stickTo(d.i, x, y);
       touch();
@@ -633,6 +928,16 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     touch();
   };
   const onPointerUp = (e: React.PointerEvent) => {
+    const p = pan.current;
+    if (p.drag && p.drag.id === e.pointerId) {
+      // let go: glide on with the hand's speed (none if it rested before letting go)
+      if (!p.drag.started || performance.now() - p.drag.t > 90 || e.type === "pointercancel") p.v = 0;
+      p.v = Math.max(-3200, Math.min(3200, p.v));
+      p.drag = null;
+      root.current?.removeAttribute("data-grabbing");
+      kick();
+      return;
+    }
     const d = drag.current;
     if (!d || d.id !== e.pointerId) return;
     if (d.kind === "btn") lift(d.i);
@@ -658,6 +963,11 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         if (!heldKeys.current.has(k)) lift(k - 1);
       }, 120);
       touch();
+    } else if (field && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      e.preventDefault();
+      // ←/→ glide the strip a step (Shift: further)
+      pan.current.v += (e.key === "ArrowLeft" ? 1 : -1) * (e.shiftKey ? 1500 : 600);
+      kick();
     } else if (e.key.startsWith("Arrow")) {
       e.preventDefault();
       const active = Math.max(0, KNOBS.indexOf(CAPPED[idleAt(s.t, calm, W).active]!));
@@ -703,6 +1013,44 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
   const art = React.useMemo(() => {
     const controls = W.ctlOrder.map((ti) => {
     const t = TILES[ti]!;
+    if (t.ctl.kind === "knob" && t.ctl.dial) {
+      const i = KNOBS.indexOf(t);
+      const g = G.DIAL_GEO[i]!;
+      return (
+        <g key={t.id} data-ctl={`knob-${i}`} className="cm-knob cm-dial">
+          <path className="cm-soft-halo" d={g.halo} />
+          <Round paths={g.ring} paint={paint} tone="mid" crease="faint" fill="brass" />
+          <Round paths={g.wheel} paint={paint} tone="mid" crease="faint">
+            <path ref={(el) => void (m.holesDial[i] = el)} className="cm-dial-holes" d={dialHoles(g, FIRST.angles[i]!)} />
+            <path className="cm-dial-card" d={g.card} />
+          </Round>
+          <Round paths={g.stop} paint={paint} tone="mid" crease="faint" fill="brass" />
+        </g>
+      );
+    }
+    if (t.ctl.kind === "gauge") {
+      const i = W.gauges.indexOf(t);
+      const g = G.GAUGE_GEO[i]!;
+      // the first gauge (the office's big one in the middle) carries the one red needle
+      const lit = i === 0;
+      return (
+        <g key={t.id} className="cm-gauge">
+          <path className="cm-soft-halo" d={g.halo} />
+          <Round paths={g.bezel} paint={paint} tone="mid" crease="faint" fill="brass" />
+          <path className="cm-gauge-face" d={g.face} />
+          <Dots points={g.minor} size={g.r > 30 ? 0.9 : 0.7} tone="mid" />
+          <Dots points={g.major} size={g.r > 30 ? 1.6 : 1.2} tone="hi" />
+          <g className="cm-red-zone">
+            <Dots points={g.red} size={g.r > 30 ? 1.3 : 1} tone="hi" />
+          </g>
+          <FaceText transform={g.at} size={g.r > 30 ? 6 : 4} tone="mid" anchor="middle">
+            {g.r > 30 ? "kPa" : "VOLTS"}
+          </FaceText>
+          <path ref={(el) => void (m.needles[i] = el)} className="cm-needle" data-lit={lit ? "" : undefined} data-free="end" d={gaugeNeedle(g, FIRST.gauges[i]!)} />
+          <path className="cm-hub" d={g.hub} />
+        </g>
+      );
+    }
     if (t.ctl.kind === "knob" && t.ctl.jog) {
       const i = KNOBS.indexOf(t);
       const g = JOG_GEO[i]!;
@@ -712,7 +1060,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           <path className="cm-recess-wall" data-shade={0} d={g.socket} />
           <path className="iso-line" data-tone="lo" d={g.socket} />
           <path className="cm-soft-halo" d={g.halo} />
-          <Round paths={g.body} paint={paint} tone="mid" crease="faint">
+          <Round paths={g.body} paint={paint} tone="mid" crease="faint" fill={ctlFill(t)}>
             <path className="iso-line" data-tone="faint" d={g.rim} />
           </Round>
           <clipPath id={`${paint}-dim-${t.id}`}>
@@ -786,9 +1134,52 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           <Dots points={g.scale} size={0.9} tone="mid" />
           <Dots points={g.major} size={1.5} tone="hi" />
           <path ref={(el) => void (m.capHalos[i] = el)} className="cm-soft-halo" d={g.halo(v)} />
-          <LiveSolid ref={(el) => void (m.caps[i] = el)} paths={faderCap(g, v)} tone="mid" crease="faint">
+          <LiveSolid ref={(el) => void (m.caps[i] = el)} paths={faderCap(g, v)} tone="mid" crease="faint" fill={ctlFill(t)}>
             <path ref={(el) => void (m.grips[i] = el)} className="iso-line" data-tone="lo" d={faderGrip(g, v)} />
           </LiveSolid>
+        </g>
+      );
+    }
+    if (t.ctl.kind === "switch" && t.ctl.bat) {
+      const i = SWITCHES.indexOf(t);
+      const g = G.BAT_GEO[i]!;
+      const lv = batLever(g, st.current.thumb[i]!.at);
+      return (
+        <g key={t.id} data-ctl={`sw-${i}`} className="cm-switch cm-bat">
+          <path className="cm-soft-halo" d={g.halo} />
+          <LiveSolid paths={g.plate} tone="mid" crease="faint" fill="brass" />
+          <Dots points={g.screws} size={1.3} tone="hi" />
+          <FaceText transform={g.onAt} size={4.2} tone="mid">
+            ON
+          </FaceText>
+          <FaceText transform={g.offAt} size={4.2} tone="mid">
+            OFF
+          </FaceText>
+          <Round paths={g.bush} paint={paint} tone="mid" crease="faint" fill="brass">
+            <path className="iso-line" data-tone="lo" d={g.nut} />
+          </Round>
+          <path ref={(el) => void (m.levers[i]![0] = el)} className="cm-lever" d={lv.rod} />
+          <path ref={(el) => void (m.levers[i]![1] = el)} className="cm-ball" d={lv.ball} style={{ fill: `url(#${paint}-ball)` }} />
+          <path ref={(el) => void (m.lamps[i] = el)} className="cm-lamp cm-hidden-lamp" d="" />
+        </g>
+      );
+    }
+    if (t.ctl.kind === "switch" && t.ctl.knife) {
+      const i = SWITCHES.indexOf(t);
+      const g = G.KNIFE_GEO[i]!;
+      const kb = knifeBlade(g, st.current.thumb[i]!.at);
+      return (
+        <g key={t.id} data-ctl={`sw-${i}`} className="cm-switch cm-knife">
+          <path className="cm-soft-halo" d={g.halo} />
+          <LiveSolid paths={g.base} tone="mid" crease="faint" fill="slate" />
+          <LiveSolid paths={g.hinge} tone="mid" crease="faint" fill="brass" />
+          <LiveSolid paths={g.jaw} tone="mid" crease="faint" fill="brass">
+            <path className="iso-line" data-tone="hi" d={g.slit} />
+          </LiveSolid>
+          <path ref={(el) => void (m.levers[i]![0] = el)} className="cm-blade" d={kb.blade} />
+          <path ref={(el) => void (m.levers[i]![1] = el)} className="cm-handle" d={kb.handle} />
+          <path className="cm-pin" d={kb.pin} />
+          <path ref={(el) => void (m.lamps[i] = el)} className="cm-lamp cm-hidden-lamp" d="" />
         </g>
       );
     }
@@ -801,8 +1192,8 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           <path className="iso-line" data-tone="faint" d={g.lampRing} />
           <path ref={(el) => void (m.lamps[i] = el)} className="cm-lamp" d={g.lamp} data-on={st.current.on[i] ? "" : undefined} />
           <RecessArt r={g.recess} id={`${paint}-rk-${t.id}`} wall={0} />
-          <LiveSolid ref={(el) => void (m.rockers[i]![0] = el)} paths={back} tone="mid" crease="faint" />
-          <LiveSolid ref={(el) => void (m.rockers[i]![1] = el)} paths={front} tone="mid" crease="faint" />
+          <LiveSolid ref={(el) => void (m.rockers[i]![0] = el)} paths={back} tone="mid" crease="faint" fill={ctlFill(t)} />
+          <LiveSolid ref={(el) => void (m.rockers[i]![1] = el)} paths={front} tone="mid" crease="faint" fill={ctlFill(t)} />
         </g>
       );
     }
@@ -820,6 +1211,25 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           </Round>
           <path ref={(el) => void (m.sticks[i]![0] = el)} className="cm-shaft" d={parts.shaft} />
           <path ref={(el) => void (m.sticks[i]![1] = el)} className="cm-ball" d={parts.ball} style={{ fill: `url(#${paint}-ball)` }} />
+        </g>
+      );
+    }
+    if (t.ctl.kind === "display" && t.ctl.counter) {
+      const i = W.displays.indexOf(t);
+      const g = LCD_GEO[i]!;
+      const cw = g.w / 4;
+      return (
+        <g key={t.id} className="cm-display cm-counter">
+          <g className="cm-lcd">
+            <RecessArt r={g.recess} id={`${paint}-ctr-${t.id}`} wall={0} />
+          </g>
+          <g transform={g.at} className="cm-counter-text">
+            <path className="cm-counter-cuts" d={[1, 2, 3].map((k) => `M${(k * cw).toFixed(2)} 0V${g.d}`).join("")} />
+            <path className="cm-counter-band" d={`M0 ${(g.d * 0.22).toFixed(2)}H${g.w}M0 ${(g.d * 0.78).toFixed(2)}H${g.w}`} />
+            <text ref={(el) => void (m.counters[i] = el)} x={g.w / 2} y={g.d * 0.7} fontSize={21} textAnchor="middle" textLength={g.w * 0.86} lengthAdjust="spacing">
+              1000
+            </text>
+          </g>
         </g>
       );
     }
@@ -842,6 +1252,55 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
               120
             </text>
           </g>
+        </g>
+      );
+    }
+    if (t.ctl.kind === "scope" || t.ctl.kind === "matrix") {
+      const isScope = t.ctl.kind === "scope";
+      const i = isScope ? W.scopes.indexOf(t) : W.matrices.indexOf(t);
+      const g = isScope ? G.SCOPE_GEO[i]! : G.MATRIX_GEO[i]!;
+      const clip = `${paint}-glass-${t.id}`;
+      return (
+        <g key={t.id} className="cm-screen">
+          <RecessArt r={g.recess} id={`${paint}-scr-${t.id}`} wall={0} />
+          <g transform={g.at}>
+            <clipPath id={clip}>
+              <rect width={g.w} height={g.d} rx={4} />
+            </clipPath>
+            <g clipPath={`url(#${clip})`}>
+              {isScope ? (
+                <>
+                  <path className="cm-grat" d={graticule(g)} />
+                  <path ref={(el) => void (m.traces[i] = el)} className="cm-trace" d={scopeTrace(g, 0.7, 2 + (i % 3), i * 0.37, i)} />
+                </>
+              ) : (
+                <>
+                  <path className="cm-mx-off" d={matrixDots(g, () => true)} />
+                  <path ref={(el) => void (m.matrix[i] = el)} className="cm-mx-on" d="" />
+                </>
+              )}
+              <path className="cm-scanlines" d={Array.from({ length: Math.floor(g.d / 2) }, (_, k) => `M0 ${(k * 2 + 1).toFixed(1)}H${g.w}`).join("")} />
+            </g>
+            {/* the glass's edge: every grid line and scan line ends on it */}
+            <rect className="cm-glass-edge" width={g.w} height={g.d} rx={4} />
+          </g>
+        </g>
+      );
+    }
+    if (t.ctl.kind === "jacks") {
+      const g = G.JACK_GEO[W.jacks.indexOf(t)]!;
+      return (
+        <g key={t.id} className="cm-jacks">
+          {g.posts.map((p, k) => (
+            <g key={k} data-post={k === 0 ? "hot" : undefined}>
+              <Round paths={p.collar} paint={paint} tone="mid" crease="faint" className="cm-collar" />
+              <Round paths={p.nut} paint={paint} tone="mid" crease="faint">
+                <path className="iso-line" data-tone="lo" d={p.ridges} />
+                <path className="iso-line" data-tone="faint" d={p.cap} />
+                <path className="cm-hole-dark" d={p.hole} />
+              </Round>
+            </g>
+          ))}
         </g>
       );
     }
@@ -869,7 +1328,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           <path className="iso-line" data-tone="faint" d={g.lampRing} />
           <path ref={(el) => void (m.lamps[i] = el)} className="cm-lamp" d={g.lamp} data-on={st.current.on[i] ? "" : undefined} />
           <RecessArt r={g.recess} id={`${paint}-sw-${t.id}`} wall={0} />
-          <LiveSolid ref={(el) => void (m.thumbs[i] = el)} paths={switchThumb(g, v)} tone="mid" crease="faint">
+          <LiveSolid ref={(el) => void (m.thumbs[i] = el)} paths={switchThumb(g, v)} tone="mid" crease="faint" fill={ctlFill(t)}>
             <path ref={(el) => void (m.thumbGrips[i] = el)} className="iso-line" data-tone="lo" d={switchGrip(g, v)} />
           </LiveSolid>
         </g>
@@ -879,13 +1338,82 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     if (i < 0) return null;
     const pg = PRESS_GEO[i]!;
     const p0 = FIRST.presses[i]!;
+    if (pg.kind === "type") {
+      const letters = ["Q", "W", "E", "R", "A", "S", "D", "F", "Z", "X"];
+      return (
+        <g key={t.id} data-ctl={`btn-${i}`} className="cm-type">
+          {pg.g.keys.map((k, j) => (
+            <g key={j}>
+              <Round paths={k.stem} paint={paint} tone="mid" crease="faint" />
+              <g ref={(el) => void (m.typeCaps[i]![j] = el)}>
+                <Round paths={k.cap} paint={paint} tone="mid" crease="faint" fill="cream">
+                  <path className="cm-type-rim" d={k.rim} />
+                  <text className="cm-type-letter" transform={k.at} fontSize={8} textAnchor="middle" y={2.8}>
+                    {letters[(j + i * 4) % letters.length]}
+                  </text>
+                </Round>
+              </g>
+            </g>
+          ))}
+        </g>
+      );
+    }
+    if (pg.kind === "stamp") {
+      const g = pg.g;
+      return (
+        <g key={t.id} data-ctl={`btn-${i}`} className="cm-stamp">
+          <LiveSolid paths={g.tin} tone="mid" crease="faint" fill="slate" />
+          <path className="cm-ink" d={g.ink} />
+          <path className="cm-soft-halo" d={g.halo} />
+          <g ref={(el) => void (m.moves[i] = el)}>
+            <LiveSolid paths={g.rubber} tone="hi" crease="faint" className="cm-rubber" />
+            <LiveSolid paths={g.block} tone="mid" crease="faint" fill="wood" />
+            <Round paths={g.handle} paint={paint} tone="mid" crease="faint" fill="wood" />
+            <path className="cm-ball cm-wood-ball" d={g.knob} style={{ fill: `url(#${paint}-ball)` }} />
+          </g>
+        </g>
+      );
+    }
+    if (pg.kind === "drawer") {
+      const g = pg.g;
+      return (
+        <g key={t.id} data-ctl={`btn-${i}`} className="cm-drawer">
+          <path className="cm-soft-halo" d={g.halo} />
+          <LiveSolid paths={g.cabinet} tone="mid" crease="faint" fill="wood" />
+          <LiveSolid ref={(el) => void (m.press[i] = el)} paths={drawerFront(g, 0)} tone="mid" crease="faint" fill="cream" />
+          <g ref={(el) => void (m.moves[i] = el)}>
+            <g transform={g.face}>
+              <rect className="cm-holder" x={11} y={1.6} width={16} height={6.2} rx={0.6} />
+              <text className="cm-holder-text" x={19} y={6.2} fontSize={3.6} textAnchor="middle">
+                {["A–C", "D–G", "H–L", "M–P", "Q–S", "T–Z"][(i * 5) % 6]}
+              </text>
+              <path className="cm-pull" d="M14.5 11.2a4.5 3.4 0 0 0 9 0Z" />
+            </g>
+          </g>
+        </g>
+      );
+    }
+    if (pg.kind === "bell") {
+      const g = pg.g;
+      return (
+        <g key={t.id} data-ctl={`btn-${i}`} className="cm-bell">
+          <path className="cm-soft-halo" d={g.halo} />
+          <Round paths={g.base} paint={paint} tone="mid" crease="faint" fill="wood" />
+          <path className="cm-dome" d={g.dome} style={{ fill: `url(#${paint}-ball)` }} />
+          <g ref={(el) => void (m.moves[i] = el)}>
+            <Round paths={g.plunger} paint={paint} tone="mid" crease="faint" />
+            <path className="cm-ball" d={g.knob} style={{ fill: `url(#${paint}-ball)` }} />
+          </g>
+        </g>
+      );
+    }
     if (pg.kind === "keys" || pg.kind === "pads") {
       const g = pg.g;
       const pick = FIRST.picks[i]!;
       return (
         <g key={t.id} data-ctl={`btn-${i}`} className={pg.kind === "pads" ? "cm-pads" : "cm-keys"}>
           {g.plans.map((_, j) => (
-            <LiveSolid key={j} ref={(el) => void (m.multi[i]![j] = el)} paths={multiCap(g, j, j === pick ? p0 : 0)} tone="mid" crease="faint" className="cm-subkey" />
+            <LiveSolid key={j} ref={(el) => void (m.multi[i]![j] = el)} paths={multiCap(g, j, j === pick ? p0 : 0)} tone="mid" crease="faint" className="cm-subkey" fill={pg.kind === "keys" ? ctlFill(t) : (j + ctlFill(t)) % 3 === 0 ? ctlFill(t) : 0} />
           ))}
         </g>
       );
@@ -901,7 +1429,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
           </clipPath>
           <path className="cm-recess-wall" data-shade={1} d={g.well} />
           <g clipPath={`url(#${paint}-well-${t.id})`}>
-            <path ref={(el) => void (m.pressFace[i] = el)} className="cm-dark" d={discFace(g, p0)} />
+            <path ref={(el) => void (m.pressFace[i] = el)} className="cm-dark" data-fill={ctlFill(t) || undefined} d={discFace(g, p0)} />
             <path ref={(el) => void (m.pressShine[i] = el)} className="cm-shine" d={discShine(g, p0)} />
           </g>
           <path className="iso-line" data-tone="lo" d={g.well} />
@@ -914,7 +1442,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
         <g key={t.id} data-ctl={`btn-${i}`} className="cm-soft">
           <path className="iso-line" data-tone="faint" d={g.base} />
           <path className="cm-soft-halo" d={g.halo} />
-          <Round ref={(el) => void (m.press[i] = el)} paths={softCushion(g, p0)} paint={paint} tone="mid" crease="faint" />
+          <Round ref={(el) => void (m.press[i] = el)} paths={softCushion(g, p0)} paint={paint} tone="mid" crease="faint" fill={ctlFill(t)} />
           <path ref={(el) => void (m.pressFace[i] = el)} className="iso-line" data-tone="faint" d={softDome(g, p0)} />
           <g ref={(el) => void (m.icons[i] = el)} transform={softDrop(p0)}>
             <g transform={`${softIconAt(g)} scale(1.45)`}>
@@ -928,7 +1456,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     return (
       <g key={t.id} data-ctl={`btn-${i}`} className="cm-pill">
         <RecessArt r={g.recess} id={`${paint}-pill-${t.id}`} />
-        <LiveSolid ref={(el) => void (m.press[i] = el)} paths={pillKey(g, p0)} tone="mid" crease="faint">
+        <LiveSolid ref={(el) => void (m.press[i] = el)} paths={pillKey(g, p0)} tone="mid" crease="faint" fill={ctlFill(t)}>
           <path ref={(el) => void (m.pressFace[i] = el)} className="iso-line" data-tone="faint" d={pillFace(g, p0)} />
         </LiveSolid>
       </g>
@@ -938,44 +1466,35 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     return (
       <>
         <Paints id={paint} />
-        <Tiles id={paint} world={W} hole={(g, k, el) => void (m.holes[g]![k] = el)} lamp={(g, el) => void (m.sndLamps[g] = el)} />
-        {controls}
+        <g ref={(el) => void (m.pan = el)}>
+          {field ? (
+            <>
+              <path ref={(el) => void (m.halos[0] = el)} className="iso-halo cm-halo" />
+              <path ref={(el) => void (m.halos[1] = el)} className="iso-halo cm-halo" />
+            </>
+          ) : null}
+          <Tiles
+            id={paint}
+            world={W}
+            halo={!field}
+            tile={(i, el) => void (m.tileG[i] = el)}
+            hole={(g, k, el) => void (m.holes[g]![k] = el)}
+            lamp={(g, el) => void (m.sndLamps[g] = el)}
+          />
+          {controls.map((c, k) => {
+            const ti = W.ctlOrder[k]!;
+            return c ? (
+              <g key={TILES[ti]!.id} ref={(el) => void (m.ctlG[ti] = el)} data-tfill={tileFill(TILES[ti]!) || undefined}>
+                {c}
+              </g>
+            ) : null;
+          })}
+        </g>
       </>
     );
     // the markup is static: the loop writes every change through refs
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [W, paint]);
-
-  /* ---------------------------------------------------------- footnote marks: HTML over the drawing */
-  const [spots, setSpots] = React.useState<{ n: number; x: number; y: number; show: boolean }[]>([]);
-  const markList = marks ?? [];
-  const markKey = markList.map((k) => `${k.id}:${k.n}`).join(",");
-  React.useEffect(() => {
-    const node = root.current;
-    const svg = svgRef.current;
-    if (!node || !svg || !markList.length) return;
-    const place = () => {
-      const ctm = svg.getScreenCTM();
-      const rect = node.getBoundingClientRect();
-      if (!ctm) return;
-      setSpots(
-        markList.map(({ id, n: num }) => {
-          const t = TILES.find((tile) => tile.id === id);
-          if (!t) return { n: num, x: 0, y: 0, show: false };
-          const [x, y] = iso(anchorOf(t), P);
-          const pt = new DOMPoint(x, y).matrixTransform(ctm);
-          const px = pt.x - rect.left;
-          const py = pt.y - rect.top;
-          return { n: num, x: px, y: py, show: px > 14 && px < rect.width - 14 && py > 20 && py < rect.height - 8 };
-        }),
-      );
-    };
-    place();
-    const ro = new ResizeObserver(place);
-    ro.observe(node);
-    return () => ro.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [markKey, W]);
 
   return (
     <div
@@ -983,7 +1502,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       className="cm-stage"
       tabIndex={still ? undefined : 0}
       role={still ? undefined : "group"}
-      aria-label={still ? undefined : HINT}
+      aria-label={still ? undefined : field ? FIELD_HINT : HINT}
       onPointerDown={still ? undefined : onPointerDown}
       onPointerMove={still ? undefined : onPointerMove}
       onPointerUp={still ? undefined : onPointerUp}
@@ -993,8 +1512,7 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
     >
       <svg
         ref={svgRef}
-        className={W.layout === "field" ? "iso-svg cm-svg cm-svg-field" : "iso-svg cm-svg"}
-        preserveAspectRatio={W.layout === "field" ? "xMidYMid slice" : undefined}
+        className={field ? "iso-svg cm-svg cm-svg-field" : "iso-svg cm-svg"}
         viewBox={box.map((v) => Math.round(v * 10) / 10).join(" ")}
         role="img"
         aria-label={DESCRIPTION}
@@ -1003,25 +1521,6 @@ export const ModulesLive = React.forwardRef<ModulesHandle, ModulesLiveProps>(fun
       >
         {art}
       </svg>
-      {spots.map((sp) =>
-        sp.show ? (
-          <button
-            key={sp.n}
-            type="button"
-            className="cm-mark"
-            data-active={active === sp.n ? "" : undefined}
-            style={{ left: `${sp.x.toFixed(1)}px`, top: `${sp.y.toFixed(1)}px` }}
-            aria-label={`Note ${sp.n}`}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerEnter={() => onActive?.(sp.n)}
-            onPointerLeave={() => onActive?.(null)}
-            onFocus={() => onActive?.(sp.n)}
-            onBlur={() => onActive?.(null)}
-          >
-            {sp.n}
-          </button>
-        ) : null,
-      )}
     </div>
   );
 });
@@ -1040,17 +1539,6 @@ function layered(w: number[]) {
 function nearest(from: number, to: number) {
   const d = ((((to - from) % 360) + 540) % 360) - 180;
   return from + d;
-}
-
-/* the point a footnote mark points at: the top of the control on a tile */
-function anchorOf(t: Tile): Point3 {
-  const [cx, cy] = centreOf(t);
-  const z = topOf(t);
-  if (t.ctl.kind === "knob") return [cx, cy, z + (t.ctl.jog ? JOG.h : KNOB_H)];
-  if (t.ctl.kind === "switch") return [cx, cy, z + SWITCH.thumb.h];
-  if (t.ctl.kind === "fader") return faderTop(faderGeo(t), 0.5);
-  if (t.ctl.kind === "grille") return [cx, cy, z];
-  return [cx, cy, z + 5];
 }
 
 /* move a jog's dimple: its clip, wall, floor and rim */
