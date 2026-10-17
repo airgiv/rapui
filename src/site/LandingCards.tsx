@@ -80,7 +80,7 @@ export function LandingCards({ copyClass }: { copyClass: string }) {
                     )}
                   >
                     <span className="flex h-4 items-center">{SIGNATURE[p.value]}</span>
-                    <span className="font-display max-w-full text-[clamp(2.75rem,7.5vw,4.25rem)] leading-[0.9] break-words font-[var(--rap-display-weight,500)] tracking-[var(--rap-display-tracking,-0.04em)] [text-transform:var(--rap-display-case,none)]">
+                    <span className={cn("font-display max-w-full leading-[0.9] whitespace-nowrap", p.value === "signal" ? "text-[clamp(1.75rem,4.5vw,2.5rem)]" : "text-[clamp(2.75rem,7.5vw,4.25rem)]", " font-[var(--rap-display-weight,500)] tracking-[var(--rap-display-tracking,-0.04em)] [text-transform:var(--rap-display-case,none)]")}>
                       {c.brand}
                     </span>
                     <span className="max-w-[24ch] text-[0.9375rem] leading-snug text-ink-2">{c.tagline}</span>
