@@ -61,8 +61,9 @@ const accentTones: Record<AccentTone, string> = {
 };
 
 /**
- * Same face, different colour — how rap/ui marks the word that matters.
- * `mute` gives a two-tone grey/ink headline.
+ * A different colour — how rap/ui marks the word that matters. `mute` gives a
+ * two-tone grey/ink headline. In fun it also changes voice: the serif's light
+ * italic in lowercase against the Anton capitals (the --rap-accent-* tokens).
  */
 /* a preset may also turn the accent into a second voice (--rap-accent-font and friends:
    face, style, weight, case, tracking); unset, it inherits the headline's own */

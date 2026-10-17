@@ -161,7 +161,7 @@
      (Anton's capitals are a little narrower than the base face's lowercase) */
   --rap-wordmark-char: 0.45;
   /* the fun CTA's headline: the xxl step, but never wider than its tile allows */
-  --rap-cta-size: min(clamp(3rem, 9.6vw, 10.25rem), 12cqi);
+  --rap-cta-size: min(clamp(3.25rem, 9.6vw, 10.25rem), 15cqi);
   /* the display steps. Anton's capitals are about as wide as a tight lowercase
      grotesk but much taller, and a poster runs them big: each step is ~20% over the
      base scale (kept below for the other presets) so a headline still fills its line */
