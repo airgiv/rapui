@@ -69,6 +69,8 @@
   /* type */
   --font-sans: var(--rap-font-sans);
   --font-display: var(--rap-font-display);
+  /* the poster face: an extra narrow grotesk for capitals (Anton), opt-in */
+  --font-poster: var(--rap-font-poster);
   /* the display face where it sits on a control or a small figure (a big button's label,
      a giant field's text, a price in a receipt): the display face, except where the preset
      says otherwise — fun's Anton is a headline face, so there it is the sans */

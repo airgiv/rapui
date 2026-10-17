@@ -62,7 +62,7 @@ function FunCTA({ eyebrow, title, lead, actions, media, form }: Parts) {
       <Grid gap="column" rowGap="xl" className="items-end">
         <GridItem span={media ? 8 : 12} className="flex flex-col gap-(--rap-space-lg)">
           {eyebrow && <p className="m-0 text-[1rem] font-medium tracking-[-0.01em] opacity-85">{eyebrow}</p>}
-          <Display size="xxl" className="max-w-[14ch] text-[length:var(--rap-cta-size,var(--rap-size-xxl))] leading-[var(--rap-display-leading,0.88)]">
+          <Display size="xxl" className="max-w-[14ch]">
             {title}
           </Display>
         </GridItem>
@@ -72,11 +72,7 @@ function FunCTA({ eyebrow, title, lead, actions, media, form }: Parts) {
           </GridItem>
         )}
         <GridItem span={6} className="flex flex-col gap-(--rap-space-md)">
-          {lead && (
-            <p className="m-0 text-[length:var(--rap-lead-size,var(--rap-size-md))] leading-[var(--rap-lead-leading,1.3)] tracking-[-0.015em] max-w-[30ch] opacity-90 [font-family:var(--rap-font-serif,inherit)] [font-weight:var(--rap-serif-weight,inherit)]">
-              {lead}
-            </p>
-          )}
+          {lead && <p className="m-0 text-display-md leading-[1.3] tracking-[-0.015em] max-w-[30ch] opacity-90">{lead}</p>}
           {form && <div data-slot="cta-form" className="max-w-md">{form}</div>}
         </GridItem>
         {actions && (

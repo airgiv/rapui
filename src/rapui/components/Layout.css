@@ -76,26 +76,18 @@
   .rap-section-header[data-align="center"] { align-items: center; text-align: center; margin-inline: auto; }
   .rap-section-kicker { display: inline-flex; align-items: center; gap: 0.75em; font-size: 0.875rem; font-weight: 500; color: var(--rap-ink); }
   .rap-section-index { display: none; font-variant-numeric: tabular-nums; }
-  /* the lead: the body face, or the preset's serif voice where it has one (fun:
-     Fraunces 300, poster-subtitle size); unset tokens keep the body line */
-  .rap-section-lead {
-    margin: 0; max-width: var(--rap-section-lead-measure, 46ch);
-    font-family: var(--rap-font-serif, inherit); font-weight: var(--rap-serif-weight, inherit);
-    font-size: var(--rap-lead-size, clamp(1.0625rem, 1.3vw, 1.25rem)); line-height: var(--rap-lead-leading, 1.5);
-    letter-spacing: var(--rap-serif-tracking, normal);
-    color: var(--rap-ink-2); text-wrap: pretty;
-  }
+  .rap-section-lead { margin: 0; max-width: 46ch; font-size: clamp(1.0625rem, 1.3vw, 1.25rem); line-height: 1.5; color: var(--rap-ink-2); text-wrap: pretty; }
   .rap-section-header[data-align="center"] .rap-section-lead { margin-inline: auto; }
 
   [data-rap-preset="civic"] .rap-section-kicker { color: var(--rap-ink-2); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8125rem; }
   [data-rap-preset="civic"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
 
-  /* signal: the kicker is an LCD label — segment capitals, the index in brackets */
+  /* signal: the kicker is an instrument label — mono capitals, the index in brackets */
   [data-rap-preset="signal"] .rap-section-kicker {
-    font-family: var(--rap-font-display);
-    font-size: 0.8125rem;
+    font-family: var(--rap-font-mono);
+    font-size: 0.75rem;
     font-weight: 400;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--rap-ink-2);
   }

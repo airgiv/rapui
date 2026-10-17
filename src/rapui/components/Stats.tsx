@@ -164,7 +164,7 @@ function SignalStats({ items }: { items: StatItem[] }) {
               {first.label}
             </span>
             {/* the lead figure on a black LCD: phosphor segments over their own unlit ghosts */}
-            <p className="m-0 w-fit max-w-full rounded-lg bg-[var(--rap-panel,var(--rap-ink))] px-(--rap-space-md) py-(--rap-space-sm) font-display text-[length:clamp(3.5rem,10cqi,8.5rem)] leading-[1.1] text-[color:var(--rap-lcd,var(--rap-paper))]">
+            <p className="m-0 w-fit max-w-full rounded-lg bg-[var(--rap-panel,var(--rap-ink))] px-(--rap-space-md) py-(--rap-space-sm) font-[family-name:var(--rap-font-lcd,var(--rap-font-mono))] text-[length:clamp(3.5rem,10cqi,8.5rem)] leading-[1.1] text-[color:var(--rap-lcd,var(--rap-paper))]">
               <span className="relative inline-block">
                 <span aria-hidden className="absolute inset-0 opacity-[0.09]">
                   {show(first).replace(/[0-9]/g, "~")}

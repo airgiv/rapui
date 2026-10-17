@@ -108,9 +108,7 @@ function FunQuotes({ items }: BodyProps) {
         <Sticker shape="burst" color="acid" rotate={-10} size="2.6rem" slap aria-hidden className="absolute -top-3 -right-2 w-[5.5rem] font-display z-1">
           “
         </Sticker>
-        {/* the serif voice where the preset has one (fun: a light antiqua quote on the flame
-            tile, the poster's second voice); otherwise the display face, as before */}
-        <blockquote className="m-0 [font-family:var(--rap-font-serif,var(--rap-font-display))] [font-weight:var(--rap-serif-weight,500)] text-display-lg leading-[var(--rap-lead-leading,1.02)] tracking-[var(--rap-serif-tracking,-0.04em)] text-balance pr-[4.5rem]">
+        <blockquote className="m-0 font-display text-display-lg font-medium leading-[1.02] tracking-[-0.04em] text-balance pr-[4.5rem]">
           “{first.quote}”
         </blockquote>
         <Byline item={first} size="lg" />

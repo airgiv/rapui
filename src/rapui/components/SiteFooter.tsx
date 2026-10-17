@@ -93,12 +93,7 @@ function FunFooter({ logo, tagline, columns = [], bottom, social, wordmark }: Pa
       <Grid gap="column" rowGap="xl">
         <GridItem span={4} className="flex flex-col gap-(--rap-space-md)">
           <div className="text-[1.75rem]">{logo}</div>
-          {/* the tagline in the serif voice where the preset has one (fun: Fraunces 300, big) */}
-          {tagline && (
-            <p className="m-0 max-w-[30ch] text-[length:var(--rap-tagline-size,1.0625rem)] leading-[var(--rap-lead-leading,1.375)] tracking-[var(--rap-serif-tracking,normal)] text-ink-2 [font-family:var(--rap-font-serif,inherit)] [font-weight:var(--rap-serif-weight,inherit)]">
-              {tagline}
-            </p>
-          )}
+          {tagline && <p className="m-0 max-w-[30ch] text-[1.0625rem] leading-snug text-ink-2">{tagline}</p>}
           {social && <div className="flex flex-wrap gap-(--rap-space-xs)">{social}</div>}
         </GridItem>
         <GridItem span={8}>
@@ -117,7 +112,7 @@ function FunFooter({ logo, tagline, columns = [], bottom, social, wordmark }: Pa
           aria-hidden
           data-slot="site-footer-wordmark"
           className="m-0 font-display font-[450] leading-[0.9] tracking-[var(--rap-display-tracking-mega,-0.06em)] [text-transform:var(--rap-display-case,none)] whitespace-nowrap origin-bottom-left transition-[scale] duration-(--rap-dur-slow) ease-spring fun:hover:scale-[1.015]"
-          style={{ fontSize: `clamp(3rem, calc(100cqi / ${Math.max(wordmark.length, 3)} / var(--rap-wordmark-char, 0.5)), 22rem)` }}
+          style={{ fontSize: `clamp(3rem, ${(100 / (Math.max(wordmark.length, 3) * 0.5)).toFixed(1)}cqi, 22rem)` }}
         >
           {wordmark}
         </p>

@@ -33,20 +33,40 @@ const displayVariants = cva(
   },
 );
 
+/* face="poster": the extra narrow grotesk (--rap-font-poster, Anton) in capitals. Its
+   letters are narrower and its caps taller than the display face's, so each step is the
+   display size times --rap-poster-scale (a poster line fills about the width a normal one
+   would); one weight, so no faked bold; it is drawn tight already, so a hair of positive
+   tracking; and capitals stack close, 0.88. Each class replaces the size's own weight,
+   tracking, size and leading in tailwind-merge (the leading comes after the size). */
+/* (each size spelled out in full: Tailwind only builds classes it can read in the source) */
+const posterSize: Record<DisplaySize, string> = {
+  mega: "text-[length:calc(var(--rap-size-mega)*var(--rap-poster-scale,1.25))]",
+  xxl: "text-[length:calc(var(--rap-size-xxl)*var(--rap-poster-scale,1.25))]",
+  xl: "text-[length:calc(var(--rap-size-xl)*var(--rap-poster-scale,1.25))]",
+  lg: "text-[length:calc(var(--rap-size-lg)*var(--rap-poster-scale,1.25))]",
+  md: "text-[length:calc(var(--rap-size-md)*var(--rap-poster-scale,1.25))]",
+};
+const poster = (size: DisplaySize) =>
+  cn("font-poster [font-weight:400] [font-synthesis:none] [text-transform:uppercase] tracking-[0.005em]", posterSize[size], "leading-[0.88]");
+
 export interface DisplayProps extends HTMLAttributes<HTMLElement> {
   as?: ElementType;
   size?: DisplaySize;
+  /** display: the preset's headline face. poster: the extra narrow grotesk (Anton) in capitals, scaled up to fill the line. */
+  face?: "display" | "poster";
   /** Tight, slightly condensed tracking for giant headlines. */
   tight?: boolean;
   children?: ReactNode;
 }
 
 /** Huge editorial headline set in the display face. */
-export function Display({ as = "h2", size = "xl", tight = true, className, ...rest }: DisplayProps) {
+export function Display({ as = "h2", size = "xl", tight = true, face = "display", className, ...rest }: DisplayProps) {
   return createElement(as, {
     "data-slot": "display",
     "data-size": size,
-    className: cn(displayVariants({ size, tight }), className),
+    "data-face": face === "poster" ? "poster" : undefined,
+    className: cn(displayVariants({ size, tight }), face === "poster" && poster(size), className),
     ...rest,
   });
 }
@@ -61,17 +81,11 @@ const accentTones: Record<AccentTone, string> = {
 };
 
 /**
- * A different colour — how rap/ui marks the word that matters. `mute` gives a
- * two-tone grey/ink headline. In fun it also changes voice: the serif's light
- * italic in lowercase against the Anton capitals (the --rap-accent-* tokens).
+ * Same face, different colour — how rap/ui marks the word that matters.
+ * `mute` gives a two-tone grey/ink headline.
  */
-/* a preset may also turn the accent into a second voice (--rap-accent-font and friends:
-   face, style, weight, case, tracking); unset, it inherits the headline's own */
-const accentVoice =
-  "[font-family:var(--rap-accent-font,inherit)] [font-style:var(--rap-accent-style,inherit)] [font-weight:var(--rap-accent-weight,inherit)] [text-transform:var(--rap-accent-case,inherit)] [letter-spacing:var(--rap-accent-tracking,inherit)]";
-
 export function Accent({ className, tone = "flame", ...rest }: HTMLAttributes<HTMLSpanElement> & { tone?: AccentTone }) {
-  return <span data-slot="accent" data-tone={tone} className={cn(accentTones[tone], accentVoice, className)} {...rest} />;
+  return <span data-slot="accent" data-tone={tone} className={cn(accentTones[tone], className)} {...rest} />;
 }
 
 /** Small label with a live dot. Calm: the dot holds steady — a ring that breathes forever is a loop with no job. */
@@ -95,22 +109,12 @@ export function Eyebrow({ className, dot = true, children, ...rest }: HTMLAttrib
   );
 }
 
-/* the lead is the page's second voice: in fun a light antiqua (--rap-font-serif at
-   --rap-serif-weight), set larger, the way a poster pairs its giant capitals with a
-   soft serif line. Presets without a serif leave the tokens unset and it stays as
-   it was: the body face at the md display size. */
-const serifVoice = "[font-family:var(--rap-font-serif,inherit)] [font-weight:var(--rap-serif-weight,inherit)]";
-
 /** Airy lead paragraph. */
 export function Lead({ className, ...rest }: HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
       data-slot="lead"
-      className={cn(
-        "m-0 max-w-[32ch] text-[length:var(--rap-lead-size,var(--rap-size-md))] leading-[var(--rap-lead-leading,1.35)] tracking-[-0.015em] text-ink-2",
-        serifVoice,
-        className,
-      )}
+      className={cn("m-0 max-w-[32ch] text-display-md leading-[1.35] tracking-[-0.015em] text-ink-2", className)}
       {...rest}
     />
   );

@@ -22,14 +22,14 @@
   .rap-shimmer-text { animation: none; background: none; color: var(--rap-ink-2); }
 }
 
-/* signal: an LCD status line — steady segment capitals (no passing light), the time in segments */
+/* signal: an instrument's status line — steady mono capitals (no passing light) */
 [data-rap-preset="signal"] .rap-shimmer-text {
   animation: none;
   background: none;
   color: var(--rap-ink);
-  font-family: var(--rap-font-display);
-  font-weight: 400;
+  font-family: var(--rap-font-mono);
+  font-weight: 500;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
-[data-rap-preset="signal"] [data-slot="matrix-status-time"] { font-family: var(--rap-font-display); }

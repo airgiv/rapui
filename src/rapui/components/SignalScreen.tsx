@@ -8,7 +8,7 @@
                 (12 in fun), stops off screen or in a hidden tab, and
                 holds one still frame in still / reduced motion.
    TunerPanel   a black LCD panel: the frequency in big phosphor
-                segments over their own unlit ghosts, a label, and a
+                segments (--rap-font-lcd) over their own unlit ghosts, a label, and a
                 tuner scale (FM over a dark window of tick marks, AM
                 under it) with a bright needle at the frequency.
 
@@ -131,14 +131,14 @@ export function TunerPanel({ value = 98.8, unit = "MHz", label, className, ...re
     <div
       data-slot="tuner-panel"
       className={cn(
-        "@container flex flex-col gap-(--rap-space-md) rounded-lg bg-[var(--rap-panel,#0a0d09)] p-(--rap-space-md) font-display text-[color:var(--rap-lcd,#b6f09a)]",
+        "@container flex flex-col gap-(--rap-space-md) rounded-lg bg-[var(--rap-panel,#0a0d09)] p-(--rap-space-md) font-mono text-[color:var(--rap-lcd,#b6f09a)]",
         className,
       )}
       {...rest}
     >
       <div className="flex items-start justify-between gap-4">
         <p className="relative m-0 flex items-baseline gap-3 leading-none" aria-label={`${digits} ${unit}`}>
-          <span className="relative text-[clamp(3rem,17cqi,6rem)]">
+          <span className="relative font-[family-name:var(--rap-font-lcd,var(--rap-font-mono))] text-[clamp(3rem,17cqi,6rem)]">
             <span aria-hidden className="absolute inset-0 opacity-[0.09]">
               {ghost}
             </span>
@@ -146,13 +146,13 @@ export function TunerPanel({ value = 98.8, unit = "MHz", label, className, ...re
               {digits}
             </span>
           </span>
-          <span aria-hidden className="text-[0.8125rem] uppercase text-[color:var(--rap-lcd-dim,rgb(182_240_154/0.4))]">
+          <span aria-hidden className="text-[0.8125rem] uppercase tracking-[0.06em] text-[color:var(--rap-lcd-dim,rgb(182_240_154/0.4))]">
             {unit}
           </span>
         </p>
-        {label && <span className="pt-1 text-right text-[0.75rem] uppercase leading-snug text-[color:var(--rap-lcd-dim,rgb(182_240_154/0.4))]">{label}</span>}
+        {label && <span className="pt-1 text-right text-[0.75rem] uppercase tracking-[0.08em] leading-snug text-[color:var(--rap-lcd-dim,rgb(182_240_154/0.4))]">{label}</span>}
       </div>
-      <div aria-hidden className="flex flex-col gap-2 text-[0.6875rem] uppercase text-[color:var(--rap-lcd-dim,rgb(182_240_154/0.4))]">
+      <div aria-hidden className="flex flex-col gap-2 font-[family-name:var(--rap-font-lcd,var(--rap-font-mono))] text-[0.6875rem] uppercase text-[color:var(--rap-lcd-dim,rgb(182_240_154/0.4))]">
         <div className="relative ml-8 h-4">
           {FM.map((f) => (
             <span key={f} className={scaleLabel} style={{ left: `${fmPos(f)}%` }}>
