@@ -13,6 +13,7 @@ export default defineConfig({
         index: "src/rapui/index.ts",
         fonts: "src/rapui/fonts.ts",
         "fonts/fun": "src/rapui/fonts/fun.ts",
+        "fonts/poster": "src/rapui/fonts/poster.ts",
         "fonts/civic": "src/rapui/fonts/civic.ts",
         "fonts/signal": "src/rapui/fonts/signal.ts",
         "fonts/product": "src/rapui/fonts/product.ts",

@@ -34,11 +34,9 @@
   }
 
   /* fun: huge, flush left; each part sits a little askew and straightens when you reach for it */
-  /* (fun's Anton capitals are narrower and taller than a lowercase grotesk: the
-     tokens set them larger and a touch tighter; unset, the old size stands) */
   [data-look="fun"] .rap-statement-text {
-    font-size: var(--rap-statement-size, clamp(2.5rem, 7.6cqi, 7.5rem));
-    line-height: var(--rap-statement-leading, 1.02);
+    font-size: clamp(2.5rem, 7.6cqi, 7.5rem);
+    line-height: 1.02;
   }
   [data-look="fun"] .rap-statement-slot {
     rotate: var(--slot-tilt, 0deg);
@@ -69,17 +67,15 @@
     box-shadow: 0 1px 2px var(--rap-line), 0 10px 30px -12px var(--rap-line);
   }
 
-  /* signal: flush left in LCD capitals, like the radio's "PLAY KISS FM FOR ME"; each part
-     held in segment [brackets] like a field on the display */
+  /* signal: flush left in Plex; each part held in mono [brackets] like a field on a display */
   [data-look="signal"] .rap-statement-text {
-    font-size: clamp(1.75rem, 4.6cqi, 4.25rem);
-    line-height: 1.3;
-    text-transform: uppercase;
+    font-size: clamp(2.25rem, 6.2cqi, 5.75rem);
+    line-height: 1.18;
   }
   [data-look="signal"] .rap-statement-slot::before,
   [data-look="signal"] .rap-statement-slot::after {
-    font-family: var(--rap-font-display);
-    font-size: 1.375rem;
+    font-family: var(--rap-font-mono);
+    font-size: 1.5rem;
     color: var(--rap-mute);
   }
   [data-look="signal"] .rap-statement-slot::before { content: "["; margin-right: 0.4rem; }
@@ -108,15 +104,3 @@
   }
 }
 
-/* fun: the kicker is the serif voice where the preset has one — a soft antiqua line
-   above the capitals, the way a poster sets its subtitle (Fraunces 300 in fun). Left
-   outside the layers so it wins over the Eyebrow's own utilities; with no serif
-   token the Eyebrow keeps its small medium label and its dot. */
-.rap-statement[data-look="fun"] .rap-statement-kicker {
-  font-family: var(--rap-font-serif, inherit);
-  font-weight: var(--rap-serif-weight, 500);
-  font-size: var(--rap-kicker-size, 0.875rem);
-  line-height: var(--rap-lead-leading, normal);
-  letter-spacing: var(--rap-serif-tracking, -0.01em);
-}
-.rap-statement[data-look="fun"] .rap-statement-kicker [data-slot="eyebrow-dot"] { display: var(--rap-kicker-dot, inline-block); }

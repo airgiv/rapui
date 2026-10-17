@@ -1,5 +1,6 @@
-// Typefaces for the signal preset: DSEG14 Classic (a 14-segment LCD face, for the
-// headlines, kickers, readouts and numbers), IBM Plex Sans (body) and IBM Plex Mono.
+// Typefaces for the signal preset: IBM Plex Sans (headlines and body), IBM Plex Mono
+// (kickers, labels, buttons) and DSEG14 Classic (--rap-font-lcd: a 14-segment LCD face,
+// only for what a real LCD shows — the big digits on black panels, timers, the clock).
 //
 // DSEG14 Classic — copyright (c) 2017 keshikan (http://www.keshikan.net), with Reserved
 // Font Name "DSEG", licensed under the SIL Open Font License 1.1 (the `dseg` npm package,

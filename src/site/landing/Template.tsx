@@ -118,7 +118,7 @@ function Counsel() {
   );
 }
 /* signal: the page as a tape on a pocket player — two reels in dotted rings, the title
-   and its artist in LCD capitals, a filled waveform split at the playhead, and square
+   in Plex and its artist in mono capitals, the times in LCD segments, a filled waveform split at the playhead, and square
    transport keys on darker sage tiles. The reels turn (a compositor-only spin) while it plays. */
 function Reel({ spin, offset = 0 }: { spin: boolean; offset?: number }) {
   return (
@@ -189,7 +189,7 @@ function Player() {
   return (
     <div className="@container flex size-full flex-col justify-between gap-4 p-[clamp(16px,3.2cqi,40px)]">
       <div className="flex items-center justify-between gap-3">
-        <span className="font-display text-[0.75rem] uppercase text-mute">Tape 004 · side A</span>
+        <span className="font-mono text-xs uppercase tracking-[0.08em] text-mute">Tape 004 · side A</span>
         <MatrixStatus label="Receiving" timer={false} className="max-[24rem]:hidden" />
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-x-[5cqi] gap-y-4 @2xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
@@ -198,9 +198,9 @@ function Player() {
           <Reel spin={playing} offset={40} />
         </div>
         <div className="flex min-w-0 flex-col gap-[clamp(10px,2cqi,20px)]">
-          <div className="text-center font-display uppercase leading-[1.25] @2xl:text-left">
-            <p className="m-0 text-[clamp(1.125rem,2.6cqi,1.75rem)] text-ink">This page</p>
-            <p className="m-0 text-[clamp(0.875rem,1.8cqi,1.25rem)] text-mute">Fieldkit</p>
+          <div className="text-center leading-[1.2] @2xl:text-left">
+            <p className="m-0 font-display text-[clamp(1.25rem,2.8cqi,2rem)] font-medium tracking-[-0.02em] text-ink">This page</p>
+            <p className="m-0 font-mono text-[clamp(0.75rem,1.4cqi,0.9375rem)] uppercase tracking-[0.08em] text-mute">Fieldkit</p>
           </div>
           <svg viewBox="0 0 400 64" className="block h-auto w-full" preserveAspectRatio="none" aria-hidden>
             <defs>
@@ -212,7 +212,7 @@ function Player() {
             <path d={WAVE} fill="var(--rap-ink)" clipPath="url(#fk-played)" />
             <rect x={played - 0.75} width="1.5" height="64" fill="var(--rap-ink)" />
           </svg>
-          <div className="flex justify-between font-display text-[clamp(0.8125rem,1.6cqi,1.0625rem)] tabular-nums">
+          <div className="flex justify-between font-[family-name:var(--rap-font-lcd,var(--rap-font-mono))] text-[clamp(0.8125rem,1.6cqi,1.0625rem)] tabular-nums">
             <span>
               <span className="text-mute">00:</span>
               {fmt(t)}

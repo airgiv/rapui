@@ -8,8 +8,8 @@
      fun      the default — loud, round, playful (tokens.css)
      civic    a public-service site: big condensed serif headlines,
               navy and a little red, soft big cards, calm motion
-     signal   a pocket radio's LCD: sage paper, black ink, a
-              segmented LCD face, dot matrices, black phosphor panels
+     signal   a pocket radio's LCD: sage paper, black ink, Plex,
+              dot matrices, black panels with segment digits
      product  a modern product page: Geist, near-black buttons,
               thin borders, small radii, an iris accent
      minimal  black on white, hairlines, square corners, no colour
@@ -28,51 +28,6 @@
    preset has a default that <RapStyle> applies. Fonts are opt-in:
    import "@rapui/react/fonts/civic" etc.
    ─────────────────────────────────────────────────────────── */
-
-/* ── every preset but fun ──────────────────────────────────── */
-/* tokens.css holds the fun preset's type; any other preset starts from the base
-   faces again and drops the fun-only tokens (initial = unset, so components fall
-   back to what they did before: no capitals, no serif voice). Same specificity as
-   the preset blocks below and earlier in the file, so each preset still wins. */
-[data-rap-preset]:where(:not([data-rap-preset="fun"])) {
-  --rap-font-display: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
-  --rap-display-weight: 500;
-  --rap-display-tracking: -0.045em;
-  --rap-size-mega: clamp(3.5rem, 13vw, 15rem);
-  --rap-size-xxl: clamp(2.75rem, 8vw, 8.5rem);
-  --rap-size-xl: clamp(2.25rem, 5.5vw, 5.5rem);
-  --rap-size-lg: clamp(1.75rem, 3.4vw, 3.25rem);
-  --rap-size-md: clamp(1.25rem, 2vw, 1.75rem);
-  --rap-font-serif: initial;
-  --rap-serif-weight: initial;
-  --rap-lead-size: initial;
-  --rap-lead-leading: initial;
-  --rap-serif-tracking: initial;
-  --rap-section-lead-measure: initial;
-  --rap-display-weight-mega: initial;
-  --rap-display-tracking-mega: initial;
-  --rap-display-tracking-md: initial;
-  --rap-display-case: initial;
-  --rap-font-display-ui: initial;
-  --rap-display-leading: initial;
-  --rap-accent-font: initial;
-  --rap-accent-style: initial;
-  --rap-accent-weight: initial;
-  --rap-accent-case: initial;
-  --rap-accent-tracking: initial;
-  --rap-hero-size: initial;
-  --rap-hero-measure: initial;
-  --rap-statement-size: initial;
-  --rap-statement-leading: initial;
-  --rap-kicker-size: initial;
-  --rap-kicker-dot: initial;
-  --rap-tagline-size: initial;
-  --rap-wordmark-char: initial;
-  --rap-cta-size: initial;
-  font-synthesis-weight: auto;
-}
 
 /* ── civic ─────────────────────────────────────────────────── */
 [data-rap-preset="civic"] {
@@ -177,22 +132,23 @@
 
 /* ── signal ────────────────────────────────────────────────── */
 /* a pocket radio's screen: sage LCD paper, black ink, a darker muted green for the
-   second line, headlines and readouts in a 14-segment LCD face (DSEG14 Classic, set in
-   capitals), body in Plex. Black rounded LCD panels carry phosphor green (--rap-lcd).
+   second line. Type stays readable — IBM Plex Sans for headlines and body, Plex Mono
+   capitals for kickers, labels, buttons and nav. The 14-segment LCD face (DSEG14
+   Classic, --rap-font-lcd) is kept for what a real LCD would show: the big digits on
+   the black panels (--rap-panel, phosphor --rap-lcd), timers and the header clock.
    Flat: no shadows, no gradients, hairlines and dotted circles. */
 [data-rap-preset="signal"] {
-  --rap-display-weight: 400;
-  --rap-display-weight-mega: 400;
-  --rap-display-tracking: 0.02em;
-  --rap-display-tracking-mega: 0.02em;
-  --rap-display-tracking-md: 0.02em;
-  --rap-display-case: uppercase;
-  --rap-display-leading: 1.12;
-  /* a segment face is wide: titles sit smaller than a grotesk's would */
-  --rap-size-mega: clamp(2.75rem, 7.4vw, 7.5rem);
-  --rap-size-xxl: clamp(2.25rem, 5.4vw, 5.5rem);
-  --rap-size-xl: clamp(2rem, 4.4vw, 4.25rem);
-  --rap-size-lg: clamp(1.625rem, 3.2vw, 2.875rem);
+  --rap-display-weight: 450;
+  --rap-display-weight-mega: 450;
+  --rap-display-tracking: -0.025em;
+  --rap-display-tracking-mega: -0.035em;
+  --rap-display-tracking-md: -0.01em;
+  --rap-display-case: none;
+  --rap-display-leading: 1.02;
+  --rap-size-mega: clamp(3rem, 8.4vw, 8.5rem);
+  --rap-size-xxl: clamp(2.5rem, 6vw, 6rem);
+  --rap-size-xl: clamp(2.25rem, 4.8vw, 4.75rem);
+  --rap-size-lg: clamp(1.875rem, 3.6vw, 3.25rem);
   --rap-size-md: clamp(1.125rem, 1.7vw, 1.5rem);
 
   --rap-radius-xs: 3px;
@@ -228,11 +184,12 @@
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"] {
   /* (fonts again on every light/dark island, which tokens.css otherwise sends back to Onest) */
-  --rap-font-display: "DSEG14 Classic", "IBM Plex Mono", ui-monospace, monospace;
+  --rap-font-display: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --rap-font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --rap-font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --rap-display-weight: 400;
-  --rap-display-tracking: 0.02em;
+  --rap-font-lcd: "DSEG14 Classic", "IBM Plex Mono", ui-monospace, monospace;
+  --rap-display-weight: 450;
+  --rap-display-tracking: -0.025em;
 }
 [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="light"],
@@ -321,18 +278,15 @@
    is the darker muted green, not a second colour */
 [data-rap-preset="signal"] [data-slot="accent"] { color: var(--rap-mute); }
 
-/* buttons read like the radio's own labels: LCD capitals. (Unlayered, like the other
-   preset rules here, so it wins over the button's own font-sans utility.) */
+/* buttons read like the radio's own keys: small Plex Mono capitals, spaced. (Unlayered,
+   like the other preset rules here, so it wins over the button's own font-sans utility.) */
 [data-rap-preset="signal"] [data-slot="button"] {
-  font-family: var(--rap-font-display);
-  font-weight: 400;
+  font-family: var(--rap-font-mono);
+  font-weight: 500;
+  font-size: min(var(--btn-fs, 1rem), 0.875rem);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.07em;
 }
-
-/* the segment face draws taller than its line box: a rolling label's window gets more
-   room, so the twin waiting below a letter never peeks into it */
-[data-rap-preset="signal"] [data-slot="roll-text"] { line-height: 1.6; }
 
 /* ── product ───────────────────────────────────────────────── */
 [data-rap-preset="product"] {

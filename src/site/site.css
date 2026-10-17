@@ -10,33 +10,6 @@
   code { font-family: var(--rap-font-mono); font-size: 0.85em; }
 }
 
-/* the home page's own headline sizes, per preset. The fun preset sets its heads in
-   Anton capitals (narrow and tall): the sizes go up so a line still runs the width,
-   and the short intros under each head take the serif voice. Every other preset
-   unsets them and the pages keep the sizes they always had (the fallbacks in App.tsx). */
-:root,
-[data-rap-preset="fun"] {
-  --site-hero-size: clamp(3.5rem, 9.6vw, 11.5rem);
-  /* "Same API" sits beside a 30rem column: never wider than "JUST RAPUI IT." (~6em) fits there */
-  --site-head-size: clamp(3rem, min(8.6vw, calc((92vw - 32.5rem) / 6.2)), 9.5rem);
-  --site-band-size: clamp(2.5rem, 6.4vw, 6rem);
-  --site-big-size: clamp(7rem, 13vw, 13.5rem);
-  --site-copy-size: clamp(1.25rem, 1.65vw, 1.625rem);
-  --site-copy-leading: 1.28;
-}
-@media (max-width: 900px) {
-  :root,
-  [data-rap-preset="fun"] { --site-head-size: clamp(3rem, 13vw, 7rem); }
-}
-[data-rap-preset]:where(:not([data-rap-preset="fun"])) {
-  --site-hero-size: initial;
-  --site-head-size: initial;
-  --site-band-size: initial;
-  --site-big-size: initial;
-  --site-copy-size: initial;
-  --site-copy-leading: initial;
-}
-
 /* the custom <Cursor /> replaces the system pointer everywhere, even over
    components that set their own cursor in utilities — hence !important */
 html.rap-has-cursor, html.rap-has-cursor * { cursor: none !important; }

@@ -72,7 +72,7 @@ const COUNT = 161;
 /* a white stage with a grey dot grid, the canvas feel of an editor */
 const DOTS = "bg-paper-2 [background-image:radial-gradient(circle,var(--rap-line)_1.3px,transparent_1.6px)] [background-size:22px_22px] [background-position:center]";
 /* body copy under a section title */
-const COPY = "m-0 text-ink-2 text-[length:var(--site-copy-size,1.15rem)] leading-[var(--site-copy-leading,1.5)] tracking-[var(--rap-serif-tracking,normal)] [font-family:var(--rap-font-serif,inherit)] [font-weight:var(--rap-serif-weight,inherit)] max-w-[46ch] [&_code]:bg-paper-2 [&_code]:py-[0.1em] [&_code]:px-[0.35em] [&_code]:rounded-[6px] [&_code]:text-[0.9em]";
+const COPY = "m-0 text-ink-2 text-[1.15rem] leading-[1.5] max-w-[46ch] [&_code]:bg-paper-2 [&_code]:py-[0.1em] [&_code]:px-[0.35em] [&_code]:rounded-[6px] [&_code]:text-[0.9em]";
 
 /* ───────────────────────── layout pieces ───────────────────────── */
 
@@ -192,7 +192,7 @@ function Header({
    four live components on flame, acid, sky and white, each one ready
    to be pressed, flipped, held or scrubbed. The blocks are dealt in
    on load; nothing drifts, nothing cycles. */
-const HEAD = "font-display font-medium tracking-[var(--rap-display-tracking-mega,-0.055em)] [text-transform:var(--rap-display-case,none)] text-[length:var(--site-hero-size,clamp(2.8rem,7.6vw,8.4rem))] leading-[var(--rap-display-leading,0.9)]";
+const HEAD = "font-display font-medium tracking-[-0.055em] text-[clamp(2.8rem,7.6vw,8.4rem)] leading-[0.9]";
 const TILE = "relative grid place-items-center min-h-[15rem] p-6 rounded-lg overflow-hidden";
 
 /* Fun mode, as a mouth. The switch sits dead centre with its label under it, and
@@ -246,7 +246,7 @@ function Hero() {
         </span>
         <span className="flex flex-wrap items-center gap-x-[0.22em]">
           none of the
-          <Sticker color="blue" rotate={-7} size="clamp(1rem, 2.4vw, 2.3rem)" className="px-[0.9em] py-[0.35em] tracking-normal normal-case">
+          <Sticker color="blue" rotate={-7} size="clamp(1rem, 2.4vw, 2.3rem)" className="px-[0.9em] py-[0.35em] tracking-normal">
             boring
           </Sticker>
           bits.
@@ -295,7 +295,10 @@ function Hero() {
 
 const NAMES = ["Hold buttons", "Liquid forms", "Charts", "Dials", "Scrubbers", "Galleries", "Players", "Checklists", "Stickers", "Dialogs", "Data tables", "Calendars"];
 
-const BAND_WORD = "inline-flex items-center gap-10 font-display font-medium text-[length:var(--site-band-size,clamp(2rem,5vw,4.5rem))] tracking-[var(--rap-display-tracking-mega,-0.05em)] [text-transform:var(--rap-display-case,none)] leading-none";
+/* the moving words are the one place the poster face (Anton, capitals) shouts on this page:
+   1.25× the old size, since its letters are narrower (leading 0.8 keeps the old 1em line,
+   so the bands stand as tall as before; the capitals fill the padding a touch) */
+const BAND_WORD = "inline-flex items-center gap-10 font-poster font-normal uppercase [font-synthesis:none] text-[clamp(2.5rem,6.25vw,5.625rem)] tracking-[0.005em] leading-[0.8]";
 
 function Bands() {
   return (
@@ -374,7 +377,7 @@ function SameApi() {
       <div className="grid grid-cols-[1fr_minmax(0,30rem)] gap-10 items-end max-[900px]:grid-cols-1">
         {/* the switch IS the third line of the headline: as big as the words, so it
             cannot be missed, and pressing it is the sentence's verb */}
-        <h2 className="m-0 flex flex-col items-start font-display font-medium tracking-[var(--rap-display-tracking-mega,-0.055em)] [text-transform:var(--rap-display-case,none)] text-[length:var(--site-head-size,clamp(2.8rem,7vw,7rem))] leading-[var(--rap-display-leading,0.92)]">
+        <h2 className="m-0 flex flex-col items-start font-display font-medium tracking-[-0.055em] text-[clamp(2.8rem,7vw,7rem)] leading-[0.92]">
           <span>Same API.</span>
           <span className="text-flame">Just rapui it.</span>
           <GiantToggle on={fun} onChange={setFun} />
@@ -443,7 +446,7 @@ function GiantToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => 
         className="absolute top-[0.09em] left-[0.09em] size-[0.77em] rounded-full bg-white grid place-items-center transition-transform duration-500 ease-back"
         style={{ transform: on ? "translateX(0.95em)" : "translateX(0)" }}
       >
-        <span className="text-[0.19em] font-sans font-medium tracking-normal normal-case leading-none text-[#282828]">{on ? "rapui" : "plain"}</span>
+        <span className="text-[0.19em] font-sans font-medium tracking-normal leading-none text-[#282828]">{on ? "rapui" : "plain"}</span>
       </span>
     </button>
   );
@@ -454,7 +457,9 @@ function GiantToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => 
    when the card scrolls into view, on an expo ease, so nothing flies in and nothing
    gets clipped: the count counts up, 0 counts down from a hundred, 1 from ten. */
 const STAT = "flex flex-col gap-5 min-h-[24rem] justify-between p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg overflow-hidden";
-const BIG = "font-display font-medium tracking-[var(--rap-display-tracking-mega,-0.05em)] text-[length:var(--site-big-size,clamp(6rem,11vw,11rem))] leading-[0.92]";
+/* the figures in the poster face too: tall narrow numerals, 1.25× the old size, on the
+   old line height (0.92 / 1.25), so the cards keep their size */
+const BIG = "font-poster font-normal [font-synthesis:none] tracking-[0.005em] text-[clamp(7.5rem,13.75vw,13.75rem)] leading-[0.736]";
 const STAT_TEXT = "m-0 max-w-[24ch] text-[1.2rem] leading-[1.35] opacity-80";
 
 function Stats() {
@@ -1111,7 +1116,7 @@ function Tokens() {
         Grey paper, soft ink <Accent tone="mute">& six loud friends</Accent>
       </Display>
       <p className={COPY}>
-        A poster face for the headlines, a soft serif for the asides and Onest for the rest. A cool grey page, white cards, and an orange-and-blue signal pair — all of it CSS
+        One typeface, Onest, set big and tight. A cool grey page, white cards, and an orange-and-blue signal pair — all of it CSS
         variables you can override.
       </p>
       <div className="grid grid-cols-4 gap-tile mt-6 max-[760px]:grid-cols-2">
@@ -1152,7 +1157,7 @@ function Install() {
           <Code>{`npm install @rapui/react`}</Code>
           <Code>{`// main.tsx
 import "@rapui/react/styles.css";
-import "@rapui/react/fonts"; // optional: Anton, Fraunces, Onest + Geist Mono
+import "@rapui/react/fonts"; // optional: Onest, Geist Mono + the Anton poster face
 
 import { Button, SoundProvider } from "@rapui/react";
 

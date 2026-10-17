@@ -18,8 +18,8 @@
             front page: a big light serif headline, the lead and
             buttons under it, the picture in a wide rounded card below;
             drop an <InlineMedia> between the headline's words
-   signal   a pocket radio's screen: an LCD readout strip (kicker and
-            `meta`), the headline in segments beside the radio — a
+   signal   a pocket radio's screen: a mono readout strip (kicker and
+            `meta`), the headline in Plex beside the radio — a
             dot-matrix spectrum over a black tuner panel whose digits
             and needle read the first numeric `meta` ("104.2 MHz") —
             and the picture in a flat rounded frame under it
@@ -54,7 +54,7 @@ export function BlockKicker({ look, index, className, children }: { look: BlockL
     );
   if (look === "signal")
     return (
-      <span data-slot="kicker" className={cn("inline-flex items-center gap-[1ch] font-display text-[0.75rem] uppercase tracking-[0.04em] text-ink-2", className)}>
+      <span data-slot="kicker" className={cn("inline-flex items-center gap-[1ch] font-mono text-xs uppercase tracking-[0.08em] text-ink-2", className)}>
         {index && <span aria-hidden className="text-ink">[{index}]</span>}
         {children}
       </span>
@@ -174,22 +174,12 @@ function FunHero({ eyebrow, title, lead, actions, media, sticker }: Parts) {
   return (
     <Stack gap="lg">
       <BlockKicker look="fun">{eyebrow}</BlockKicker>
-      {/* size and measure are tokens: fun's narrow Anton capitals run to the full width
-          like a poster block; a wider face keeps the old 15ch cap */}
-      <Display
-        as="h1"
-        size="mega"
-        className="max-w-[var(--rap-hero-measure,15ch)] text-[length:var(--rap-hero-size,clamp(3rem,12.5cqi,14rem))] leading-[var(--rap-display-leading,0.86)]"
-      >
+      <Display as="h1" size="mega" className="max-w-[15ch] text-[length:clamp(3rem,12.5cqi,14rem)] leading-[0.86]">
         {title}
       </Display>
       {(lead || actions) && (
         <div className="flex flex-col gap-(--rap-space-lg) @3xl:flex-row @3xl:items-end @3xl:justify-between">
-          {lead && (
-            <p className="m-0 max-w-[30ch] text-[length:var(--rap-lead-size,var(--rap-size-md))] leading-[var(--rap-lead-leading,1.3)] tracking-[-0.015em] text-ink-2 text-pretty [font-family:var(--rap-font-serif,inherit)] [font-weight:var(--rap-serif-weight,inherit)]">
-              {lead}
-            </p>
-          )}
+          {lead && <p className="m-0 max-w-[30ch] text-display-md leading-[1.3] tracking-[-0.015em] text-ink-2 text-pretty">{lead}</p>}
           {actions && <Actions className="@3xl:justify-end">{actions}</Actions>}
         </div>
       )}
@@ -249,11 +239,11 @@ function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [] }: 
           {eyebrow}
         </BlockKicker>
         {meta.length > 0 && (
-          <dl className="m-0 flex flex-wrap gap-x-(--rap-space-lg) gap-y-1 text-[0.75rem] uppercase">
+          <dl className="m-0 flex flex-wrap gap-x-(--rap-space-lg) gap-y-1 font-mono text-xs uppercase tracking-[0.06em]">
             {meta.map((m) => (
               <div key={m.label} className="flex gap-2">
-                <dt className="font-mono tracking-[0.06em] text-mute">{m.label}</dt>
-                <dd className="m-0 font-display text-ink">{m.value}</dd>
+                <dt className="text-mute">{m.label}</dt>
+                <dd className="m-0 text-ink">{m.value}</dd>
               </div>
             ))}
           </dl>
@@ -261,7 +251,7 @@ function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [] }: 
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-(--rap-space-xl) @4xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @4xl:items-start">
         <Stack gap="lg">
-          <Display as="h1" size="xxl" className="max-w-[20ch] text-[length:clamp(2rem,4.6cqi,4.25rem)]">
+          <Display as="h1" size="xxl" className="max-w-[16ch] text-[length:clamp(2.5rem,6cqi,5.75rem)] leading-[1.02]">
             {title}
           </Display>
           {lead && <p className={cn(leadText, "max-w-[44ch]")}>{lead}</p>}

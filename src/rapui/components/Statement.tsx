@@ -14,7 +14,7 @@
               and straightens when you reach for it
      civic    centred, a large light serif; the parts sit bare in
               the line, a slider on a soft white pill
-     signal   flush left in LCD capitals; each part held in segment [brackets]
+     signal   flush left in Plex; each part held in mono [brackets]
      product  centred, tight and heavy; a slider or stars on a round chip
      minimal  flush left and large, the parts bare
 
@@ -48,7 +48,7 @@ export function Statement({ eyebrow, children, textAs = "p", footer, look: lookP
   useLayoutEffect(() => {
     const el = text.current;
     if (!el) return;
-    const base = look === "signal" ? 52 : look === "civic" ? 62 : 58;
+    const base = look === "signal" ? 70 : look === "civic" ? 62 : 58;
     const fit = () => el.style.setProperty("--slot-zoom", String(Math.max(1, Math.min(2.2, parseFloat(getComputedStyle(el).fontSize) / base)).toFixed(3)));
     fit();
     const ro = new ResizeObserver(fit);
@@ -58,11 +58,7 @@ export function Statement({ eyebrow, children, textAs = "p", footer, look: lookP
   return (
     <Section ref={ref} data-look={look} data-slot="statement" className={cn("rap-statement", className)} {...rest}>
       <div className={cn("@container flex flex-col gap-(--rap-space-lg)", centred && "items-center text-center")}>
-        {eyebrow && (
-          <BlockKicker look={look} className="rap-statement-kicker">
-            {eyebrow}
-          </BlockKicker>
-        )}
+        {eyebrow && <BlockKicker look={look}>{eyebrow}</BlockKicker>}
         {createElement(textAs, { ref: text, "data-slot": "statement-text", className: "rap-statement-text" }, children)}
         {footer && <div className={cn("flex flex-wrap gap-3 pt-(--rap-space-xs)", centred && "justify-center")}>{footer}</div>}
       </div>

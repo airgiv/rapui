@@ -207,7 +207,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
           A landing page, <Accent>received in fragments.</Accent>
         </>
       ),
-      lead: "Signal preset: a pocket radio's screen — LCD segments, dot matrices and black phosphor panels on sage paper, reading itself back to you. Signal strength: adequate. Interference: mostly decorative.",
+      lead: "Signal preset: a pocket radio's screen — Plex type, dot matrices and black panels with segment digits on sage paper, reading itself back to you. Signal strength: adequate. Interference: mostly decorative.",
       primary: "Tune in",
       secondary: "Open the log",
       meta: [
@@ -225,7 +225,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       lead: "Each cell below is one channel of the signal preset, broadcasting a real component.",
       items: [
         { title: "Dot matrices", text: "Status, loaders and type drawn on a grid of dots, like a departures board that learned to think.", icon: "widget" },
-        { title: "LCD segments", text: "Headlines, labels and readouts in a 14-segment face, the way a radio spells out its station.", icon: "camera" },
+        { title: "LCD segments", text: "Frequencies, timers and the clock in a 14-segment face, on black panels, the way a radio shows its station.", icon: "camera" },
         { title: "Ruled cells", text: "Content in hairline-ruled cells with mono indices — a logbook, not a brochure.", icon: "notebook" },
         { title: "Black panels", text: "Rounded LCD panels with phosphor digits, a tuner scale and one bright needle.", icon: "code" },
         { title: "Redactions", text: "Words [blacked out] until you hover. Some of them were never that important anyway.", icon: "lock" },
