@@ -45,7 +45,7 @@ export function MatrixStatus({ label = "Thinking", animation = "wave", round = f
     <div role="status" data-slot="matrix-status" className={cn("inline-flex items-center gap-2.5 text-ink", className)} {...rest}>
       <DotMatrix cols={3} rows={3} size={4} gap={1.5} shape={round ? "round" : "square"} animation={animation} />
       <span className="rap-shimmer-text text-[0.8125rem] font-medium">{label}</span>
-      {timer && <span className="font-mono text-[0.75rem] text-mute tabular-nums">{elapsed}</span>}
+      {timer && <span data-slot="matrix-status-time" className="font-mono text-[0.75rem] text-mute tabular-nums">{elapsed}</span>}
     </div>
   );
 }

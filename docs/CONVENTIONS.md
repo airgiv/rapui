@@ -65,7 +65,10 @@ Read this before adding a component. The reference implementations are
 
 ## Look (Readymag-inspired)
 
-- One typeface: `var(--rap-font-sans)` (Onest). No italics, no serif, no uppercase labels.
+- UI text is one typeface: `var(--rap-font-sans)` (Onest). No italics, no serif, no uppercase labels in UI.
+  Headlines are the exception: `Display` and the blocks' big heads use `--rap-font-display` (fun: Anton, set
+  in capitals through `--rap-display-case`), and leads/kickers/taglines use `--rap-font-serif` (fun: Fraunces 300).
+  Read both with a fallback (`var(--rap-font-serif, inherit)`): the other presets leave them unset.
   Labels/captions: 0.8125–0.9375rem, weight 500, `letter-spacing: -0.01em`, `color: var(--rap-mute)` for secondary.
 - Round: single-line controls are pills (`--rap-radius-pill`), heights
   `--rap-control-h-sm/-h/-h-lg` (36/44/52). Floating surfaces 20px radius; cards and dialogs `--rap-radius` (28px).

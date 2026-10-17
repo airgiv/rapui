@@ -16,11 +16,14 @@
    - `interactive` — dots under the pointer light up and fade
      back, a torch over the grid.
 
-   It is all CSS: each dot gets its delay as a custom property
-   and one keyframe does the rest; the pointer trail writes a
-   data attribute, no re-render. Calm runs the pulse at 0.6×
-   speed; still holds the dim grid and the pattern. */
-import { useMemo, useRef, type CSSProperties, type HTMLAttributes, type PointerEvent as ReactPointerEvent } from "react";
+   The pulse is stepped, like a real LCD: one small timer at
+   12 fps (8 in calm) writes a brightness level (data-l) on the
+   dots whose level changed — no per-frame CSS animation, no
+   re-render — and it stops while the grid is off screen or the
+   tab is hidden. The pointer trail writes a data attribute too.
+   Calm runs the pulse at 0.6× speed; still and reduced motion
+   hold the dim grid and the pattern. */
+import { useEffect, useMemo, useRef, type CSSProperties, type HTMLAttributes, type PointerEvent as ReactPointerEvent } from "react";
 import { cn } from "../utils";
 import "./DotMatrix.css";
 
@@ -105,6 +108,72 @@ export function DotMatrix({
   const timers = useRef(new Map<number, number>());
   const ph = useMemo(() => phases(animation, cols, rows), [animation, cols, rows]);
   const dur = period ?? (animation === "orbit" ? 950 : animation === "twinkle" ? 2400 : animation === "scan" ? 1100 : 650);
+  const litKey = useMemo(() => ph.map((_, i) => (isLit(pattern, i % cols, Math.floor(i / cols), cols) ? 1 : 0)).join(""), [ph, pattern, cols]);
+
+  /* the stepped pulse: a timer, not a keyframe per dot (hundreds of keyframed dots kept
+     the page restyling every frame) */
+  useEffect(() => {
+    const el = grid.current;
+    if (!el || animation === "none" || typeof window === "undefined") return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    const n = ph.length;
+    const level = new Int8Array(n);
+    const len = Float32Array.from({ length: n }, (_, i) => (animation === "twinkle" ? 0.6 + seeded(i + 99) * 0.9 : 1));
+    const t0 = performance.now();
+    let timer = 0;
+    let onScreen = false;
+    const clear = () => {
+      for (let i = 0; i < n; i++)
+        if (level[i]) {
+          level[i] = 0;
+          delete (el.children[i] as HTMLElement | undefined)?.dataset.l;
+        }
+    };
+    const motionOf = () => el.closest("[data-rap-motion]")?.getAttribute("data-rap-motion") ?? "fun";
+    const tick = () => {
+      const motion = motionOf();
+      if (motion === "still" || reduce?.matches) return clear();
+      const pace = motion === "calm" ? 1.6 : 1;
+      const t = performance.now() - t0;
+      for (let i = 0; i < n; i++) {
+        const p = ph[i];
+        if (p === null || litKey[i] === "1") continue;
+        const cycle = dur * pace * len[i];
+        let f = ((t - dur * p * pace) / cycle) % 1;
+        if (f < 0) f += 1;
+        // dim → full by 12% → held to 22% → back to dim by 48% → dark for the rest
+        const v = f < 0.12 ? f / 0.12 : f <= 0.22 ? 1 : f < 0.48 ? 1 - (f - 0.22) / 0.26 : 0;
+        const l = Math.round(v * 3);
+        if (l !== level[i]) {
+          level[i] = l;
+          const dot = el.children[i] as HTMLElement | undefined;
+          if (!dot) continue;
+          if (l) dot.dataset.l = String(l);
+          else delete dot.dataset.l;
+        }
+      }
+    };
+    const sync = () => {
+      const run = onScreen && !document.hidden;
+      if (run && !timer) {
+        tick();
+        timer = window.setInterval(tick, motionOf() === "fun" ? 1000 / 12 : 1000 / 8);
+      } else if (!run && timer) {
+        window.clearInterval(timer);
+        timer = 0;
+      }
+    };
+    const io = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver((e) => ((onScreen = e[e.length - 1].isIntersecting), sync())) : null;
+    if (io) io.observe(el);
+    else (onScreen = true), sync();
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      io?.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+      window.clearInterval(timer);
+      clear();
+    };
+  }, [animation, ph, dur, litKey]);
 
   /* the torch: the dot under the pointer and its neighbours light, then fade on their own */
   const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -140,27 +209,23 @@ export function DotMatrix({
           gridTemplateColumns: `repeat(${cols}, ${size}px)`,
           gap,
           "--dm-dim": dim,
-          "--dm-dur": `${dur}ms`,
           ...style,
         } as CSSProperties
       }
       {...rest}
     >
-      {ph.map((p, i) => {
+      {ph.map((_p, i) => {
         const c = i % cols, r = Math.floor(i / cols);
         const lit = isLit(pattern, c, r, cols);
         return (
           <span
             key={i}
             data-lit={lit || undefined}
-            data-pulse={p !== null || undefined}
             className={shape === "round" ? "rounded-full" : "rounded-[1px]"}
             style={
               {
                 width: size,
                 height: size,
-                "--dm-delay": p === null ? undefined : `calc(var(--dm-dur) * ${p.toFixed(3)} * var(--dm-pace, 1))`,
-                "--dm-len": animation === "twinkle" ? `${(0.6 + seeded(i + 99) * 0.9).toFixed(2)}` : undefined,
               } as CSSProperties
             }
           />

@@ -148,7 +148,7 @@ function FunTiles({ items, cols }: BodyProps) {
             </div>
             {item.media && <div className="overflow-hidden rounded-sm">{item.media}</div>}
             <div className="flex flex-col gap-(--rap-space-xs)">
-              <ItemTitle item={item} className="font-display text-display-md font-medium leading-[1.05] tracking-[-0.03em]" />
+              <ItemTitle item={item} className="font-display text-display-md font-medium leading-[1.05] tracking-[var(--rap-display-tracking-md,-0.03em)] [text-transform:var(--rap-display-case,none)]" />
               <div className="text-[1rem] leading-[1.45] opacity-85 max-w-[34ch]">{item.text}</div>
             </div>
           </div>

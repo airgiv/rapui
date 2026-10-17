@@ -18,10 +18,11 @@
             front page: a big light serif headline, the lead and
             buttons under it, the picture in a wide rounded card below;
             drop an <InlineMedia> between the headline's words
-   signal   an instrument's front panel: a mono readout strip (kicker
-            and `meta`), the headline the full width of the grid, then
-            the picture as a wide scanned plate (MediaFrame) with crop
-            marks and a dot-matrix level meter under it
+   signal   a pocket radio's screen: an LCD readout strip (kicker and
+            `meta`), the headline in segments beside the radio — a
+            dot-matrix spectrum over a black tuner panel whose digits
+            and needle read the first numeric `meta` ("104.2 MHz") —
+            and the picture in a flat rounded frame under it
    product  centred: a pill badge, headline, lead, two buttons, then
             the picture in a framed window with a soft glow under it
    minimal  a big left-aligned headline over nine columns, a small
@@ -35,8 +36,7 @@ import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "../utils";
 import { Grid, GridItem, Section, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 import { Display, Eyebrow } from "./Typography";
-import { MediaFrame } from "./MediaFrame";
-import { DotMatrix } from "./DotMatrix";
+import { DotSpectrum, TunerPanel } from "./SignalScreen";
 import { ArrowRight } from "../icons";
 import "./Hero.css";
 
@@ -54,8 +54,8 @@ export function BlockKicker({ look, index, className, children }: { look: BlockL
     );
   if (look === "signal")
     return (
-      <span data-slot="kicker" className={cn("inline-flex items-center gap-[1ch] font-mono text-xs uppercase tracking-[0.08em] text-ink-2", className)}>
-        {index && <span aria-hidden className="text-flame">[ {index} ]</span>}
+      <span data-slot="kicker" className={cn("inline-flex items-center gap-[1ch] font-display text-[0.75rem] uppercase tracking-[0.04em] text-ink-2", className)}>
+        {index && <span aria-hidden className="text-ink">[{index}]</span>}
         {children}
       </span>
     );
@@ -174,12 +174,22 @@ function FunHero({ eyebrow, title, lead, actions, media, sticker }: Parts) {
   return (
     <Stack gap="lg">
       <BlockKicker look="fun">{eyebrow}</BlockKicker>
-      <Display as="h1" size="mega" className="max-w-[15ch] text-[length:clamp(3rem,12.5cqi,14rem)] leading-[0.86]">
+      {/* size and measure are tokens: fun's narrow Anton capitals run to the full width
+          like a poster block; a wider face keeps the old 15ch cap */}
+      <Display
+        as="h1"
+        size="mega"
+        className="max-w-[var(--rap-hero-measure,15ch)] text-[length:var(--rap-hero-size,clamp(3rem,12.5cqi,14rem))] leading-[var(--rap-display-leading,0.86)]"
+      >
         {title}
       </Display>
       {(lead || actions) && (
         <div className="flex flex-col gap-(--rap-space-lg) @3xl:flex-row @3xl:items-end @3xl:justify-between">
-          {lead && <p className="m-0 max-w-[30ch] text-display-md leading-[1.3] tracking-[-0.015em] text-ink-2 text-pretty">{lead}</p>}
+          {lead && (
+            <p className="m-0 max-w-[30ch] text-[length:var(--rap-lead-size,var(--rap-size-md))] leading-[var(--rap-lead-leading,1.3)] tracking-[-0.015em] text-ink-2 text-pretty [font-family:var(--rap-font-serif,inherit)] [font-weight:var(--rap-serif-weight,inherit)]">
+              {lead}
+            </p>
+          )}
           {actions && <Actions className="@3xl:justify-end">{actions}</Actions>}
         </div>
       )}
@@ -224,11 +234,14 @@ function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
 }
 
 
-/* signal: an instrument readout — a mono kicker, the picture on a scanned screen, coordinates under it */
+/* signal: a pocket radio's screen — an LCD readout strip, the headline in segments beside
+   the radio itself (a dot-matrix spectrum over a black tuner panel), the picture under it */
 function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [] }: Parts) {
-  /* a field instrument's front panel: a mono readout strip across the top, the headline
-     the full width of the grid, then the picture as a wide scanned plate with crop marks
-     and corner labels, a dot-matrix level meter running under it */
+  // the first fact that reads as a number tunes the radio ("104.2 MHz"); the default is 98.8
+  const tuned = meta.find((m) => typeof m.value === "string" && /\d/.test(m.value));
+  const raw = typeof tuned?.value === "string" ? tuned.value : "";
+  const freq = parseFloat(raw.replace(/[^\d.]/g, "")) || 98.8;
+  const unit = raw.replace(/[\d.\s]+/g, " ").trim() || "MHz";
   return (
     <Stack gap="xl">
       <div className="flex flex-wrap items-center justify-between gap-x-(--rap-space-lg) gap-y-(--rap-space-xs) border-y border-line py-(--rap-space-xs)">
@@ -236,54 +249,37 @@ function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [] }: 
           {eyebrow}
         </BlockKicker>
         {meta.length > 0 && (
-          <dl className="m-0 flex flex-wrap gap-x-(--rap-space-lg) gap-y-1 font-mono text-xs uppercase tracking-[0.06em]">
+          <dl className="m-0 flex flex-wrap gap-x-(--rap-space-lg) gap-y-1 text-[0.75rem] uppercase">
             {meta.map((m) => (
               <div key={m.label} className="flex gap-2">
-                <dt className="text-mute">{m.label}</dt>
-                <dd className="m-0 text-ink">{m.value}</dd>
+                <dt className="font-mono tracking-[0.06em] text-mute">{m.label}</dt>
+                <dd className="m-0 font-display text-ink">{m.value}</dd>
               </div>
             ))}
           </dl>
         )}
       </div>
-      <Grid rowGap="lg" className="items-end">
-        <GridItem span={11}>
-          <Display as="h1" size="xxl" className="max-w-[16ch] text-[length:clamp(2.75rem,8cqi,8rem)] leading-[0.95]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-(--rap-space-xl) @4xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @4xl:items-start">
+        <Stack gap="lg">
+          <Display as="h1" size="xxl" className="max-w-[20ch] text-[length:clamp(2rem,4.6cqi,4.25rem)]">
             {title}
           </Display>
-        </GridItem>
-        <GridItem span={5}>{lead && <p className={cn(leadText, "max-w-[46ch]")}>{lead}</p>}</GridItem>
-        <GridItem span={4} start={9} className="flex @min-[46rem]:justify-end">
+          {lead && <p className={cn(leadText, "max-w-[44ch]")}>{lead}</p>}
           {actions && <Actions>{actions}</Actions>}
-        </GridItem>
-      </Grid>
+        </Stack>
+        <div data-slot="hero-screen" className="flex flex-col gap-(--rap-space-md)">
+          <DotSpectrum />
+          <TunerPanel value={freq} unit={unit} label={tuned?.label} />
+        </div>
+      </div>
       {media && (
-        <figure data-slot="hero-media" className="m-0 flex flex-col gap-(--rap-space-xs)">
-          <MediaFrame picture={<div className={fill}>{media}</div>} className="aspect-[4/5] @md:aspect-[16/10] @3xl:aspect-[21/9] rounded-xs">
-            <CropMarks />
-            <span aria-hidden className="absolute left-(--rap-space-md) top-(--rap-space-md) font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-paper-2/85">
-              Plate {index ?? "00"} · scan
-            </span>
-          </MediaFrame>
-          <div aria-hidden className="flex items-center gap-(--rap-space-sm) overflow-hidden text-flame">
-            <span className="shrink-0 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-mute">Level</span>
-            <DotMatrix cols={96} rows={2} size={3} gap={3} shape="square" animation="wave" period={900} />
+        <figure data-slot="hero-media" className="m-0">
+          <div className="aspect-[4/5] @md:aspect-[16/10] @3xl:aspect-[21/8] overflow-hidden rounded-lg shadow-[inset_0_0_0_1px_var(--rap-line)]">
+            <div className={fill}>{media}</div>
           </div>
         </figure>
       )}
     </Stack>
-  );
-}
-
-function CropMarks() {
-  const tick = "absolute size-4 border-paper-2/70";
-  return (
-    <div aria-hidden className="absolute inset-(--rap-space-sm)">
-      <span className={cn(tick, "left-0 top-0 border-l border-t")} />
-      <span className={cn(tick, "right-0 top-0 border-r border-t")} />
-      <span className={cn(tick, "bottom-0 left-0 border-b border-l")} />
-      <span className={cn(tick, "bottom-0 right-0 border-b border-r")} />
-    </div>
   );
 }
 

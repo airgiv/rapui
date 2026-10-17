@@ -181,7 +181,7 @@ export const Receipt = forwardRef<HTMLElement, ReceiptProps>(function Receipt(
     >
       <div className="rap-receipt-paper rounded-t-card bg-surface px-6 pt-6 font-mono text-[0.8125rem] leading-[1.5] text-ink">
         <header className="text-center">
-          <h3 className="m-0 font-display text-[1.25rem] leading-tight font-semibold tracking-[-0.01em] text-ink">{merchant}</h3>
+          <h3 className="m-0 font-display-ui text-[1.25rem] leading-tight font-semibold tracking-[-0.01em] text-ink">{merchant}</h3>
           {address && <p className="m-0 mt-1 text-mute">{address}</p>}
           {when && (
             <p className="m-0 mt-1 text-mute tabular-nums">
@@ -236,7 +236,7 @@ export const Receipt = forwardRef<HTMLElement, ReceiptProps>(function Receipt(
             data-slot="receipt-total"
             role="img"
             aria-label={`Total, ${moneyLabel(total, fmt)}`}
-            className="flex items-start font-display leading-none font-semibold tracking-[-0.02em] text-ink tabular-nums"
+            className="flex items-start font-display-ui leading-none font-semibold tracking-[-0.02em] text-ink tabular-nums"
           >
             {p.symbolFirst && <span className="mt-[0.2em] mr-[0.06em] text-[1.25rem] text-ink-2">{p.symbol}</span>}
             <span className="text-[2.5rem]">{p.whole}</span>
@@ -342,7 +342,7 @@ export const TransferStatus = forwardRef<HTMLDivElement, TransferStatusProps>(fu
           {recipientDetail && <span className="truncate text-[0.8125rem] text-mute tabular-nums">{recipientDetail}</span>}
         </div>
         <div className="flex flex-col items-end gap-1.5">
-          <span aria-hidden className="font-display text-[1.75rem] leading-none font-semibold tracking-[-0.02em]">
+          <span aria-hidden className="font-display-ui text-[1.75rem] leading-none font-semibold tracking-[-0.02em]">
             <MoneyText value={amount} currency={currency} locale={locale} fractionClassName="text-[0.6em]" />
           </span>
           <span className="sr-only">{moneyLabel(amount, { currency, locale })}</span>

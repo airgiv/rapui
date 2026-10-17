@@ -274,7 +274,7 @@ export const Holdings = forwardRef<HTMLDivElement, HoldingsProps>(function Holdi
               <td className="px-2 pt-3 pb-2 text-right">
                 {change(totalChange, totalPct)}
               </td>
-              <td className="px-2 pt-3 pb-2 text-right tabular-nums font-display text-[15px]">{money(total)}</td>
+              <td className="px-2 pt-3 pb-2 text-right tabular-nums font-display-ui text-[15px]">{money(total)}</td>
               <td className="px-2 pt-3 pb-2 text-right">
                 <WeightBar weight={100} locale={locale} />
               </td>
@@ -346,7 +346,7 @@ export const Holdings = forwardRef<HTMLDivElement, HoldingsProps>(function Holdi
           <span className="text-[13px] font-semibold">Total</span>
           <span className="flex items-baseline gap-2">
             {change(totalChange, totalPct, "text-[12px] flex-row gap-1.5")}
-            <span className="font-display font-medium tabular-nums text-[15px]">{money(total)}</span>
+            <span className="font-display-ui font-medium tabular-nums text-[15px]">{money(total)}</span>
           </span>
         </div>
       </div>

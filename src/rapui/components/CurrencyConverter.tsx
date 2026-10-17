@@ -255,7 +255,7 @@ export const CurrencyConverter = forwardRef<HTMLDivElement, CurrencyConverterPro
           onChange={(e) => edit(side, e.target.value)}
           onBlur={() => blur(side)}
           aria-describedby={`${id}-rate`}
-          className="w-full min-w-0 border-0 bg-transparent p-0 font-display text-[clamp(1.5rem,5vw,2rem)] font-medium leading-[1.15] tracking-[-0.02em] text-ink tabular-nums outline-none placeholder:text-mute focus-visible:underline focus-visible:decoration-ring focus-visible:decoration-2 focus-visible:underline-offset-6"
+          className="w-full min-w-0 border-0 bg-transparent p-0 font-display-ui text-[clamp(1.5rem,5vw,2rem)] font-medium leading-[1.15] tracking-[-0.02em] text-ink tabular-nums outline-none placeholder:text-mute focus-visible:underline focus-visible:decoration-ring focus-visible:decoration-2 focus-visible:underline-offset-6"
         />
       </div>
       <Select value={cur[side]} onValueChange={(v) => pick(side, v)}>

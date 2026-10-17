@@ -46,7 +46,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
         data-slot="field-input"
         className={cn(
           "peer w-full border-0 border-b-[1.5px] border-solid border-line bg-transparent px-0 pt-[0.15em] pb-[0.25em]",
-          "text-ink font-display font-normal text-(length:--f-fs) tracking-[-0.04em] leading-[1.2] caret-accent",
+          "text-ink font-display-ui font-normal text-(length:--f-fs) tracking-[-0.04em] leading-[1.2] caret-accent",
           // the drawn accent line is this field's focus indicator; no extra box
           "outline-none focus-visible:outline-none placeholder:text-transparent",
         )}
@@ -59,7 +59,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
         htmlFor={inputId}
         data-slot="field-label"
         className={cn(
-          "absolute left-0 top-[calc(1.6rem+var(--f-fs)*0.15)] font-display text-(length:--f-fs) leading-[1.2] tracking-[-0.04em] text-mute",
+          "absolute left-0 top-[calc(1.6rem+var(--f-fs)*0.15)] font-display-ui text-(length:--f-fs) leading-[1.2] tracking-[-0.04em] text-mute",
           "pointer-events-none origin-top-left",
           "[transition:transform_var(--rap-dur)_var(--rap-ease-out),color_var(--rap-dur)_var(--rap-ease-out),font-size_var(--rap-dur)_var(--rap-ease-out),top_var(--rap-dur)_var(--rap-ease-out)]",
           floated,

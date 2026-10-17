@@ -62,7 +62,7 @@ export function Accordion({ items, multiple = false, defaultOpen = [], numbered 
               )}
               <span
                 className={cn(
-                  "font-display font-medium text-display-lg tracking-[-0.045em] leading-none",
+                  "font-display font-medium text-display-lg tracking-[var(--rap-display-tracking-md,-0.045em)] [text-transform:var(--rap-display-case,none)] leading-none",
                   "transition-transform duration-(--rap-dur) ease-soft group-hover/head:[transform:translateX(0.6rem)]",
                   "calm:group-hover/head:[transform:translateX(4px)]",
                 )}

@@ -7,7 +7,8 @@
    fun      colourful tiles packed 4px apart, each a huge number
    civic    soft white cards, centred light serif numbers
    signal   hairline-ruled cells with mono labels; the first figure
-            is drawn in dots (DotText) beside a dot-matrix bar chart
+            in phosphor LCD segments on a black panel, beside a
+            dot-matrix bar chart
    product  the numbers in a row, hairlines between them
    minimal  a list: big numbers on the left, words on the right,
             a rule above each row
@@ -20,7 +21,6 @@ import { cn } from "../utils";
 import { Grid, Section, SectionHeader, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 import { Display } from "./Typography";
 import { Counter } from "./Counter";
-import { DotText } from "./DotText";
 import { DotMatrix } from "./DotMatrix";
 
 export interface StatItem {
@@ -163,9 +163,15 @@ function SignalStats({ items }: { items: StatItem[] }) {
               <span aria-hidden className="text-flame">[01] </span>
               {first.label}
             </span>
-            <DotText fontSize={150} weight={500} className="max-w-full text-flame">
-              {show(first)}
-            </DotText>
+            {/* the lead figure on a black LCD: phosphor segments over their own unlit ghosts */}
+            <p className="m-0 w-fit max-w-full rounded-lg bg-[var(--rap-panel,var(--rap-ink))] px-(--rap-space-md) py-(--rap-space-sm) font-display text-[length:clamp(3.5rem,10cqi,8.5rem)] leading-[1.1] text-[color:var(--rap-lcd,var(--rap-paper))]">
+              <span className="relative inline-block">
+                <span aria-hidden className="absolute inset-0 opacity-[0.09]">
+                  {show(first).replace(/[0-9]/g, "~")}
+                </span>
+                <span className="relative">{show(first)}</span>
+              </span>
+            </p>
           </div>
           <div className="flex flex-col items-start gap-(--rap-space-sm) @3xl:items-end">
             <DotMatrix cols={22} rows={6} size={5} gap={3} shape="square" pattern={bars} animation="scan" period={1400} className="text-ink" />

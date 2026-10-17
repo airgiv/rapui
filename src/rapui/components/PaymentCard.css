@@ -79,7 +79,7 @@
     gap: 3cqw;
   }
   .rap-pc-issuer {
-    font-family: var(--pc-issuer-font, var(--rap-font-display));
+    font-family: var(--pc-issuer-font, var(--rap-font-display-ui, var(--rap-font-display)));
     font-size: 4.4cqw;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -252,7 +252,7 @@
     white-space: nowrap;
     border-radius: 0.8cqw;
     color: color-mix(in oklab, var(--rap-blue) 40%, black);
-    font-family: var(--rap-font-display);
+    font-family: var(--rap-font-display-ui, var(--rap-font-display));
     font-style: italic;
     font-size: 4cqw;
     background: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.92) 0 1.2cqw, rgb(235 235 235 / 0.92) 1.2cqw 2.4cqw);
@@ -319,7 +319,7 @@
   /* civic: deep navy with a guilloche */
   .rap-payment-card[data-look="civic"] {
     --pc-bg: linear-gradient(140deg, color-mix(in oklab, var(--rap-blue) 52%, black), color-mix(in oklab, var(--rap-blue) 26%, black));
-    --pc-num-font: var(--rap-font-display);
+    --pc-num-font: var(--rap-font-display-ui, var(--rap-font-display));
     --pc-mc-b: color-mix(in oklab, var(--rap-warning) 70%, white);
   }
   .rap-payment-card[data-look="civic"] .rap-pc-number { font-size: 6.8cqw; letter-spacing: 0.04em; }

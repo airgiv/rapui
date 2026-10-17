@@ -12,21 +12,26 @@ type DisplaySize = "mega" | "xxl" | "xl" | "lg" | "md";
    the size grows: giant lines need less air between them. */
 /* (leading sits after the size in every variant: tailwind-merge lets a
    later `text-*` size drop an earlier `leading-*`) */
-/* weight and tight tracking are tokens, so a preset can retune them for its face
-   (a serif wants less negative tracking than a grotesk, Plex a lighter weight) */
-const displayVariants = cva("m-0 font-display [font-weight:var(--rap-display-weight,500)] tracking-[-0.02em] text-balance", {
-  variants: {
-    tight: { true: "tracking-[var(--rap-display-tracking,-0.045em)]", false: "" },
-    size: {
-      mega: "text-display-mega leading-[0.86] [font-weight:var(--rap-display-weight-mega,450)] tracking-[-0.06em]",
-      xxl: "text-display-xxl leading-[0.88]",
-      xl: "text-display-xl leading-[0.92]",
-      lg: "text-display-lg leading-none",
-      md: "text-display-md leading-[1.1] tracking-[-0.02em]",
+/* weight, tracking, case and leading are tokens, so a preset can retune them for its
+   face (a serif wants less negative tracking than a grotesk, Plex a lighter weight,
+   fun's Anton capitals and no negative tracking at all). Each falls back to the
+   value the sizes always had, so a preset that leaves a token unset is unchanged. */
+const displayVariants = cva(
+  "m-0 font-display [font-weight:var(--rap-display-weight,500)] [text-transform:var(--rap-display-case,none)] tracking-[-0.02em] text-balance",
+  {
+    variants: {
+      tight: { true: "tracking-[var(--rap-display-tracking,-0.045em)]", false: "" },
+      size: {
+        mega: "text-display-mega leading-[var(--rap-display-leading,0.86)] [font-weight:var(--rap-display-weight-mega,450)] tracking-[var(--rap-display-tracking-mega,-0.06em)]",
+        xxl: "text-display-xxl leading-[var(--rap-display-leading,0.88)]",
+        xl: "text-display-xl leading-[var(--rap-display-leading,0.92)]",
+        lg: "text-display-lg leading-[var(--rap-display-leading,1)]",
+        md: "text-display-md leading-[1.1] tracking-[var(--rap-display-tracking-md,-0.02em)]",
+      },
     },
+    defaultVariants: { size: "xl", tight: true },
   },
-  defaultVariants: { size: "xl", tight: true },
-});
+);
 
 export interface DisplayProps extends HTMLAttributes<HTMLElement> {
   as?: ElementType;
@@ -59,8 +64,13 @@ const accentTones: Record<AccentTone, string> = {
  * Same face, different colour — how rap/ui marks the word that matters.
  * `mute` gives a two-tone grey/ink headline.
  */
+/* a preset may also turn the accent into a second voice (--rap-accent-font and friends:
+   face, style, weight, case, tracking); unset, it inherits the headline's own */
+const accentVoice =
+  "[font-family:var(--rap-accent-font,inherit)] [font-style:var(--rap-accent-style,inherit)] [font-weight:var(--rap-accent-weight,inherit)] [text-transform:var(--rap-accent-case,inherit)] [letter-spacing:var(--rap-accent-tracking,inherit)]";
+
 export function Accent({ className, tone = "flame", ...rest }: HTMLAttributes<HTMLSpanElement> & { tone?: AccentTone }) {
-  return <span data-slot="accent" data-tone={tone} className={cn(accentTones[tone], className)} {...rest} />;
+  return <span data-slot="accent" data-tone={tone} className={cn(accentTones[tone], accentVoice, className)} {...rest} />;
 }
 
 /** Small label with a live dot. Calm: the dot holds steady — a ring that breathes forever is a loop with no job. */
@@ -84,12 +94,22 @@ export function Eyebrow({ className, dot = true, children, ...rest }: HTMLAttrib
   );
 }
 
+/* the lead is the page's second voice: in fun a light antiqua (--rap-font-serif at
+   --rap-serif-weight), set larger, the way a poster pairs its giant capitals with a
+   soft serif line. Presets without a serif leave the tokens unset and it stays as
+   it was: the body face at the md display size. */
+const serifVoice = "[font-family:var(--rap-font-serif,inherit)] [font-weight:var(--rap-serif-weight,inherit)]";
+
 /** Airy lead paragraph. */
 export function Lead({ className, ...rest }: HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
       data-slot="lead"
-      className={cn("m-0 max-w-[32ch] text-display-md leading-[1.35] tracking-[-0.015em] text-ink-2", className)}
+      className={cn(
+        "m-0 max-w-[32ch] text-[length:var(--rap-lead-size,var(--rap-size-md))] leading-[var(--rap-lead-leading,1.35)] tracking-[-0.015em] text-ink-2",
+        serifVoice,
+        className,
+      )}
       {...rest}
     />
   );
