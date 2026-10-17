@@ -21,3 +21,15 @@
 @media (prefers-reduced-motion: reduce) {
   .rap-shimmer-text { animation: none; background: none; color: var(--rap-ink-2); }
 }
+
+/* signal: an LCD status line — steady segment capitals (no passing light), the time in segments */
+[data-rap-preset="signal"] .rap-shimmer-text {
+  animation: none;
+  background: none;
+  color: var(--rap-ink);
+  font-family: var(--rap-font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-rap-preset="signal"] [data-slot="matrix-status-time"] { font-family: var(--rap-font-display); }

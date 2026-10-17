@@ -50,7 +50,7 @@ export const entries: DocEntry[] = [
     name: "Dot matrix",
     group: "Expressive",
     description:
-      "A grid of dots: dim ones in a faint ink, lit ones in currentColor. Light some for good with `pattern`, or run a pulse through the grid — a chevron wave, a comet round the edge, a scan, a twinkle. Delight: with `interactive`, the dots under the pointer light up and fade back, a torch over a board. The heart of the signal preset's loaders.",
+      "A grid of dots: dim ones in a faint ink, lit ones in currentColor. Light some for good with `pattern`, or run a pulse through the grid — a chevron wave, a comet round the edge, a scan, a twinkle. The pulse steps like a real LCD — 12 frames a second (8 in calm), none while the grid is off screen. Delight: with `interactive`, the dots under the pointer light up and fade back, a torch over a board. The heart of the signal preset's loaders.",
     controls: matrixControls,
     Demo: ({ p }) => (
       <DotMatrix
@@ -157,7 +157,7 @@ export const entries: DocEntry[] = [
     name: "Media frame",
     group: "Expressive",
     description:
-      "A photo or video seen through an old screen: scan lines, film grain, an optional blur and colour tint — the analogue texture of the signal preset, for heroes, cards and backgrounds. Anything can sit on top. Delight (fun): a faint bright band rolls down the screen every few seconds, the way a tube refreshes.",
+      "A photo or video seen through an old screen: scan lines, film grain, an optional blur and colour tint — the analogue texture of the signal preset, for heroes, cards and backgrounds. Anything can sit on top. Delight (fun): a faint bright band rolls down the screen every few seconds, the way a tube refreshes. In the signal preset it is a flat LCD instead: a fine pixel grid, no grain, no band.",
     controls: frameControls,
     Demo: ({ p }) => (
       <MediaFrame

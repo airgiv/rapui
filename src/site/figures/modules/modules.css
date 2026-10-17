@@ -165,17 +165,18 @@
 /* the round buttons wear a fill instead of the dark ink */
 .iso-svg path.cm-dark[data-fill] { fill: var(--f, var(--cm-dark)); }
 
-/* ---------- the lab bench (signal): phosphor screens, readouts, probes, engraved labels */
-.cm { --cm-glass: color-mix(in oklab, var(--anatomy-lit) 9%, #07100b); }
+/* ---------- the lab bench (signal): phosphor screens, readouts, probes, engraved labels
+   (the screens glow in --anatomy-phosphor where a look sets one: signal's parts are black, its glass phosphor) */
+.cm { --cm-glass: color-mix(in oklab, var(--anatomy-phosphor, var(--anatomy-lit)) 9%, #07100b); }
 .iso-svg .cm-screen path.cm-recess-floor, .iso-svg.cm-svg .cm-set-lab .cm-lcd path.cm-recess-floor, .cm-set-lab .iso-svg .cm-lcd path.cm-recess-floor { fill: var(--cm-glass); }
-.iso-svg .cm-screen path.cm-grat { fill: none; stroke: var(--anatomy-lit); stroke-opacity: 0.22; stroke-width: calc(var(--anatomy-weight) * 0.8); }
-.iso-svg .cm-screen path.cm-trace { fill: none; stroke: var(--anatomy-lit); stroke-width: calc(var(--anatomy-weight) * 2.2); stroke-linecap: round; stroke-linejoin: round; }
-.iso-svg .cm-screen path.cm-mx-off { fill: var(--anatomy-lit); opacity: 0.13; stroke: none; }
-.iso-svg .cm-screen path.cm-mx-on { fill: var(--anatomy-lit); stroke: none; }
+.iso-svg .cm-screen path.cm-grat { fill: none; stroke: var(--anatomy-phosphor, var(--anatomy-lit)); stroke-opacity: 0.22; stroke-width: calc(var(--anatomy-weight) * 0.8); }
+.iso-svg .cm-screen path.cm-trace { fill: none; stroke: var(--anatomy-phosphor, var(--anatomy-lit)); stroke-width: calc(var(--anatomy-weight) * 2.2); stroke-linecap: round; stroke-linejoin: round; }
+.iso-svg .cm-screen path.cm-mx-off { fill: var(--anatomy-phosphor, var(--anatomy-lit)); opacity: 0.13; stroke: none; }
+.iso-svg .cm-screen path.cm-mx-on { fill: var(--anatomy-phosphor, var(--anatomy-lit)); stroke: none; }
 .iso-svg .cm-screen path.cm-scanlines { fill: none; stroke: #000; stroke-opacity: 0.3; stroke-width: 0.6; vector-effect: none; }
-.cm-set-lab .cm-lcd-text .cm-lcd-digits { fill: var(--anatomy-lit); }
-.cm-set-lab .cm-lcd-text .cm-lcd-ghost { fill: var(--anatomy-lit); opacity: 0.1; }
-.cm-set-lab .cm-lcd-text .cm-lcd-unit { fill: var(--anatomy-lit); opacity: 0.7; }
+.cm-set-lab .cm-lcd-text .cm-lcd-digits { fill: var(--anatomy-phosphor, var(--anatomy-lit)); }
+.cm-set-lab .cm-lcd-text .cm-lcd-ghost { fill: var(--anatomy-phosphor, var(--anatomy-lit)); opacity: 0.1; }
+.cm-set-lab .cm-lcd-text .cm-lcd-unit { fill: var(--anatomy-phosphor, var(--anatomy-lit)); opacity: 0.7; }
 .iso-svg path.cm-hole-dark { fill: var(--anatomy-hi); stroke: none; }
 .cm-jacks [data-post="hot"] .cm-collar > .iso-fill { fill: var(--anatomy-lit) !important; }
 .cm-jacks [data-post="hot"] .cm-collar > .iso-top { fill: color-mix(in oklab, var(--anatomy-lit) 80%, #fff); }

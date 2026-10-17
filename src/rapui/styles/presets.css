@@ -8,8 +8,8 @@
      fun      the default — loud, round, playful (tokens.css)
      civic    a public-service site: big condensed serif headlines,
               navy and a little red, soft big cards, calm motion
-     signal   a field instrument: sage paper, green-black ink,
-              phosphor green, Plex, dot matrices and scanlines
+     signal   a pocket radio's LCD: sage paper, black ink, a
+              segmented LCD face, dot matrices, black phosphor panels
      product  a modern product page: Geist, near-black buttons,
               thin borders, small radii, an iris accent
      minimal  black on white, hairlines, square corners, no colour
@@ -17,7 +17,7 @@
    The colour names stay (flame, blue, acid, bubble, sky, plum) so
    every component recolours without changes: each preset gives
    them its own hue — civic's "flame" is Old Glory red, signal's
-   is rust, minimal's is ink.
+   is black, minimal's is ink.
 
    Light and dark: a preset's colours are set for the element with
    the attribute and for any light/dark island inside it, at a
@@ -28,6 +28,51 @@
    preset has a default that <RapStyle> applies. Fonts are opt-in:
    import "@rapui/react/fonts/civic" etc.
    ─────────────────────────────────────────────────────────── */
+
+/* ── every preset but fun ──────────────────────────────────── */
+/* tokens.css holds the fun preset's type; any other preset starts from the base
+   faces again and drops the fun-only tokens (initial = unset, so components fall
+   back to what they did before: no capitals, no serif voice). Same specificity as
+   the preset blocks below and earlier in the file, so each preset still wins. */
+[data-rap-preset]:where(:not([data-rap-preset="fun"])) {
+  --rap-font-display: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --rap-display-weight: 500;
+  --rap-display-tracking: -0.045em;
+  --rap-size-mega: clamp(3.5rem, 13vw, 15rem);
+  --rap-size-xxl: clamp(2.75rem, 8vw, 8.5rem);
+  --rap-size-xl: clamp(2.25rem, 5.5vw, 5.5rem);
+  --rap-size-lg: clamp(1.75rem, 3.4vw, 3.25rem);
+  --rap-size-md: clamp(1.25rem, 2vw, 1.75rem);
+  --rap-font-serif: initial;
+  --rap-serif-weight: initial;
+  --rap-lead-size: initial;
+  --rap-lead-leading: initial;
+  --rap-serif-tracking: initial;
+  --rap-section-lead-measure: initial;
+  --rap-display-weight-mega: initial;
+  --rap-display-tracking-mega: initial;
+  --rap-display-tracking-md: initial;
+  --rap-display-case: initial;
+  --rap-font-display-ui: initial;
+  --rap-display-leading: initial;
+  --rap-accent-font: initial;
+  --rap-accent-style: initial;
+  --rap-accent-weight: initial;
+  --rap-accent-case: initial;
+  --rap-accent-tracking: initial;
+  --rap-hero-size: initial;
+  --rap-hero-measure: initial;
+  --rap-statement-size: initial;
+  --rap-statement-leading: initial;
+  --rap-kicker-size: initial;
+  --rap-kicker-dot: initial;
+  --rap-tagline-size: initial;
+  --rap-wordmark-char: initial;
+  --rap-cta-size: initial;
+  font-synthesis-weight: auto;
+}
 
 /* ── civic ─────────────────────────────────────────────────── */
 [data-rap-preset="civic"] {
@@ -131,18 +176,30 @@
 }
 
 /* ── signal ────────────────────────────────────────────────── */
+/* a pocket radio's screen: sage LCD paper, black ink, a darker muted green for the
+   second line, headlines and readouts in a 14-segment LCD face (DSEG14 Classic, set in
+   capitals), body in Plex. Black rounded LCD panels carry phosphor green (--rap-lcd).
+   Flat: no shadows, no gradients, hairlines and dotted circles. */
 [data-rap-preset="signal"] {
-  --rap-font-display: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --rap-display-weight: 400;
-  --rap-display-tracking: -0.03em;
+  --rap-display-weight-mega: 400;
+  --rap-display-tracking: 0.02em;
+  --rap-display-tracking-mega: 0.02em;
+  --rap-display-tracking-md: 0.02em;
+  --rap-display-case: uppercase;
+  --rap-display-leading: 1.12;
+  /* a segment face is wide: titles sit smaller than a grotesk's would */
+  --rap-size-mega: clamp(2.75rem, 7.4vw, 7.5rem);
+  --rap-size-xxl: clamp(2.25rem, 5.4vw, 5.5rem);
+  --rap-size-xl: clamp(2rem, 4.4vw, 4.25rem);
+  --rap-size-lg: clamp(1.625rem, 3.2vw, 2.875rem);
+  --rap-size-md: clamp(1.125rem, 1.7vw, 1.5rem);
 
   --rap-radius-xs: 3px;
   --rap-radius-sm: 6px;
-  --rap-radius: 10px;
-  --rap-radius-lg: 12px;
-  --rap-radius-pill: 10px;
+  --rap-radius: 16px;
+  --rap-radius-lg: 16px;
+  --rap-radius-pill: 5px;
   --rap-control-h-sm: 34px;
   --rap-control-h: 42px;
   --rap-control-h-lg: 50px;
@@ -153,11 +210,11 @@
   --rap-container-narrow: 720px;
   --rap-gutter: clamp(16px, 3vw, 36px);
   --rap-column-gap: clamp(12px, 1.6vw, 20px);
-  --rap-section-y: clamp(3rem, 6vw, 5.5rem);
+  --rap-section-y: clamp(3.5rem, 7vw, 6.5rem);
   --rap-section-inset: 0px;
   --rap-section-radius: 0px;
   --rap-section-rule: var(--rap-line);
-  --rap-density: 0.85;
+  --rap-density: 0.95;
 
   --rap-ease-rm: cubic-bezier(0.3, 0, 0.2, 1);
   --rap-dur-fast: 160ms;
@@ -166,68 +223,116 @@
 }
 [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="light"],
+[data-rap-preset="signal"][data-rap-theme="light"],
+[data-rap-preset="signal"] [data-rap-theme="dark"],
+[data-rap-preset="signal"][data-rap-theme="dark"],
+[data-rap-theme="dark"] [data-rap-preset="signal"] {
+  /* (fonts again on every light/dark island, which tokens.css otherwise sends back to Onest) */
+  --rap-font-display: "DSEG14 Classic", "IBM Plex Mono", ui-monospace, monospace;
+  --rap-font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --rap-display-weight: 400;
+  --rap-display-tracking: 0.02em;
+}
+[data-rap-preset="signal"],
+[data-rap-preset="signal"] [data-rap-theme="light"],
 [data-rap-preset="signal"][data-rap-theme="light"] {
-  /* a field instrument: sage paper, green-black ink, one phosphor green that does all the
-     signalling, a lime for highlights and a single warm red kept for alarms */
-  --rap-paper: #e3e7de;
-  --rap-paper-2: #f1f3ec;
-  --rap-paper-3: #d0d7c8;
-  --rap-ink: #111a14;
-  --rap-ink-2: #34433a;
-  --rap-mute: #7a877e;
-  --rap-line: rgb(17 26 20 / 0.14);
-  --rap-flame: #1f8f4e;
-  --rap-blue: #2f6b78;
-  --rap-plum: #16301f;
-  --rap-acid: #c9ef4f;
-  --rap-bubble: #b8d6bf;
-  --rap-sky: #b6cdc7;
-  --rap-accent: #1f8f4e;
-  --rap-accent-ink: #ffffff;
-  --rap-fill: rgb(17 26 20 / 0.06);
-  --rap-fill-hover: rgb(17 26 20 / 0.1);
-  --rap-fill-strong: rgb(17 26 20 / 0.16);
-  --rap-ring: #1f8f4e;
-  --rap-select: #111a14;
-  --rap-surface: #f7f8f3;
-  --rap-shadow-pop: 0 1px 0 rgb(17 26 20 / 0.05), 0 10px 30px rgb(17 26 20 / 0.12);
-  --rap-scrim: rgb(17 26 20 / 0.35);
-  --rap-danger: #d2492a;
-  --rap-success: #1f8f4e;
-  --rap-chart-up: #1f8f4e;
-  --rap-chart-down: #d2492a;
+  --rap-paper: #97a98a;
+  --rap-paper-2: #a2b395;
+  --rap-paper-3: #8a9c7d;
+  --rap-ink: #0a0d09;
+  --rap-ink-2: #2f3c2a;
+  --rap-mute: #56684d;
+  --rap-line: rgb(10 13 9 / 0.2);
+  --rap-flame: #0a0d09;
+  --rap-blue: #2c4130;
+  --rap-plum: #1b2818;
+  --rap-acid: #b6f09a;
+  --rap-bubble: #a9ba9c;
+  --rap-sky: #a0b293;
+  --rap-accent: #141a12;
+  --rap-accent-ink: #a8ba9b;
+  --rap-fill: rgb(10 13 9 / 0.07);
+  --rap-fill-hover: rgb(10 13 9 / 0.12);
+  --rap-fill-strong: rgb(10 13 9 / 0.18);
+  --rap-ring: #0a0d09;
+  --rap-select: #0a0d09;
+  --rap-select-ink: #b6f09a;
+  --rap-surface: #9eaf91;
+  --rap-edge: rgb(10 13 9 / 0.2);
+  --rap-shadow-pop: 0 0 0 1px rgb(10 13 9 / 0.28);
+  --rap-scrim: rgb(10 13 9 / 0.4);
+  --rap-danger: #7e2412;
+  --rap-success: #1d3f1b;
+  --rap-chart-up: #0a0d09;
+  --rap-chart-down: #7e2412;
+  /* the LCD panels: black glass, phosphor digits, a dark green tuner window */
+  --rap-panel: #0a0d09;
+  --rap-panel-2: #1c2a1b;
+  --rap-lcd: #b6f09a;
+  --rap-lcd-dim: rgb(182 240 154 / 0.38);
+  --rap-lcd-needle: #8dff6a;
+  --rap-dot-off: rgb(10 13 9 / 0.11);
   color-scheme: light;
 }
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="dark"] {
-  /* the same instrument at night: a green-black screen and phosphor */
-  --rap-paper: #0c1410;
-  --rap-paper-2: #121d17;
-  --rap-paper-3: #1a271f;
-  --rap-ink: #dfeadf;
-  --rap-ink-2: #aebfb1;
-  --rap-mute: #708276;
-  --rap-line: rgb(223 234 223 / 0.13);
-  --rap-flame: #5fd38a;
-  --rap-blue: #7fb6c2;
-  --rap-plum: #dfeadf;
-  --rap-acid: #c9ef4f;
-  --rap-accent: #5fd38a;
-  --rap-accent-ink: #08110c;
-  --rap-fill: rgb(223 234 223 / 0.07);
-  --rap-fill-hover: rgb(223 234 223 / 0.12);
-  --rap-fill-strong: rgb(223 234 223 / 0.19);
-  --rap-ring: #5fd38a;
-  --rap-select: #dfeadf;
-  --rap-select-ink: #08110c;
-  --rap-surface: #15211a;
-  --rap-shadow-pop: 0 1px 0 rgb(0 0 0 / 0.2), 0 10px 30px rgb(0 0 0 / 0.4);
-  --rap-scrim: rgb(4 8 6 / 0.6);
-  --rap-chart-up: #5fd38a;
-  --rap-chart-down: #ff7a59;
+  /* the same radio at night: a black-green LCD lit in phosphor */
+  --rap-paper: #0b110b;
+  --rap-paper-2: #111911;
+  --rap-paper-3: #172117;
+  --rap-ink: #b6f09a;
+  --rap-ink-2: #8fbf78;
+  --rap-mute: #5f8352;
+  --rap-line: rgb(182 240 154 / 0.18);
+  --rap-flame: #b6f09a;
+  --rap-blue: #7fc3a0;
+  --rap-plum: #b6f09a;
+  --rap-acid: #b6f09a;
+  --rap-bubble: #8fbf78;
+  --rap-sky: #1e2c1d;
+  --rap-accent: #b6f09a;
+  --rap-accent-ink: #0b110b;
+  --rap-fill: rgb(182 240 154 / 0.07);
+  --rap-fill-hover: rgb(182 240 154 / 0.12);
+  --rap-fill-strong: rgb(182 240 154 / 0.18);
+  --rap-ring: #b6f09a;
+  --rap-select: #b6f09a;
+  --rap-select-ink: #0b110b;
+  --rap-surface: #121b12;
+  --rap-edge: rgb(182 240 154 / 0.18);
+  --rap-shadow-pop: 0 0 0 1px rgb(182 240 154 / 0.24);
+  --rap-scrim: rgb(2 5 2 / 0.65);
+  --rap-danger: #ff8a6a;
+  --rap-success: #b6f09a;
+  --rap-chart-up: #b6f09a;
+  --rap-chart-down: #ff8a6a;
+  --rap-panel: #020402;
+  --rap-panel-2: #142114;
+  --rap-lcd: #b6f09a;
+  --rap-lcd-dim: rgb(182 240 154 / 0.34);
+  --rap-lcd-needle: #8dff6a;
+  --rap-dot-off: rgb(182 240 154 / 0.1);
   color-scheme: dark;
 }
+
+/* a radio screen's second line ("POPULAR" under "PLAYER"): an Accent in a headline
+   is the darker muted green, not a second colour */
+[data-rap-preset="signal"] [data-slot="accent"] { color: var(--rap-mute); }
+
+/* buttons read like the radio's own labels: LCD capitals. (Unlayered, like the other
+   preset rules here, so it wins over the button's own font-sans utility.) */
+[data-rap-preset="signal"] [data-slot="button"] {
+  font-family: var(--rap-font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* the segment face draws taller than its line box: a rolling label's window gets more
+   room, so the twin waiting below a letter never peeks into it */
+[data-rap-preset="signal"] [data-slot="roll-text"] { line-height: 1.6; }
 
 /* ── product ───────────────────────────────────────────────── */
 [data-rap-preset="product"] {

@@ -12,7 +12,7 @@ const twMerge = extendTailwindMerge({
         "flame", "blue", "plum", "acid", "bubble", "sky", "accent", "accent-ink", "select", "select-ink", "ring",
         "danger", "success", "warning", "scrim",
       ],
-      font: ["sans", "display", "mono"],
+      font: ["sans", "display", "display-ui", "mono"],
       text: ["display-mega", "display-xxl", "display-xl", "display-lg", "display-md"],
       radius: ["xs", "sm", "row", "pop", "card", "lg", "pill"],
       spacing: ["control-sm", "control", "control-lg", "tight", "tile"],

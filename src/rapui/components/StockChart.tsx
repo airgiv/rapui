@@ -290,7 +290,7 @@ function Price({ value, currency, locale }: { value: number; currency: string; l
     <p
       data-slot="stock-price"
       aria-label={spokenMoney(value, { currency, locale })}
-      className="m-0 font-display text-[33px] leading-none font-medium tracking-[-0.03em] tabular-nums"
+      className="m-0 font-display-ui text-[33px] leading-none font-medium tracking-[-0.03em] tabular-nums"
     >
       <span aria-hidden>
         {m.sign}

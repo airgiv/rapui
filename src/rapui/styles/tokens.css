@@ -26,20 +26,11 @@
   --rap-accent: var(--rap-flame);
   --rap-accent-ink: #ffffff;
 
-  /* type — one family does everything; mono is for code only */
-  --rap-font-display: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
-  /* display headlines: weight and the tight tracking — presets retune both for their face */
-  --rap-display-weight: 500;
-  --rap-display-tracking: -0.045em;
+  /* (the typefaces are set below, per preset, not here: a light island inside
+     another preset must not reset them to the fun faces) */
 
-  /* fluid scale */
-  --rap-size-mega: clamp(3.5rem, 13vw, 15rem);
-  --rap-size-xxl: clamp(2.75rem, 8vw, 8.5rem);
-  --rap-size-xl: clamp(2.25rem, 5.5vw, 5.5rem);
-  --rap-size-lg: clamp(1.75rem, 3.4vw, 3.25rem);
-  --rap-size-md: clamp(1.25rem, 2vw, 1.75rem);
+  /* fluid scale: body and small here; the display steps are set per preset below
+     (fun's capitals run larger than the base scale the other presets keep) */
   --rap-size-body: clamp(1rem, 1.1vw, 1.125rem);
   --rap-size-small: 0.8125rem;
 
@@ -111,6 +102,91 @@
   --rap-dur-slow: 900ms;
 
   color-scheme: light;
+}
+
+/* type — the fun preset, after a poster: a narrow black grotesk set huge and in
+   capitals for the headlines (Anton), a light soft antiqua for the second voice —
+   leads, section kickers, the footer tagline (Fraunces at 300) — and Onest for
+   everything you read or press. Mono is for code only.
+   Declared on :root and on a fun wrapper (so fun nested in another preset gets
+   its own faces back); presets.css resets the fun-only tokens for every other
+   preset, so they keep the faces and cases they had. */
+:root,
+[data-rap-preset="fun"] {
+  --rap-font-display: "Anton", "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  /* the second voice. Unset in the other presets: read it with a fallback,
+     var(--rap-font-serif, inherit), and they keep their own face */
+  --rap-font-serif: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
+  --rap-serif-weight: 300;
+  /* how big the serif voice is set: the Lead and a section's lead line (36–44px on
+     a desktop, like a poster's subtitle), and its leading */
+  --rap-lead-size: clamp(1.375rem, 2.4vw, 2.5rem);
+  --rap-lead-leading: 1.16;
+  --rap-serif-tracking: -0.015em;
+  --rap-section-lead-measure: 32ch;
+  /* display headlines: weight, tracking, case and leading — presets retune them for
+     their face. Anton has one weight and is drawn tight already: no negative
+     tracking, and capitals (its caps are 0.86em tall, so 0.9 leaves a hairline
+     between lines, the way a poster stacks them) */
+  --rap-display-weight: 400;
+  --rap-display-weight-mega: 400;
+  --rap-display-tracking: 0.004em;
+  --rap-display-tracking-mega: 0em;
+  --rap-display-tracking-md: 0.01em;
+  --rap-display-case: uppercase;
+  /* the display face on controls and small figures (font-display-ui): Anton is for
+     headlines, so a big button, a giant field or a receipt total stays in Onest */
+  --rap-font-display-ui: var(--rap-font-sans);
+  --rap-display-leading: 0.9;
+  /* the Accent in a headline turns to the second voice: the serif's light italic, in
+     lowercase, against the capitals (it keeps its tone: flame, mute…) */
+  --rap-accent-font: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
+  --rap-accent-style: italic;
+  --rap-accent-weight: 300;
+  --rap-accent-case: none;
+  --rap-accent-tracking: -0.02em;
+  /* the fun hero's headline: as wide as the block, sized by the container */
+  --rap-hero-size: clamp(3rem, 14cqi, 15rem);
+  --rap-hero-measure: none;
+  /* the fun Statement's line, and the serif kicker over it (no dot: the serif is the mark) */
+  --rap-statement-size: clamp(2.75rem, 8.8cqi, 8.75rem);
+  --rap-statement-leading: 0.98;
+  --rap-kicker-size: clamp(1.375rem, 2.4vw, 2.25rem);
+  --rap-kicker-dot: none;
+  /* the fun footer's tagline, in the serif voice */
+  --rap-tagline-size: clamp(1.5rem, 2.3vw, 2.25rem);
+  /* the footer wordmark runs edge to edge: the average width of a letter, in em
+     (Anton's capitals are a little narrower than the base face's lowercase) */
+  --rap-wordmark-char: 0.45;
+  /* the fun CTA's headline: the xxl step, but never wider than its tile allows */
+  --rap-cta-size: min(clamp(3.25rem, 9.6vw, 10.25rem), 15cqi);
+  /* the display steps. Anton's capitals are about as wide as a tight lowercase
+     grotesk but much taller, and a poster runs them big: each step is ~20% over the
+     base scale (kept below for the other presets) so a headline still fills its line */
+  --rap-size-mega: clamp(4rem, 15.5vw, 18rem);
+  --rap-size-xxl: clamp(3.25rem, 9.6vw, 10.25rem);
+  --rap-size-xl: clamp(2.875rem, 6.6vw, 6.75rem);
+  --rap-size-lg: clamp(2rem, 4.1vw, 4rem);
+  --rap-size-md: clamp(1.375rem, 2.2vw, 2rem);
+  /* Anton is one weight: never let a font-semibold fake a bolder one */
+  font-synthesis-weight: none;
+}
+
+/* a light island inside another preset kept the base faces (Onest) before the fun
+   preset got its own; it still does, so those presets look exactly as they did */
+:where([data-rap-preset]:not([data-rap-preset="fun"])) [data-rap-theme="light"] {
+  --rap-font-display: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-sans: "Onest Variable", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --rap-display-weight: 500;
+  --rap-display-tracking: -0.045em;
+  --rap-size-mega: clamp(3.5rem, 13vw, 15rem);
+  --rap-size-xxl: clamp(2.75rem, 8vw, 8.5rem);
+  --rap-size-xl: clamp(2.25rem, 5.5vw, 5.5rem);
+  --rap-size-lg: clamp(1.75rem, 3.4vw, 3.25rem);
+  --rap-size-md: clamp(1.25rem, 2vw, 1.75rem);
 }
 
 /* the spacing steps, recomputed wherever a preset changes the density

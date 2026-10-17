@@ -102,7 +102,7 @@ export const BudgetBar = forwardRef<HTMLDivElement, BudgetBarProps>(function Bud
         aria-hidden
         className={cn("m-0 flex flex-wrap items-baseline gap-x-1.5 tabular-nums", compact ? "text-[13px]" : "text-[14px]")}
       >
-        <b className={cn("font-display font-medium tracking-[-0.02em]", compact ? "text-[15px]" : "text-[22px]")}>
+        <b className={cn("font-display-ui font-medium tracking-[-0.02em]", compact ? "text-[15px]" : "text-[22px]")}>
           {fmt(spent)}
         </b>
         <span className="text-ink-2">spent of {fmt(budget)}</span>

@@ -87,7 +87,7 @@ export function Cursor({ blend = true, size = 18 }: CursorProps) {
         {label && (
           <span
             data-slot="cursor-label"
-            className="font-display text-[0.85rem] font-medium tracking-[-0.02em] text-[#282828] text-center animate-[rap-cursor-in_300ms_var(--rap-ease-out)] calm:animate-fade-in"
+            className="font-display-ui text-[0.85rem] font-medium tracking-[-0.02em] text-[#282828] text-center animate-[rap-cursor-in_300ms_var(--rap-ease-out)] calm:animate-fade-in"
           >
             {label}
           </span>

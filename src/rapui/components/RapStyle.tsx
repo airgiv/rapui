@@ -24,7 +24,7 @@ export type RapTheme = "light" | "dark";
 export const RAP_PRESETS: { value: RapPreset; label: string; note: string }[] = [
   { value: "fun", label: "Fun", note: "Loud, round, playful" },
   { value: "civic", label: "Civic", note: "Serif headlines, navy, soft cards" },
-  { value: "signal", label: "Signal", note: "A field instrument: phosphor green, Plex, dot matrices" },
+  { value: "signal", label: "Signal", note: "A pocket radio: LCD segments, sage and black, dot matrices" },
   { value: "product", label: "Product", note: "A product page with rapui's moves: Geist, ink, an editor's canvas" },
   { value: "minimal", label: "Minimal", note: "Black on white, hairlines, square" },
 ];

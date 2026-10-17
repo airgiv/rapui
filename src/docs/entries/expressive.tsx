@@ -329,7 +329,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     name: "Typography",
     group: "Expressive",
     description:
-      "Display sizes from md to mega in one typeface, Onest. Accent recolours a word instead of switching font; mute gives the two-tone headline.",
+      "Display sizes from md to mega in the preset's headline face — in fun, Anton in capitals — with Lead as the second voice (fun: a light Fraunces serif). Accent marks the word that matters: its own colour (mute gives the two-tone headline), and in fun the serif's light italic against the capitals.",
     controls: typeControls,
     Demo: ({ p }) => (
       <div className="doc-stack" style={{ width: "100%" }}>

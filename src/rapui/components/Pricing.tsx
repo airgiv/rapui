@@ -273,7 +273,7 @@ function FunPlans({ plans, billing, caption }: LookProps) {
               <h3 className="m-0 text-[1.375rem] font-medium tracking-[-0.03em]">{plan.name}</h3>
               {plan.description && <p className="m-0 text-[0.9375rem] leading-snug opacity-75">{plan.description}</p>}
             </header>
-            <Price plan={plan} billing={billing} roll caption={caption} className="font-display text-display-xl leading-[0.9] tracking-[-0.05em]" />
+            <Price plan={plan} billing={billing} roll caption={caption} className="font-display text-display-xl leading-[0.9] tracking-[var(--rap-display-tracking-mega,-0.05em)]" />
             <Features
               items={plan.features}
               className="text-[0.9375rem]"

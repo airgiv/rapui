@@ -56,7 +56,7 @@ const buttonVariants = cva(
         sm: "[--btn-h:2.5rem] [--btn-px:1.1rem] [--btn-fs:0.875rem] gap-2",
         md: "[--btn-h:3.25rem] [--btn-px:1.6rem] [--btn-fs:1rem]",
         lg: "[--btn-h:4.25rem] [--btn-px:2.2rem] [--btn-fs:1.25rem]",
-        xl: "[--btn-h:6rem] [--btn-px:3rem] [--btn-fs:clamp(1.4rem,2.2vw,2rem)] font-display font-medium tracking-[-0.04em]",
+        xl: "[--btn-h:6rem] [--btn-px:3rem] [--btn-fs:clamp(1.4rem,2.2vw,2rem)] font-display-ui font-medium tracking-[-0.04em]",
         /* Readymag's form scale: a pill as tall as a line of body text is wide
            (88px), sans at 20px, regular weight — big because it is the only
            thing to press, not because it shouts */
@@ -332,7 +332,7 @@ const circleVariants = cva(
   [
     "group/cbtn relative isolate grid place-items-center overflow-hidden rounded-full p-4 cursor-pointer",
     "border-[1.5px] border-transparent bg-(--c-bg) text-(--c-fg)",
-    "font-display font-medium text-base leading-none tracking-[-0.03em] text-center",
+    "font-display-ui font-medium text-base leading-none tracking-[-0.03em] text-center",
     "transition-colors duration-(--rap-dur) ease-soft hover:text-(--c-fill-fg)",
     "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring",
   ],

@@ -1,31 +1,23 @@
-/* DotMatrix — the dot states and the one pulse keyframe.
+/* DotMatrix — the dot states.
 
-   A dot is the ink at --dm-dim strength; lit (pattern) and hot (pointer)
-   dots are currentColor. A pulsing dot runs rap-dm-pulse with its own
-   delay: dim → full for a moment → dim, the rest of the cycle dark, so a
-   delay pattern (chevron, perimeter, rows, random) becomes a moving front.
-   Twinkle stretches each dot's cycle by --dm-len so they drift apart.
-   Calm paces the whole thing at 0.6× (--dm-pace scales delays too, so the
-   shape of the front survives); still freezes it (global rule). */
+   A dot is the ink at --dm-dim strength (or --rap-dot-off where a preset
+   sets one: signal's darker sage); lit (pattern) and hot (pointer) dots are
+   currentColor. A pulsing dot carries a stepped level, data-l 1..3, written
+   by the component's timer — no keyframes, and no transition on the steps
+   (an LCD switches, it does not fade). Still / reduced motion: no levels. */
 @layer theme, base, components, utilities;
 
 .rap-dot-matrix > span {
   background: color-mix(in srgb, currentColor calc(var(--dm-dim) * 100%), transparent);
+}
+.rap-dot-matrix[data-animation="none"] > span {
   transition: background-color 260ms var(--rap-ease-out), scale 260ms var(--rap-ease-out);
 }
-.rap-dot-matrix > span[data-lit] { background: currentColor; }
-.rap-dot-matrix > span[data-hot] { background: currentColor; transition-duration: 60ms; }
+.rap-dot-matrix > span[data-l="1"] { background: color-mix(in srgb, currentColor 42%, transparent); }
+.rap-dot-matrix > span[data-l="2"] { background: color-mix(in srgb, currentColor 70%, transparent); }
+.rap-dot-matrix > span:is([data-l="3"], [data-lit]) { background: currentColor; }
+.rap-dot-matrix > span[data-hot] { background: currentColor; transition: background-color 60ms, scale 60ms; }
 .rap-dot-matrix > span[data-hot="2"] { scale: 1.15; }
 
-@keyframes rap-dm-pulse {
-  0%, 100% { background: color-mix(in srgb, currentColor calc(var(--dm-dim) * 100%), transparent); }
-  12%, 22% { background: currentColor; }
-  48% { background: color-mix(in srgb, currentColor calc(var(--dm-dim) * 100%), transparent); }
-}
-.rap-dot-matrix > span[data-pulse]:not([data-lit]) {
-  animation: rap-dm-pulse calc(var(--dm-dur) * var(--dm-pace, 1) * var(--dm-len, 1)) linear var(--dm-delay, 0ms) infinite;
-}
-:where(:is([data-rap-motion="calm"], [data-rap-motion="still"])) .rap-dot-matrix { --dm-pace: 1.6; }
-@media (prefers-reduced-motion: reduce) {
-  .rap-dot-matrix > span[data-pulse] { animation: none; }
-}
+/* signal: unlit dots are the darker sage of the radio's matrix, whatever the colour */
+[data-rap-preset="signal"] .rap-dot-matrix > span:not([data-l], [data-lit], [data-hot]) { background: var(--rap-dot-off, color-mix(in srgb, currentColor calc(var(--dm-dim) * 100%), transparent)); }

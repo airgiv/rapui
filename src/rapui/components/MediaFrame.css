@@ -1,7 +1,8 @@
 /* MediaFrame — the screen texture.
    - media: fills the frame (object-cover), blurred by --mf-blur and scaled
      up a touch so the blur never shows a soft edge.
-   - lines: a repeating stripe every --mf-pitch, dark lines in multiply.
+   - lines: a repeating stripe every --mf-pitch, dark lines (signal: an LCD's
+     pixel grid, no grain — a flat screen, not a tube).
    - grain: SVG turbulence noise in overlay.
    - roll (fun): a soft bright band travels down the frame every 6s. */
 @layer theme, base, components, utilities;
@@ -16,9 +17,9 @@
   filter: blur(var(--mf-blur)) saturate(1.05);
   scale: calc(1 + min(var(--mf-blur), 40px) / 400px);
 }
+/* (black lines: plain alpha looks exactly like multiply, without a blend layer to composite) */
 .rap-mf-lines {
   background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--mf-pitch) - 1px), rgb(0 0 0 / 0.22) calc(var(--mf-pitch) - 1px) var(--mf-pitch));
-  mix-blend-mode: multiply;
 }
 .rap-mf-grain {
   opacity: 0.22;
@@ -45,3 +46,14 @@
 @media (prefers-reduced-motion: reduce) {
   .rap-media-frame::after { animation: none; display: none; }
 }
+
+/* signal: a flat LCD, not a tube — the radio's rounded screen, a fine pixel grid both
+   ways instead of scan lines, no grain and no rolling band */
+[data-rap-preset="signal"] .rap-media-frame { border-radius: var(--rap-radius); }
+[data-rap-preset="signal"] .rap-mf-lines {
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 calc(var(--mf-pitch) - 1px), rgb(0 0 0 / 0.2) calc(var(--mf-pitch) - 1px) var(--mf-pitch)),
+    repeating-linear-gradient(to right, transparent 0 calc(var(--mf-pitch) - 1px), rgb(0 0 0 / 0.12) calc(var(--mf-pitch) - 1px) var(--mf-pitch));
+}
+[data-rap-preset="signal"] .rap-mf-grain,
+[data-rap-preset="signal"] .rap-media-frame::after { display: none; }

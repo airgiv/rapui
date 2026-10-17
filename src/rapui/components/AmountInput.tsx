@@ -225,7 +225,7 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(functi
         ref={figureRef}
         data-slot="amount-input-figure"
         className={cn(
-          "flex max-w-full items-baseline justify-center font-display font-medium leading-[1.1] tracking-[-0.035em] tabular-nums",
+          "flex max-w-full items-baseline justify-center font-display-ui font-medium leading-[1.1] tracking-[-0.035em] tabular-nums",
           "transition-[font-size,color] fun:duration-(--rap-dur-fast) ease-soft calm:duration-0",
           step(len),
           over ? "text-danger" : raw ? "text-ink" : "text-mute",
