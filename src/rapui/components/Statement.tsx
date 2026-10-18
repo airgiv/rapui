@@ -14,7 +14,7 @@
               and straightens when you reach for it
      civic    centred, a large light serif; the parts sit bare in
               the line, a slider on a soft white pill
-     signal   mono at a modest size, airy, flush left; each part in a hairline capsule
+     signal   a light grotesk at a modest size, airy, flush left; each part in a hairline capsule
      product  centred, tight and heavy; a slider or stars on a round chip
      minimal  flush left and large, the parts bare
 

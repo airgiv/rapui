@@ -423,7 +423,7 @@ const SIZE: Record<LaurelSize, string> = {
 const TITLE: Record<BlockLook, string> = {
   civic: "font-display font-normal tracking-[-0.005em]",
   fun: "font-display font-bold tracking-[-0.02em]",
-  signal: "font-display font-medium tracking-[-0.01em]",
+  signal: "font-display font-normal tracking-[-0.015em]",
   product: "font-sans font-semibold tracking-[-0.015em]",
   minimal: "font-sans font-normal tracking-[-0.01em]",
 };

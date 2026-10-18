@@ -70,9 +70,10 @@
   /* signal: a mono line at a modest size with room between the lines, flush left; each
      part sits in a hairline capsule, like a control drawn on a spec sheet */
   [data-look="signal"] .rap-statement-text {
-    font-size: clamp(1.375rem, 2.6cqi, 2.25rem);
-    line-height: 1.75;
-    max-width: 34ch;
+    font-size: clamp(1.375rem, 2.4cqi, 2rem);
+    font-weight: 300;
+    line-height: 1.7;
+    max-width: 36ch;
   }
   [data-look="signal"] .rap-statement-slot {
     padding: 0.3rem 0.7rem;

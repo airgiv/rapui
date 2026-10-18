@@ -61,8 +61,8 @@ export { MediaFrame } from "../components/MediaFrame";
 export type { MediaFrameProps } from "../components/MediaFrame";
 export { ModGrid, ModCell } from "../components/ModGrid";
 export type { ModGridProps, ModCellProps } from "../components/ModGrid";
-export { TechClock, DotScreen, CrossGrid, TickCircle, PlusMark, IndexTag, SpacedLabel, ArrowLine, SquareMarks, Horizon, OutlineBlob, Asterisk, Molecule } from "../components/TechMarks";
-export type { TechClockProps } from "../components/TechMarks";
+export { TechClock, DotScreen, Dial, CompassDial, LeaderLines, SideLabel, CrossGrid, TickCircle, PlusMark, IndexTag, SpacedLabel, ArrowLine, SquareMarks, Horizon, OutlineBlob, Asterisk, Molecule } from "../components/TechMarks";
+export type { TechClockProps, LeaderLabel } from "../components/TechMarks";
 // thin-line 3D figures
 export { Figure, FIGURE_SHAPES } from "../components/Figure";
 export type { FigureProps, FigureShape, FigureHidden, FigureLook } from "../components/Figure";

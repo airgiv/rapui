@@ -18,12 +18,14 @@
             front page: a big light serif headline, the lead and
             buttons under it, the picture in a wide rounded card below;
             drop an <InlineMedia> between the headline's words
-   signal   a quiet technical sheet on a full-width grid of square
-            cells (ModGrid): the headline in mono at a modest size,
-            its second line olive-grey, a small dot screen spelling
-            `dots` (default: the first meta value; or the picture, and
-            then a small dot field under the lead), a clock in a cell
-            of its own, `meta` as notes with {0002} tags
+   signal   an editorial index sheet on a numbered grid of square
+            cells (ModGrid numbered): a light grotesk headline, the
+            lead and `meta` notes placed sparsely, then a wide field —
+            the picture as a backdrop, or a soft dark green — with four
+            big dial faces (a dot screen with the time, a compass with
+            a red needle, dot readouts of the first meta value and the
+            index), tiny pale dot text (`dots`, the meta) scattered over
+            it and leader lines out to small part labels
    product  centred: a pill badge, headline, lead, two buttons, then
             the picture in a framed window with a soft glow under it
    minimal  a big left-aligned headline over nine columns, a small
@@ -33,13 +35,13 @@
    Delight (fun): the picture tile is tossed onto the page and the
    sticker spins on its corner; an inline picture tilts under the
    pointer. Calm: everything is simply in place. */
-import type { HTMLAttributes, ReactNode } from "react";
+import { useEffect, useState, type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "../utils";
 import { Grid, GridItem, Section, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 import { Display, Eyebrow } from "./Typography";
 import { ModGrid, ModCell } from "./ModGrid";
 import { DotText } from "./DotText";
-import { DotScreen, PlusMark, TechClock } from "./TechMarks";
+import { CompassDial, Dial, DotScreen, LeaderLines, SideLabel, TechClock } from "./TechMarks";
 import { ArrowRight } from "../icons";
 import "./Hero.css";
 
@@ -235,85 +237,143 @@ function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
 }
 
 
-/* signal: a quiet technical sheet on a full-width grid of square cells — the headline in
-   mono at a modest size with its second line in olive-grey, a small dot screen (or the
-   picture), a clock in a cell of its own, notes with {index} tags and a small dot-matrix
-   field; most cells left empty */
+/* signal: an editorial index sheet — a numbered grid of square cells with a light grotesk
+   headline, notes and the lead placed sparsely in a few cells, then a wide field (the picture,
+   or a soft dark-green backdrop) carrying a cluster of four big circular dial faces — a dot
+   screen with the time, a compass with a red needle, two dot-type readouts — tiny pale dot
+   text scattered over the rest, and thin leader lines out to small part labels */
+function useMinute() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+  return now;
+}
+
 function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [], dots }: Parts) {
-  const field = (dots ?? (typeof meta[0]?.value === "string" ? `${meta[0].value}` : typeof eyebrow === "string" ? eyebrow : "")).toUpperCase();
+  const now = useMinute();
+  const time = now ? `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` : "--:--";
+  const day = !now || (now.getHours() >= 6 && now.getHours() < 20);
   const [lead0, ...notes] = meta;
+  const reading = typeof lead0?.value === "string" ? lead0.value.split(" ")[0] : "00";
+  const tag = `X - ${String(index ?? "0").padStart(3, "0")}`;
+  const field = (dots ?? (typeof eyebrow === "string" ? eyebrow : "")).toUpperCase();
+  const tiny = "text-[color:rgb(240_244_236/0.92)]";
   return (
-    <ModGrid marks>
-      <ModCell c={["1 / -1", "1 / span 6", "1 / span 6"]} r={[undefined, undefined, "1"]} className="flex items-start">
+    <ModGrid numbered>
+      <ModCell c={["1 / -1", "1 / span 5", "1 / span 4"]} r={[undefined, undefined, "1"]}>
         <BlockKicker look="signal" index={index}>
           {eyebrow}
         </BlockKicker>
       </ModCell>
-      <ModCell c={[null, null, "7 / span 1"]} r={[undefined, undefined, "1"]} className="flex items-start justify-center">
-        <PlusMark className="text-mute" />
-      </ModCell>
       {lead0 && (
-        <ModCell c={[null, "7 / span 2", "10 / span 3"]} r={[undefined, undefined, "1"]} className="flex flex-col gap-1 text-[0.8125rem] leading-[1.45]">
+        <ModCell c={[null, "7 / span 2", "10 / span 2"]} r={[undefined, undefined, "1"]} className="flex flex-col gap-1 text-[0.75rem] leading-[1.5]">
           <span className="uppercase tracking-[0.08em] text-ink">{lead0.label}</span>
           <span className="text-mute">{lead0.value}</span>
         </ModCell>
       )}
-      <ModCell c={["1 / -1", "1 / span 6", "1 / span 6"]} r={[undefined, undefined, "2 / span 2"]} className="flex items-center">
-        <Display as="h1" size="xxl" className="max-w-[24ch] text-[length:clamp(1.625rem,3.1cqi,2.75rem)] leading-[1.2]">
+      <ModCell c={["1 / -1", "1 / span 6", "1 / span 6"]} r={[undefined, undefined, "2 / span 2"]}>
+        <Display as="h1" size="mega" className="max-w-[22ch] text-[length:clamp(1.625rem,2.9cqi,2.5rem)] leading-[1.12]">
           {title}
         </Display>
       </ModCell>
-      <ModCell c={["1 / -1", "1 / span 4", "9 / span 3"]} r={[undefined, undefined, "2 / span 3"]} inset={false} className="p-(--mod-pad)">
-        {media ? (
-          <DotScreen className="aspect-square w-full [&>*]:size-full">{media}</DotScreen>
-        ) : (
-          <DotScreen className="flex aspect-square w-full flex-col justify-between p-[clamp(14px,2cqi,24px)]">
-            <div className="flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.1em] text-mute">
-              <span className="flex items-center gap-2">
-                <span className="size-1.5 rounded-full bg-[var(--rap-signal,currentColor)]" />
-                {lead0?.label ?? "Live"}
-              </span>
-              <span>{"{"}{index ?? "00"}{"}"}</span>
-            </div>
-            <DotText matrix off wrap={30} field={{ cols: 31 }} pad={[0, 1]} className="w-full">
-              {field || "SIGNAL"}
-            </DotText>
-            <span className="text-[0.6875rem] uppercase tracking-[0.1em] text-mute">{notes[0] ? `${notes[0].label} · ${notes[0].value}` : "\u00a0"}</span>
-          </DotScreen>
-        )}
-      </ModCell>
       {(lead || actions) && (
-        <ModCell c={["1 / -1", "1 / span 6", "1 / span 5"]} r={[undefined, undefined, "4 / span 2"]} className="flex flex-col justify-center gap-(--rap-space-lg)">
-          {lead && <p className="m-0 max-w-[52ch] text-[0.875rem] leading-[1.7] text-ink-2 text-pretty">{lead}</p>}
+        <ModCell c={["1 / -1", "1 / span 6", "9 / span 4"]} r={[undefined, undefined, "3 / span 2"]} className="flex flex-col gap-(--rap-space-lg)">
+          {lead && <p className="m-0 max-w-[46ch] text-[0.8125rem] leading-[1.7] text-ink-2 text-pretty">{lead}</p>}
           {actions && <Actions>{actions}</Actions>}
         </ModCell>
       )}
-      <ModCell c={[null, "7 / span 2", "12 / span 1"]} r={[undefined, undefined, "5"]} className="flex items-center justify-center">
-        <TechClock className="h-auto w-full max-w-[6.5rem]" size="100%" />
-      </ModCell>
       {notes.length > 0 && (
-        <ModCell c={["1 / -1", "5 / span 4", "9 / span 3"]} r={[undefined, undefined, "5"]} className="flex items-center">
-          <dl className="m-0 grid w-full grid-cols-2 gap-x-4 gap-y-3">
+        <ModCell c={["1 / -1", "1 / span 4", "4 / span 3"]} r={[undefined, undefined, "4"]}>
+          <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-2">
             {notes.map((m, i) => (
               <div key={m.label} className="flex flex-col gap-1">
-                <dt className="text-[0.6875rem] text-mute tabular-nums">
+                <dt className="text-[0.625rem] text-mute tabular-nums">
                   {"{"}
                   {String(i + 2).padStart(4, "0")}
                   {"}"} {m.label}
                 </dt>
-                <dd className="m-0 text-[0.8125rem] uppercase tracking-[0.04em] text-ink">{m.value}</dd>
+                <dd className="m-0 text-[0.75rem] uppercase tracking-[0.04em] text-ink">{m.value}</dd>
               </div>
             ))}
           </dl>
         </ModCell>
       )}
-      {field && media && (
-        <ModCell c={[null, "1 / span 4", "1 / span 3"]} r={[undefined, undefined, "7"]} className="flex items-center">
-          <DotText matrix off field={{ cols: 64, rows: 11 }} pad={[2, 2]} className="w-full text-ink">
-            {field}
-          </DotText>
-        </ModCell>
-      )}
+      <ModCell c={[null, null, "8 / span 1"]} r={[undefined, undefined, "4"]} className="flex items-start justify-center">
+        <TechClock className="h-auto w-full max-w-[4.5rem]" size="100%" />
+      </ModCell>
+      <ModCell c={["1 / -1", "1 / -1", "1 / -1"]} r={[undefined, undefined, "5 / span 5"]} inset={false}>
+        <div data-slot="hero-field" className="@container relative isolate flex flex-col overflow-hidden bg-[#141c15] @3xl:flex-row">
+          {/* the picture, or a soft out-of-focus green (gradients only, no filter) */}
+          <div aria-hidden className="absolute inset-0 -z-1 [&>:is(img,video,svg)]:size-full [&>:is(img,video)]:object-cover">
+            {media || (
+              <div className="size-full bg-[radial-gradient(40%_55%_at_70%_30%,#2f4a33,transparent_70%),radial-gradient(35%_45%_at_88%_75%,#3c5a37,transparent_70%),radial-gradient(30%_60%_at_52%_80%,#1f3323,transparent_70%),radial-gradient(22%_30%_at_95%_12%,#4f6e45,transparent_70%),linear-gradient(180deg,#121a13,#18241a_60%,#203222)]" />
+            )}
+          </div>
+          <div data-rap-theme="light" className="grid aspect-square w-full shrink-0 grid-cols-2 grid-rows-2 @3xl:w-[44%]">
+            <Dial>
+              <DotScreen className="absolute inset-[11%_17%_50%_17%] flex items-center justify-center rounded-[16%]">
+                <DotText matrix off pad={[1, 1]} className="w-[62%]">
+                  {time}
+                </DotText>
+                <span className="absolute right-[6%] top-1/2 -translate-y-1/2 font-mono text-[0.5rem] tracking-[0.2em] text-[color:var(--rap-needle)] [writing-mode:vertical-rl]">NOW</span>
+              </DotScreen>
+              <DotText matrix className="absolute bottom-[26%] left-[16%] w-[26%]">
+                {day ? "IT IS DAY" : "IT IS NIGHT"}
+              </DotText>
+            </Dial>
+            <CompassDial />
+            <Dial>
+              <DotText matrix className="absolute left-[30%] top-[48%] w-[22%]">
+                {reading}
+              </DotText>
+              <DotText matrix className="absolute right-[12%] top-[34%] w-[14%]">
+                {reading}
+              </DotText>
+            </Dial>
+            <Dial>
+              <svg aria-hidden viewBox="0 0 100 100" className="absolute inset-0 size-full">
+                {Array.from({ length: 22 }, (_, i) => {
+                  const t = i / 21;
+                  return <circle key={i} cx={30 + t * 34 + Math.sin(t * 9) * 4 + (i % 2) * 1.6} cy={4 + t * 92} r="0.55" fill="currentColor" />;
+                })}
+              </svg>
+              <DotText matrix className="absolute left-[40%] top-[48%] w-[26%]">
+                {tag}
+              </DotText>
+              <DotText matrix className="absolute right-[6%] top-[33%] w-[24%]">
+                {tag}
+              </DotText>
+            </Dial>
+          </div>
+          <div className={cn("relative flex min-h-[16rem] flex-1 flex-col justify-between gap-6 p-[clamp(16px,2.4cqi,32px)]", tiny)}>
+            <DotText matrix wrap={70} className="ml-auto w-full max-w-[22rem]">
+              {field || "SIGNAL"}
+            </DotText>
+            {lead0 && (
+              <DotText matrix className="ml-auto w-full max-w-[13rem]">
+                {`${lead0.label} >>`.toUpperCase()}
+              </DotText>
+            )}
+            <DotText matrix wrap={70} className="ml-auto w-full max-w-[18rem]">
+              {notes.map((m) => `${m.label} ${m.value}`).join("  ").toUpperCase() || "C/O RAPUI"}
+            </DotText>
+            <SideLabel className="absolute right-[clamp(8px,1cqi,14px)] top-1/2 -translate-y-1/2 opacity-70">{typeof eyebrow === "string" ? eyebrow : "In review"}</SideLabel>
+          </div>
+          <LeaderLines
+            className={cn("hidden @3xl:block", tiny)}
+            from={[33, 25]}
+            labels={[
+              { text: "NDL 104", x: 56, y: 12 },
+              { text: "LMR-2026", x: 60, y: 46 },
+              { text: "DOT 5×7", x: 52, y: 70 },
+              { text: "C/O RAPUI", x: 66, y: 90 },
+            ]}
+          />
+        </div>
+      </ModCell>
     </ModGrid>
   );
 }

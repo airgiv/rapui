@@ -156,7 +156,7 @@ function SignalStats({ items }: { items: StatItem[] }) {
   if (!first) return null;
   const tag = (i: number) => `{${String(i + 1).padStart(4, "0")}}`;
   return (
-    <ModGrid marks role="list">
+    <ModGrid numbered role="list">
       <ModCell role="listitem" c={["1 / -1", "1 / span 4", "1 / span 3"]} r={[undefined, "1 / span 4", "1 / span 3"]} className="flex">
         <DotScreen className="flex aspect-square w-full flex-col justify-between p-[clamp(14px,2.2cqi,26px)]">
           <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">

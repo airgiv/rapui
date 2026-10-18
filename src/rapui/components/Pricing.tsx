@@ -339,7 +339,7 @@ function SignalPlans({ plans, billing, caption }: LookProps) {
      screen (a dark island) */
   const span = Math.max(3, Math.min(6, Math.floor(12 / Math.max(1, plans.length))));
   return (
-    <ModGrid marks>
+    <ModGrid numbered>
       {plans.map((plan, i) => {
         const featured = !!plan.featured;
         return (
@@ -349,7 +349,7 @@ function SignalPlans({ plans, billing, caption }: LookProps) {
             c={["1 / -1", "span 4", `span ${span}`]}
             r={[undefined, "span 4", "span 4"]}
             inset={false}
-            className="p-(--mod-pad)"
+            className="p-(--mod-pad) pt-[calc(var(--mod-pad)+1.15rem)]"
           >
             <article
               data-slot="pricing-plan"
@@ -367,14 +367,14 @@ function SignalPlans({ plans, billing, caption }: LookProps) {
                     </span>
                   )}
                 </div>
-                <h3 className="m-0 text-[1.125rem] font-medium leading-[1.2] tracking-[-0.01em] text-ink">{plan.name}</h3>
+                <h3 className="m-0 font-display text-[1.25rem] font-normal leading-[1.2] tracking-[-0.015em] text-ink">{plan.name}</h3>
                 {plan.description && <p className="m-0 text-[0.9375rem] leading-snug text-mute">{plan.description}</p>}
               </header>
               <Price
                 plan={plan}
                 billing={billing}
                 caption={caption}
-                className="font-medium text-[clamp(1.75rem,2.6vw,2.5rem)] tracking-[-0.03em]"
+                className="font-display font-light text-[clamp(1.75rem,2.4vw,2.25rem)] tracking-[-0.025em]"
                 periodClassName="font-mono uppercase text-[0.75rem] tracking-[0.04em]"
               />
               <Features

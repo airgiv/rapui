@@ -231,3 +231,69 @@ export function DotScreen({ className, ...rest }: HTMLAttributes<HTMLDivElement>
     />
   );
 }
+
+/* ── Dial ── a big pale disc, an instrument face: children are laid over it (a DotScreen,
+   DotText readouts, a needle). Circles touch in a cluster; size is the parent's. */
+export function Dial({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div data-slot="dial" className={cn("@container relative aspect-square w-full overflow-hidden rounded-full bg-[var(--rap-dial,#dadfd3)] text-ink", className)} {...rest}>
+      {children}
+    </div>
+  );
+}
+
+/* ── CompassDial ── a dial with a soft dark blob (a pre-blurred gradient, no filter), a long
+   thin needle in --rap-needle, red ticks at the rim and dots at top and bottom */
+export function CompassDial({ angle = -22, className, ...rest }: HTMLAttributes<HTMLDivElement> & { angle?: number }) {
+  return (
+    <Dial className={className} {...rest}>
+      <div aria-hidden className="absolute inset-[14%_30%_10%_26%] rotate-[-18deg] rounded-[50%] bg-[radial-gradient(closest-side,rgb(18_22_16/0.85),rgb(18_22_16/0.45)_45%,transparent)]" />
+      <svg aria-hidden viewBox="0 0 100 100" className="absolute inset-0 size-full">
+        <rect x="0" y="45" width="1.6" height="10" fill="var(--rap-needle,#d2453a)" />
+        <rect x="98.4" y="45" width="1.6" height="10" fill="var(--rap-needle,#d2453a)" />
+        <circle cx="50" cy="1.6" r="0.9" fill="currentColor" />
+        <circle cx="50" cy="98.4" r="0.9" fill="currentColor" />
+        <g transform={`rotate(${angle} 50 50)`}>
+          <line x1="4" y1="50" x2="50" y2="50" stroke="var(--rap-needle,#d2453a)" strokeWidth="0.9" />
+          <line x1="50" y1="50" x2="96" y2="50" stroke="currentColor" strokeOpacity="0.35" strokeWidth="0.6" />
+        </g>
+        <circle cx="50" cy="50" r="0.9" fill="currentColor" />
+      </svg>
+    </Dial>
+  );
+}
+
+/* ── LeaderLines ── thin lines radiating from one point to tiny mono part labels (positions in
+   % of the box), each line ending in a dot: the callouts of a technical drawing */
+export interface LeaderLabel {
+  text: ReactNode;
+  /** where the label sits, % of the box */
+  x: number;
+  y: number;
+}
+export function LeaderLines({ from = [50, 50], labels, className, ...rest }: HTMLAttributes<HTMLDivElement> & { from?: [number, number]; labels: LeaderLabel[] }) {
+  return (
+    <div data-slot="leader-lines" aria-hidden className={cn("pointer-events-none absolute inset-0", className)} {...rest}>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
+        {labels.map((l, i) => (
+          <line key={i} x1={from[0]} y1={from[1]} x2={l.x} y2={l.y} stroke="currentColor" strokeOpacity="0.55" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        ))}
+      </svg>
+      {labels.map((l, i) => (
+        <span
+          key={i}
+          className="absolute flex items-center gap-1.5 whitespace-nowrap font-mono text-[0.625rem] uppercase tracking-[0.06em]"
+          style={{ left: `${l.x}%`, top: `${l.y}%`, translate: l.x > from[0] ? "-3px -50%" : "calc(-100% + 3px) -50%", flexDirection: l.x > from[0] ? "row" : "row-reverse" }}
+        >
+          <span className="size-[5px] flex-none rounded-full bg-current" />
+          {l.text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* ── SideLabel ── a vertical mono caption along an edge ("PRODUCTION CONCEPT | IN REVIEW") */
+export function SideLabel({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
+  return <span data-slot="side-label" className={cn("font-mono text-[0.625rem] uppercase tracking-[0.12em] [writing-mode:vertical-rl] rotate-180", className)} {...rest} />;
+}
