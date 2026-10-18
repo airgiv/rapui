@@ -140,7 +140,7 @@ export const entries: DocEntry[] = [
     name: "Section header",
     group: "Layout",
     description:
-      "The kicker, title and lead every block opens with. Each preset sets the kicker its own way: a live dot in fun, red capitals in civic, mono capitals with a [02] index in signal, iris in product, a quiet \"02 —\" in minimal. The index only shows where the preset numbers its sections.",
+      "The kicker, title and lead every block opens with. Each preset sets the kicker its own way: a live dot in fun, red capitals in civic, mono capitals with a {0002} tag in signal, iris in product, a quiet \"02 —\" in minimal. The index only shows where the preset numbers its sections.",
     controls: headerControls,
     Demo: ({ p }) => (
       <BlockFrame>

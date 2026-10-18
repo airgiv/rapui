@@ -82,19 +82,19 @@
   [data-rap-preset="civic"] .rap-section-kicker { color: var(--rap-ink-2); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8125rem; }
   [data-rap-preset="civic"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
 
-  /* signal: the kicker is an instrument label — mono capitals, the index in brackets */
+  /* signal: the kicker is a technical note — mono capitals, the index as a {0001} tag */
   [data-rap-preset="signal"] .rap-section-kicker {
     font-family: var(--rap-font-mono);
     font-size: 0.75rem;
     font-weight: 400;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--rap-ink-2);
   }
   [data-rap-preset="signal"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
-  [data-rap-preset="signal"] .rap-section-index { display: inline; color: var(--rap-ink); }
-  [data-rap-preset="signal"] .rap-section-index::before { content: "["; }
-  [data-rap-preset="signal"] .rap-section-index::after { content: "]"; }
+  [data-rap-preset="signal"] .rap-section-index { display: inline; color: var(--rap-mute); letter-spacing: 0; }
+  [data-rap-preset="signal"] .rap-section-index::before { content: "{00"; }
+  [data-rap-preset="signal"] .rap-section-index::after { content: "}"; }
 
   [data-rap-preset="product"] .rap-section-kicker { color: var(--rap-ink-2); }
   [data-rap-preset="product"] .rap-section-kicker [data-slot="eyebrow-dot"] { background: var(--rap-flame); --rap-accent: var(--rap-flame); }

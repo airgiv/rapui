@@ -6,9 +6,9 @@
 
    fun      colourful tiles packed 4px apart, each a huge number
    civic    soft white cards, centred light serif numbers
-   signal   hairline-ruled cells with mono labels; the first figure
-            in phosphor LCD segments on a black panel, beside a
-            dot-matrix bar chart
+   signal   on the square-cell ModGrid: the first figure in big white
+            dots on a black DotScreen, the rest as black dot-matrix
+            readouts on grey dot fields with {0002} tags
    product  the numbers in a row, hairlines between them
    minimal  a list: big numbers on the left, words on the right,
             a rule above each row
@@ -21,7 +21,9 @@ import { cn } from "../utils";
 import { Grid, Section, SectionHeader, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 import { Display } from "./Typography";
 import { Counter } from "./Counter";
-import { DotMatrix } from "./DotMatrix";
+import { DotText } from "./DotText";
+import { ModCell, ModGrid } from "./ModGrid";
+import { DotScreen, SquareMarks, TickCircle } from "./TechMarks";
 
 export interface StatItem {
   value: string | number;
@@ -147,50 +149,52 @@ export function Stats({ eyebrow, index, title, lead, items, look: lookProp, clas
   );
 }
 
-/* signal: the lead figure drawn in dots across a full-width cell, the rest as a row of ruled readouts */
+/* signal: the lead figure as big white dots on a black screen (four square cells), the
+   rest as black dot-matrix readouts on grey dot fields, each in its own block of cells */
 function SignalStats({ items }: { items: StatItem[] }) {
   const [first, ...more] = items;
   if (!first) return null;
-  const m = Math.max(1, Math.min(more.length, 4));
-  /* bars that climb, like a level meter */
-  const bars = (c: number, r: number) => r >= 6 - Math.round(1 + ((c * 7) % 11) / 2.2);
+  const tag = (i: number) => `{${String(i + 1).padStart(4, "0")}}`;
   return (
-    <div className="border-y border-line">
-      <Grid cols={[1, Math.min(m, 2), m]} gap="none" role="list" className={ruled}>
-        <div role="listitem" className="col-span-full flex flex-col gap-(--rap-space-md) p-(--rap-space-md) @3xl:flex-row @3xl:items-end @3xl:justify-between">
-          <div className="flex min-w-0 flex-col gap-(--rap-space-sm)">
-            <span className="font-mono text-xs uppercase tracking-[0.08em] text-ink-2">
-              <span aria-hidden className="text-flame">[01] </span>
-              {first.label}
-            </span>
-            {/* the lead figure on a black LCD: phosphor segments over their own unlit ghosts */}
-            <p className="m-0 w-fit max-w-full rounded-lg bg-[var(--rap-panel,var(--rap-ink))] px-(--rap-space-md) py-(--rap-space-sm) font-[family-name:var(--rap-font-lcd,var(--rap-font-mono))] text-[length:clamp(3.5rem,10cqi,8.5rem)] leading-[1.1] text-[color:var(--rap-lcd,var(--rap-paper))]">
-              <span className="relative inline-block">
-                <span aria-hidden className="absolute inset-0 opacity-[0.09]">
-                  {show(first).replace(/[0-9]/g, "~")}
-                </span>
-                <span className="relative">{show(first)}</span>
-              </span>
-            </p>
+    <ModGrid marks role="list">
+      <ModCell role="listitem" c={["1 / -1", "1 / span 4", "1 / span 4"]} r={[undefined, "1 / span 4", "1 / span 4"]} className="flex">
+        <DotScreen className="flex aspect-square w-full flex-col justify-between p-[clamp(14px,2.2cqi,26px)]">
+          <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">
+            <span>{first.label}</span>
+            <span className="tabular-nums">{tag(0)}</span>
           </div>
-          <div className="flex flex-col items-start gap-(--rap-space-sm) @3xl:items-end">
-            <DotMatrix cols={22} rows={6} size={5} gap={3} shape="square" pattern={bars} animation="scan" period={1400} className="text-ink" />
-            {first.note && <span className="font-mono text-xs uppercase tracking-[0.06em] text-mute">{first.note}</span>}
+          <DotText matrix off field={{ cols: 20, rows: 9 }} pad={[1, 1]} align="center" className="w-full">
+            {show(first)}
+          </DotText>
+          <span className="text-center font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-2">{first.note ?? "\u00a0"}</span>
+        </DotScreen>
+      </ModCell>
+      {more.map((it, i) => (
+        <ModCell
+          key={it.label}
+          role="listitem"
+          ruled
+          c={["1 / -1", "span 4", `${i % 2 ? 9 : 6} / span 3`]}
+          r={[undefined, "span 2", `${Math.floor(i / 2) * 2 + 1} / span 2`]}
+          className="flex flex-col justify-between gap-(--rap-space-sm)"
+        >
+          <div className="flex items-baseline justify-between gap-3 font-mono text-[0.6875rem] uppercase tracking-[0.06em]">
+            <span className="text-ink-2">{it.label}</span>
+            <span className="text-mute tabular-nums">{tag(i + 1)}</span>
           </div>
-        </div>
-        {more.map((it, i) => (
-          <div key={it.label} role="listitem" className="flex flex-col gap-(--rap-space-sm) p-(--rap-space-md)">
-            <span className="font-mono text-xs uppercase tracking-[0.08em] text-ink-2">
-              <span aria-hidden className="text-flame">[{String(i + 2).padStart(2, "0")}] </span>
-              {it.label}
-            </span>
-            <Display as="p" size="lg" className="tabular-nums">
-              {show(it)}
-            </Display>
-            {it.note && <span className="font-mono text-xs uppercase tracking-[0.06em] text-mute">{it.note}</span>}
-          </div>
-        ))}
-      </Grid>
-    </div>
+          <DotText matrix off field={{ cols: 28, rows: 9 }} pad={[1, 1]} className="w-full text-ink">
+            {show(it)}
+          </DotText>
+          {it.note && <span className="font-mono text-[0.6875rem] uppercase tracking-[0.06em] text-mute">{it.note}</span>}
+        </ModCell>
+      ))}
+      <ModCell aria-hidden c={[null, null, "12 / span 1"]} r={[undefined, undefined, "1"]} className="flex justify-end text-mute">
+        <SquareMarks />
+      </ModCell>
+      <ModCell aria-hidden c={[null, null, "12 / span 1"]} r={[undefined, undefined, "3 / span 2"]} className="flex flex-col items-end justify-end gap-2 text-mute">
+        <TickCircle size={34} />
+        <TickCircle size={34} />
+      </ModCell>
+    </ModGrid>
   );
 }

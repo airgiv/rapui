@@ -1,27 +1,5 @@
-// Typefaces for the signal preset: IBM Plex Sans (headlines and body), IBM Plex Mono
-// (kickers, labels, buttons) and DSEG14 Classic (--rap-font-lcd: a 14-segment LCD face,
-// only for what a real LCD shows — the big digits on black panels, timers, the clock).
-//
-// DSEG14 Classic — copyright (c) 2017 keshikan (http://www.keshikan.net), with Reserved
-// Font Name "DSEG", licensed under the SIL Open Font License 1.1 (the `dseg` npm package,
-// v0.46.0; the licence ships as fonts/DSEG-LICENSE.txt). Two weights, ~6 KB each; they are
-// registered here and only download when a page sets text in them. The space is left out
-// (unicode-range from "!"): DSEG's own space is a hairline, so words would run together —
-// it falls through to the next face in the stack (Plex Mono), a proper word space.
-import "@fontsource-variable/ibm-plex-sans";
-import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/500.css";
-import dsegRegular from "./dseg/DSEG14Classic-Regular.woff2";
-import dsegBold from "./dseg/DSEG14Classic-Bold.woff2";
-
-if (typeof document !== "undefined" && typeof FontFace !== "undefined" && document.fonts) {
-  const has = [...document.fonts].some((f) => f.family.replace(/"/g, "") === "DSEG14 Classic");
-  if (!has) {
-    for (const [src, weight] of [
-      [dsegRegular, "400"],
-      [dsegBold, "700"],
-    ] as const) {
-      document.fonts.add(new FontFace("DSEG14 Classic", `url(${src}) format("woff2")`, { weight, style: "normal", display: "swap", unicodeRange: "U+0021-007E" }));
-    }
-  }
-}
+// Typefaces for the signal preset: Inter Tight (bold neo-grotesk headlines and body) and
+// Geist Mono (technical notes, labels, tags and figures). The dot-matrix display type is
+// drawn by DotText's built-in 5×7 matrix — no font file needed.
+import "@fontsource-variable/inter-tight";
+import "@fontsource-variable/geist-mono";

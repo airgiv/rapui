@@ -13,17 +13,19 @@
             set low and right like a round button waiting to be hit
    civic    a navy dark island (Section tone="dark"): serif headline,
             red kicker, a pill field in the middle
-   signal   a band with a dot-matrix texture along its top, a mono
-            [kicker] and the actions in a ruled side cell
+   signal   a black dot screen across the grid: the title in big
+            white dots (the real heading kept for screen readers), a
+            {0007} tag with a live dot, the lead and actions beside it
    product  centred and quiet, on a faint grid that fades out from
             the middle
    minimal  one large line of text and an underlined link, on a rule
 
    Delight (fun): the tile breathes in a hair as the pointer arrives.
    Calm: it stays put. */
-import type { ReactNode } from "react";
+import { isValidElement, type ReactNode } from "react";
 import { cn } from "../utils";
-import { DotMatrix } from "./DotMatrix";
+import { DotText } from "./DotText";
+import { DotScreen } from "./TechMarks";
 import { Grid, GridItem, Section, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 import { Display } from "./Typography";
 
@@ -113,36 +115,39 @@ function CivicCTA({ eyebrow, title, lead, actions, media, form }: Parts) {
   );
 }
 
-/* the dot texture: a slow twinkle along the band's top edge */
-const dots = (c: number, r: number) => (c * 7 + r * 13) % 11 === 0 || (r === 2 && c % 4 === 0);
+/* the words of a node, for the dot screen (an Accent or a <br> inside a title keeps its text) */
+function textOf(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(textOf).join("");
+  if (isValidElement<{ children?: ReactNode }>(node)) return textOf(node.props.children);
+  return "";
+}
 
 function SignalCTA({ eyebrow, index, title, lead, actions, media, form }: Parts) {
+  /* a black screen across the grid: the title in big white dots on a dim dot field (the
+     real heading stays in the page for screen readers), notes and actions beside it */
+  const words = textOf(title).replace(/\s+/g, " ").trim().toUpperCase();
   return (
-    <div data-slot="cta-band" className="relative overflow-hidden rounded-xs bg-paper-2 shadow-[inset_0_0_0_1px_var(--rap-line)]">
-      <div aria-hidden className="overflow-hidden border-b border-line px-(--rap-space-md) py-(--rap-space-sm) text-ink-2">
-        <DotMatrix cols={180} rows={5} size={3} gap={5} shape="square" pattern={dots} animation="twinkle" period={3200} dim={0.14} />
+    <DotScreen data-slot="cta-band" className="@container grid gap-(--rap-space-lg) p-[clamp(16px,2.6cqi,40px)] @3xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="flex min-w-0 flex-col gap-(--rap-space-md)">
+        <p className="m-0 flex items-center gap-3 font-mono text-[0.75rem] uppercase tracking-[0.06em] text-mute">
+          <span className="size-1.5 rounded-full bg-[var(--rap-signal,currentColor)]" aria-hidden />
+          {index && <span className="tabular-nums">{`{${index.padStart(4, "0")}}`}</span>}
+          {eyebrow}
+        </p>
+        <h2 className="sr-only">{title}</h2>
+        <DotText matrix off aria-hidden wrap={84} field={{ cols: 86 }} pad={[0, 1]} className="w-full">
+          {words}
+        </DotText>
+        {media && <div data-slot="cta-media">{media}</div>}
       </div>
-      <Grid gap="tile" className="bg-line">
-        <GridItem span={actions || form ? 8 : 12} className="bg-paper-2 p-(--rap-space-lg) flex flex-col gap-(--rap-space-md)">
-          {(eyebrow || index) && (
-            <p className="m-0 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-ink-2">
-              <span className="text-flame">[{index ?? "→"}]</span> {eyebrow}
-            </p>
-          )}
-          <Display size="lg" className="max-w-[18ch]">
-            {title}
-          </Display>
-          {lead && <p className="m-0 max-w-[52ch] text-ink-2 leading-relaxed">{lead}</p>}
-          {media && <div data-slot="cta-media">{media}</div>}
-        </GridItem>
-        {(actions || form) && (
-          <GridItem span={4} className="bg-paper-2 p-(--rap-space-lg) flex flex-col justify-end gap-(--rap-space-md)">
-            {form && <div data-slot="cta-form">{form}</div>}
-            {actions && <Row>{actions}</Row>}
-          </GridItem>
-        )}
-      </Grid>
-    </div>
+      <div className="flex min-w-0 flex-col justify-end gap-(--rap-space-md)">
+        {lead && <p className="m-0 max-w-[40ch] text-[1rem] leading-[1.5] text-ink-2">{lead}</p>}
+        {form && <div data-slot="cta-form">{form}</div>}
+        {actions && <Row>{actions}</Row>}
+      </div>
+    </DotScreen>
   );
 }
 

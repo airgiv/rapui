@@ -1,4 +1,4 @@
-import { DotMatrix, DotText, MatrixStatus, MediaFrame, Redact, type DotMatrixAnimation } from "../../rapui";
+import { ArrowLine, Asterisk, CrossGrid, DotMatrix, DotScreen, DotText, Horizon, IndexTag, MatrixStatus, MediaFrame, ModCell, ModGrid, Molecule, OutlineBlob, PlusMark, Redact, SpacedLabel, SquareMarks, TechClock, TickCircle, type DotMatrixAnimation } from "../../rapui";
 import reel from "../../site/media/reel.webm";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
@@ -29,6 +29,8 @@ const dotTextControls: Control[] = [
   { type: "number", prop: "fontSize", label: "size, px", min: 60, max: 260, step: 10, default: 180, codeDefault: 120 },
   { type: "number", prop: "step", label: "pitch, px", min: 3, max: 20, default: 8, codeDefault: null },
   { type: "number", prop: "dot", label: "dot share", min: 0.3, max: 1, step: 0.05, default: 0.74 },
+  { type: "boolean", prop: "matrix", label: "5×7 matrix font", default: false },
+  { type: "boolean", prop: "off", label: "unlit field (matrix)", default: true, codeDefault: false },
 ];
 
 const redactControls: Control[] = [
@@ -123,10 +125,10 @@ export const entries: DocEntry[] = [
     name: "Dot text",
     group: "Expressive",
     description:
-      "A word set in dots, like a stadium board: the text is drawn in the page's display face, sampled on a grid and turned into points — real type, made of dots, and still read out as text. Delight: the dots arrive, condensing from a scatter (calm: one quiet fade, left to right); in fun, the dots near the pointer swell like a lens dragged over the board.",
+      "A word set in dots, like a stadium board: the text is drawn in the page's display face, sampled on a grid and turned into points — real type, made of dots, and still read out as text. Delight: the dots arrive, condensing from a scatter (calm: one quiet fade, left to right); in fun, the dots near the pointer swell like a lens dragged over the board. With `matrix`, the text is set in a built-in 5×7 dot-matrix font instead (a departures board, a Nothing screen); `off` draws the unlit dots of the field in grey, `field` and `pad` fix the field and place the text, `wrap` breaks lines — the signal preset's display type.",
     controls: dotTextControls,
     Demo: ({ p }) => (
-      <DotText key={`${p.text}-${p.fontSize}-${p.step}-${p.dot}`} fontSize={Number(p.fontSize)} step={Number(p.step)} dot={Number(p.dot)} className="text-ink">
+      <DotText key={`${p.text}-${p.fontSize}-${p.step}-${p.dot}-${p.matrix}-${p.off}`} fontSize={Number(p.fontSize)} step={Number(p.step)} dot={Number(p.dot)} matrix={!!p.matrix} off={!!p.off} pad={p.matrix ? 1 : undefined} className="text-ink">
         {String(p.text)}
       </DotText>
     ),
@@ -157,7 +159,7 @@ export const entries: DocEntry[] = [
     name: "Media frame",
     group: "Expressive",
     description:
-      "A photo or video seen through an old screen: scan lines, film grain, an optional blur and colour tint — the analogue texture of the signal preset, for heroes, cards and backgrounds. Anything can sit on top. Delight (fun): a faint bright band rolls down the screen every few seconds, the way a tube refreshes. In the signal preset it is a flat LCD instead: a fine pixel grid, no grain, no band.",
+      "A photo or video seen through an old screen: scan lines, film grain, an optional blur and colour tint — the analogue texture of the signal preset, for heroes, cards and backgrounds. Anything can sit on top. Delight (fun): a faint bright band rolls down the screen every few seconds, the way a tube refreshes. In the signal preset it is a flat screen instead: a fine pixel grid, no grain, no band.",
     controls: frameControls,
     Demo: ({ p }) => (
       <MediaFrame
@@ -206,5 +208,61 @@ export const entries: DocEntry[] = [
 <MatrixStatus label="Mapping dependencies" />`,
       },
     ],
+  },
+  {
+    slug: "tech-marks",
+    name: "Tech marks",
+    group: "Expressive",
+    description:
+      "Small technical graphics for annotating the empty cells of a page, sparingly — the signal preset's margin marks: a minimal clock (a disc with thin hands, live while on screen), a grid of crosses with one ×, a circle with a tick, ⊕, {0033} index tags, spaced capitals, an arrow line, ▪▪▪, a striped horizon, an outline blob, an asterisk and a molecule; plus ModGrid, the full-width grid of square cells they sit on, and DotScreen, a black screen for white dot type.",
+    controls: [],
+    Demo: () => (
+      <div className="w-full max-w-[52rem]">
+        <ModGrid marks>
+          <ModCell c={["1 / span 2", "1 / span 2", "1 / span 3"]} r="span 2" className="flex items-center justify-center">
+            <TechClock size="100%" className="h-auto w-full max-w-[9rem]" />
+          </ModCell>
+          <ModCell c={["3 / span 2", "3 / span 3", "4 / span 3"]} className="flex flex-col justify-between">
+            <IndexTag>0033</IndexTag>
+            <CrossGrid size={96} />
+          </ModCell>
+          <ModCell c={["1 / span 2", "6 / span 3", "7 / span 3"]} className="flex flex-col justify-between">
+            <SpacedLabel>Diagnose</SpacedLabel>
+            <div className="flex gap-2 text-ink">
+              <TickCircle />
+              <PlusMark size={40} />
+              <Asterisk />
+            </div>
+          </ModCell>
+          <ModCell c={["3 / span 2", "3 / span 3", "4 / span 3"]} className="flex flex-col justify-end gap-3">
+            <Horizon />
+          </ModCell>
+          <ModCell c={["1 / span 2", "6 / span 3", "7 / span 3"]} className="flex items-center justify-between text-ink">
+            <OutlineBlob size={56} />
+            <Molecule size={64} />
+          </ModCell>
+          <ModCell c={["1 / -1", "1 / span 5", "1 / span 6"]} className="flex flex-col justify-center gap-3 text-ink">
+            <ArrowLine />
+            <SquareMarks />
+          </ModCell>
+          <ModCell c={["1 / -1", "6 / span 3", "7 / span 6"]} r="span 2">
+            <DotScreen className="flex h-full min-h-40 items-center p-4">
+              <DotText matrix off wrap={40} className="w-full">
+                Time to air out
+              </DotText>
+            </DotScreen>
+          </ModCell>
+        </ModGrid>
+      </div>
+    ),
+    code: () => `import { ModGrid, ModCell, TechClock, CrossGrid, IndexTag, DotScreen, DotText } from "@rapui/react";
+
+<ModGrid marks>
+  <ModCell c={["1 / -1", "1 / span 4", "1 / span 3"]} r="span 2"><TechClock /></ModCell>
+  <ModCell c={[null, "5 / span 3", "4 / span 3"]}><IndexTag>0033</IndexTag><CrossGrid /></ModCell>
+  <ModCell c={["1 / -1", "1 / span 6", "7 / span 6"]} r="span 2">
+    <DotScreen><DotText matrix off>Time to air out</DotText></DotScreen>
+  </ModCell>
+</ModGrid>`,
   },
 ];

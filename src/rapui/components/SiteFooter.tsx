@@ -13,8 +13,9 @@
             name across the bottom at wordmark size (`wordmark`)
    civic    a navy dark island: a seal slot (`mark`) by the logo,
             columns, then the fine print under a rule
-   signal   ruled cells with mono [01] headings and a dot-matrix
-            strip above the fine print
+   signal   the last band of the square grid: name and tagline, link
+            columns with {0001} tags, a dial clock, and the `wordmark`
+            across the width in dots above the fine print
    product  quiet grey columns under a hairline
    minimal  a single row: the logo, every link, the year
 
@@ -22,7 +23,9 @@
    Calm: it stays still; the dot strip glows without a pulse. */
 import type { ReactNode } from "react";
 import { cn } from "../utils";
-import { DotMatrix } from "./DotMatrix";
+import { DotText } from "./DotText";
+import { ModCell, ModGrid } from "./ModGrid";
+import { TechClock } from "./TechMarks";
 import { Grid, GridItem, Section, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 
 export interface SiteFooterColumn {
@@ -65,10 +68,9 @@ function Columns({
   return (
     <nav aria-label="Footer" data-slot="site-footer-nav">
       <Grid cols={[2, Math.min(columns.length, 4), Math.min(columns.length, 4)] as [number, number, number]} gap={look === "signal" ? "tile" : "column"} rowGap={look === "signal" ? "tile" : "lg"} className={gridClass}>
-        {columns.map((col, i) => (
+        {columns.map((col) => (
           <div key={col.title} data-slot="site-footer-column" className={cn("flex flex-col gap-(--rap-space-sm)", cellClass)}>
             <h2 className={cn("m-0", heading)}>
-              {look === "signal" && <span className="text-flame">[{String(i + 1).padStart(2, "0")}] </span>}
               {col.title}
             </h2>
             <ul className="m-0 p-0 list-none flex flex-col gap-(--rap-space-xs)">
@@ -151,33 +153,52 @@ function CivicFooter({ logo, tagline, columns = [], bottom, social, mark }: Part
   );
 }
 
-function SignalFooter({ logo, tagline, columns = [], bottom, social }: Parts) {
+function SignalFooter({ logo, tagline, columns = [], bottom, social, wordmark }: Parts) {
+  /* the last band of the square grid: the name and tagline, a column of links per cell
+     pair, a clock in the corner, then the name again across the width in dots */
   return (
-    <Stack gap="md">
-      <div className="rounded-xs overflow-hidden bg-line p-px">
-        <Grid gap="tile">
-          <GridItem span={4} className="bg-paper p-(--rap-space-md) flex flex-col gap-(--rap-space-sm)">
-            <div>{logo}</div>
-            {tagline && <p className="m-0 max-w-[32ch] text-[0.9375rem] leading-snug text-ink-2">{tagline}</p>}
-            {social && <div className="mt-auto flex flex-wrap gap-(--rap-space-xs)">{social}</div>}
-          </GridItem>
-          <GridItem span={8}>
-            <Columns
-              columns={columns}
-              look="signal"
-              gridClass="h-full"
-              cellClass="bg-paper p-(--rap-space-md) h-full"
-              heading="font-mono text-[0.75rem] font-normal uppercase tracking-[0.08em] text-ink"
-              link="text-[0.9375rem] text-ink-2 hover:text-flame"
-            />
-          </GridItem>
-        </Grid>
-      </div>
-      <div aria-hidden className="overflow-hidden text-ink-2">
-        <DotMatrix cols={200} rows={3} size={3} gap={4} shape="square" animation="scan" period={2400} dim={0.16} pattern={(c, r) => (c + r) % 9 === 0} />
-      </div>
-      {bottom && <div className="flex flex-wrap justify-between gap-(--rap-space-sm) font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">{bottom}</div>}
-    </Stack>
+    <ModGrid marks>
+      <ModCell c={["1 / -1", "1 / span 4", "1 / span 4"]} r={[undefined, "span 2", "1 / span 2"]} className="flex flex-col gap-(--rap-space-sm)">
+        <div>{logo}</div>
+        {tagline && <p className="m-0 max-w-[30ch] text-[0.9375rem] leading-snug text-mute">{tagline}</p>}
+        {social && <div className="mt-auto flex flex-wrap gap-(--rap-space-xs)">{social}</div>}
+      </ModCell>
+      <ModCell c={["1 / -1", "5 / span 4", "5 / span 6"]} r={[undefined, "span 2", "1 / span 2"]} inset={false}>
+        <nav aria-label="Footer" data-slot="site-footer-nav" className="grid grid-cols-2 @min-[40rem]:grid-cols-[repeat(auto-fit,minmax(8rem,1fr))]">
+          {columns.map((col, i) => (
+            <div key={col.title} data-slot="site-footer-column" className="flex flex-col gap-(--rap-space-sm) p-(--mod-pad)">
+              <h2 className="m-0 font-mono text-[0.75rem] font-normal uppercase tracking-[0.06em] text-ink">
+                <span className="text-mute tabular-nums">{`{${String(i + 1).padStart(4, "0")}}`}</span> {col.title}
+              </h2>
+              <ul className="m-0 flex list-none flex-col gap-(--rap-space-xs) p-0">
+                {col.links.map((l) => (
+                  <li key={l.href + l.label}>
+                    <a href={l.href} className="text-[0.9375rem] text-ink-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </ModCell>
+      <ModCell aria-hidden c={[null, null, "12 / span 1"]} r={[undefined, undefined, "1"]} className="flex justify-end">
+        <TechClock size="100%" className="h-auto w-full max-w-[5.5rem]" />
+      </ModCell>
+      {wordmark && (
+        <ModCell c={["1 / -1", "1 / -1", "1 / -1"]} className="flex items-end">
+          <DotText matrix off aria-hidden field={{ cols: 96, rows: 11 }} pad={[2, 2]} className="w-full text-ink">
+            {wordmark.toUpperCase()}
+          </DotText>
+        </ModCell>
+      )}
+      {bottom && (
+        <ModCell c={["1 / -1", "1 / -1", "1 / -1"]} className="flex flex-wrap items-end justify-between gap-(--rap-space-sm) font-mono text-[0.6875rem] uppercase tracking-[0.06em] text-mute">
+          {bottom}
+        </ModCell>
+      )}
+    </ModGrid>
   );
 }
 

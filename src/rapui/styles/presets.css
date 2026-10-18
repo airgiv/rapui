@@ -8,8 +8,8 @@
      fun      the default — loud, round, playful (tokens.css)
      civic    a public-service site: big condensed serif headlines,
               navy and a little red, soft big cards, calm motion
-     signal   a pocket radio's LCD: sage paper, black ink, Plex,
-              dot matrices, black panels with segment digits
+     signal   technical + modern: grey paper, bold grotesk, mono
+              notes, dot-matrix type, a full-width square grid
      product  a modern product page: Geist, near-black buttons,
               thin borders, small radii, an iris accent
      minimal  black on white, hairlines, square corners, no colour
@@ -131,51 +131,54 @@
 }
 
 /* ── signal ────────────────────────────────────────────────── */
-/* a pocket radio's screen: sage LCD paper, black ink, a darker muted green for the
-   second line. Type stays readable — IBM Plex Sans for headlines and body, Plex Mono
-   capitals for kickers, labels, buttons and nav. The 14-segment LCD face (DSEG14
-   Classic, --rap-font-lcd) is kept for what a real LCD would show: the big digits on
-   the black panels (--rap-panel, phosphor --rap-lcd), timers and the header clock.
-   Flat: no shadows, no gradients, hairlines and dotted circles. */
+/* technical and modern at once: light neutral paper, black ink, a mid grey for every
+   second line, a bold neo-grotesk (Inter Tight 700) for headlines, Geist Mono for the
+   technical notes, tags and figures, and display text drawn in dots (DotText's 5×7
+   matrix) — black on grey dot fields on paper, white on black "screens"
+   (--rap-panel / --rap-panel-ink). One accent, used sparingly (--rap-signal: a live dot,
+   a second hand, a save pill). The page is a full-width modular grid of square cells
+   (ModGrid): no narrow column, lots of empty cells, small technical marks (TechMarks)
+   annotating the empty ones. */
 [data-rap-preset="signal"] {
-  --rap-display-weight: 450;
-  --rap-display-weight-mega: 450;
-  --rap-display-tracking: -0.025em;
-  --rap-display-tracking-mega: -0.035em;
-  --rap-display-tracking-md: -0.01em;
+  --rap-display-weight: 700;
+  --rap-display-weight-mega: 700;
+  --rap-display-tracking: -0.035em;
+  --rap-display-tracking-mega: -0.045em;
+  --rap-display-tracking-md: -0.02em;
   --rap-display-case: none;
-  --rap-display-leading: 1.02;
-  --rap-size-mega: clamp(3rem, 8.4vw, 8.5rem);
-  --rap-size-xxl: clamp(2.5rem, 6vw, 6rem);
-  --rap-size-xl: clamp(2.25rem, 4.8vw, 4.75rem);
-  --rap-size-lg: clamp(1.875rem, 3.6vw, 3.25rem);
-  --rap-size-md: clamp(1.125rem, 1.7vw, 1.5rem);
+  --rap-display-leading: 0.95;
+  --rap-size-mega: clamp(3.25rem, 9vw, 10rem);
+  --rap-size-xxl: clamp(2.75rem, 7vw, 7.75rem);
+  --rap-size-xl: clamp(2.25rem, 5vw, 5.5rem);
+  --rap-size-lg: clamp(1.875rem, 3.6vw, 3.75rem);
+  --rap-size-md: clamp(1.125rem, 1.6vw, 1.5rem);
 
-  --rap-radius-xs: 3px;
-  --rap-radius-sm: 6px;
-  --rap-radius: 16px;
-  --rap-radius-lg: 16px;
-  --rap-radius-pill: 5px;
+  --rap-radius-xs: 4px;
+  --rap-radius-sm: 8px;
+  --rap-radius: 18px;
+  --rap-radius-lg: 22px;
+  --rap-radius-pill: 999px;
   --rap-control-h-sm: 34px;
   --rap-control-h: 42px;
   --rap-control-h-lg: 50px;
-  --rap-gap-tight: 2px;
-  --rap-gap-tile: 2px;
+  --rap-gap-tight: 1px;
+  --rap-gap-tile: 1px;
 
-  --rap-container: 1320px;
-  --rap-container-narrow: 720px;
-  --rap-gutter: clamp(16px, 3vw, 36px);
-  --rap-column-gap: clamp(12px, 1.6vw, 20px);
-  --rap-section-y: clamp(3.5rem, 7vw, 6.5rem);
+  /* full-screen: no content column, a slim margin, the grid does the rest */
+  --rap-container: 9999px;
+  --rap-container-narrow: 760px;
+  --rap-gutter: clamp(12px, 1.4vw, 20px);
+  --rap-column-gap: clamp(12px, 1.4vw, 20px);
+  --rap-section-y: clamp(2rem, 4.5vw, 4.5rem);
   --rap-section-inset: 0px;
   --rap-section-radius: 0px;
   --rap-section-rule: var(--rap-line);
-  --rap-density: 0.95;
+  --rap-density: 1;
 
   --rap-ease-rm: cubic-bezier(0.3, 0, 0.2, 1);
-  --rap-dur-fast: 160ms;
-  --rap-dur: 360ms;
-  --rap-dur-slow: 640ms;
+  --rap-dur-fast: 150ms;
+  --rap-dur: 320ms;
+  --rap-dur-slow: 600ms;
 }
 [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="light"],
@@ -184,108 +187,103 @@
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"] {
   /* (fonts again on every light/dark island, which tokens.css otherwise sends back to Onest) */
-  --rap-font-display: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --rap-font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --rap-font-lcd: "DSEG14 Classic", "IBM Plex Mono", ui-monospace, monospace;
-  --rap-display-weight: 450;
-  --rap-display-tracking: -0.025em;
+  --rap-font-display: "Inter Tight Variable", "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --rap-font-sans: "Inter Tight Variable", "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --rap-display-weight: 700;
+  --rap-display-tracking: -0.035em;
 }
 [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="light"],
 [data-rap-preset="signal"][data-rap-theme="light"] {
-  --rap-paper: #97a98a;
-  --rap-paper-2: #a2b395;
-  --rap-paper-3: #8a9c7d;
-  --rap-ink: #0a0d09;
-  --rap-ink-2: #2f3c2a;
-  --rap-mute: #56684d;
-  --rap-line: rgb(10 13 9 / 0.2);
-  --rap-flame: #0a0d09;
-  --rap-blue: #2c4130;
-  --rap-plum: #1b2818;
-  --rap-acid: #b6f09a;
-  --rap-bubble: #a9ba9c;
-  --rap-sky: #a0b293;
-  --rap-accent: #141a12;
-  --rap-accent-ink: #a8ba9b;
-  --rap-fill: rgb(10 13 9 / 0.07);
-  --rap-fill-hover: rgb(10 13 9 / 0.12);
-  --rap-fill-strong: rgb(10 13 9 / 0.18);
-  --rap-ring: #0a0d09;
-  --rap-select: #0a0d09;
-  --rap-select-ink: #b6f09a;
-  --rap-surface: #9eaf91;
-  --rap-edge: rgb(10 13 9 / 0.2);
-  --rap-shadow-pop: 0 0 0 1px rgb(10 13 9 / 0.28);
-  --rap-scrim: rgb(10 13 9 / 0.4);
-  --rap-danger: #7e2412;
-  --rap-success: #1d3f1b;
-  --rap-chart-up: #0a0d09;
-  --rap-chart-down: #7e2412;
-  /* the LCD panels: black glass, phosphor digits, a dark green tuner window */
-  --rap-panel: #0a0d09;
-  --rap-panel-2: #1c2a1b;
-  --rap-lcd: #b6f09a;
-  --rap-lcd-dim: rgb(182 240 154 / 0.38);
-  --rap-lcd-needle: #8dff6a;
-  --rap-dot-off: rgb(10 13 9 / 0.11);
+  --rap-paper: #e6e6e3;
+  --rap-paper-2: #eeeeeb;
+  --rap-paper-3: #d8d8d4;
+  --rap-ink: #0e0e0e;
+  --rap-ink-2: #3c3c3b;
+  --rap-mute: #8e8e8c;
+  --rap-line: rgb(14 14 14 / 0.13);
+  --rap-flame: #0e0e0e;
+  --rap-blue: #55595f;
+  --rap-plum: #0e0e0e;
+  --rap-acid: #19c37d;
+  --rap-bubble: #d8d8d4;
+  --rap-sky: #dcdcd9;
+  --rap-accent: #0e0e0e;
+  --rap-accent-ink: #f2f2ef;
+  --rap-fill: rgb(14 14 14 / 0.05);
+  --rap-fill-hover: rgb(14 14 14 / 0.09);
+  --rap-fill-strong: rgb(14 14 14 / 0.14);
+  --rap-ring: #0e0e0e;
+  --rap-select: #0e0e0e;
+  --rap-select-ink: #ffffff;
+  --rap-surface: #f1f1ee;
+  --rap-edge: rgb(14 14 14 / 0.13);
+  --rap-shadow-pop: 0 0 0 1px rgb(14 14 14 / 0.12), 0 16px 40px -18px rgb(14 14 14 / 0.25);
+  --rap-scrim: rgb(14 14 14 / 0.32);
+  --rap-danger: #e5484d;
+  --rap-success: #19c37d;
+  --rap-chart-up: #0e0e0e;
+  --rap-chart-down: #8e8e8c;
+  /* the dot screens and the one accent */
+  --rap-panel: #0c0c0c;
+  --rap-panel-ink: #f4f4f2;
+  --rap-dot-off: rgb(14 14 14 / 0.12);
+  --rap-panel-dot-off: rgb(255 255 255 / 0.13);
+  --rap-signal: #19c37d;
   color-scheme: light;
 }
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="dark"] {
-  /* the same radio at night: a black-green LCD lit in phosphor */
-  --rap-paper: #0b110b;
-  --rap-paper-2: #111911;
-  --rap-paper-3: #172117;
-  --rap-ink: #b6f09a;
-  --rap-ink-2: #8fbf78;
-  --rap-mute: #5f8352;
-  --rap-line: rgb(182 240 154 / 0.18);
-  --rap-flame: #b6f09a;
-  --rap-blue: #7fc3a0;
-  --rap-plum: #b6f09a;
-  --rap-acid: #b6f09a;
-  --rap-bubble: #8fbf78;
-  --rap-sky: #1e2c1d;
-  --rap-accent: #b6f09a;
-  --rap-accent-ink: #0b110b;
-  --rap-fill: rgb(182 240 154 / 0.07);
-  --rap-fill-hover: rgb(182 240 154 / 0.12);
-  --rap-fill-strong: rgb(182 240 154 / 0.18);
-  --rap-ring: #b6f09a;
-  --rap-select: #b6f09a;
-  --rap-select-ink: #0b110b;
-  --rap-surface: #121b12;
-  --rap-edge: rgb(182 240 154 / 0.18);
-  --rap-shadow-pop: 0 0 0 1px rgb(182 240 154 / 0.24);
-  --rap-scrim: rgb(2 5 2 / 0.65);
-  --rap-danger: #ff8a6a;
-  --rap-success: #b6f09a;
-  --rap-chart-up: #b6f09a;
-  --rap-chart-down: #ff8a6a;
-  --rap-panel: #020402;
-  --rap-panel-2: #142114;
-  --rap-lcd: #b6f09a;
-  --rap-lcd-dim: rgb(182 240 154 / 0.34);
-  --rap-lcd-needle: #8dff6a;
-  --rap-dot-off: rgb(182 240 154 / 0.1);
+  --rap-paper: #0b0b0b;
+  --rap-paper-2: #131313;
+  --rap-paper-3: #1c1c1c;
+  --rap-ink: #ededeb;
+  --rap-ink-2: #b8b8b5;
+  --rap-mute: #7c7c7a;
+  --rap-line: rgb(237 237 235 / 0.13);
+  --rap-flame: #ededeb;
+  --rap-blue: #a3a7ad;
+  --rap-plum: #ededeb;
+  --rap-acid: #2fdc84;
+  --rap-bubble: #b8b8b5;
+  --rap-sky: #1f1f1f;
+  --rap-accent: #ededeb;
+  --rap-accent-ink: #0b0b0b;
+  --rap-fill: rgb(237 237 235 / 0.06);
+  --rap-fill-hover: rgb(237 237 235 / 0.1);
+  --rap-fill-strong: rgb(237 237 235 / 0.16);
+  --rap-ring: #ededeb;
+  --rap-select: #ededeb;
+  --rap-select-ink: #0b0b0b;
+  --rap-surface: #151515;
+  --rap-edge: rgb(237 237 235 / 0.14);
+  --rap-shadow-pop: 0 0 0 1px rgb(237 237 235 / 0.14), 0 16px 40px -18px rgb(0 0 0 / 0.7);
+  --rap-scrim: rgb(0 0 0 / 0.65);
+  --rap-danger: #ff6b6b;
+  --rap-success: #2fdc84;
+  --rap-chart-up: #ededeb;
+  --rap-chart-down: #7c7c7a;
+  --rap-panel: #000000;
+  --rap-panel-ink: #f4f4f2;
+  --rap-dot-off: rgb(237 237 235 / 0.11);
+  --rap-panel-dot-off: rgb(255 255 255 / 0.12);
+  --rap-signal: #2fdc84;
   color-scheme: dark;
 }
 
-/* a radio screen's second line ("POPULAR" under "PLAYER"): an Accent in a headline
-   is the darker muted green, not a second colour */
+/* every second line ("New York / to San Francisco"): an Accent in a headline is grey */
 [data-rap-preset="signal"] [data-slot="accent"] { color: var(--rap-mute); }
 
-/* buttons read like the radio's own keys: small Plex Mono capitals, spaced. (Unlayered,
-   like the other preset rules here, so it wins over the button's own font-sans utility.) */
+/* buttons are small pills with mono capitals (Nothing-style). (Unlayered, like the other
+   preset rules here, so it wins over the button's own font-sans utility.) */
 [data-rap-preset="signal"] [data-slot="button"] {
   font-family: var(--rap-font-mono);
   font-weight: 500;
-  font-size: min(var(--btn-fs, 1rem), 0.875rem);
+  font-size: min(var(--btn-fs, 1rem), 0.8125rem);
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
 }
 
 /* ── product ───────────────────────────────────────────────── */

@@ -67,19 +67,19 @@
     box-shadow: 0 1px 2px var(--rap-line), 0 10px 30px -12px var(--rap-line);
   }
 
-  /* signal: flush left in Plex; each part held in mono [brackets] like a field on a display */
+  /* signal: a huge bold grotesk line, flush left and wide; each part sits in a hairline
+     capsule, like a control drawn on a spec sheet */
   [data-look="signal"] .rap-statement-text {
-    font-size: clamp(2.25rem, 6.2cqi, 5.75rem);
-    line-height: 1.18;
+    font-size: clamp(2.5rem, 7cqi, 7.5rem);
+    line-height: 1.04;
+    max-width: 16ch;
   }
-  [data-look="signal"] .rap-statement-slot::before,
-  [data-look="signal"] .rap-statement-slot::after {
-    font-family: var(--rap-font-mono);
-    font-size: 1.5rem;
-    color: var(--rap-mute);
+  [data-look="signal"] .rap-statement-slot {
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--rap-line);
+    translate: 0 -0.1em;
   }
-  [data-look="signal"] .rap-statement-slot::before { content: "["; margin-right: 0.4rem; }
-  [data-look="signal"] .rap-statement-slot::after { content: "]"; margin-left: 0.4rem; }
 
   /* product: centred, tight and heavy; the parts sit bare, except the two that read as stray
      marks on their own (a slider's track, a row of stars): those float on a round hairline chip */

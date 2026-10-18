@@ -18,11 +18,12 @@
             front page: a big light serif headline, the lead and
             buttons under it, the picture in a wide rounded card below;
             drop an <InlineMedia> between the headline's words
-   signal   a pocket radio's screen: a mono readout strip (kicker and
-            `meta`), the headline in Plex beside the radio — a
-            dot-matrix spectrum over a black tuner panel whose digits
-            and needle read the first numeric `meta` ("104.2 MHz") —
-            and the picture in a flat rounded frame under it
+   signal   a Swiss spec sheet on a full-width grid of square cells
+            (ModGrid): a huge bold headline with its second line in
+            grey, a black dot screen (or the picture) beside it, a
+            minimal clock, `meta` as notes with {0002} tags, and a
+            wide dot-matrix field spelling `dots` (default: the first
+            meta value)
    product  centred: a pill badge, headline, lead, two buttons, then
             the picture in a framed window with a soft glow under it
    minimal  a big left-aligned headline over nine columns, a small
@@ -36,7 +37,9 @@ import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "../utils";
 import { Grid, GridItem, Section, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 import { Display, Eyebrow } from "./Typography";
-import { DotSpectrum, TunerPanel } from "./SignalScreen";
+import { ModGrid, ModCell } from "./ModGrid";
+import { DotText } from "./DotText";
+import { DotScreen, PlusMark, TechClock } from "./TechMarks";
 import { ArrowRight } from "../icons";
 import "./Hero.css";
 
@@ -55,7 +58,13 @@ export function BlockKicker({ look, index, className, children }: { look: BlockL
   if (look === "signal")
     return (
       <span data-slot="kicker" className={cn("inline-flex items-center gap-[1ch] font-mono text-xs uppercase tracking-[0.08em] text-ink-2", className)}>
-        {index && <span aria-hidden className="text-ink">[{index}]</span>}
+        {index && (
+          <span aria-hidden className="text-mute tabular-nums normal-case">
+            {"{"}
+            {/^\d+$/.test(index) ? index.padStart(4, "0") : index}
+            {"}"}
+          </span>
+        )}
         {children}
       </span>
     );
@@ -131,6 +140,8 @@ export interface HeroProps extends Omit<SectionProps, "title"> {
   sticker?: ReactNode;
   /** Small facts: a ruled row in signal, a quiet line in minimal. */
   meta?: HeroMeta[];
+  /** signal: the text spelled in the wide dot-matrix field (default: the first meta value). */
+  dots?: string;
   look?: BlockLook;
 }
 
@@ -146,9 +157,9 @@ const Actions = ({ className, children }: { className?: string; children: ReactN
   </div>
 );
 
-export function Hero({ eyebrow, eyebrowHref, index, title, lead, actions, media, sticker, meta, look: lookProp, tone, className, ...rest }: HeroProps) {
+export function Hero({ eyebrow, eyebrowHref, index, title, lead, actions, media, sticker, meta, dots, look: lookProp, tone, className, ...rest }: HeroProps) {
   const { ref, look } = useBlockLook<HTMLElement>(lookProp);
-  const parts = { eyebrow, eyebrowHref, index, title, lead, actions, media, sticker, meta };
+  const parts = { eyebrow, eyebrowHref, index, title, lead, actions, media, sticker, meta, dots };
   return (
     <Section
       ref={ref}
@@ -167,7 +178,7 @@ export function Hero({ eyebrow, eyebrowHref, index, title, lead, actions, media,
   );
 }
 
-type Parts = Pick<HeroProps, "eyebrow" | "eyebrowHref" | "index" | "title" | "lead" | "actions" | "media" | "sticker" | "meta">;
+type Parts = Pick<HeroProps, "eyebrow" | "eyebrowHref" | "index" | "title" | "lead" | "actions" | "media" | "sticker" | "meta" | "dots">;
 
 /* fun: the headline is the page — set it by the container's width so it never outgrows a narrow preview */
 function FunHero({ eyebrow, title, lead, actions, media, sticker }: Parts) {
@@ -224,52 +235,86 @@ function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
 }
 
 
-/* signal: a pocket radio's screen — an LCD readout strip, the headline in segments beside
-   the radio itself (a dot-matrix spectrum over a black tuner panel), the picture under it */
-function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [] }: Parts) {
-  // the first fact that reads as a number tunes the radio ("104.2 MHz"); the default is 98.8
-  const tuned = meta.find((m) => typeof m.value === "string" && /\d/.test(m.value));
-  const raw = typeof tuned?.value === "string" ? tuned.value : "";
-  const freq = parseFloat(raw.replace(/[^\d.]/g, "")) || 98.8;
-  const unit = raw.replace(/[\d.\s]+/g, " ").trim() || "MHz";
+/* signal: a Swiss spec sheet on a full-width grid of square cells — a huge bold headline
+   over three rows with its second line in grey, a black dot screen (or the picture) to the
+   right, a minimal clock in an empty cell, notes with {index} tags, and a wide dot-matrix
+   field along the bottom spelling the first fact */
+function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [], dots }: Parts) {
+  const field = (dots ?? (typeof meta[0]?.value === "string" ? `${meta[0].value}` : typeof eyebrow === "string" ? eyebrow : "")).toUpperCase();
+  const [lead0, ...notes] = meta;
   return (
-    <Stack gap="xl">
-      <div className="flex flex-wrap items-center justify-between gap-x-(--rap-space-lg) gap-y-(--rap-space-xs) border-y border-line py-(--rap-space-xs)">
+    <ModGrid marks>
+      <ModCell c={["1 / -1", "1 / span 6", "1 / span 6"]} r={[undefined, "1", "1"]} className="flex items-start gap-3">
         <BlockKicker look="signal" index={index}>
           {eyebrow}
         </BlockKicker>
-        {meta.length > 0 && (
-          <dl className="m-0 flex flex-wrap gap-x-(--rap-space-lg) gap-y-1 font-mono text-xs uppercase tracking-[0.06em]">
-            {meta.map((m) => (
-              <div key={m.label} className="flex gap-2">
-                <dt className="text-mute">{m.label}</dt>
-                <dd className="m-0 text-ink">{m.value}</dd>
+      </ModCell>
+      <ModCell c={[null, null, "8 / span 1"]} r={[undefined, undefined, "1"]} className="flex items-start justify-center">
+        <PlusMark className="text-mute" />
+      </ModCell>
+      {lead0 && (
+        <ModCell c={[null, "7 / span 2", "10 / span 3"]} r={[undefined, "1", "1"]} className="flex flex-col gap-1 text-[0.875rem] leading-[1.25]">
+          <span className="font-semibold text-ink">{lead0.label}</span>
+          <span className="text-mute">{lead0.value}</span>
+        </ModCell>
+      )}
+      <ModCell c={["1 / -1", "1 / -1", "1 / span 7"]} r={[undefined, "2 / span 3", "2 / span 3"]} className="flex items-start">
+        <Display as="h1" size="xxl" className="max-w-[13ch] text-[length:clamp(2.75rem,7.4cqi,8.5rem)] leading-[0.93]">
+          {title}
+        </Display>
+      </ModCell>
+      <ModCell c={["1 / -1", "1 / span 5", "9 / span 4"]} r={[undefined, "5 / span 4", "2 / span 4"]} inset={false} className="p-(--mod-pad)">
+        {media ? (
+          <DotScreen className="aspect-square w-full [&>*]:size-full">{media}</DotScreen>
+        ) : (
+          <DotScreen className="flex aspect-square w-full flex-col justify-between p-[clamp(14px,2.4cqi,28px)]">
+            <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">
+              <span className="flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-[var(--rap-signal,currentColor)]" />
+                {lead0?.label ?? "Live"}
+              </span>
+              <span>{"{"}{index ?? "00"}{"}"}</span>
+            </div>
+            <DotText matrix off wrap={30} field={{ cols: 31 }} pad={[0, 1]} className="w-full">
+              {field || "SIGNAL"}
+            </DotText>
+            <span className="font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">{notes[0] ? `${notes[0].label} · ${notes[0].value}` : "\u00a0"}</span>
+          </DotScreen>
+        )}
+      </ModCell>
+      {(lead || actions) && (
+        <ModCell c={["1 / -1", "1 / -1", "1 / span 4"]} r={[undefined, "9 / span 2", "5 / span 2"]} className="flex flex-col justify-end gap-(--rap-space-md)">
+          {lead && <p className="m-0 max-w-[38ch] text-[clamp(1rem,1.15vw,1.125rem)] leading-[1.45] text-ink-2 text-pretty">{lead}</p>}
+          {actions && <Actions>{actions}</Actions>}
+        </ModCell>
+      )}
+      <ModCell c={[null, "7 / span 2", "6 / span 2"]} r={[undefined, "5 / span 2", "5 / span 2"]} className="flex items-end justify-center">
+        <TechClock className="h-auto w-full max-w-[13rem]" size="100%" />
+      </ModCell>
+      {notes.length > 0 && (
+        <ModCell c={["1 / -1", "6 / span 3", "9 / span 4"]} r={[undefined, "7 / span 2", "6"]} className="flex items-end">
+          <dl className="m-0 grid w-full grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-x-4 gap-y-3">
+            {notes.map((m, i) => (
+              <div key={m.label} className="flex flex-col gap-1">
+                <dt className="font-mono text-[0.6875rem] text-mute tabular-nums">
+                  {"{"}
+                  {String(i + 2).padStart(4, "0")}
+                  {"}"} {m.label}
+                </dt>
+                <dd className="m-0 font-mono text-[0.8125rem] uppercase tracking-[0.02em] text-ink">{m.value}</dd>
               </div>
             ))}
           </dl>
-        )}
-      </div>
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-(--rap-space-xl) @4xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @4xl:items-start">
-        <Stack gap="lg">
-          <Display as="h1" size="xxl" className="max-w-[16ch] text-[length:clamp(2.5rem,6cqi,5.75rem)] leading-[1.02]">
-            {title}
-          </Display>
-          {lead && <p className={cn(leadText, "max-w-[44ch]")}>{lead}</p>}
-          {actions && <Actions>{actions}</Actions>}
-        </Stack>
-        <div data-slot="hero-screen" className="flex flex-col gap-(--rap-space-md)">
-          <DotSpectrum />
-          <TunerPanel value={freq} unit={unit} label={tuned?.label} />
-        </div>
-      </div>
-      {media && (
-        <figure data-slot="hero-media" className="m-0">
-          <div className="aspect-[4/5] @md:aspect-[16/10] @3xl:aspect-[21/8] overflow-hidden rounded-lg shadow-[inset_0_0_0_1px_var(--rap-line)]">
-            <div className={fill}>{media}</div>
-          </div>
-        </figure>
+        </ModCell>
       )}
-    </Stack>
+      {field && (
+        <ModCell c={["1 / -1", "1 / -1", "1 / -1"]} r={[undefined, "11 / span 2", "7 / span 2"]} className="flex items-end">
+          <DotText matrix off field={{ cols: 96, rows: 11 }} pad={[2, 2]} className="w-full text-ink">
+            {field}
+          </DotText>
+        </ModCell>
+      )}
+    </ModGrid>
   );
 }
 

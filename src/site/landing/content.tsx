@@ -9,7 +9,7 @@ export interface LandingContent {
   brand: string;
   tagline: string;
   links: string[];
-  hero: { eyebrow: string; title: ReactNode; lead: string; primary: string; secondary: string; meta: { label: string; value: string }[] };
+  hero: { eyebrow: string; title: ReactNode; lead: string; primary: string; secondary: string; meta: { label: string; value: string }[]; /** signal: the hero's dot-matrix field */ dots?: string };
   logosTitle: string;
   logos: string[];
   /** The Statement: words around four live parts — a switch, a button, a slider, stars. */
@@ -204,17 +204,18 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       eyebrow: "Transmission 004 · receiving",
       title: (
         <>
-          A landing page, <Accent>received in fragments.</Accent>
+          Field notes, <Accent>received in fragments.</Accent>
         </>
       ),
-      lead: "Signal preset: a pocket radio's screen — Plex type, dot matrices and black panels with segment digits on sage paper, reading itself back to you. Signal strength: adequate. Interference: mostly decorative.",
+      lead: "Signal preset: a technical sheet that reads itself back — a bold grotesk, mono notes, type made of dots and a grid of square cells across the whole screen. Status: receiving. Interference: mostly decorative.",
       primary: "Tune in",
       secondary: "Open the log",
       meta: [
         { label: "Frequency", value: "104.2 MHz" },
-        { label: "Signal", value: "92%" },
-        { label: "Fix", value: "51.507°N 0.127°W" },
+        { label: "Uptime", value: "18:42" },
+        { label: "Load", value: "13%" },
       ],
+      dots: "Fieldkit 004",
     },
     logosTitle: "Picked up by stations at",
     logos: ["Relay 7", "Northgate Array", "Kestrel Obs.", "Field Unit 12", "Low Band", "Station Echo"],
@@ -222,14 +223,14 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
     features: {
       eyebrow: "Channels",
       title: <>Six channels, <Accent tone="mute">all of them this page</Accent></>,
-      lead: "Each cell below is one channel of the signal preset, broadcasting a real component.",
+      lead: "Each block is one channel of the signal preset, broadcasting a real component.",
       items: [
-        { title: "Dot matrices", text: "Status, loaders and type drawn on a grid of dots, like a departures board that learned to think.", icon: "widget" },
-        { title: "LCD segments", text: "Frequencies, timers and the clock in a 14-segment face, on black panels, the way a radio shows its station.", icon: "camera" },
-        { title: "Ruled cells", text: "Content in hairline-ruled cells with mono indices — a logbook, not a brochure.", icon: "notebook" },
-        { title: "Black panels", text: "Rounded LCD panels with phosphor digits, a tuner scale and one bright needle.", icon: "code" },
+        { title: "Dot type", text: "Numbers and short lines drawn in a 5×7 matrix — white on a black screen, black on a grey field.", icon: "widget" },
+        { title: "Square grid", text: "The page is cut into square cells, edge to edge. Most of them stay empty, on purpose.", icon: "camera" },
+        { title: "Technical notes", text: "Mono labels, {0033} index tags and spaced capitals, like the margins of a spec sheet.", icon: "notebook" },
+        { title: "Marks", text: "Crosses, ticks, ⊕ markers, a horizon and a blob: small drawings that annotate the empty cells.", icon: "code" },
         { title: "Redactions", text: "Words [blacked out] until you hover. Some of them were never that important anyway.", icon: "lock" },
-        { title: "Sage and black", text: "Black ink on LCD-green paper, no shadows, no gradients. At night the screen goes black and the ink glows.", icon: "planet" },
+        { title: "One accent", text: "Grey paper, black ink, a grey second line and one green dot that means live. At night the paper goes black.", icon: "planet" },
       ],
     },
     split: {
@@ -246,7 +247,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       items: [
         { value: 92, suffix: "%", label: "signal", note: "steady" },
         { value: 8, suffix: "%", label: "noise", note: "decorative" },
-        { value: 2, suffix: "px", label: "between cells", note: "ruled" },
+        { value: 61, suffix: "%", label: "empty cells", note: "on purpose" },
         { value: 104.2, label: "MHz", note: "this page's frequency" },
       ],
     },
@@ -274,8 +275,8 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       title: <>Questions <Accent tone="mute">over the air</Accent></>,
       items: [
         { q: "Is anything actually redacted?", a: "Only for effect. Hover a black bar and the word comes back — the Redact component is theatre with an accessible name." },
-        { q: "Why green?", a: "Phosphor screens were green, sage paper is calm, and the warm earth tones were starting to look like everyone else's AI product." },
-        { q: "Why do the dots move so slowly?", a: "They step, like a real LCD: eight frames a second, and none at all while you are looking elsewhere." },
+        { q: "Why is everything grey?", a: "Grey paper, black ink and one green dot: the colour of a spec sheet, and the dot means live." },
+        { q: "Why do the dots move so slowly?", a: "They step, like a real display: twelve frames a second at most, and none at all while you are looking elsewhere." },
         { q: "Who is the pigeon?", a: "Unknown. Transmission ends." },
       ],
     },

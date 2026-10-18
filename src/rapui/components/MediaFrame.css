@@ -1,7 +1,7 @@
 /* MediaFrame — the screen texture.
    - media: fills the frame (object-cover), blurred by --mf-blur and scaled
      up a touch so the blur never shows a soft edge.
-   - lines: a repeating stripe every --mf-pitch, dark lines (signal: an LCD's
+   - lines: a repeating stripe every --mf-pitch, dark lines (signal: a screen's
      pixel grid, no grain — a flat screen, not a tube).
    - grain: SVG turbulence noise in overlay.
    - roll (fun): a soft bright band travels down the frame every 6s. */
@@ -47,7 +47,7 @@
   .rap-media-frame::after { animation: none; display: none; }
 }
 
-/* signal: a flat LCD, not a tube — the radio's rounded screen, a fine pixel grid both
+/* signal: a flat screen, not a tube — rounded like its dot screens, a fine pixel grid both
    ways instead of scan lines, no grain and no rolling band */
 [data-rap-preset="signal"] .rap-media-frame { border-radius: var(--rap-radius); }
 [data-rap-preset="signal"] .rap-mf-lines {
