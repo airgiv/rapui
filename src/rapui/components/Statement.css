@@ -67,12 +67,12 @@
     box-shadow: 0 1px 2px var(--rap-line), 0 10px 30px -12px var(--rap-line);
   }
 
-  /* signal: a huge bold grotesk line, flush left and wide; each part sits in a hairline
-     capsule, like a control drawn on a spec sheet */
+  /* signal: a mono line at a modest size with room between the lines, flush left; each
+     part sits in a hairline capsule, like a control drawn on a spec sheet */
   [data-look="signal"] .rap-statement-text {
-    font-size: clamp(2.5rem, 7cqi, 7.5rem);
-    line-height: 1.04;
-    max-width: 16ch;
+    font-size: clamp(1.375rem, 2.6cqi, 2.25rem);
+    line-height: 1.75;
+    max-width: 34ch;
   }
   [data-look="signal"] .rap-statement-slot {
     padding: 0.3rem 0.7rem;

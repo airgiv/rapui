@@ -14,9 +14,9 @@
               duotone FancyIcon and a display-face title
      civic    soft white rounded cards on grey paper, the icon in a
               tinted circle, serif card titles, plenty of air
-     signal   blocks of square cells on the full-width ModGrid, {0001}
-              tags and a small technical mark each, one empty slot per
-              band carrying a bigger mark (TechMarks)
+     signal   4×2 blocks of square cells on the full-width ModGrid, two
+              per band with {0001} tags and a small technical mark each,
+              the third slot left empty but for a bigger mark (TechMarks)
      product  tidy cards with a hairline edge: a small icon, a
               title, muted text and "Learn more →" when linked
      minimal  no cards, no icons: a numbered list in two columns,
@@ -193,16 +193,16 @@ function CivicCards({ items, cols }: BodyProps) {
 
 /* signal: square-cell blocks on the ModGrid */
 function SignalCells({ items }: BodyProps) {
-  /* on the desk's 12 columns each item is a 3×2 block of square cells; a band of four
-     slots holds three items and one empty slot that carries a technical mark instead,
-     the empty slot moving along each band so the page reads modular, not tabular */
+  /* on the desk's 12 columns each item is a 4×2 block of square cells; a band of three
+     slots holds two items and one empty slot that carries a technical mark instead, the
+     empty slot moving along each band, so the page reads modular and airy, not tabular */
   const placed: { item?: FeatureItem; i: number; c: string; r: string }[] = [];
   let k = 0;
   for (let band = 0; k < items.length; band++) {
-    const skip = [2, 0, 3, 1][band % 4];
-    for (let slot = 0; slot < 4; slot++) {
-      const c = `${slot * 3 + 1} / span 3`, r = `${band * 2 + 1} / span 2`;
-      if (slot === skip || k >= items.length) placed.push({ i: -1 - band * 4 - slot, c, r });
+    const skip = [2, 0, 1][band % 3];
+    for (let slot = 0; slot < 3; slot++) {
+      const c = `${slot * 4 + 1} / span 4`, r = `${band * 2 + 1} / span 2`;
+      if (slot === skip || k >= items.length) placed.push({ i: -1 - band * 3 - slot, c, r });
       else placed.push({ item: items[k], i: k++, c, r });
     }
   }
@@ -221,8 +221,8 @@ function SignalCells({ items }: BodyProps) {
             </div>
             {item.media && <div className="overflow-hidden rounded-sm">{item.media}</div>}
             <div className="mt-auto flex flex-col gap-(--rap-space-xs)">
-              <ItemTitle item={item} className="text-[clamp(1.125rem,1.5vw,1.375rem)] font-bold leading-[1.1] tracking-[-0.025em]" />
-              <div className="max-w-[34ch] text-[0.9375rem] leading-[1.45] text-ink-2">{item.text}</div>
+              <ItemTitle item={item} className="text-[1rem] font-medium leading-[1.3] tracking-[-0.01em]" />
+              <div className="max-w-[40ch] text-[0.8125rem] leading-[1.65] text-ink-2">{item.text}</div>
               {item.href && (
                 <span aria-hidden className="pt-(--rap-space-2xs) font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute group-hover/cell:text-ink">
                   Open →

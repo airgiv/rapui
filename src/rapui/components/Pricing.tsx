@@ -15,8 +15,8 @@
             the accent with a rotating badge pinned to its corner
    civic    soft white rounded cards, serif prices; the featured
             one on a navy ground (a dark island)
-   signal   blocks of square cells on the ModGrid: {0001} tags, bold
-            grotesk names and prices, mono feature lists, the featured
+   signal   blocks of square cells on the ModGrid: {0001} tags, mono
+            names and prices at modest sizes, mono feature lists, the featured
             plan a black screen with a live dot; a small square for
             each check mark
    product  hairline cards in a tidy row; the featured one with an
@@ -367,14 +367,14 @@ function SignalPlans({ plans, billing, caption }: LookProps) {
                     </span>
                   )}
                 </div>
-                <h3 className="m-0 font-display text-[clamp(1.375rem,2vw,1.75rem)] font-bold leading-[1.05] tracking-[-0.03em] text-ink">{plan.name}</h3>
+                <h3 className="m-0 text-[1.125rem] font-medium leading-[1.2] tracking-[-0.01em] text-ink">{plan.name}</h3>
                 {plan.description && <p className="m-0 text-[0.9375rem] leading-snug text-mute">{plan.description}</p>}
               </header>
               <Price
                 plan={plan}
                 billing={billing}
                 caption={caption}
-                className="font-display font-bold text-[clamp(2.5rem,4.4vw,4rem)] tracking-[-0.045em]"
+                className="font-medium text-[clamp(1.75rem,2.6vw,2.5rem)] tracking-[-0.03em]"
                 periodClassName="font-mono uppercase text-[0.75rem] tracking-[0.04em]"
               />
               <Features

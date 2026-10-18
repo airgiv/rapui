@@ -18,12 +18,12 @@
             front page: a big light serif headline, the lead and
             buttons under it, the picture in a wide rounded card below;
             drop an <InlineMedia> between the headline's words
-   signal   a Swiss spec sheet on a full-width grid of square cells
-            (ModGrid): a huge bold headline with its second line in
-            grey, a black dot screen (or the picture) beside it, a
-            minimal clock, `meta` as notes with {0002} tags, and a
-            wide dot-matrix field spelling `dots` (default: the first
-            meta value)
+   signal   a quiet technical sheet on a full-width grid of square
+            cells (ModGrid): the headline in mono at a modest size,
+            its second line olive-grey, a small dot screen spelling
+            `dots` (default: the first meta value; or the picture, and
+            then a small dot field under the lead), a clock in a cell
+            of its own, `meta` as notes with {0002} tags
    product  centred: a pill badge, headline, lead, two buttons, then
             the picture in a framed window with a soft glow under it
    minimal  a big left-aligned headline over nine columns, a small
@@ -235,40 +235,40 @@ function CivicHero({ eyebrow, title, lead, actions, media }: Parts) {
 }
 
 
-/* signal: a Swiss spec sheet on a full-width grid of square cells — a huge bold headline
-   over three rows with its second line in grey, a black dot screen (or the picture) to the
-   right, a minimal clock in an empty cell, notes with {index} tags, and a wide dot-matrix
-   field along the bottom spelling the first fact */
+/* signal: a quiet technical sheet on a full-width grid of square cells — the headline in
+   mono at a modest size with its second line in olive-grey, a small dot screen (or the
+   picture), a clock in a cell of its own, notes with {index} tags and a small dot-matrix
+   field; most cells left empty */
 function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [], dots }: Parts) {
   const field = (dots ?? (typeof meta[0]?.value === "string" ? `${meta[0].value}` : typeof eyebrow === "string" ? eyebrow : "")).toUpperCase();
   const [lead0, ...notes] = meta;
   return (
     <ModGrid marks>
-      <ModCell c={["1 / -1", "1 / span 6", "1 / span 6"]} r={[undefined, "1", "1"]} className="flex items-start gap-3">
+      <ModCell c={["1 / -1", "1 / span 6", "1 / span 6"]} r={[undefined, undefined, "1"]} className="flex items-start">
         <BlockKicker look="signal" index={index}>
           {eyebrow}
         </BlockKicker>
       </ModCell>
-      <ModCell c={[null, null, "8 / span 1"]} r={[undefined, undefined, "1"]} className="flex items-start justify-center">
+      <ModCell c={[null, null, "7 / span 1"]} r={[undefined, undefined, "1"]} className="flex items-start justify-center">
         <PlusMark className="text-mute" />
       </ModCell>
       {lead0 && (
-        <ModCell c={[null, "7 / span 2", "10 / span 3"]} r={[undefined, "1", "1"]} className="flex flex-col gap-1 text-[0.875rem] leading-[1.25]">
-          <span className="font-semibold text-ink">{lead0.label}</span>
+        <ModCell c={[null, "7 / span 2", "10 / span 3"]} r={[undefined, undefined, "1"]} className="flex flex-col gap-1 text-[0.8125rem] leading-[1.45]">
+          <span className="uppercase tracking-[0.08em] text-ink">{lead0.label}</span>
           <span className="text-mute">{lead0.value}</span>
         </ModCell>
       )}
-      <ModCell c={["1 / -1", "1 / -1", "1 / span 7"]} r={[undefined, "2 / span 3", "2 / span 3"]} className="flex items-start">
-        <Display as="h1" size="xxl" className="max-w-[13ch] text-[length:clamp(2.75rem,7.4cqi,8.5rem)] leading-[0.93]">
+      <ModCell c={["1 / -1", "1 / span 6", "1 / span 6"]} r={[undefined, undefined, "2 / span 2"]} className="flex items-center">
+        <Display as="h1" size="xxl" className="max-w-[24ch] text-[length:clamp(1.625rem,3.1cqi,2.75rem)] leading-[1.2]">
           {title}
         </Display>
       </ModCell>
-      <ModCell c={["1 / -1", "1 / span 5", "9 / span 4"]} r={[undefined, "5 / span 4", "2 / span 4"]} inset={false} className="p-(--mod-pad)">
+      <ModCell c={["1 / -1", "1 / span 4", "9 / span 3"]} r={[undefined, undefined, "2 / span 3"]} inset={false} className="p-(--mod-pad)">
         {media ? (
           <DotScreen className="aspect-square w-full [&>*]:size-full">{media}</DotScreen>
         ) : (
-          <DotScreen className="flex aspect-square w-full flex-col justify-between p-[clamp(14px,2.4cqi,28px)]">
-            <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">
+          <DotScreen className="flex aspect-square w-full flex-col justify-between p-[clamp(14px,2cqi,24px)]">
+            <div className="flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.1em] text-mute">
               <span className="flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-[var(--rap-signal,currentColor)]" />
                 {lead0?.label ?? "Live"}
@@ -278,38 +278,38 @@ function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [], do
             <DotText matrix off wrap={30} field={{ cols: 31 }} pad={[0, 1]} className="w-full">
               {field || "SIGNAL"}
             </DotText>
-            <span className="font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">{notes[0] ? `${notes[0].label} · ${notes[0].value}` : "\u00a0"}</span>
+            <span className="text-[0.6875rem] uppercase tracking-[0.1em] text-mute">{notes[0] ? `${notes[0].label} · ${notes[0].value}` : "\u00a0"}</span>
           </DotScreen>
         )}
       </ModCell>
       {(lead || actions) && (
-        <ModCell c={["1 / -1", "1 / -1", "1 / span 4"]} r={[undefined, "9 / span 2", "5 / span 2"]} className="flex flex-col justify-end gap-(--rap-space-md)">
-          {lead && <p className="m-0 max-w-[38ch] text-[clamp(1rem,1.15vw,1.125rem)] leading-[1.45] text-ink-2 text-pretty">{lead}</p>}
+        <ModCell c={["1 / -1", "1 / span 6", "1 / span 5"]} r={[undefined, undefined, "4 / span 2"]} className="flex flex-col justify-center gap-(--rap-space-lg)">
+          {lead && <p className="m-0 max-w-[52ch] text-[0.875rem] leading-[1.7] text-ink-2 text-pretty">{lead}</p>}
           {actions && <Actions>{actions}</Actions>}
         </ModCell>
       )}
-      <ModCell c={[null, "7 / span 2", "6 / span 2"]} r={[undefined, "5 / span 2", "5 / span 2"]} className="flex items-end justify-center">
-        <TechClock className="h-auto w-full max-w-[13rem]" size="100%" />
+      <ModCell c={[null, "7 / span 2", "12 / span 1"]} r={[undefined, undefined, "5"]} className="flex items-center justify-center">
+        <TechClock className="h-auto w-full max-w-[6.5rem]" size="100%" />
       </ModCell>
       {notes.length > 0 && (
-        <ModCell c={["1 / -1", "6 / span 3", "9 / span 4"]} r={[undefined, "7 / span 2", "6"]} className="flex items-end">
-          <dl className="m-0 grid w-full grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-x-4 gap-y-3">
+        <ModCell c={["1 / -1", "5 / span 4", "9 / span 3"]} r={[undefined, undefined, "5"]} className="flex items-center">
+          <dl className="m-0 grid w-full grid-cols-2 gap-x-4 gap-y-3">
             {notes.map((m, i) => (
               <div key={m.label} className="flex flex-col gap-1">
-                <dt className="font-mono text-[0.6875rem] text-mute tabular-nums">
+                <dt className="text-[0.6875rem] text-mute tabular-nums">
                   {"{"}
                   {String(i + 2).padStart(4, "0")}
                   {"}"} {m.label}
                 </dt>
-                <dd className="m-0 font-mono text-[0.8125rem] uppercase tracking-[0.02em] text-ink">{m.value}</dd>
+                <dd className="m-0 text-[0.8125rem] uppercase tracking-[0.04em] text-ink">{m.value}</dd>
               </div>
             ))}
           </dl>
         </ModCell>
       )}
-      {field && (
-        <ModCell c={["1 / -1", "1 / -1", "1 / -1"]} r={[undefined, "11 / span 2", "7 / span 2"]} className="flex items-end">
-          <DotText matrix off field={{ cols: 96, rows: 11 }} pad={[2, 2]} className="w-full text-ink">
+      {field && media && (
+        <ModCell c={[null, "1 / span 4", "1 / span 3"]} r={[undefined, undefined, "7"]} className="flex items-center">
+          <DotText matrix off field={{ cols: 64, rows: 11 }} pad={[2, 2]} className="w-full text-ink">
             {field}
           </DotText>
         </ModCell>

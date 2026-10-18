@@ -90,11 +90,11 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--mod-ink": mix("ink", 45),
     },
   },
-  // signal: a technical bench — black and grey line work on light grey paper, faces in paper
-  // tints, black caps and keys, the screens white dots on black, the accent green only where a
-  // part is live. Every value is a var(), so the dark theme turns it into grey lines on black.
+  // signal: a technical bench — olive line work on pale green-grey paper, faces in paper tints,
+  // olive-black caps and keys, the screens pale dots on deep olive-black. Every value is a var(),
+  // so the dark theme turns it into pale lines on olive-black.
   signal: {
-    note: "A technical bench: black and grey line work on light grey paper, black caps and keys, screens in white on black, one green accent where a part is live; grey on black at night.",
+    note: "A technical bench: olive line work on pale green-grey paper, olive-black caps and keys, screens in pale dots on deep olive-black; pale lines on olive-black at night.",
     tokens: {
       "--anatomy-card": v("paper"),
       "--anatomy-paper": mix("paper", 40, v("surface")),
@@ -108,7 +108,7 @@ export const FIGURE_LOOKS: Record<RapPreset, { tokens: FigureTokens; note: strin
       "--anatomy-lit-top": mix("flame", 70, v("surface")),
       "--anatomy-lit-shade": mix("flame", 85, v("surface")),
       "--anatomy-phosphor": "var(--rap-panel-ink, #f4f4f2)",
-      "--anatomy-glass": "#050505",
+      "--anatomy-glass": "#12150f",
       "--anatomy-hi": v("ink"),
       "--anatomy-strong": v("ink"),
       "--anatomy-mid": mix("ink", 62, v("paper")),
