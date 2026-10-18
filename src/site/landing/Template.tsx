@@ -12,14 +12,12 @@ import {
   Button,
   Container,
   CTA,
-  DotText,
   FAQ,
   Features,
   FeatureSplit,
   Hero,
   Laurel,
   LogoCloud,
-  MatrixStatus,
   Pricing,
   Rating,
   Receipt,
@@ -118,44 +116,6 @@ function Counsel() {
     </div>
   );
 }
-/* signal: the page received on a dot screen — a mono header with a live dot and an index
-   tag, the frequency in big white dots on a dim dot field, a status line, and a row of
-   readings in mono like a spec sheet's footer */
-function Receiver() {
-  return (
-    <div className="flex size-full flex-col justify-between gap-4 p-[clamp(14px,2.4cqi,28px)]">
-      <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">
-        <span className="flex items-center gap-2">
-          <span aria-hidden className="size-1.5 rounded-full bg-[var(--rap-signal,currentColor)]" />
-          RX · live
-        </span>
-        <span className="tabular-nums">{"{0004}"}</span>
-      </div>
-      <div className="flex flex-col gap-2">
-        <DotText matrix off field={{ cols: 31, rows: 9 }} pad={[0, 1]} className="w-full">
-          104.2
-        </DotText>
-        <span className="font-mono text-[0.75rem] uppercase tracking-[0.06em] text-ink-2">MHz · Fieldkit</span>
-      </div>
-      <div className="flex flex-col gap-3">
-        <MatrixStatus label="Receiving page 1 of 1" timer={false} />
-        <dl className="m-0 grid grid-cols-3 gap-2 border-t border-line pt-3 font-mono text-[0.6875rem] uppercase tracking-[0.04em]">
-          {[
-            ["Power", "92%"],
-            ["Noise", "8%"],
-            ["State", "Open"],
-          ].map(([k, v]) => (
-            <div key={k} className="flex flex-col gap-0.5">
-              <dt className="text-mute">{k}</dt>
-              <dd className="m-0 text-ink">{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </div>
-  );
-}
-
 /* product: the page's own dashboard */
 function Console() {
   return (
@@ -203,7 +163,8 @@ function Bill() {
 const HERO_PICTURE: Record<RapPreset, () => ReactNode> = {
   fun: () => <Playground />,
   civic: () => <Counsel />,
-  signal: () => <Receiver />,
+  // signal draws its own field (dial faces over a soft green) when the hero has no picture
+  signal: () => null,
   product: () => <Console />,
   minimal: () => <Bill />,
 };
@@ -352,12 +313,15 @@ export function LandingTemplate() {
       <Testimonials index="04" eyebrow={c.quotes.eyebrow} title={c.quotes.title} items={c.quotes.items} />
       <Pricing id="pricing" index="05" eyebrow={c.pricing.eyebrow} title={c.pricing.title} lead={c.pricing.lead} plans={c.pricing.plans} />
       <FAQ id="faq" index="06" eyebrow={c.faq.eyebrow} title={c.faq.title} items={c.faq.items} />
-      {/* a laurel line between the questions and the close, each preset's own wreath */}
+      {/* a laurel line between the questions and the close, each preset's own wreath
+          (signal leaves the space empty) */}
+      {preset !== "signal" && (
       <Container className="flex justify-center py-(--rap-space-xl)">
         <Laurel size="lg" eyebrow={LAUREL[preset].eyebrow} caption={LAUREL[preset].caption}>
           {LAUREL[preset].text}
         </Laurel>
       </Container>
+      )}
       <CTA
         eyebrow={c.cta.eyebrow}
         title={c.cta.title}

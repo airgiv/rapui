@@ -1,4 +1,4 @@
-import { ArrowLine, Asterisk, CrossGrid, DotMatrix, DotScreen, DotText, Horizon, IndexTag, MatrixStatus, MediaFrame, ModCell, ModGrid, Molecule, OutlineBlob, PlusMark, Redact, SpacedLabel, SquareMarks, TechClock, TickCircle, type DotMatrixAnimation } from "../../rapui";
+import { ArrowLine, Asterisk, CompassDial, CrossGrid, DotMatrix, DotScreen, DotText, Horizon, IndexTag, MatrixStatus, MediaFrame, ModCell, ModGrid, Molecule, OutlineBlob, PlusMark, Redact, SpacedLabel, SquareMarks, TechClock, TickCircle, type DotMatrixAnimation } from "../../rapui";
 import reel from "../../site/media/reel.webm";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
@@ -214,11 +214,11 @@ export const entries: DocEntry[] = [
     name: "Tech marks",
     group: "Expressive",
     description:
-      "Small technical graphics for annotating the empty cells of a page, sparingly — the signal preset's margin marks: a minimal clock (a disc with thin hands, live while on screen), a grid of crosses with one ×, a circle with a tick, ⊕, {0033} index tags, spaced capitals, an arrow line, ▪▪▪, a striped horizon, an outline blob, an asterisk and a molecule; plus ModGrid, the full-width grid of square cells they sit on, and DotScreen, a black screen for white dot type.",
+      "Small technical graphics for annotating the empty cells of a page, sparingly — the signal preset's margin marks: a minimal clock (a disc with thin hands, live while on screen), a grid of crosses with one ×, a circle with a tick, ⊕, {0033} index tags, spaced capitals, an arrow line, ▪▪▪, a striped horizon, an outline blob, an asterisk and a molecule; big circular dial faces (Dial, CompassDial with a red needle), LeaderLines out to tiny part labels and a vertical SideLabel; plus ModGrid, the full-width grid of square cells they sit on (`numbered` puts a faint ( 01 ) in every cell), and DotScreen, a dark screen for pale dot type.",
     controls: [],
     Demo: () => (
       <div className="w-full max-w-[52rem]">
-        <ModGrid marks>
+        <ModGrid numbered>
           <ModCell c={["1 / span 2", "1 / span 2", "1 / span 3"]} r="span 2" className="flex items-center justify-center">
             <TechClock size="100%" className="h-auto w-full max-w-[9rem]" />
           </ModCell>
@@ -239,6 +239,7 @@ export const entries: DocEntry[] = [
           </ModCell>
           <ModCell c={["1 / span 2", "6 / span 3", "7 / span 3"]} className="flex items-center justify-between text-ink">
             <OutlineBlob size={56} />
+            <CompassDial className="max-w-[5.5rem]" />
             <Molecule size={64} />
           </ModCell>
           <ModCell c={["1 / -1", "1 / span 5", "1 / span 6"]} className="flex flex-col justify-center gap-3 text-ink">
@@ -257,7 +258,7 @@ export const entries: DocEntry[] = [
     ),
     code: () => `import { ModGrid, ModCell, TechClock, CrossGrid, IndexTag, DotScreen, DotText } from "@rapui/react";
 
-<ModGrid marks>
+<ModGrid numbered>
   <ModCell c={["1 / -1", "1 / span 4", "1 / span 3"]} r="span 2"><TechClock /></ModCell>
   <ModCell c={[null, "5 / span 3", "4 / span 3"]}><IndexTag>0033</IndexTag><CrossGrid /></ModCell>
   <ModCell c={["1 / -1", "1 / span 6", "7 / span 6"]} r="span 2">

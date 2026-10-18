@@ -15,7 +15,7 @@
               acid and its + spins into an ×
      civic    centred: the heading on the centre line over a narrow
               list of soft white cards, serif questions, a plain chevron
-     signal   airy ruled rows: a {0001} tag, the question in mono, a ⊕ that turns to × when open
+     signal   airy ruled rows: a ( 01 ) index, the question in a light grotesk, a ⊕ that turns to × when open
      product  one centred narrow column: a hairline card, divided
      minimal  numbered questions between hairlines, a plain + / −
 
@@ -121,7 +121,7 @@ const ROW: Record<BlockLook, { list: string; item: string; trigger: string; q: s
     list: "flex flex-col border-t border-line",
     item: "border-b border-line text-ink",
     trigger: "grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-(--rap-space-xs) py-(--rap-space-md)",
-    q: "text-[1rem] font-medium leading-[1.4] tracking-[-0.01em] group-hover/q:text-ink-2",
+    q: "font-display text-[1.125rem] font-normal leading-[1.35] tracking-[-0.01em] group-hover/q:text-ink-2",
     a: "grid grid-cols-[4.5rem_minmax(0,1fr)] gap-(--rap-space-xs) pb-(--rap-space-lg) text-[0.875rem] leading-[1.7] text-ink-2 max-w-[70ch]",
   },
   product: {
@@ -173,7 +173,7 @@ function FAQRow({ item, i, look, defaultOpen }: { item: FAQItem; i: number; look
               s.trigger,
             )}
           >
-            {look === "signal" && <span aria-hidden className="font-mono text-[0.75rem] text-mute tabular-nums">{`{${String(i + 1).padStart(4, "0")}}`}</span>}
+            {look === "signal" && <span aria-hidden className="font-mono text-[0.75rem] text-mute tabular-nums">{`( ${String(i + 1).padStart(2, "0")} )`}</span>}
             {look === "minimal" && <span aria-hidden className="text-[0.875rem] text-mute tabular-nums">{String(i + 1).padStart(2, "0")}</span>}
             <span className={cn("min-w-0 flex-1", s.q)}>{item.q}</span>
             <Marker look={look} open={open} />

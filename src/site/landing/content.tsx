@@ -207,7 +207,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
           Field notes, <Accent>received in fragments.</Accent>
         </>
       ),
-      lead: "Signal preset: a technical sheet that reads itself back — one mono voice, readouts made of dots, pale green paper and a grid of square cells across the whole screen, mostly left empty. Status: receiving. Interference: mostly decorative.",
+      lead: "Signal preset: an index sheet that reads itself back — light grotesk headings, small mono notes, dial faces and dot readouts on a numbered grid of square cells, mostly left empty. Status: receiving. Interference: mostly decorative.",
       primary: "Tune in",
       secondary: "Open the log",
       meta: [

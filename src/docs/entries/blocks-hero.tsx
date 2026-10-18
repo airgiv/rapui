@@ -197,7 +197,7 @@ export const entries: DocEntry[] = [
     name: "Hero",
     group: "Blocks",
     description:
-      "The page's first screen: a kicker, the page's one h1, a lead, buttons and a picture — laid out five ways. Fun stacks a giant headline over a big rounded picture tile with a sticker on its corner; civic splits a serif headline from a photo in a soft card (drop an InlineMedia pill between the headline's words); signal lays a Swiss spec sheet on a full-width grid of square cells — a huge bold headline with its second line in grey, a black dot screen (or the picture), a minimal clock, notes with {0002} tags and a wide dot-matrix field spelling `dots`; product centres everything under a pill badge with the product in a framed window; minimal sets one big headline on the grid with text-link actions and a hairline under.",
+      "The page's first screen: a kicker, the page's one h1, a lead, buttons and a picture — laid out five ways. Fun stacks a giant headline over a big rounded picture tile with a sticker on its corner; civic splits a serif headline from a photo in a soft card (drop an InlineMedia pill between the headline's words); signal sets an editorial index sheet on a numbered grid of square cells — a light grotesk headline, sparse notes, then a wide field (the picture, or a soft dark green) with four big dial faces, tiny pale dot text and leader lines out to small part labels; product centres everything under a pill badge with the product in a framed window; minimal sets one big headline on the grid with text-link actions and a hairline under.",
     controls: heroControls,
     Demo: ({ p }) => (
       <BlockFrame>

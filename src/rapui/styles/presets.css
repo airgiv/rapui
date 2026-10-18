@@ -8,8 +8,8 @@
      fun      the default — loud, round, playful (tokens.css)
      civic    a public-service site: big condensed serif headlines,
               navy and a little red, soft big cards, calm motion
-     signal   a technical sheet: pale green-grey paper, olive ink,
-              mono everywhere, dot readouts, a square grid, air
+     signal   an editorial index: pale green-grey paper, light grotesk
+              heads, small mono notes, numbered square cells, dials
      product  a modern product page: Geist, near-black buttons,
               thin borders, small radii, an iris accent
      minimal  black on white, hairlines, square corners, no colour
@@ -131,28 +131,30 @@
 }
 
 /* ── signal ────────────────────────────────────────────────── */
-/* a technical sheet, letterpress-quiet: pale green-grey paper, dark olive ink, a muted
-   olive-grey for every second line, and one voice — Geist Mono — for everything, headings
-   included, set small to medium with air around it (no big display type). Readouts are
+/* an editorial index sheet, letterpress-quiet: pale green-grey paper, dark olive ink, a
+   muted olive-grey for every second line; headings in a plain light grotesk (Inter Tight
+   400, 300 for the largest) at small-to-medium sizes, and Geist Mono for everything small —
+   body, labels, {0033} tags, captions — with air around it (no big display type). Readouts are
    drawn in dots (DotText's 5×7 matrix) at modest sizes: olive on pale dot fields on
    paper, pale on deep olive-black "screens" (--rap-panel / --rap-panel-ink). One soft
    green accent, used sparingly (--rap-signal: a live dot, a second hand). The page is a
-   full-width modular grid of square cells (ModGrid) with faint + marks: most cells stay
-   empty, small technical marks (TechMarks) annotate a few of them. */
+   full-width modular grid of square cells (ModGrid), each cell carrying a faint "( 01 )"
+   index: most cells stay empty, content sits in a few, thin leader lines and big circular
+   dial faces (TechMarks) annotate the rest. */
 [data-rap-preset="signal"] {
-  --rap-display-weight: 500;
-  --rap-display-weight-mega: 500;
+  --rap-display-weight: 400;
+  --rap-display-weight-mega: 300;
   --rap-display-tracking: -0.02em;
-  --rap-display-tracking-mega: -0.03em;
+  --rap-display-tracking-mega: -0.025em;
   --rap-display-tracking-md: -0.01em;
   --rap-display-case: none;
-  --rap-display-leading: 1.18;
+  --rap-display-leading: 1.12;
   /* no big type: headings sit small to medium, the space around them does the work */
-  --rap-size-mega: clamp(1.75rem, 3vw, 2.75rem);
-  --rap-size-xxl: clamp(1.625rem, 2.7vw, 2.5rem);
-  --rap-size-xl: clamp(1.5rem, 2.4vw, 2.25rem);
-  --rap-size-lg: clamp(1.25rem, 2vw, 1.875rem);
-  --rap-size-md: clamp(1rem, 1.3vw, 1.25rem);
+  --rap-size-mega: clamp(1.75rem, 2.8vw, 2.5rem);
+  --rap-size-xxl: clamp(1.625rem, 2.6vw, 2.375rem);
+  --rap-size-xl: clamp(1.5rem, 2.2vw, 2rem);
+  --rap-size-lg: clamp(1.25rem, 1.8vw, 1.75rem);
+  --rap-size-md: clamp(1.0625rem, 1.3vw, 1.25rem);
 
   --rap-radius-xs: 4px;
   --rap-radius-sm: 8px;
@@ -188,10 +190,10 @@
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"] {
   /* (fonts again on every light/dark island, which tokens.css otherwise sends back to Onest) */
-  --rap-font-display: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --rap-font-display: "Inter Tight Variable", "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --rap-font-sans: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
-  --rap-display-weight: 500;
+  --rap-display-weight: 400;
   --rap-display-tracking: -0.02em;
 }
 [data-rap-preset="signal"],
@@ -232,6 +234,9 @@
   --rap-dot-off: rgb(38 43 34 / 0.1);
   --rap-panel-dot-off: rgb(228 234 220 / 0.13);
   --rap-signal: #4c8f5a;
+  /* the dial faces: big pale discs, a red needle */
+  --rap-dial: #dadfd3;
+  --rap-needle: #d2453a;
   color-scheme: light;
 }
 [data-rap-preset="signal"][data-rap-theme="dark"],
@@ -271,6 +276,8 @@
   --rap-dot-off: rgb(223 229 216 / 0.1);
   --rap-panel-dot-off: rgb(228 234 220 / 0.12);
   --rap-signal: #7cc489;
+  --rap-dial: #2a3126;
+  --rap-needle: #e8604f;
   color-scheme: dark;
 }
 

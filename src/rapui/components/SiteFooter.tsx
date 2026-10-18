@@ -157,13 +157,13 @@ function SignalFooter({ logo, tagline, columns = [], bottom, social, wordmark }:
   /* the last band of the square grid: the name and tagline, a column of links per cell
      pair, a clock in the corner, then the name again across the width in dots */
   return (
-    <ModGrid marks>
+    <ModGrid numbered>
       <ModCell c={["1 / -1", "1 / span 4", "1 / span 4"]} r={[undefined, "span 2", "1 / span 2"]} className="flex flex-col gap-(--rap-space-sm)">
         <div>{logo}</div>
         {tagline && <p className="m-0 max-w-[30ch] text-[0.9375rem] leading-snug text-mute">{tagline}</p>}
         {social && <div className="mt-auto flex flex-wrap gap-(--rap-space-xs)">{social}</div>}
       </ModCell>
-      <ModCell c={["1 / -1", "5 / span 4", "5 / span 6"]} r={[undefined, "span 2", "1 / span 2"]} inset={false}>
+      <ModCell c={["1 / -1", "5 / span 4", "5 / span 6"]} r={[undefined, "span 2", "1 / span 2"]} inset={false} className="pt-[1.15rem]">
         <nav aria-label="Footer" data-slot="site-footer-nav" className="grid grid-cols-2 @min-[40rem]:grid-cols-[repeat(auto-fit,minmax(8rem,1fr))]">
           {columns.map((col, i) => (
             <div key={col.title} data-slot="site-footer-column" className="flex flex-col gap-(--rap-space-sm) p-(--mod-pad)">

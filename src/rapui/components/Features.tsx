@@ -14,9 +14,9 @@
               duotone FancyIcon and a display-face title
      civic    soft white rounded cards on grey paper, the icon in a
               tinted circle, serif card titles, plenty of air
-     signal   4×2 blocks of square cells on the full-width ModGrid, two
-              per band with {0001} tags and a small technical mark each,
-              the third slot left empty but for a bigger mark (TechMarks)
+     signal   an index of thin tabular rows — ( 01 ) · title · text ·
+              a small mark — in the right two thirds of a numbered
+              ModGrid, a dial face in the empty cells to their left
      product  tidy cards with a hairline edge: a small icon, a
               title, muted text and "Learn more →" when linked
      minimal  no cards, no icons: a numbered list in two columns,
@@ -42,7 +42,7 @@ import { Grid, GridItem, Section, SectionHeader, Stack, useBlockLook, type Block
 import { FANCY_ICONS, FancyIcon, type FancyIconName, type FancyTone } from "./FancyIcon";
 import { MediaFrame } from "./MediaFrame";
 import { ModCell, ModGrid } from "./ModGrid";
-import { Asterisk, CrossGrid, Horizon, Molecule, OutlineBlob, PlusMark, SquareMarks, TickCircle } from "./TechMarks";
+import { Asterisk, CompassDial, PlusMark, SquareMarks, TickCircle } from "./TechMarks";
 
 /* ── shared bits ── */
 
@@ -193,55 +193,36 @@ function CivicCards({ items, cols }: BodyProps) {
 
 /* signal: square-cell blocks on the ModGrid */
 function SignalCells({ items }: BodyProps) {
-  /* on the desk's 12 columns each item is a 4×2 block of square cells; a band of three
-     slots holds two items and one empty slot that carries a technical mark instead, the
-     empty slot moving along each band, so the page reads modular and airy, not tabular */
-  const placed: { item?: FeatureItem; i: number; c: string; r: string }[] = [];
-  let k = 0;
-  for (let band = 0; k < items.length; band++) {
-    const skip = [2, 0, 1][band % 3];
-    for (let slot = 0; slot < 3; slot++) {
-      const c = `${slot * 4 + 1} / span 4`, r = `${band * 2 + 1} / span 2`;
-      if (slot === skip || k >= items.length) placed.push({ i: -1 - band * 3 - slot, c, r });
-      else placed.push({ item: items[k], i: k++, c, r });
-    }
-  }
+  /* an index of thin tabular rows (number · title · text · mark), set in the right two
+     thirds of a numbered grid; the cells to their left and under them stay empty but for
+     their numbers, with a dial face in one of them */
   return (
-    <ModGrid marks role="list">
-      {placed.map(({ item, i, c, r }) =>
-        item ? (
-          <ModCell key={i} role="listitem" data-slot="feature" ruled c={["1 / -1", "span 4", c]} r={[undefined, "span 2", r]} className="group/cell flex flex-col gap-(--rap-space-md) bg-paper transition-colors duration-(--rap-dur-fast) hover:bg-surface">
-            <div className="flex items-start justify-between gap-(--rap-space-sm)">
-              <span className="font-mono text-[0.75rem] text-mute tabular-nums">
-                {"{"}
-                {String(i + 1).padStart(4, "0")}
-                {"}"}
-              </span>
-              <span aria-hidden className="text-ink">{MARKS[i % MARKS.length]}</span>
-            </div>
-            {item.media && <div className="overflow-hidden rounded-sm">{item.media}</div>}
-            <div className="mt-auto flex flex-col gap-(--rap-space-xs)">
-              <ItemTitle item={item} className="text-[1rem] font-medium leading-[1.3] tracking-[-0.01em]" />
-              <div className="max-w-[40ch] text-[0.8125rem] leading-[1.65] text-ink-2">{item.text}</div>
-              {item.href && (
-                <span aria-hidden className="pt-(--rap-space-2xs) font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute group-hover/cell:text-ink">
-                  Open →
-                </span>
-              )}
-            </div>
-          </ModCell>
-        ) : (
-          <ModCell key={i} aria-hidden c={[null, null, c]} r={[undefined, undefined, r]} className="flex items-center justify-center text-mute">
-            {EMPTY[(-i) % EMPTY.length]}
-          </ModCell>
-        ),
-      )}
+    <ModGrid numbered>
+      <ModCell aria-hidden c={[null, null, "2 / span 2"]} r={[undefined, undefined, "2 / span 2"]} className="flex items-start">
+        <CompassDial angle={28} className="max-w-[12rem]" />
+      </ModCell>
+      <ModCell c={["1 / -1", "1 / -1", "5 / span 8"]} r={[undefined, undefined, "1 / span 4"]} inset={false} className="px-(--mod-pad) pt-[calc(var(--mod-pad)+1.15rem)]">
+        <ul role="list" className="m-0 list-none border-t border-line p-0">
+          {items.map((item, i) => (
+            <li
+              key={i}
+              data-slot="feature"
+              className="group/row relative grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-4 gap-y-1 border-b border-line py-(--rap-space-md) @min-[40rem]:grid-cols-[3.5rem_minmax(0,14rem)_minmax(0,1fr)_2.5rem] @min-[40rem]:items-baseline"
+            >
+              <span className="font-mono text-[0.6875rem] text-mute tabular-nums">{`( ${String(i + 1).padStart(2, "0")} )`}</span>
+              <ItemTitle item={item} className="font-display text-[1.0625rem] font-normal leading-[1.3] tracking-[-0.01em] group-hover/row:text-ink-2" />
+              <div className="col-start-2 text-[0.8125rem] leading-[1.6] text-ink-2 @min-[40rem]:col-start-auto">{item.text}</div>
+              <span aria-hidden className="hidden justify-self-end text-mute @min-[40rem]:block">{MARKS[i % MARKS.length]}</span>
+              {item.media && <div className="col-span-full overflow-hidden rounded-sm">{item.media}</div>}
+            </li>
+          ))}
+        </ul>
+      </ModCell>
     </ModGrid>
   );
 }
-/* the marks an item carries, and the ones an empty slot shows */
-const MARKS = [<CrossGrid key="a" cols={3} rows={2} x={4} size={54} />, <TickCircle key="b" size={30} />, <PlusMark key="c" size={24} />, <Asterisk key="d" size={30} />, <SquareMarks key="e" />, <TickCircle key="f" size={30} />];
-const EMPTY = [<CrossGrid key="a" size={120} />, <OutlineBlob key="b" size={70} />, <Horizon key="c" className="w-3/5" />, <Molecule key="d" size={70} />];
+/* a small mark at the end of each row */
+const MARKS = [<PlusMark key="a" size={16} />, <TickCircle key="b" size={18} />, <Asterisk key="c" size={18} />, <SquareMarks key="d" />, <PlusMark key="e" size={16} />, <TickCircle key="f" size={18} />];
 
 /* product: tidy cards with a hairline edge */
 function ProductCards({ items, cols }: BodyProps) {
