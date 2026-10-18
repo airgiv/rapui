@@ -349,15 +349,15 @@ function SignalHero({ eyebrow, index, title, lead, actions, media, meta = [], do
             </Dial>
           </div>
           <div className={cn("relative flex min-h-[16rem] flex-1 flex-col justify-between gap-6 p-[clamp(16px,2.4cqi,32px)]", tiny)}>
-            <DotText matrix wrap={70} className="ml-auto w-full max-w-[22rem]">
+            <DotText matrix wrap={70} className="ml-auto w-full max-w-[17rem]">
               {field || "SIGNAL"}
             </DotText>
             {lead0 && (
-              <DotText matrix className="ml-auto w-full max-w-[13rem]">
+              <DotText matrix className="ml-auto w-full max-w-[9rem]">
                 {`${lead0.label} >>`.toUpperCase()}
               </DotText>
             )}
-            <DotText matrix wrap={70} className="ml-auto w-full max-w-[18rem]">
+            <DotText matrix wrap={70} className="ml-auto w-full max-w-[14rem]">
               {notes.map((m) => `${m.label} ${m.value}`).join("  ").toUpperCase() || "C/O RAPUI"}
             </DotText>
             <SideLabel className="absolute right-[clamp(8px,1cqi,14px)] top-1/2 -translate-y-1/2 opacity-70">{typeof eyebrow === "string" ? eyebrow : "In review"}</SideLabel>

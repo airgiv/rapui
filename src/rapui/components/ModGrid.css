@@ -36,14 +36,9 @@
   }
   .rap-mod-cell[data-inset] { padding: var(--mod-pad); }
 
-  /* the editorial index: "( 01 )" in every cell's corner, very faint, counting on across
-     the page when an ancestor says data-mod-count="page" */
-  .rap-mod[data-numbered], [data-mod-count="page"] { counter-reset: rap-cell; }
-  [data-mod-count="page"] .rap-mod[data-numbered] { counter-reset: none; }
+  /* the editorial index: "( 01 )" in every cell's corner, very faint */
   .rap-mod-index { position: absolute; inset: 0; display: grid; pointer-events: none; }
-  .rap-mod-num::before {
-    counter-increment: rap-cell;
-    content: "( " counter(rap-cell, decimal-leading-zero) " )";
+  .rap-mod-num {
     display: block;
     padding: calc(var(--mod-pad) * 0.55) calc(var(--mod-pad) * 0.7);
     font-family: var(--rap-font-mono);
@@ -53,6 +48,7 @@
     color: var(--rap-mute);
     opacity: 0.55;
     white-space: pre;
+    align-self: start;
   }
   .rap-mod-num[data-off] { visibility: hidden; }
   [data-mod-numbers="off"] .rap-mod-index { display: none; }

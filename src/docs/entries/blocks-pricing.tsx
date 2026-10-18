@@ -232,7 +232,7 @@ export const entries: DocEntry[] = [
     name: "Pricing",
     group: "Blocks",
     description:
-      "Plans side by side, with a monthly / yearly switch when any plan has a yearly price — controlled (`billing` + `onBillingChange`) or not (`defaultBilling`). Each look sets the plans its own way: packed coloured tiles with a rotating badge on the featured one (fun), soft white cards with serif prices and a navy featured card (civic), square-cell blocks with bold prices and the featured plan on a black screen (signal), hairline cards with a \"Most popular\" badge (product), a plain comparison list (minimal). Delight (fun): switching the billing counts each price across to its new figure.",
+      "Plans side by side, with a monthly / yearly switch when any plan has a yearly price — controlled (`billing` + `onBillingChange`) or not (`defaultBilling`). Each look sets the plans its own way: packed coloured tiles with a rotating badge on the featured one (fun), soft white cards with serif prices and a navy featured card (civic), numbered square-cell blocks with light prices and the featured plan on a dark screen (signal), hairline cards with a \"Most popular\" badge (product), a plain comparison list (minimal). Delight (fun): switching the billing counts each price across to its new figure.",
     controls: pricingControls,
     Demo: ({ p }) => (
       <BlockFrame>

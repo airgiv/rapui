@@ -13,7 +13,7 @@ export const entries: DocEntry[] = [
     name: "Statement",
     group: "Blocks",
     description:
-      "Big words with live parts set in among them: a switch between two words, a button where the verb would be, a slider mid-sentence — the product said and shown at once. Each look composes it its own way: huge and flush left with the parts a little askew in fun, centred light serif with each part on a soft white pill in civic (the way a public-service front page sets small pictures into its sentences), huge bold grotesk with each part in a hairline capsule in signal, hairline chips in product, bare in minimal.",
+      "Big words with live parts set in among them: a switch between two words, a button where the verb would be, a slider mid-sentence — the product said and shown at once. Each look composes it its own way: huge and flush left with the parts a little askew in fun, centred light serif with each part on a soft white pill in civic (the way a public-service front page sets small pictures into its sentences), a light grotesk with each part in a hairline capsule in signal, hairline chips in product, bare in minimal.",
     controls,
     Demo: ({ p }) => (
       <BlockFrame>

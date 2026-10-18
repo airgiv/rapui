@@ -226,7 +226,7 @@ export function LandingTemplate() {
   const logo = <span className="font-display text-[1.375rem] [font-weight:var(--rap-display-weight)] tracking-[-0.03em]">{c.brand}</span>;
   const [lFeatures, lSplit, lPricing, lFaq] = c.links;
   return (
-    <div ref={ref} data-slot="landing" data-mod-count="page" className="bg-paper text-ink font-sans">
+    <div ref={ref} data-slot="landing" className="bg-paper text-ink font-sans">
       <SiteHeader
         logo={logo}
         links={[
@@ -313,12 +313,15 @@ export function LandingTemplate() {
       <Testimonials index="04" eyebrow={c.quotes.eyebrow} title={c.quotes.title} items={c.quotes.items} />
       <Pricing id="pricing" index="05" eyebrow={c.pricing.eyebrow} title={c.pricing.title} lead={c.pricing.lead} plans={c.pricing.plans} />
       <FAQ id="faq" index="06" eyebrow={c.faq.eyebrow} title={c.faq.title} items={c.faq.items} />
-      {/* a laurel line between the questions and the close, each preset's own wreath */}
+      {/* a laurel line between the questions and the close, each preset's own wreath
+          (signal leaves the space empty) */}
+      {preset !== "signal" && (
       <Container className="flex justify-center py-(--rap-space-xl)">
         <Laurel size="lg" eyebrow={LAUREL[preset].eyebrow} caption={LAUREL[preset].caption}>
           {LAUREL[preset].text}
         </Laurel>
       </Container>
+      )}
       <CTA
         eyebrow={c.cta.eyebrow}
         title={c.cta.title}

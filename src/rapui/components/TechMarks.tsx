@@ -17,6 +17,11 @@
      <OutlineBlob />        an outline blob, like a cell or a drop
      <Asterisk />           ✳, eight thin rays
      <Molecule />           a filled core with three satellites
+     <Dial />               a big pale disc, an instrument face to lay readouts on
+     <CompassDial />        a dial with a soft blob and a long red needle
+     <LeaderLines />        thin lines from one point out to tiny part labels
+     <SideLabel />          a vertical mono caption along an edge
+     <DotScreen />          a dark rounded screen for pale dot type
 
    The clock reads the time once a second while it is on screen
    (one attribute write per hand), and holds still in still or

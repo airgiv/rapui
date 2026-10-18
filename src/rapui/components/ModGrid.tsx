@@ -30,9 +30,10 @@ export interface ModGridProps extends HTMLAttributes<HTMLDivElement> {
   /** Faint crosshairs at every cell intersection. */
   marks?: boolean;
   /** A small "( 01 )" index in the corner of every cell, very faint — an editorial index
-      grid. Cells under content hide theirs, except the content's own first cell. The count
-      runs on across every numbered grid inside an element with data-mod-count="page". */
+      grid. Cells under content hide theirs, except the content's own first cell. */
   numbered?: boolean;
+  /** The first cell's number (default 1), to carry an index on from a grid above. */
+  numberFrom?: number;
   /** Rows exactly one cell tall (content clips) instead of at least one cell. */
   fixed?: boolean;
 }
@@ -85,7 +86,7 @@ function useNumbers(on: boolean) {
   return { grid, nums };
 }
 
-export const ModGrid = forwardRef<HTMLDivElement, ModGridProps>(function ModGrid({ marks, numbered = false, fixed, className, children, ...rest }, ref) {
+export const ModGrid = forwardRef<HTMLDivElement, ModGridProps>(function ModGrid({ marks, numbered = false, numberFrom = 1, fixed, className, children, ...rest }, ref) {
   const { grid, nums } = useNumbers(numbered);
   const hidden = useMemo(() => new Set((nums?.hidden ?? "").split(",").filter(Boolean).map(Number)), [nums?.hidden]);
   const setRef = (node: HTMLDivElement | null) => {
@@ -100,7 +101,9 @@ export const ModGrid = forwardRef<HTMLDivElement, ModGridProps>(function ModGrid
         {numbered && nums && (
           <div aria-hidden className="rap-mod-index" style={{ gridTemplateColumns: `repeat(${nums.cols}, minmax(0, 1fr))`, gridTemplateRows: nums.rows }}>
             {Array.from({ length: nums.n }, (_, i) => (
-              <span key={i} className="rap-mod-num" data-off={hidden.has(i) || undefined} />
+              <span key={i} className="rap-mod-num" data-off={hidden.has(i) || undefined}>
+                {`( ${String(i + numberFrom).padStart(2, "0")} )`}
+              </span>
             ))}
           </div>
         )}
