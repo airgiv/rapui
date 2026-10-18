@@ -207,7 +207,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
           Field notes, <Accent>received in fragments.</Accent>
         </>
       ),
-      lead: "Signal preset: a technical sheet that reads itself back — a bold grotesk, mono notes, type made of dots and a grid of square cells across the whole screen. Status: receiving. Interference: mostly decorative.",
+      lead: "Signal preset: a technical sheet that reads itself back — one mono voice, readouts made of dots, pale green paper and a grid of square cells across the whole screen, mostly left empty. Status: receiving. Interference: mostly decorative.",
       primary: "Tune in",
       secondary: "Open the log",
       meta: [
@@ -230,7 +230,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
         { title: "Technical notes", text: "Mono labels, {0033} index tags and spaced capitals, like the margins of a spec sheet.", icon: "notebook" },
         { title: "Marks", text: "Crosses, ticks, ⊕ markers, a horizon and a blob: small drawings that annotate the empty cells.", icon: "code" },
         { title: "Redactions", text: "Words [blacked out] until you hover. Some of them were never that important anyway.", icon: "lock" },
-        { title: "One accent", text: "Grey paper, black ink, a grey second line and one green dot that means live. At night the paper goes black.", icon: "planet" },
+        { title: "One accent", text: "Pale green paper, olive ink, an olive-grey second line and one green dot that means live. At night the paper goes olive-black.", icon: "planet" },
       ],
     },
     split: {
@@ -275,7 +275,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       title: <>Questions <Accent tone="mute">over the air</Accent></>,
       items: [
         { q: "Is anything actually redacted?", a: "Only for effect. Hover a black bar and the word comes back — the Redact component is theatre with an accessible name." },
-        { q: "Why is everything grey?", a: "Grey paper, black ink and one green dot: the colour of a spec sheet, and the dot means live." },
+        { q: "Why so quiet?", a: "Pale green paper, olive ink, one voice and a lot of empty cells: a spec sheet, not a billboard. The green dot means live." },
         { q: "Why do the dots move so slowly?", a: "They step, like a real display: twelve frames a second at most, and none at all while you are looking elsewhere." },
         { q: "Who is the pigeon?", a: "Unknown. Transmission ends." },
       ],

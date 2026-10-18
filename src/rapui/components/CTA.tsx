@@ -13,8 +13,8 @@
             set low and right like a round button waiting to be hit
    civic    a navy dark island (Section tone="dark"): serif headline,
             red kicker, a pill field in the middle
-   signal   a black dot screen across the grid: the title in big
-            white dots (the real heading kept for screen readers), a
+   signal   a deep olive-black dot screen across the grid: the title
+            in pale dots at a modest size (the real heading kept for screen readers), a
             {0007} tag with a live dot, the lead and actions beside it
    product  centred and quiet, on a faint grid that fades out from
             the middle
@@ -137,7 +137,7 @@ function SignalCTA({ eyebrow, index, title, lead, actions, media, form }: Parts)
           {eyebrow}
         </p>
         <h2 className="sr-only">{title}</h2>
-        <DotText matrix off aria-hidden wrap={84} field={{ cols: 86 }} pad={[0, 1]} className="w-full">
+        <DotText matrix off aria-hidden wrap={84} field={{ cols: 86 }} pad={[0, 1]} step={6} className="max-w-full">
           {words}
         </DotText>
         {media && <div data-slot="cta-media">{media}</div>}

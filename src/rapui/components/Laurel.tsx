@@ -23,7 +23,7 @@
               a tapering stem, serif text, centred
      fun      chunky rounded leaves in flame (or `tone`), the
               branches leaning out a little, bold display text
-     signal   the branch spelled in phosphor dots — every leaf a
+     signal   the branch drawn in equal dots at an even step, like a dot display — every leaf a
               string of dots, the stem a dotted line; mono caps
      product  hairline outline leaves with their midribs, sans text
      minimal  straight single-stroke leaves on a hairline stem,
@@ -231,6 +231,42 @@ function midrib(l: Leaf): string {
   return poly(pts, false);
 }
 
+/* signal: equal dots at an even step — along the stem, and out along each leaf's midrib —
+   with any dot too close to one already placed dropped, so nothing clumps; cached per branch */
+const PITCH = 3.4;
+const DOT_R = 1.25;
+const dotCache = new Map<string, { x: number; y: number; t: number }[]>();
+
+function dotsFor(b: Branch, count: number) {
+  const key = `${count}`;
+  const hit = dotCache.get(key);
+  if (hit) return hit;
+  const cand: { x: number; y: number; t: number }[] = [];
+  // leaves first (they carry the shape), base to tip, a dot every pitch along the midrib
+  for (const l of b.leaves) {
+    const n = Math.max(1, Math.round((l.len * 0.92) / PITCH));
+    for (let k = 1; k <= n; k++) {
+      const u = (k / n) * 0.92;
+      const [x, y] = place(l, [u * l.len, l.curl * l.len * u * u]);
+      cand.push({ x, y, t: l.t });
+    }
+  }
+  // then the stem, a dot every pitch of arc
+  let run = PITCH;
+  for (let i = 1; i < b.stem.length; i++) {
+    run += Math.hypot(b.stem[i][0] - b.stem[i - 1][0], b.stem[i][1] - b.stem[i - 1][1]);
+    if (run < PITCH) continue;
+    run = 0;
+    cand.push({ x: b.stem[i][0], y: b.stem[i][1], t: i / (b.stem.length - 1) });
+  }
+  const out: { x: number; y: number; t: number }[] = [];
+  const min = PITCH * 0.82;
+  for (const c of cand) if (out.every((o) => Math.hypot(o.x - c.x, o.y - c.y) >= min)) out.push(c);
+  const done = out.map((d) => ({ x: n2(d.x), y: n2(d.y), t: d.t }));
+  dotCache.set(key, done);
+  return done;
+}
+
 /* ── LaurelBranch ── one branch as an svg; `side="right"` mirrors it */
 
 export interface LaurelBranchProps extends Omit<SVGAttributes<SVGSVGElement>, "children"> {
@@ -250,27 +286,12 @@ export function LaurelBranch({ side = "left", leaves, look, className, style, ..
 
   let body: ReactNode;
   if (look === "signal") {
-    /* every leaf a string of dots along its midrib, fattest at its belly; the stem dotted */
-    const pitch = 3;
+    /* a dot-matrix display: a regular lattice of equal dots, lit where it falls inside the
+       branch's silhouette (the leaves and a thickened stem) — a lit-pixel picture, not beads */
     const out: ReactNode[] = [];
-    let run = 0;
-    for (let i = 1; i < b.stem.length; i++) {
-      run += Math.hypot(b.stem[i][0] - b.stem[i - 1][0], b.stem[i][1] - b.stem[i - 1][1]);
-      if (run < pitch) continue;
-      run = 0;
-      const t = i / (b.stem.length - 1);
-      out.push(<circle key={`s${i}`} className="rap-laurel-dot" cx={n2(b.stem[i][0])} cy={n2(b.stem[i][1])} r={0.75} style={{ "--t": t } as CSSProperties} />);
+    for (const d of dotsFor(b, count)) {
+      out.push(<circle key={`${d.x},${d.y}`} className="rap-laurel-dot" cx={d.x} cy={d.y} r={DOT_R} style={{ "--t": d.t } as CSSProperties} />);
     }
-    b.leaves.forEach((l, li) => {
-      const n = l.len > 9 ? 4 : 3;
-      const step = l.len / (n + 0.2);
-      for (let k = 1; k <= n; k++) {
-        const u = (k * step) / l.len;
-        const [cx, cy] = place(l, [u * l.len, l.curl * l.len * u * u]);
-        const r = step * 0.4 * (0.6 + 0.4 * Math.sin(Math.PI * Math.min(1, u * 1.15)));
-        out.push(<circle key={`${li}.${k}`} className="rap-laurel-dot" cx={n2(cx)} cy={n2(cy)} r={n2(r)} style={{ "--t": l.t } as CSSProperties} />);
-      }
-    });
     body = <g fill="currentColor">{out}</g>;
   } else if (look === "minimal") {
     /* a hairline stem, each leaf one straight stroke */
@@ -402,7 +423,7 @@ const SIZE: Record<LaurelSize, string> = {
 const TITLE: Record<BlockLook, string> = {
   civic: "font-display font-normal tracking-[-0.005em]",
   fun: "font-display font-bold tracking-[-0.02em]",
-  signal: "font-display font-bold tracking-[-0.03em]",
+  signal: "font-display font-medium tracking-[-0.01em]",
   product: "font-sans font-semibold tracking-[-0.015em]",
   minimal: "font-sans font-normal tracking-[-0.01em]",
 };

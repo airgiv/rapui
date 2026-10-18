@@ -15,7 +15,7 @@
               acid and its + spins into an ×
      civic    centred: the heading on the centre line over a narrow
               list of soft white cards, serif questions, a plain chevron
-     signal   ruled rows: a {0001} tag, the question in bold grotesk, a ⊕ that turns to × when open
+     signal   airy ruled rows: a {0001} tag, the question in mono, a ⊕ that turns to × when open
      product  one centred narrow column: a hairline card, divided
      minimal  numbered questions between hairlines, a plain + / −
 
@@ -121,8 +121,8 @@ const ROW: Record<BlockLook, { list: string; item: string; trigger: string; q: s
     list: "flex flex-col border-t border-line",
     item: "border-b border-line text-ink",
     trigger: "grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-(--rap-space-xs) py-(--rap-space-md)",
-    q: "font-display text-[clamp(1.125rem,1.7vw,1.5rem)] font-bold leading-[1.15] tracking-[-0.025em] group-hover/q:text-ink-2",
-    a: "grid grid-cols-[4.5rem_minmax(0,1fr)] gap-(--rap-space-xs) pb-(--rap-space-md) text-[1rem] leading-[1.55] text-ink-2 max-w-[70ch]",
+    q: "text-[1rem] font-medium leading-[1.4] tracking-[-0.01em] group-hover/q:text-ink-2",
+    a: "grid grid-cols-[4.5rem_minmax(0,1fr)] gap-(--rap-space-xs) pb-(--rap-space-lg) text-[0.875rem] leading-[1.7] text-ink-2 max-w-[70ch]",
   },
   product: {
     list: "flex flex-col overflow-hidden rounded-card bg-surface shadow-[inset_0_0_0_1px_var(--rap-line)] divide-y divide-line",

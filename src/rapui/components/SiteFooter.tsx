@@ -15,7 +15,7 @@
             columns, then the fine print under a rule
    signal   the last band of the square grid: name and tagline, link
             columns with {0001} tags, a dial clock, and the `wordmark`
-            across the width in dots above the fine print
+            in small dots above the fine print
    product  quiet grey columns under a hairline
    minimal  a single row: the logo, every link, the year
 
@@ -187,8 +187,8 @@ function SignalFooter({ logo, tagline, columns = [], bottom, social, wordmark }:
         <TechClock size="100%" className="h-auto w-full max-w-[5.5rem]" />
       </ModCell>
       {wordmark && (
-        <ModCell c={["1 / -1", "1 / -1", "1 / -1"]} className="flex items-end">
-          <DotText matrix off aria-hidden field={{ cols: 96, rows: 11 }} pad={[2, 2]} className="w-full text-ink">
+        <ModCell c={["1 / -1", "1 / span 4", "1 / span 3"]} className="flex items-end">
+          <DotText matrix off aria-hidden field={{ cols: 64, rows: 11 }} pad={[2, 2]} className="w-full text-ink">
             {wordmark.toUpperCase()}
           </DotText>
         </ModCell>

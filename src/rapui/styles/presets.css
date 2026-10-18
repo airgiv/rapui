@@ -8,8 +8,8 @@
      fun      the default — loud, round, playful (tokens.css)
      civic    a public-service site: big condensed serif headlines,
               navy and a little red, soft big cards, calm motion
-     signal   technical + modern: grey paper, bold grotesk, mono
-              notes, dot-matrix type, a full-width square grid
+     signal   a technical sheet: pale green-grey paper, olive ink,
+              mono everywhere, dot readouts, a square grid, air
      product  a modern product page: Geist, near-black buttons,
               thin borders, small radii, an iris accent
      minimal  black on white, hairlines, square corners, no colour
@@ -131,27 +131,28 @@
 }
 
 /* ── signal ────────────────────────────────────────────────── */
-/* technical and modern at once: light neutral paper, black ink, a mid grey for every
-   second line, a bold neo-grotesk (Inter Tight 700) for headlines, Geist Mono for the
-   technical notes, tags and figures, and display text drawn in dots (DotText's 5×7
-   matrix) — black on grey dot fields on paper, white on black "screens"
-   (--rap-panel / --rap-panel-ink). One accent, used sparingly (--rap-signal: a live dot,
-   a second hand, a save pill). The page is a full-width modular grid of square cells
-   (ModGrid): no narrow column, lots of empty cells, small technical marks (TechMarks)
-   annotating the empty ones. */
+/* a technical sheet, letterpress-quiet: pale green-grey paper, dark olive ink, a muted
+   olive-grey for every second line, and one voice — Geist Mono — for everything, headings
+   included, set small to medium with air around it (no big display type). Readouts are
+   drawn in dots (DotText's 5×7 matrix) at modest sizes: olive on pale dot fields on
+   paper, pale on deep olive-black "screens" (--rap-panel / --rap-panel-ink). One soft
+   green accent, used sparingly (--rap-signal: a live dot, a second hand). The page is a
+   full-width modular grid of square cells (ModGrid) with faint + marks: most cells stay
+   empty, small technical marks (TechMarks) annotate a few of them. */
 [data-rap-preset="signal"] {
-  --rap-display-weight: 700;
-  --rap-display-weight-mega: 700;
-  --rap-display-tracking: -0.035em;
-  --rap-display-tracking-mega: -0.045em;
-  --rap-display-tracking-md: -0.02em;
+  --rap-display-weight: 500;
+  --rap-display-weight-mega: 500;
+  --rap-display-tracking: -0.02em;
+  --rap-display-tracking-mega: -0.03em;
+  --rap-display-tracking-md: -0.01em;
   --rap-display-case: none;
-  --rap-display-leading: 0.95;
-  --rap-size-mega: clamp(3.25rem, 9vw, 10rem);
-  --rap-size-xxl: clamp(2.75rem, 7vw, 7.75rem);
-  --rap-size-xl: clamp(2.25rem, 5vw, 5.5rem);
-  --rap-size-lg: clamp(1.875rem, 3.6vw, 3.75rem);
-  --rap-size-md: clamp(1.125rem, 1.6vw, 1.5rem);
+  --rap-display-leading: 1.18;
+  /* no big type: headings sit small to medium, the space around them does the work */
+  --rap-size-mega: clamp(1.75rem, 3vw, 2.75rem);
+  --rap-size-xxl: clamp(1.625rem, 2.7vw, 2.5rem);
+  --rap-size-xl: clamp(1.5rem, 2.4vw, 2.25rem);
+  --rap-size-lg: clamp(1.25rem, 2vw, 1.875rem);
+  --rap-size-md: clamp(1rem, 1.3vw, 1.25rem);
 
   --rap-radius-xs: 4px;
   --rap-radius-sm: 8px;
@@ -167,13 +168,13 @@
   /* full-screen: no content column, a slim margin, the grid does the rest */
   --rap-container: 9999px;
   --rap-container-narrow: 760px;
-  --rap-gutter: clamp(12px, 1.4vw, 20px);
-  --rap-column-gap: clamp(12px, 1.4vw, 20px);
-  --rap-section-y: clamp(2rem, 4.5vw, 4.5rem);
+  --rap-gutter: clamp(14px, 2vw, 32px);
+  --rap-column-gap: clamp(16px, 2vw, 32px);
+  --rap-section-y: clamp(4rem, 9vw, 8.5rem);
   --rap-section-inset: 0px;
   --rap-section-radius: 0px;
   --rap-section-rule: var(--rap-line);
-  --rap-density: 1;
+  --rap-density: 1.15;
 
   --rap-ease-rm: cubic-bezier(0.3, 0, 0.2, 1);
   --rap-dur-fast: 150ms;
@@ -187,103 +188,103 @@
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"] {
   /* (fonts again on every light/dark island, which tokens.css otherwise sends back to Onest) */
-  --rap-font-display: "Inter Tight Variable", "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --rap-font-sans: "Inter Tight Variable", "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --rap-font-display: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --rap-font-sans: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   --rap-font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
-  --rap-display-weight: 700;
-  --rap-display-tracking: -0.035em;
+  --rap-display-weight: 500;
+  --rap-display-tracking: -0.02em;
 }
 [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="light"],
 [data-rap-preset="signal"][data-rap-theme="light"] {
-  --rap-paper: #e6e6e3;
-  --rap-paper-2: #eeeeeb;
-  --rap-paper-3: #d8d8d4;
-  --rap-ink: #0e0e0e;
-  --rap-ink-2: #3c3c3b;
-  --rap-mute: #8e8e8c;
-  --rap-line: rgb(14 14 14 / 0.13);
-  --rap-flame: #0e0e0e;
-  --rap-blue: #55595f;
-  --rap-plum: #0e0e0e;
-  --rap-acid: #19c37d;
-  --rap-bubble: #d8d8d4;
-  --rap-sky: #dcdcd9;
-  --rap-accent: #0e0e0e;
-  --rap-accent-ink: #f2f2ef;
-  --rap-fill: rgb(14 14 14 / 0.05);
-  --rap-fill-hover: rgb(14 14 14 / 0.09);
-  --rap-fill-strong: rgb(14 14 14 / 0.14);
-  --rap-ring: #0e0e0e;
-  --rap-select: #0e0e0e;
-  --rap-select-ink: #ffffff;
-  --rap-surface: #f1f1ee;
-  --rap-edge: rgb(14 14 14 / 0.13);
-  --rap-shadow-pop: 0 0 0 1px rgb(14 14 14 / 0.12), 0 16px 40px -18px rgb(14 14 14 / 0.25);
-  --rap-scrim: rgb(14 14 14 / 0.32);
-  --rap-danger: #e5484d;
-  --rap-success: #19c37d;
-  --rap-chart-up: #0e0e0e;
-  --rap-chart-down: #8e8e8c;
+  --rap-paper: #e9ede4;
+  --rap-paper-2: #eff2eb;
+  --rap-paper-3: #dde2d5;
+  --rap-ink: #262b22;
+  --rap-ink-2: #4b5244;
+  --rap-mute: #848a7c;
+  --rap-line: rgb(38 43 34 / 0.12);
+  --rap-flame: #262b22;
+  --rap-blue: #5a6650;
+  --rap-plum: #262b22;
+  --rap-acid: #b9dbab;
+  --rap-bubble: #dde2d5;
+  --rap-sky: #e1e6da;
+  --rap-accent: #262b22;
+  --rap-accent-ink: #eef1ea;
+  --rap-fill: rgb(38 43 34 / 0.05);
+  --rap-fill-hover: rgb(38 43 34 / 0.08);
+  --rap-fill-strong: rgb(38 43 34 / 0.13);
+  --rap-ring: #262b22;
+  --rap-select: #262b22;
+  --rap-select-ink: #eef1ea;
+  --rap-surface: #f1f4ed;
+  --rap-edge: rgb(38 43 34 / 0.12);
+  --rap-shadow-pop: 0 0 0 1px rgb(38 43 34 / 0.12), 0 16px 40px -20px rgb(38 43 34 / 0.22);
+  --rap-scrim: rgb(38 43 34 / 0.3);
+  --rap-danger: #b4412c;
+  --rap-success: #4c8f5a;
+  --rap-chart-up: #262b22;
+  --rap-chart-down: #848a7c;
   /* the dot screens and the one accent */
-  --rap-panel: #0c0c0c;
-  --rap-panel-ink: #f4f4f2;
-  --rap-dot-off: rgb(14 14 14 / 0.12);
-  --rap-panel-dot-off: rgb(255 255 255 / 0.13);
-  --rap-signal: #19c37d;
+  --rap-panel: #1d211b;
+  --rap-panel-ink: #e4eadc;
+  --rap-dot-off: rgb(38 43 34 / 0.1);
+  --rap-panel-dot-off: rgb(228 234 220 / 0.13);
+  --rap-signal: #4c8f5a;
   color-scheme: light;
 }
 [data-rap-preset="signal"][data-rap-theme="dark"],
 [data-rap-theme="dark"] [data-rap-preset="signal"],
 [data-rap-preset="signal"] [data-rap-theme="dark"] {
-  --rap-paper: #0b0b0b;
-  --rap-paper-2: #131313;
-  --rap-paper-3: #1c1c1c;
-  --rap-ink: #ededeb;
-  --rap-ink-2: #b8b8b5;
-  --rap-mute: #7c7c7a;
-  --rap-line: rgb(237 237 235 / 0.13);
-  --rap-flame: #ededeb;
-  --rap-blue: #a3a7ad;
-  --rap-plum: #ededeb;
-  --rap-acid: #2fdc84;
-  --rap-bubble: #b8b8b5;
-  --rap-sky: #1f1f1f;
-  --rap-accent: #ededeb;
-  --rap-accent-ink: #0b0b0b;
-  --rap-fill: rgb(237 237 235 / 0.06);
-  --rap-fill-hover: rgb(237 237 235 / 0.1);
-  --rap-fill-strong: rgb(237 237 235 / 0.16);
-  --rap-ring: #ededeb;
-  --rap-select: #ededeb;
-  --rap-select-ink: #0b0b0b;
-  --rap-surface: #151515;
-  --rap-edge: rgb(237 237 235 / 0.14);
-  --rap-shadow-pop: 0 0 0 1px rgb(237 237 235 / 0.14), 0 16px 40px -18px rgb(0 0 0 / 0.7);
-  --rap-scrim: rgb(0 0 0 / 0.65);
-  --rap-danger: #ff6b6b;
-  --rap-success: #2fdc84;
-  --rap-chart-up: #ededeb;
-  --rap-chart-down: #7c7c7a;
-  --rap-panel: #000000;
-  --rap-panel-ink: #f4f4f2;
-  --rap-dot-off: rgb(237 237 235 / 0.11);
-  --rap-panel-dot-off: rgb(255 255 255 / 0.12);
-  --rap-signal: #2fdc84;
+  --rap-paper: #161a14;
+  --rap-paper-2: #1b2018;
+  --rap-paper-3: #232920;
+  --rap-ink: #dfe5d8;
+  --rap-ink-2: #b2b9a8;
+  --rap-mute: #7d8574;
+  --rap-line: rgb(223 229 216 / 0.12);
+  --rap-flame: #dfe5d8;
+  --rap-blue: #a8b49c;
+  --rap-plum: #dfe5d8;
+  --rap-acid: #7cc489;
+  --rap-bubble: #b2b9a8;
+  --rap-sky: #20261d;
+  --rap-accent: #dfe5d8;
+  --rap-accent-ink: #161a14;
+  --rap-fill: rgb(223 229 216 / 0.06);
+  --rap-fill-hover: rgb(223 229 216 / 0.1);
+  --rap-fill-strong: rgb(223 229 216 / 0.15);
+  --rap-ring: #dfe5d8;
+  --rap-select: #dfe5d8;
+  --rap-select-ink: #161a14;
+  --rap-surface: #1c2119;
+  --rap-edge: rgb(223 229 216 / 0.13);
+  --rap-shadow-pop: 0 0 0 1px rgb(223 229 216 / 0.13), 0 16px 40px -20px rgb(0 0 0 / 0.6);
+  --rap-scrim: rgb(5 7 4 / 0.62);
+  --rap-danger: #e88a72;
+  --rap-success: #7cc489;
+  --rap-chart-up: #dfe5d8;
+  --rap-chart-down: #7d8574;
+  --rap-panel: #0e110d;
+  --rap-panel-ink: #e4eadc;
+  --rap-dot-off: rgb(223 229 216 / 0.1);
+  --rap-panel-dot-off: rgb(228 234 220 / 0.12);
+  --rap-signal: #7cc489;
   color-scheme: dark;
 }
 
-/* every second line ("New York / to San Francisco"): an Accent in a headline is grey */
+/* every second line: an Accent in a heading is the muted olive-grey */
 [data-rap-preset="signal"] [data-slot="accent"] { color: var(--rap-mute); }
 
-/* buttons are small pills with mono capitals (Nothing-style). (Unlayered, like the other
+/* buttons are small pills with spaced mono capitals. (Unlayered, like the other
    preset rules here, so it wins over the button's own font-sans utility.) */
 [data-rap-preset="signal"] [data-slot="button"] {
   font-family: var(--rap-font-mono);
   font-weight: 500;
-  font-size: min(var(--btn-fs, 1rem), 0.8125rem);
+  font-size: min(var(--btn-fs, 1rem), 0.75rem);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
 }
 
 /* ── product ───────────────────────────────────────────────── */

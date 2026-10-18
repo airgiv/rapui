@@ -157,7 +157,7 @@ function SignalStats({ items }: { items: StatItem[] }) {
   const tag = (i: number) => `{${String(i + 1).padStart(4, "0")}}`;
   return (
     <ModGrid marks role="list">
-      <ModCell role="listitem" c={["1 / -1", "1 / span 4", "1 / span 4"]} r={[undefined, "1 / span 4", "1 / span 4"]} className="flex">
+      <ModCell role="listitem" c={["1 / -1", "1 / span 4", "1 / span 3"]} r={[undefined, "1 / span 4", "1 / span 3"]} className="flex">
         <DotScreen className="flex aspect-square w-full flex-col justify-between p-[clamp(14px,2.2cqi,26px)]">
           <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">
             <span>{first.label}</span>
@@ -174,7 +174,7 @@ function SignalStats({ items }: { items: StatItem[] }) {
           key={it.label}
           role="listitem"
           ruled
-          c={["1 / -1", "span 4", `${i % 2 ? 9 : 6} / span 3`]}
+          c={["1 / -1", "span 4", `${i % 2 ? 9 : 5} / span 3`]}
           r={[undefined, "span 2", `${Math.floor(i / 2) * 2 + 1} / span 2`]}
           className="flex flex-col justify-between gap-(--rap-space-sm)"
         >

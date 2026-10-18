@@ -92,6 +92,8 @@
     color: var(--rap-ink-2);
   }
   [data-rap-preset="signal"] .rap-section-kicker [data-slot="eyebrow-dot"] { display: none; }
+  [data-rap-preset="signal"] .rap-section-lead { font-size: 0.9375rem; line-height: 1.7; }
+  [data-rap-preset="signal"] .rap-section-header { gap: var(--rap-space-lg); }
   [data-rap-preset="signal"] .rap-section-index { display: inline; color: var(--rap-mute); letter-spacing: 0; }
   [data-rap-preset="signal"] .rap-section-index::before { content: "{00"; }
   [data-rap-preset="signal"] .rap-section-index::after { content: "}"; }
