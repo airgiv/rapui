@@ -3,7 +3,7 @@
    talks about itself in that preset's voice — and its own hero picture made of
    live components. What changes between them is the preset on <html> and the
    words; the layout is the blocks' own doing. */
-import { isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
+import { isValidElement, useRef, useState, type ReactNode } from "react";
 import { usePreset } from "../../rapui/hooks/usePreset";
 import { cn } from "../../rapui/utils";
 import {
@@ -12,6 +12,7 @@ import {
   Button,
   Container,
   CTA,
+  DotText,
   FAQ,
   Features,
   FeatureSplit,
@@ -45,7 +46,7 @@ function Scene({ children, flat }: { children: ReactNode; flat?: boolean }) {
     <div
       className="grid size-full min-h-full grid-cols-[minmax(0,1fr)] place-items-center p-[clamp(12px,4%,40px)]"
       style={{
-        // signal is flat: the darker sage tile, no wash
+        // signal is flat: a plain grey tile, no wash
         background: flat
           ? "var(--rap-paper-3)"
           : "radial-gradient(120% 90% at 20% 0%, var(--rap-sky), transparent 60%), radial-gradient(90% 80% at 100% 100%, var(--rap-bubble), transparent 55%), var(--rap-paper-3)",
@@ -62,7 +63,7 @@ const card = "flex w-full flex-col gap-4 rounded-card bg-surface p-(--rap-space-
 const LAUREL: Record<RapPreset, { eyebrow: string; text: string; caption: string }> = {
   fun: { eyebrow: "Self-awarded", text: "Loudest landing page of the year", caption: "Hollr · 2026" },
   civic: { eyebrow: "In the matter of this page", text: "Every component, working together", caption: "Precedent · so ordered" },
-  signal: { eyebrow: "Field report", text: "Page received in full", caption: "Fieldkit · 104.2 MHz" },
+  signal: { eyebrow: "Field report", text: "Page received in full", caption: "Fieldkit · {0004}" },
   product: { eyebrow: "Editors’ Choice", text: "#1 in Landing pages", caption: "Shiplog · shipped itself" },
   minimal: { eyebrow: "Award", text: "Less", caption: "2026" },
 };
@@ -117,123 +118,39 @@ function Counsel() {
     </div>
   );
 }
-/* signal: the page as a tape on a pocket player — two reels in dotted rings, the title
-   in Plex and its artist in mono capitals, the times in LCD segments, a filled waveform split at the playhead, and square
-   transport keys on darker sage tiles. The reels turn (a compositor-only spin) while it plays. */
-function Reel({ spin, offset = 0 }: { spin: boolean; offset?: number }) {
+/* signal: the page received on a dot screen — a mono header with a live dot and an index
+   tag, the frequency in big white dots on a dim dot field, a status line, and a row of
+   readings in mono like a spec sheet's footer */
+function Receiver() {
   return (
-    <div className="relative aspect-square w-full text-ink">
-      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full" aria-hidden>
-        <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="0.8" strokeDasharray="0.01 2.4" strokeLinecap="round" />
-        <circle cx="50" cy="50" r="10" fill="var(--rap-fill-strong)" />
-      </svg>
-      <div
-        className={cn("absolute inset-0 motion-reduce:animate-none", spin && "animate-[spin_6s_linear_infinite]")}
-        style={{ rotate: `${offset}deg` }}
-      >
-        <svg viewBox="0 0 100 100" className="size-full" aria-hidden>
-          {[90, 210, 330].map((a) => {
-            const r = (a * Math.PI) / 180;
-            return <line key={a} x1={50 + Math.cos(r) * 14} y1={50 + Math.sin(r) * 14} x2={50 + Math.cos(r) * 40} y2={50 + Math.sin(r) * 40} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />;
-          })}
-          <circle cx="50" cy="50" r="2.6" fill="currentColor" />
-        </svg>
+    <div className="flex size-full flex-col justify-between gap-4 p-[clamp(14px,2.4cqi,28px)]">
+      <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute">
+        <span className="flex items-center gap-2">
+          <span aria-hidden className="size-1.5 rounded-full bg-[var(--rap-signal,currentColor)]" />
+          RX · live
+        </span>
+        <span className="tabular-nums">{"{0004}"}</span>
       </div>
-    </div>
-  );
-}
-
-/* a filled waveform, mirrored about its centre line: the same path twice, the played part in ink */
-const WAVE = (() => {
-  const n = 120;
-  const top: string[] = [];
-  const bottom: string[] = [];
-  for (let i = 0; i <= n; i++) {
-    const x = (i / n) * 400;
-    const s = Math.abs(Math.sin(i * 0.37) * Math.cos(i * 0.113) + 0.45 * Math.sin(i * 1.71)) * 0.75 + 0.12;
-    const env = 0.55 + 0.45 * Math.sin((i / n) * Math.PI * 3 + 0.6) ** 2;
-    const h = Math.min(30, 30 * s * env) * (i % 2 ? 0.7 : 1);
-    top.push(`${x.toFixed(1)} ${(32 - h).toFixed(1)}`);
-    bottom.unshift(`${x.toFixed(1)} ${(32 + h * 0.85).toFixed(1)}`);
-  }
-  return `M0 32L${top.join("L")}L${bottom.join("L")}Z`;
-})();
-
-const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-
-function TransportKey({ label, onClick, children }: { label: string; onClick?: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="grid h-[clamp(2.75rem,8cqi,4.5rem)] cursor-pointer place-items-center rounded-sm border-0 bg-paper-3 text-ink transition-colors duration-(--rap-dur-fast) hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-    >
-      <svg viewBox="0 0 24 24" className="size-[clamp(1.25rem,3cqi,1.75rem)]" fill="currentColor" aria-hidden>
-        {children}
-      </svg>
-    </button>
-  );
-}
-
-function Player() {
-  const total = 120;
-  const [playing, setPlaying] = useState(true);
-  const [t, setT] = useState(50);
-  useEffect(() => {
-    if (!playing) return;
-    const id = window.setInterval(() => setT((v) => (v + 1) % total), 1000);
-    return () => window.clearInterval(id);
-  }, [playing]);
-  const played = (t / total) * 400;
-  return (
-    <div className="@container flex size-full flex-col justify-between gap-4 p-[clamp(16px,3.2cqi,40px)]">
-      <div className="flex items-center justify-between gap-3">
-        <span className="font-mono text-xs uppercase tracking-[0.08em] text-mute">Tape 004 · side A</span>
-        <MatrixStatus label="Receiving" timer={false} className="max-[24rem]:hidden" />
+      <div className="flex flex-col gap-2">
+        <DotText matrix off field={{ cols: 31, rows: 9 }} pad={[0, 1]} className="w-full">
+          104.2
+        </DotText>
+        <span className="font-mono text-[0.75rem] uppercase tracking-[0.06em] text-ink-2">MHz · Fieldkit</span>
       </div>
-      <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-x-[5cqi] gap-y-4 @2xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <div className="mx-auto grid w-full max-w-[16rem] grid-cols-2 gap-[4cqi] @2xl:max-w-[30rem]">
-          <Reel spin={playing} />
-          <Reel spin={playing} offset={40} />
-        </div>
-        <div className="flex min-w-0 flex-col gap-[clamp(10px,2cqi,20px)]">
-          <div className="text-center leading-[1.2] @2xl:text-left">
-            <p className="m-0 font-display text-[clamp(1.25rem,2.8cqi,2rem)] font-medium tracking-[-0.02em] text-ink">This page</p>
-            <p className="m-0 font-mono text-[clamp(0.75rem,1.4cqi,0.9375rem)] uppercase tracking-[0.08em] text-mute">Fieldkit</p>
-          </div>
-          <svg viewBox="0 0 400 64" className="block h-auto w-full" preserveAspectRatio="none" aria-hidden>
-            <defs>
-              <clipPath id="fk-played">
-                <rect width={played} height="64" />
-              </clipPath>
-            </defs>
-            <path d={WAVE} fill="var(--rap-mute)" opacity="0.55" />
-            <path d={WAVE} fill="var(--rap-ink)" clipPath="url(#fk-played)" />
-            <rect x={played - 0.75} width="1.5" height="64" fill="var(--rap-ink)" />
-          </svg>
-          <div className="flex justify-between font-[family-name:var(--rap-font-lcd,var(--rap-font-mono))] text-[clamp(0.8125rem,1.6cqi,1.0625rem)] tabular-nums">
-            <span>
-              <span className="text-mute">00:</span>
-              {fmt(t)}
-            </span>
-            <span>
-              <span className="text-mute">00:</span>
-              {fmt(total)}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            <TransportKey label={playing ? "Pause" : "Play"} onClick={() => setPlaying((p) => !p)}>
-              {playing ? <path d="M7 5h2.6v14H7zM14.4 5H17v14h-2.6z" /> : <path d="M8 5l11 7-11 7z" />}
-            </TransportKey>
-            <TransportKey label="Back" onClick={() => setT(0)}>
-              <path d="M5 5h2.4v14H5zM8 12l6-6.5v13zM14 12l6-6.5v13z" />
-            </TransportKey>
-            <TransportKey label="Forward" onClick={() => setT((v) => Math.min(total - 1, v + 15))}>
-              <path d="M16.6 5H19v14h-2.4zM4 5.5l6 6.5-6 6.5zM10 5.5l6 6.5-6 6.5z" />
-            </TransportKey>
-          </div>
-        </div>
+      <div className="flex flex-col gap-3">
+        <MatrixStatus label="Receiving page 1 of 1" timer={false} />
+        <dl className="m-0 grid grid-cols-3 gap-2 border-t border-line pt-3 font-mono text-[0.6875rem] uppercase tracking-[0.04em]">
+          {[
+            ["Power", "92%"],
+            ["Noise", "8%"],
+            ["State", "Open"],
+          ].map(([k, v]) => (
+            <div key={k} className="flex flex-col gap-0.5">
+              <dt className="text-mute">{k}</dt>
+              <dd className="m-0 text-ink">{v}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
   );
@@ -286,7 +203,7 @@ function Bill() {
 const HERO_PICTURE: Record<RapPreset, () => ReactNode> = {
   fun: () => <Playground />,
   civic: () => <Counsel />,
-  signal: () => <Player />,
+  signal: () => <Receiver />,
   product: () => <Console />,
   minimal: () => <Bill />,
 };
@@ -387,6 +304,7 @@ export function LandingTemplate() {
           )
         }
         meta={c.hero.meta.length ? c.hero.meta : undefined}
+        dots={c.hero.dots}
       />
       <LogoCloud title={c.logosTitle} logos={c.logos.map((name) => ({ name }))} />
       <Features id="features" index="01" eyebrow={c.features.eyebrow} title={c.features.title} lead={c.features.lead} items={preset === "product" ? liveFeatures(c.features.items) : c.features.items} />

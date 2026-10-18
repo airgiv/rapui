@@ -62,7 +62,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css src/rapui/styles/presets.css dist/ && cp src/rapui/fonts/dseg/OFL.txt dist/fonts/DSEG-LICENSE.txt",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && cp src/rapui/styles/theme.css src/rapui/styles/tokens.css src/rapui/styles/presets.css dist/",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build:lib"

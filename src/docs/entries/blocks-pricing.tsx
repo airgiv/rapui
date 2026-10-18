@@ -232,7 +232,7 @@ export const entries: DocEntry[] = [
     name: "Pricing",
     group: "Blocks",
     description:
-      "Plans side by side, with a monthly / yearly switch when any plan has a yearly price — controlled (`billing` + `onBillingChange`) or not (`defaultBilling`). Each look sets the plans its own way: packed coloured tiles with a rotating badge on the featured one (fun), soft white cards with serif prices and a navy featured card (civic), ruled mono columns (signal), hairline cards with a \"Most popular\" badge (product), a plain comparison list (minimal). Delight (fun): switching the billing counts each price across to its new figure.",
+      "Plans side by side, with a monthly / yearly switch when any plan has a yearly price — controlled (`billing` + `onBillingChange`) or not (`defaultBilling`). Each look sets the plans its own way: packed coloured tiles with a rotating badge on the featured one (fun), soft white cards with serif prices and a navy featured card (civic), square-cell blocks with bold prices and the featured plan on a black screen (signal), hairline cards with a \"Most popular\" badge (product), a plain comparison list (minimal). Delight (fun): switching the billing counts each price across to its new figure.",
     controls: pricingControls,
     Demo: ({ p }) => (
       <BlockFrame>
@@ -277,7 +277,7 @@ export const entries: DocEntry[] = [
     name: "Call to action",
     group: "Blocks",
     description:
-      "The closing ask of a landing page: a headline, a line of lead, the actions, and an optional `form` (an email field, an \"Ask anything\" pill) and `media`. A huge accent tile with a giant headline (fun), a navy dark island with a serif headline (civic), a band with a dot-matrix texture and a mono kicker (signal), a centred quiet ask on a fading grid (product), one large line and a link (minimal).",
+      "The closing ask of a landing page: a headline, a line of lead, the actions, and an optional `form` (an email field, an \"Ask anything\" pill) and `media`. A huge accent tile with a giant headline (fun), a navy dark island with a serif headline (civic), a black screen with the title in big white dots (signal), a centred quiet ask on a fading grid (product), one large line and a link (minimal).",
     controls: ctaControls,
     Demo: ({ p }) => (
       <BlockFrame>
@@ -380,7 +380,7 @@ export const entries: DocEntry[] = [
     name: "Site header",
     group: "Blocks",
     description:
-      "The top bar: logo, the main links in a `<nav aria-label>`, actions, and an optional skip link. It folds by its own width (a container query), not the viewport: below 48rem the links and actions move into a menu button that opens a Sheet. A floating inverted pill (fun), a white bar on a thin rule with a navy button (civic), mono links with a live clock (signal), a blurred translucent bar with centred links (product), words only (minimal).",
+      "The top bar: logo, the main links in a `<nav aria-label>`, actions, and an optional skip link. It folds by its own width (a container query), not the viewport: below 48rem the links and actions move into a menu button that opens a Sheet. A floating inverted pill (fun), a white bar on a thin rule with a navy button (civic), grey mono links with a dial clock (signal), a blurred translucent bar with centred links (product), words only (minimal).",
     controls: headerControls,
     Demo: ({ p }) => (
       <BlockFrame>
@@ -435,7 +435,7 @@ ${LINKS.slice(0, Number(p.links))
     name: "Site footer",
     group: "Blocks",
     description:
-      "The foot of the page: brand, tagline, columns of links in a footer nav, social links and the fine print. A dark rounded tile with the brand's name across the bottom at wordmark size (fun), a navy island with a seal slot (civic), ruled mono cells over a dot-matrix strip (signal), quiet grey columns under a hairline (product), a single row of links and the year (minimal).",
+      "The foot of the page: brand, tagline, columns of links in a footer nav, social links and the fine print. A dark rounded tile with the brand's name across the bottom at wordmark size (fun), a navy island with a seal slot (civic), square cells with link columns, a clock and the wordmark in dots (signal), quiet grey columns under a hairline (product), a single row of links and the year (minimal).",
     controls: footerControls,
     Demo: ({ p }) => (
       <BlockFrame>

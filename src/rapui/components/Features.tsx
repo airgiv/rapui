@@ -14,8 +14,9 @@
               duotone FancyIcon and a display-face title
      civic    soft white rounded cards on grey paper, the icon in a
               tinted circle, serif card titles, plenty of air
-     signal   hairline-ruled cells with mono indices [01] [02]… and
-              a small DotMatrix glyph when no icon is given
+     signal   blocks of square cells on the full-width ModGrid, {0001}
+              tags and a small technical mark each, one empty slot per
+              band carrying a bigger mark (TechMarks)
      product  tidy cards with a hairline edge: a small icon, a
               title, muted text and "Learn more →" when linked
      minimal  no cards, no icons: a numbered list in two columns,
@@ -38,9 +39,10 @@ import type { CSSProperties, ReactNode } from "react";
 import { cn } from "../utils";
 import { ArrowRight, Check } from "../icons";
 import { Grid, GridItem, Section, SectionHeader, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
-import { DotMatrix } from "./DotMatrix";
 import { FANCY_ICONS, FancyIcon, type FancyIconName, type FancyTone } from "./FancyIcon";
 import { MediaFrame } from "./MediaFrame";
+import { ModCell, ModGrid } from "./ModGrid";
+import { Asterisk, CrossGrid, Horizon, Molecule, OutlineBlob, PlusMark, SquareMarks, TickCircle } from "./TechMarks";
 
 /* ── shared bits ── */
 
@@ -189,46 +191,57 @@ function CivicCards({ items, cols }: BodyProps) {
   );
 }
 
-/* signal: ruled cells. The grid's backing shows through the 2px gaps as rules. */
-const GLYPHS = [
-  ["10101", "01010", "10101", "01010", "10101"],
-  ["00100", "01110", "11111", "01110", "00100"],
-  ["11100", "10000", "11111", "00001", "00111"],
-  ["10001", "01010", "00100", "01010", "10001"],
-  ["11111", "10001", "10101", "10001", "11111"],
-  ["00011", "00110", "01100", "11000", "10000"],
-];
-
-function SignalCells({ items, cols }: BodyProps) {
+/* signal: square-cell blocks on the ModGrid */
+function SignalCells({ items }: BodyProps) {
+  /* on the desk's 12 columns each item is a 3×2 block of square cells; a band of four
+     slots holds three items and one empty slot that carries a technical mark instead,
+     the empty slot moving along each band so the page reads modular, not tabular */
+  const placed: { item?: FeatureItem; i: number; c: string; r: string }[] = [];
+  let k = 0;
+  for (let band = 0; k < items.length; band++) {
+    const skip = [2, 0, 3, 1][band % 4];
+    for (let slot = 0; slot < 4; slot++) {
+      const c = `${slot * 3 + 1} / span 3`, r = `${band * 2 + 1} / span 2`;
+      if (slot === skip || k >= items.length) placed.push({ i: -1 - band * 4 - slot, c, r });
+      else placed.push({ item: items[k], i: k++, c, r });
+    }
+  }
   return (
-    <Grid cols={cols} gap="tile" role="list" className="bg-line border-[length:var(--rap-gap-tile)] border-line">
-      {items.map((item, i) => (
-        <div key={i} role="listitem" data-slot="feature" className="group/cell relative flex flex-col gap-(--rap-space-md) p-(--rap-space-md) bg-paper text-ink min-h-[14rem] hover:bg-surface transition-colors duration-(--rap-dur-fast)">
-          <div className="flex items-start justify-between gap-(--rap-space-sm)">
-            <span className="font-mono text-[0.75rem] tracking-[0.08em] text-flame tabular-nums">[{pad(i)}]</span>
-            {item.icon != null ? (
-              <span className="text-ink-2 [&_svg]:size-6">
-                <FeatureIcon icon={item.icon} tone="flame" size={28} />
+    <ModGrid marks role="list">
+      {placed.map(({ item, i, c, r }) =>
+        item ? (
+          <ModCell key={i} role="listitem" data-slot="feature" ruled c={["1 / -1", "span 4", c]} r={[undefined, "span 2", r]} className="group/cell flex flex-col gap-(--rap-space-md) bg-paper transition-colors duration-(--rap-dur-fast) hover:bg-surface">
+            <div className="flex items-start justify-between gap-(--rap-space-sm)">
+              <span className="font-mono text-[0.75rem] text-mute tabular-nums">
+                {"{"}
+                {String(i + 1).padStart(4, "0")}
+                {"}"}
               </span>
-            ) : (
-              <DotMatrix aria-hidden pattern={GLYPHS[i % GLYPHS.length]} cols={5} rows={5} size={4} gap={2} shape="square" interactive className="text-flame" />
-            )}
-          </div>
-          {item.media && <div className="overflow-hidden rounded-xs">{item.media}</div>}
-          <div className="mt-auto flex flex-col gap-(--rap-space-xs)">
-            <ItemTitle item={item} className="text-[1.125rem] font-medium leading-[1.25] tracking-[-0.01em]" />
-            <div className="text-[0.9375rem] leading-[1.55] text-ink-2">{item.text}</div>
-            {item.href && (
-              <span aria-hidden className="pt-(--rap-space-2xs) font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-2 group-hover/cell:text-flame">
-                Open →
-              </span>
-            )}
-          </div>
-        </div>
-      ))}
-    </Grid>
+              <span aria-hidden className="text-ink">{MARKS[i % MARKS.length]}</span>
+            </div>
+            {item.media && <div className="overflow-hidden rounded-sm">{item.media}</div>}
+            <div className="mt-auto flex flex-col gap-(--rap-space-xs)">
+              <ItemTitle item={item} className="text-[clamp(1.125rem,1.5vw,1.375rem)] font-bold leading-[1.1] tracking-[-0.025em]" />
+              <div className="max-w-[34ch] text-[0.9375rem] leading-[1.45] text-ink-2">{item.text}</div>
+              {item.href && (
+                <span aria-hidden className="pt-(--rap-space-2xs) font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-mute group-hover/cell:text-ink">
+                  Open →
+                </span>
+              )}
+            </div>
+          </ModCell>
+        ) : (
+          <ModCell key={i} aria-hidden c={[null, null, c]} r={[undefined, undefined, r]} className="flex items-center justify-center text-mute">
+            {EMPTY[(-i) % EMPTY.length]}
+          </ModCell>
+        ),
+      )}
+    </ModGrid>
   );
 }
+/* the marks an item carries, and the ones an empty slot shows */
+const MARKS = [<CrossGrid key="a" cols={3} rows={2} x={4} size={54} />, <TickCircle key="b" size={30} />, <PlusMark key="c" size={24} />, <Asterisk key="d" size={30} />, <SquareMarks key="e" />, <TickCircle key="f" size={30} />];
+const EMPTY = [<CrossGrid key="a" size={120} />, <OutlineBlob key="b" size={70} />, <Horizon key="c" className="w-3/5" />, <Molecule key="d" size={70} />];
 
 /* product: tidy cards with a hairline edge */
 function ProductCards({ items, cols }: BodyProps) {
@@ -407,7 +420,7 @@ function SplitPoints({ points, look }: { points: ReactNode[]; look: BlockLook })
       <ul data-slot="feature-points" className="m-0 p-0 list-none border-t border-line">
         {points.map((p, i) => (
           <li key={i} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-(--rap-space-sm) py-(--rap-space-sm) border-b border-line text-[0.9375rem] leading-[1.5]">
-            <span className="font-mono text-[0.75rem] leading-[1.9] tracking-[0.08em] text-flame tabular-nums">[{pad(i)}]</span>
+            <span className="font-mono text-[0.75rem] leading-[1.9] text-mute tabular-nums">{`{${String(i + 1).padStart(4, "0")}}`}</span>
             <span>{p}</span>
           </li>
         ))}

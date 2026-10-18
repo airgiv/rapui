@@ -163,7 +163,7 @@ function SignalQuotes({ items }: BodyProps) {
       {items.map((item, i) => (
         <figure key={i} data-slot="testimonial" className="m-0 flex flex-col justify-between gap-(--rap-space-xl) p-(--rap-space-md) bg-paper text-ink min-h-[16rem]">
           <div className="flex flex-col gap-(--rap-space-sm)">
-            <span aria-hidden className="font-mono text-[0.75rem] tracking-[0.08em] text-flame">[{String(i + 1).padStart(2, "0")}] TRANSCRIPT</span>
+            <span aria-hidden className="font-mono text-[0.75rem] tracking-[0.06em] text-ink-2"><span className="text-mute">{`{${String(i + 1).padStart(4, "0")}}`}</span> TRANSCRIPT</span>
             <blockquote className="m-0 text-[1.125rem] leading-[1.5] tracking-[-0.005em]">
               <QuoteText quote={item.quote} redact />
             </blockquote>

@@ -197,7 +197,7 @@ export const entries: DocEntry[] = [
     name: "Hero",
     group: "Blocks",
     description:
-      "The page's first screen: a kicker, the page's one h1, a lead, buttons and a picture — laid out five ways. Fun stacks a giant headline over a big rounded picture tile with a sticker on its corner; civic splits a serif headline from a photo in a soft card (drop an InlineMedia pill between the headline's words); signal sets a pocket radio's screen — the headline in Plex beside a dot-matrix spectrum and a black tuner panel that reads the first numeric meta — with the picture in a flat frame under it; product centres everything under a pill badge with the product in a framed window; minimal sets one big headline on the grid with text-link actions and a hairline under.",
+      "The page's first screen: a kicker, the page's one h1, a lead, buttons and a picture — laid out five ways. Fun stacks a giant headline over a big rounded picture tile with a sticker on its corner; civic splits a serif headline from a photo in a soft card (drop an InlineMedia pill between the headline's words); signal lays a Swiss spec sheet on a full-width grid of square cells — a huge bold headline with its second line in grey, a black dot screen (or the picture), a minimal clock, notes with {0002} tags and a wide dot-matrix field spelling `dots`; product centres everything under a pill badge with the product in a framed window; minimal sets one big headline on the grid with text-link actions and a hairline under.",
     controls: heroControls,
     Demo: ({ p }) => (
       <BlockFrame>
@@ -302,7 +302,7 @@ ${NAMES.slice(0, Number(p.count))
     name: "Stats",
     group: "Blocks",
     description:
-      "Key numbers: a few figures with a label and an optional note, under an optional SectionHeader. Fun packs them into colourful tiles whose numbers count up as they come into view; civic sets serif figures in soft cards; signal draws the lead figure in dots beside a dot-matrix meter over ruled mono readouts; product lines them up between hairlines; minimal lists big numbers against small words, a rule above each.",
+      "Key numbers: a few figures with a label and an optional note, under an optional SectionHeader. Fun packs them into colourful tiles whose numbers count up as they come into view; civic sets serif figures in soft cards; signal puts the lead figure in big white dots on a black screen and the rest as dot-matrix readouts on grey dot fields; product lines them up between hairlines; minimal lists big numbers against small words, a rule above each.",
     controls: statsControls,
     Demo: ({ p }) => (
       <BlockFrame>

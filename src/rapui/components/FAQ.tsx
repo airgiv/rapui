@@ -15,7 +15,7 @@
               acid and its + spins into an ×
      civic    centred: the heading on the centre line over a narrow
               list of soft white cards, serif questions, a plain chevron
-     signal   ruled rows with mono "Q." and "A." markers in rust
+     signal   ruled rows: a {0001} tag, the question in bold grotesk, a ⊕ that turns to × when open
      product  one centred narrow column: a hairline card, divided
      minimal  numbered questions between hairlines, a plain + / −
 
@@ -27,6 +27,7 @@ import { cn } from "../utils";
 import { ChevronDown } from "../icons";
 import { Grid, GridItem, Section, SectionHeader, Stack, useBlockLook, type BlockLook, type SectionProps } from "./Layout";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./Collapsible";
+import { PlusMark } from "./TechMarks";
 
 export interface FAQItem {
   q: string;
@@ -89,7 +90,7 @@ function FAQContact({ look, children }: { look: BlockLook; children: ReactNode }
         "text-[1rem] leading-[1.5] text-ink-2 [&_a]:text-ink [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4",
         look === "fun" && "self-start rounded-card bg-sky p-(--rap-space-md) text-ink",
         look === "civic" && "self-start rounded-card bg-surface p-(--rap-space-md) shadow-[inset_0_0_0_1px_var(--rap-edge)]",
-        look === "signal" && "border-t border-line pt-(--rap-space-sm) font-mono text-[0.75rem] uppercase tracking-[0.08em]",
+        look === "signal" && "border-t border-line pt-(--rap-space-sm) font-mono text-[0.75rem] uppercase tracking-[0.06em]",
         look === "product" && "text-center text-[0.9375rem] text-mute",
         look === "minimal" && "border-t border-line pt-(--rap-space-sm) text-[0.9375rem]",
       )}
@@ -119,9 +120,9 @@ const ROW: Record<BlockLook, { list: string; item: string; trigger: string; q: s
   signal: {
     list: "flex flex-col border-t border-line",
     item: "border-b border-line text-ink",
-    trigger: "grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-baseline gap-(--rap-space-xs) py-(--rap-space-md) hover:bg-fill",
-    q: "text-[1.0625rem] font-medium leading-[1.4]",
-    a: "grid grid-cols-[2.5rem_minmax(0,1fr)] gap-(--rap-space-xs) pb-(--rap-space-md) text-[0.9375rem] leading-[1.6] text-ink-2",
+    trigger: "grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-(--rap-space-xs) py-(--rap-space-md)",
+    q: "font-display text-[clamp(1.125rem,1.7vw,1.5rem)] font-bold leading-[1.15] tracking-[-0.025em] group-hover/q:text-ink-2",
+    a: "grid grid-cols-[4.5rem_minmax(0,1fr)] gap-(--rap-space-xs) pb-(--rap-space-md) text-[1rem] leading-[1.55] text-ink-2 max-w-[70ch]",
   },
   product: {
     list: "flex flex-col overflow-hidden rounded-card bg-surface shadow-[inset_0_0_0_1px_var(--rap-line)] divide-y divide-line",
@@ -172,7 +173,7 @@ function FAQRow({ item, i, look, defaultOpen }: { item: FAQItem; i: number; look
               s.trigger,
             )}
           >
-            {look === "signal" && <span aria-hidden className="font-mono text-[0.75rem] tracking-[0.08em] text-flame">Q.</span>}
+            {look === "signal" && <span aria-hidden className="font-mono text-[0.75rem] text-mute tabular-nums">{`{${String(i + 1).padStart(4, "0")}}`}</span>}
             {look === "minimal" && <span aria-hidden className="text-[0.875rem] text-mute tabular-nums">{String(i + 1).padStart(2, "0")}</span>}
             <span className={cn("min-w-0 flex-1", s.q)}>{item.q}</span>
             <Marker look={look} open={open} />
@@ -181,7 +182,7 @@ function FAQRow({ item, i, look, defaultOpen }: { item: FAQItem; i: number; look
       </h3>
       <CollapsibleContent>
         <div className={s.a}>
-          {look === "signal" && <span aria-hidden className="font-mono text-[0.75rem] leading-[2] tracking-[0.08em] text-ink">A.</span>}
+          {look === "signal" && <span aria-hidden className="font-mono text-[0.6875rem] leading-[2.2] uppercase tracking-[0.06em] text-mute">Re:</span>}
           <div className="min-w-0 [&_p]:m-0 [&_p+p]:mt-(--rap-space-xs)">{item.a}</div>
         </div>
       </CollapsibleContent>
@@ -216,9 +217,7 @@ function Marker({ look, open }: { look: BlockLook; open: boolean }) {
     );
   if (look === "signal")
     return (
-      <span aria-hidden className="font-mono text-[0.75rem] text-ink-2">
-        {open ? "[−]" : "[+]"}
-      </span>
+      <PlusMark size={22} className={cn("flex-none text-ink transition-transform duration-(--rap-dur)", open && "rotate-45")} />
     );
   return <ChevronDown aria-hidden size={18} className={cn("flex-none text-mute transition-transform duration-(--rap-dur-fast)", open && "rotate-180")} />;
 }

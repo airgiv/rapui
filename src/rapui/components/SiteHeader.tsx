@@ -18,19 +18,21 @@
             folded, a navy "Menu" pill, and the menu's links set big in
             the serif. A `notice` reads like a government site's
             "An official website of…" line above it all
-   signal   mono uppercase links on a hairline, with a live dot and the
-            clock in segments on a small black LCD at the end
+   signal   a wordmark, mono links in grey on a hairline, a small dial
+            clock and the time at the end; the menu sets the links big and
+            bold
    product  a translucent blurred bar on a hairline, links centred
    minimal  words only, spaced apart; a black underline on hover
 
    Delight (fun): the link under the pointer gets a soft pill, and
    the menu panel springs in and deals its links. Calm: the panel
-   fades in; the signal dot holds steady. */
+   fades in; the signal clock just tells the time. */
 import { useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes, type ReactNode, type RefObject } from "react";
 import { cn } from "../utils";
 import { Menu } from "../icons";
 import { Container, useBlockLook, type BlockLook } from "./Layout";
 import { Sheet, SheetContent, SheetTitle } from "./Sheet";
+import { TechClock } from "./TechMarks";
 
 export interface SiteHeaderLink {
   label: string;
@@ -115,7 +117,7 @@ const LINK: Record<BlockLook, string> = {
   fun: "flex items-center h-11 px-4 rounded-pill text-[1.0625rem] font-medium -translate-y-px transition-colors duration-(--rap-dur-fast) hover:bg-fill-hover",
   civic:
     "py-2 text-[0.9375rem] font-medium text-ink-2 decoration-flame decoration-2 underline-offset-[0.6em] transition-colors hover:text-ink hover:underline aria-[current=page]:text-ink aria-[current=page]:underline",
-  signal: "py-2 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:text-ink aria-[current=page]:text-ink",
+  signal: "py-2 font-mono text-[0.75rem] uppercase tracking-[0.06em] text-mute transition-colors hover:text-ink aria-[current=page]:text-ink",
   product: "flex items-center h-8 px-3 rounded-sm text-[0.875rem] text-ink-2 transition-colors hover:text-ink hover:bg-fill aria-[current=page]:text-ink",
   minimal: "py-1 text-[0.9375rem] text-ink decoration-1 underline-offset-4 hover:underline aria-[current=page]:underline",
 };
@@ -123,7 +125,7 @@ const LINK: Record<BlockLook, string> = {
 const MENU_BTN: Record<BlockLook, string> = {
   fun: "size-11 rounded-full bg-ink text-paper fun:active:scale-90",
   civic: "flex items-center whitespace-nowrap h-10 px-4 gap-2 rounded-pill bg-accent text-accent-ink text-[0.9375rem] font-medium hover:opacity-90 [&_svg]:size-4!",
-  signal: "size-9 rounded-xs shadow-[inset_0_0_0_1px_var(--rap-line)] text-ink hover:bg-fill",
+  signal: "size-9 rounded-full shadow-[inset_0_0_0_1px_var(--rap-line)] text-ink hover:bg-fill",
   product: "size-9 rounded-sm shadow-[inset_0_0_0_1px_var(--rap-edge)] text-ink hover:bg-fill",
   minimal: "h-9 px-0 text-ink underline-offset-4 hover:underline",
 };
@@ -139,7 +141,7 @@ const NOTICE: Record<BlockLook, string> = {
 const SHEET_LINK: Record<BlockLook, string> = {
   fun: "py-1.5 font-display text-[2.2rem] font-medium tracking-[-0.04em] leading-[1.05] hover:text-flame",
   civic: "py-3 border-b border-line font-display text-[2.5rem] leading-[1.05] tracking-[-0.01em] hover:text-blue",
-  signal: "py-3 border-b border-line font-mono text-[0.875rem] uppercase tracking-[0.08em] hover:text-mute",
+  signal: "py-2 font-display text-[2rem] font-bold tracking-[-0.035em] leading-[1.05] hover:text-mute",
   product: "py-2.5 text-[1.125rem] font-medium text-ink-2 hover:text-ink",
   minimal: "py-2 text-[1.5rem] tracking-[-0.02em] hover:underline underline-offset-4 decoration-1",
 };
@@ -224,9 +226,9 @@ export function SiteHeader({
             {look === "signal" && (
               <span data-slot="site-header-status" className="hidden @3xl:inline-flex items-center gap-2 font-mono text-[0.75rem] uppercase tabular-nums text-mute">
                 {status ?? (
-                  // the clock on a small black LCD, in segments
-                  <span className="inline-flex items-center gap-2 rounded-xs font-[family-name:var(--rap-font-lcd,var(--rap-font-mono))] bg-[var(--rap-panel,var(--rap-ink))] px-2 py-1.5 leading-none text-[color:var(--rap-lcd,var(--rap-paper))]">
-                    <span aria-hidden className="size-1.5 rounded-full bg-current" />
+                  // a small dial clock beside the time, in mono
+                  <span className="inline-flex items-center gap-2 leading-none">
+                    <TechClock size={18} />
                     <Clock />
                   </span>
                 )}

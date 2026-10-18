@@ -402,14 +402,14 @@ const SIZE: Record<LaurelSize, string> = {
 const TITLE: Record<BlockLook, string> = {
   civic: "font-display font-normal tracking-[-0.005em]",
   fun: "font-display font-bold tracking-[-0.02em]",
-  signal: "font-mono font-medium uppercase tracking-[0.06em] text-[0.82em]",
+  signal: "font-display font-bold tracking-[-0.03em]",
   product: "font-sans font-semibold tracking-[-0.015em]",
   minimal: "font-sans font-normal tracking-[-0.01em]",
 };
 const SMALL: Record<BlockLook, string> = {
   civic: "font-sans font-medium uppercase tracking-[0.1em] text-ink-2",
   fun: "font-sans font-bold uppercase tracking-[0.06em] text-flame",
-  signal: "font-mono uppercase tracking-[0.1em] text-accent",
+  signal: "font-mono uppercase tracking-[0.08em] text-mute",
   product: "font-sans font-medium text-plum",
   minimal: "font-sans text-ink-2",
 };
@@ -449,7 +449,7 @@ export function Laurel({ children, eyebrow, caption, size = "md", leaves, tone, 
       <div ref={text} data-slot="laurel-text" className="flex min-w-0 flex-col items-center text-center">
         {eyebrow && (
           <span data-slot="laurel-eyebrow" className={cn("mb-[0.3em] text-[max(0.6875rem,0.56em)] leading-tight", SMALL[look])}>
-            {look === "signal" ? <>[ {eyebrow} ]</> : eyebrow}
+            {look === "signal" ? <>{"{"} {eyebrow} {"}"}</> : eyebrow}
           </span>
         )}
         <span data-slot="laurel-title" className={cn("block text-balance leading-[1.2]", TITLE[look])}>

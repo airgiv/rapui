@@ -15,8 +15,10 @@
             the accent with a rotating badge pinned to its corner
    civic    soft white rounded cards, serif prices; the featured
             one on a navy ground (a dark island)
-   signal   ruled, table-like columns: mono prices, [01] indices,
-            a small square for each check mark
+   signal   blocks of square cells on the ModGrid: {0001} tags, bold
+            grotesk names and prices, mono feature lists, the featured
+            plan a black screen with a live dot; a small square for
+            each check mark
    product  hairline cards in a tidy row; the featured one with an
             ink border and a "Most popular" badge
    minimal  no cards: a comparison list on rules, big prices
@@ -34,6 +36,7 @@ import { Grid, GridItem, Section, SectionHeader, Stack, useBlockLook, type Block
 import { RotatingBadge } from "./RotatingBadge";
 import { Sticker } from "./Sticker";
 import { ToggleGroup, ToggleGroupItem } from "./ToggleGroup";
+import { ModCell, ModGrid } from "./ModGrid";
 
 export type PricingBilling = "monthly" | "yearly";
 
@@ -217,7 +220,7 @@ function BillingSwitch({
             className={cn(
               "text-[0.875rem]",
               look === "civic" && "text-ink-2",
-              look === "signal" && "font-mono text-[0.75rem] uppercase tracking-[0.06em] text-flame",
+              look === "signal" && "font-mono text-[0.75rem] uppercase tracking-[0.06em] text-mute",
               look === "product" && "text-plum",
               look === "minimal" && "text-ink-2",
             )}
@@ -332,46 +335,59 @@ function CivicPlans({ plans, billing, caption }: LookProps) {
 }
 
 function SignalPlans({ plans, billing, caption }: LookProps) {
+  /* each plan a block of square cells on the full-width grid; the featured one is a black
+     screen (a dark island) */
+  const span = Math.max(3, Math.min(6, Math.floor(12 / Math.max(1, plans.length))));
   return (
-    <div className="rounded-xs overflow-hidden bg-line p-px">
-      <Grid cols={cols(plans.length)} gap="tile">
-        {plans.map((plan, i) => {
-          const featured = !!plan.featured;
-          return (
+    <ModGrid marks>
+      {plans.map((plan, i) => {
+        const featured = !!plan.featured;
+        return (
+          <ModCell
+            key={plan.name}
+            ruled={!featured}
+            c={["1 / -1", "span 4", `span ${span}`]}
+            r={[undefined, "span 4", "span 4"]}
+            inset={false}
+            className="p-(--mod-pad)"
+          >
             <article
-              key={plan.name}
               data-slot="pricing-plan"
               data-featured={featured || undefined}
-              className={cn("relative flex flex-col gap-(--rap-space-lg) p-(--rap-space-lg)", featured ? "bg-paper-2" : "bg-paper")}
+              {...(featured ? { "data-rap-theme": "dark" } : {})}
+              className={cn("flex h-full flex-col gap-(--rap-space-lg) text-ink", featured && "rounded-lg bg-[var(--rap-panel,#0c0c0c)] p-(--rap-space-md)")}
             >
-              {featured && <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-accent" />}
               <header className="flex flex-col gap-(--rap-space-xs)">
-                <div className="flex items-center justify-between gap-3 font-mono text-[0.75rem] uppercase tracking-[0.08em]">
-                  <h3 className="m-0 font-normal text-ink">
-                    <span className="text-flame">[{String(i + 1).padStart(2, "0")}]</span> {plan.name}
-                  </h3>
-                  {featured && <span className="text-flame">{plan.badge ?? "Most popular"}</span>}
+                <div className="flex items-center justify-between gap-3 font-mono text-[0.75rem] uppercase tracking-[0.06em]">
+                  <span className="text-mute tabular-nums">{`{${String(i + 1).padStart(4, "0")}}`}</span>
+                  {featured && (
+                    <span className="inline-flex items-center gap-1.5 text-ink">
+                      <span aria-hidden className="size-1.5 rounded-full bg-[var(--rap-signal,currentColor)]" />
+                      {plan.badge ?? "Most popular"}
+                    </span>
+                  )}
                 </div>
-                {plan.description && <p className="m-0 text-[0.9375rem] text-ink-2 leading-snug">{plan.description}</p>}
+                <h3 className="m-0 font-display text-[clamp(1.375rem,2vw,1.75rem)] font-bold leading-[1.05] tracking-[-0.03em] text-ink">{plan.name}</h3>
+                {plan.description && <p className="m-0 text-[0.9375rem] leading-snug text-mute">{plan.description}</p>}
               </header>
               <Price
                 plan={plan}
                 billing={billing}
                 caption={caption}
-                className="font-mono text-[clamp(2.25rem,4vw,3rem)] tracking-[-0.04em]"
-                periodClassName="font-mono uppercase text-[0.75rem]"
+                className="font-display font-bold text-[clamp(2.5rem,4.4vw,4rem)] tracking-[-0.045em]"
+                periodClassName="font-mono uppercase text-[0.75rem] tracking-[0.04em]"
               />
               <Features
                 items={plan.features}
-                className="text-[0.9375rem] text-ink-2 border-t border-line pt-(--rap-space-md)"
-                mark={<span aria-hidden className="flex-none size-2 mt-[0.45em] bg-accent" />}
+                className="font-mono text-[0.8125rem] uppercase tracking-[0.02em] text-ink-2 border-t border-line pt-(--rap-space-md)"
+                mark={<span aria-hidden className="mt-[0.5em] size-[6px] flex-none bg-current" />}
               />
-              <PlanAction action={plan.cta} variant={featured ? "accent" : "outline"} size="sm" className="mt-auto font-mono uppercase text-[0.75rem] tracking-[0.06em]" />
+              <PlanAction action={plan.cta} variant={featured ? "accent" : "outline"} size="sm" className="mt-auto" />
             </article>
-          );
-        })}
-      </Grid>
-    </div>
+          </ModCell>
+        );
+      })}
+    </ModGrid>
   );
 }
 

@@ -1,7 +1,7 @@
 /* DotMatrix — the dot states.
 
    A dot is the ink at --dm-dim strength (or --rap-dot-off where a preset
-   sets one: signal's darker sage); lit (pattern) and hot (pointer) dots are
+   sets one: signal's grey dot field); lit (pattern) and hot (pointer) dots are
    currentColor. A pulsing dot carries a stepped level, data-l 1..3, written
    by the component's timer — no keyframes, and no transition on the steps
    (an LCD switches, it does not fade). Still / reduced motion: no levels. */
@@ -19,5 +19,5 @@
 .rap-dot-matrix > span[data-hot] { background: currentColor; transition: background-color 60ms, scale 60ms; }
 .rap-dot-matrix > span[data-hot="2"] { scale: 1.15; }
 
-/* signal: unlit dots are the darker sage of the radio's matrix, whatever the colour */
+/* signal: unlit dots are the grey of its dot fields, whatever the colour */
 [data-rap-preset="signal"] .rap-dot-matrix > span:not([data-l], [data-lit], [data-hot]) { background: var(--rap-dot-off, color-mix(in srgb, currentColor calc(var(--dm-dim) * 100%), transparent)); }

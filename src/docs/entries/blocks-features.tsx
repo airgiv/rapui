@@ -140,7 +140,7 @@ export const entries: DocEntry[] = [
     name: "Features",
     group: "Blocks",
     description:
-      "What the product does: a section header over a set of features, arranged per preset — packed colourful tiles in fun, soft cards with serif titles in civic, ruled cells with mono indices in signal, hairline cards in product, a numbered two-column list in minimal. Items with an href become whole-card links.",
+      "What the product does: a section header over a set of features, arranged per preset — packed colourful tiles in fun, soft cards with serif titles in civic, blocks of square cells with {0001} tags and technical marks, one empty slot per band, in signal, hairline cards in product, a numbered two-column list in minimal. Items with an href become whole-card links.",
     controls: featuresControls,
     Demo: ({ p }) => (
       <BlockFrame>
@@ -301,7 +301,7 @@ export const entries: DocEntry[] = [
     name: "FAQ",
     group: "Blocks",
     description:
-      "The questions people ask before they sign up. The heading sits in a left column with a \"still have questions\" slot, the questions on the right (a centred narrow column in product). Each question is a button in an h3 that opens its answer: bold rounded rows in fun, soft cards in civic, mono Q. / A. in signal, numbered hairline rows in minimal.",
+      "The questions people ask before they sign up. The heading sits in a left column with a \"still have questions\" slot, the questions on the right (a centred narrow column in product). Each question is a button in an h3 that opens its answer: bold rounded rows in fun, soft cards in civic, {0001} tags, bold questions and a ⊕ marker in signal, numbered hairline rows in minimal.",
     basedOn: "Radix Collapsible",
     controls: faqControls,
     Demo: ({ p }) => (
