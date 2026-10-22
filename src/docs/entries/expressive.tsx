@@ -525,7 +525,7 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     slug: "roll-text",
     name: "Roll text",
     group: "Expressive",
-    description: "Letters roll up and are replaced from below on hover. Buttons and nav links use it; any parent with .rap-roll-host triggers it.",
+    description: "Letters roll up and are replaced from below on hover. Nav links use it; any parent with .rap-roll-host triggers it.",
     Demo: () => (
       <Display size="lg">
         <RollText>Hover this line</RollText>

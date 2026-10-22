@@ -2,7 +2,6 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, type ButtonHTMLAttr
 import { cva, type VariantProps } from "class-variance-authority";
 import { useMagnetic } from "../hooks/useMagnetic";
 import { cn } from "../utils";
-import { RollText } from "./RollText";
 import { useSound } from "../sound";
 import { useStack, type StackState } from "./stackContext";
 
@@ -12,9 +11,10 @@ import { useStack, type StackState } from "./stackContext";
    the hover fill, the arrow bubble and the ghost underline are
    written once for all seven variants instead of seven times.
    The hover is deliberately simple: the pill grows a little on a
-   springy overshoot and settles, the other colour fades in, the
-   label rolls up once as one line, the arrow nudges. Press squashes.
-   Calm (and still): no bounce, no roll — only the colour.
+   springy overshoot and settles, the other colour fades in and the
+   label simply changes colour with it — it never slides or clips —
+   the arrow nudges. Press squashes. Calm (and still): no bounce,
+   only the colour.
    Sizes do the same with --btn-h / --btn-px / --btn-fs, which is
    what lets the icon bubble and the word-to-bubble gap scale with
    the button (the gap is 0.36 × height: roughly twice the bubble's
@@ -98,7 +98,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconPosition?: "start" | "end";
   /** Follow the pointer a little. */
   magnetic?: boolean;
-  /** The label rolls up once, as one line, on hover (only when children is a string). */
+  /** @deprecated The label no longer rolls; kept so existing code compiles. */
   roll?: boolean;
   /** Stretch to the full width of the container. */
   block?: boolean;
@@ -162,7 +162,7 @@ export const Arrow = () => (
 
 /**
  * Pill button. On hover it grows a little on a spring and settles, the other colour
- * fades in and the label rolls up once; the arrow nudges. Calm: only the colour.
+ * fades in and the label changes colour with it (no slide); the arrow nudges. Calm: only the colour.
  * Optional magnetic pull.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -172,7 +172,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     icon,
     iconPosition = "end",
     magnetic = false,
-    roll = true,
+    roll: _roll,
     block = false,
     align = "center",
     state: stateProp,
@@ -205,8 +205,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
   const iconNode = icon === true ? <Arrow /> : icon;
   const hasIcon = iconNode != null && state === "idle";
-  // one line rolling as a whole (no per-letter ripple): the simple version of the roll
-  const idleLabel = typeof children === "string" && roll ? <RollText stagger={0}>{children}</RollText> : <span>{children}</span>;
+  // the label stays put on hover and takes the new colour with the fill: no roll, nothing clipped
+  void _roll;
+  const idleLabel = <span>{children}</span>;
   const label =
     state === "idle" ? (
       idleLabel
