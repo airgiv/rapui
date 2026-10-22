@@ -3,7 +3,7 @@
    the theme and the grid overlay, so you can watch one page re-lay itself. */
 import { useEffect, useState } from "react";
 import { Button, GridOverlay, PRESET_MOTION, RapStyle, Switch } from "../rapui";
-import "../rapui/fonts/all";
+import "./fonts";
 import { LandingTemplate } from "./landing/Template";
 import { StyleControls, useStylePreset } from "./StyleControls";
 

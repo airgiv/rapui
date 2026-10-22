@@ -5,11 +5,12 @@ import { Testimonials, type TestimonialItem } from "../../rapui/components/Testi
 import { BlockFrame } from "../blockFrame";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
+import { SITE_LOOKS } from "../../site/presets";
 
 /* The sample product throughout: Fieldnote, a shared research notebook for
    product teams — interviews in, findings out. */
 
-const LOOKS = ["preset", "fun", "civic", "signal", "product", "minimal"] as const;
+const LOOKS = SITE_LOOKS;
 const lookControl: Control = { type: "select", prop: "look", options: LOOKS, default: "preset", codeDefault: "preset" };
 const lookOf = (p: Record<string, unknown>) => (p.look === "preset" ? undefined : (p.look as BlockLook));
 const TONES = ["plain", "surface", "muted", "dark"] as const;
@@ -275,26 +276,6 @@ export const entries: DocEntry[] = [
     { quote: "Synthesis used to eat my Fridays…", name: "Tomás Herrera", role: "Senior Researcher, Lumen Bank" },
   ]}
 />`,
-    examples: [
-      {
-        title: "Signal, with redaction marks",
-        Demo: () => (
-          <BlockFrame>
-            <Testimonials
-              look="signal"
-              items={[
-                { quote: "Fieldnote found the [pricing complaint] hiding in {eleven} of our calls before we [shipped the change].", name: "Priya Raman", role: "Kettle" },
-                { quote: "The transcript is the [source of truth] now — not my {memory of the call}.", name: "Tomás Herrera", role: "Lumen Bank" },
-                { quote: "We [redact names in one click] and share the rest without a second thought.", name: "Lena Fischer", role: "Northvale Health" },
-              ]}
-            />
-          </BlockFrame>
-        ),
-        code: `<Testimonials look="signal" items={[
-  { quote: "Fieldnote found the [pricing complaint] hiding in {eleven} of our calls…", name: "Priya Raman", role: "Kettle" },
-]} />`,
-      },
-    ],
   },
   {
     slug: "faq",

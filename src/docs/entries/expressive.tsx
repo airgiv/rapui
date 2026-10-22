@@ -70,7 +70,6 @@ const typeControls: Control[] = [
   { type: "text", prop: "text", default: "Make it" },
   { type: "text", prop: "accent", default: "unforgettable" },
   { type: "select", prop: "tone", options: ["flame", "blue", "plum", "mute"], default: "mute" },
-  { type: "select", prop: "face", options: ["display", "poster"], default: "display" },
 ];
 
 const stickerControls: Control[] = [
@@ -330,12 +329,12 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     name: "Typography",
     group: "Expressive",
     description:
-      "Display sizes from md to mega in one typeface, Onest. Accent recolours a word instead of switching font; mute gives the two-tone headline. For a poster line there is one extra face, opt-in in any preset: face=\"poster\" sets Anton, a narrow grotesk, in capitals, scaled up so the line fills about the same width (load it with @rapui/react/fonts or fonts/poster).",
+      "Display sizes from md to mega in one typeface, Onest. Accent recolours a word instead of switching font; mute gives the two-tone headline.",
     controls: typeControls,
     Demo: ({ p }) => (
       <div className="doc-stack" style={{ width: "100%" }}>
         <Eyebrow>Chapter one</Eyebrow>
-        <Display size={p.size as "xl"} face={p.face as "display"}>
+        <Display size={p.size as "xl"}>
           {String(p.text)} <Accent tone={p.tone as AccentTone}>{String(p.accent)}</Accent>
         </Display>
         <Lead>
@@ -346,25 +345,8 @@ sound.detent(0.6);      // pop · drop · whoosh · success · error · type`,
     code: (p) => `import { Display, Accent, Eyebrow, Lead, Highlight } from "@rapui/react";
 
 <Eyebrow>Chapter one</Eyebrow>
-<Display size="${p.size}"${p.face === "poster" ? ' face="poster"' : ""}>${p.text} <Accent${p.tone !== "flame" ? ` tone="${p.tone}"` : ""}>${p.accent}</Accent></Display>
+<Display size="${p.size}">${p.text} <Accent${p.tone !== "flame" ? ` tone="${p.tone}"` : ""}>${p.accent}</Accent></Display>
 <Lead>Big type and a <Highlight>highlighter</Highlight> swipe.</Lead>`,
-    examples: [
-      {
-        title: "A poster headline over a normal lead",
-        Demo: () => (
-          <div className="doc-stack" style={{ width: "100%" }}>
-            <Display size="xl" face="poster">
-              Loud by default, <Accent>calm on cue</Accent>
-            </Display>
-            <Lead>The poster face is an extra: narrow capitals for the one line that has to shout, with the lead in the usual face under it.</Lead>
-          </div>
-        ),
-        code: `import "@rapui/react/fonts"; // or "@rapui/react/fonts/poster" next to another preset's fonts
-
-<Display size="xl" face="poster">Loud by default, <Accent>calm on cue</Accent></Display>
-<Lead>Narrow capitals for the one line that has to shout, the lead in the usual face.</Lead>`,
-      },
-    ],
   },
   {
     slug: "sticker",

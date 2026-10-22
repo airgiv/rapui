@@ -144,7 +144,7 @@ function Price({
 }
 
 /* the plan's button: a real <button>, or a link dressed as one (with the same
-   concentric hover fill, which Button draws for itself) */
+   fading hover fill, which Button draws for itself) */
 function PlanAction({ action, variant, size = "md", className }: { action: PricingAction; variant: ButtonVariant; size?: "sm" | "md"; className?: string }) {
   if (!action.href)
     return (
@@ -158,9 +158,7 @@ function PlanAction({ action, variant, size = "md", className }: { action: Prici
         aria-hidden
         className={cn(
           "absolute inset-0 -z-1 rounded-[max(0px,calc(var(--rap-radius-pill)-1.5px))] bg-(--btn-blob) pointer-events-none",
-          "[clip-path:inset(calc(var(--btn-h)/2)_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))] group-hover/btn:[clip-path:inset(0_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))]",
-          "transition-[clip-path] duration-(--rap-dur-slow) ease-soft",
-          "calm:[clip-path:inset(0_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))] calm:opacity-0 calm:group-hover/btn:opacity-100 calm:transition-opacity calm:duration-(--rap-dur)",
+          "opacity-0 group-hover/btn:opacity-100 transition-opacity duration-(--rap-dur-fast) ease-out",
         )}
       />
       <span>{action.label}</span>

@@ -79,8 +79,9 @@ function FunCTA({ eyebrow, title, lead, actions, media, form }: Parts) {
         </GridItem>
         {actions && (
           <GridItem span={6}>
-            {/* on an accent ground an accent button would vanish: inside the row "accent" means ink */}
-            <Row className="@min-[46rem]:justify-end gap-(--rap-space-md) [--rap-accent:var(--rap-ink)] [--rap-accent-ink:var(--rap-paper-2)]">{actions}</Row>
+            {/* on an accent ground an accent button would vanish: inside the row "accent" means ink,
+                and its hover fill (ink too, by default) turns to paper so the hover still shows */}
+            <Row className="@min-[46rem]:justify-end gap-(--rap-space-md) [--rap-accent:var(--rap-ink)] [--rap-accent-ink:var(--rap-paper-2)] [&_[data-slot=button][data-variant=accent]]:[--btn-blob:var(--rap-paper)] [&_[data-slot=button][data-variant=accent]]:[--btn-blob-fg:var(--rap-ink)]">{actions}</Row>
           </GridItem>
         )}
       </Grid>

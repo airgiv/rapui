@@ -29,8 +29,8 @@ const plan = (p: Omit<PricingPlan, "cta"> & { cta: string }): PricingPlan => ({ 
 export const CONTENT: Record<RapPreset, LandingContent> = {
   /* ── fun: a page that will not calm down ── */
   fun: {
-    brand: "Hollr",
-    tagline: "A landing page with the volume stuck on eleven.",
+    brand: "Kazoo",
+    tagline: "A landing page that hums along, loudly and slightly off-key.",
     links: ["Why so loud", "Receipts", "Pricing", "FAQ"],
     hero: {
       eyebrow: "Now 40% louder than last week",
@@ -52,7 +52,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       title: <>Six reasons this page <Accent tone="mute">won't use its indoor voice</Accent></>,
       lead: "Every tile below is a real component wearing the fun preset. None of them were asked to tone it down.",
       items: [
-        { title: "Tiles that touch", text: "Four pixels between cards, no more. Personal space is for the minimal preset.", icon: "widget" },
+        { title: "Tiles that touch", text: "Four pixels between cards, no more. Personal space is for the civic preset.", icon: "widget" },
         { title: "Springs everywhere", text: "Buttons squash, cards wobble, numbers roll. If it moves, it bounces on the way back.", icon: "bolt" },
         { title: "Stickers, unironically", text: "A burst here, a badge there. Exactly one per section — we have some standards.", icon: "star" },
         { title: "Colour on purpose", text: "Flame, acid, bubble, sky. Grey is allowed, but only when it's being quiet about something.", icon: "palette" },
@@ -101,14 +101,14 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       eyebrow: "Questions",
       title: <>Asked loudly, <Accent tone="mute">answered louder</Accent></>,
       items: [
-        { q: "Is it too loud?", a: "Yes. That's the fun preset. Switch to minimal at the bottom of the screen and listen to the silence." },
+        { q: "Is it too loud?", a: "Yes. That's the fun preset. Switch to civic at the bottom of the screen and listen to the silence." },
         { q: "Can I turn the motion down?", a: "Set data-rap-motion to calm and everything still moves, just like an adult. Set it to still and nothing moves at all." },
         { q: "Are the components real?", a: "Every one. The buttons press, the stars rate, the slider slides. This FAQ opens, which you've noticed." },
         { q: "Why is the sticker tilted?", a: "It was like that when we found it." },
       ],
     },
     cta: { eyebrow: "Last chance to be heard", title: <>Make something <Accent tone="mute">nobody can scroll past</Accent></>, lead: "One import, one preset, and your page stops whispering.", primary: "Get rapui", secondary: "Show me the docs" },
-    footer: { columns: [{ title: "Hollr", links: ["Why so loud", "Receipts", "Pricing"] }, { title: "Volume", links: ["Whisper", "Shout", "Stadium"] }, { title: "Ears", links: ["Accessibility", "Sound off", "Calm mode"] }], fine: "© 2026 Hollr — a pretend company, loudly made for the rapui docs." },
+    footer: { columns: [{ title: "Kazoo", links: ["Why so loud", "Receipts", "Pricing"] }, { title: "Volume", links: ["Whisper", "Shout", "Stadium"] }, { title: "Ears", links: ["Accessibility", "Sound off", "Calm mode"] }], fine: "© 2026 Kazoo — a pretend company, hummed into being for the rapui docs." },
   },
 
   /* ── civic: a legal-startup straight face ── */
@@ -177,7 +177,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       lead: "Billed by the seat, not in six-minute increments. No retainer required to scroll.",
       plans: [
         plan({ name: "Pro bono", price: { monthly: 0 }, currency: "$", period: "/mo", description: "For the public good", features: ["Every component", "The civic preset", "Calm motion"], cta: "Accept the matter" }),
-        plan({ name: "Associate", price: { monthly: 49, yearly: 39 }, currency: "$", period: "/mo", description: "For working practices", features: ["Everything in Pro bono", "All five presets", "Landing blocks", "Priority docket"], cta: "Retain us", featured: true, badge: "Most retained" }),
+        plan({ name: "Associate", price: { monthly: 49, yearly: 39 }, currency: "$", period: "/mo", description: "For working practices", features: ["Everything in Pro bono", "Every preset", "Landing blocks", "Priority docket"], cta: "Retain us", featured: true, badge: "Most retained" }),
         plan({ name: "Partner", price: { monthly: "By arrangement" }, description: "For the firm", features: ["Everything in Associate", "Your own preset", "A named contact", "Wood panelling (virtual)"], cta: "Request a consultation" }),
       ],
     },
@@ -350,7 +350,7 @@ export const CONTENT: Record<RapPreset, LandingContent> = {
       lead: "Every plan includes every component. The yearly toggle exists mainly so the numbers can roll.",
       plans: [
         plan({ name: "Hobby", price: { monthly: 0 }, currency: "$", period: "/mo", description: "For side projects", features: ["All components", "Product preset", "Community support"], cta: "Start free" }),
-        plan({ name: "Pro", price: { monthly: 24, yearly: 19 }, currency: "$", period: "/mo", description: "For shipping things", features: ["Everything in Hobby", "All five presets", "Landing blocks", "Priority support"], cta: "Upgrade to Pro", featured: true, badge: "Popular" }),
+        plan({ name: "Pro", price: { monthly: 24, yearly: 19 }, currency: "$", period: "/mo", description: "For shipping things", features: ["Everything in Hobby", "Every preset", "Landing blocks", "Priority support"], cta: "Upgrade to Pro", featured: true, badge: "Popular" }),
         plan({ name: "Team", price: { monthly: 99, yearly: 79 }, currency: "$", period: "/mo", description: "For whole teams", features: ["Everything in Pro", "Custom presets", "Shared tokens", "An SSO you'll configure once"], cta: "Talk to sales" }),
       ],
     },

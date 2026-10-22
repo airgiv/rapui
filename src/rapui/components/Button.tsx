@@ -9,8 +9,12 @@ import { useStack, type StackState } from "./stackContext";
 /* ── Button, on Tailwind ────────────────────────────────────
    Each variant only sets a handful of local custom properties
    (--btn-bg, --btn-fg, --btn-blob…) and every rule reads them, so
-   the hover blob, the arrow bubble and the ghost underline are
+   the hover fill, the arrow bubble and the ghost underline are
    written once for all seven variants instead of seven times.
+   The hover is deliberately simple: the pill grows a little on a
+   springy overshoot and settles, the other colour fades in, the
+   label rolls up once as one line, the arrow nudges. Press squashes.
+   Calm (and still): no bounce, no roll — only the colour.
    Sizes do the same with --btn-h / --btn-px / --btn-fs, which is
    what lets the icon bubble and the word-to-bubble gap scale with
    the button (the gap is 0.36 × height: roughly twice the bubble's
@@ -24,10 +28,11 @@ const buttonVariants = cva(
     "h-(--btn-h) px-(--btn-px) gap-3 whitespace-nowrap cursor-pointer",
     "rounded-pill border-[1.5px] border-(--btn-border) bg-(--btn-bg) text-(--btn-fg)",
     "font-sans text-(length:--btn-fs) font-medium tracking-[-0.01em]",
-    "transition-[color,border-color,transform] duration-(--rap-dur) ease-soft",
-    // the rim takes the fill's colour once the flood has reached it, so no ring of the
-    // old colour is left around the new one (most visible on the squarer presets)
-    "hover:text-(--btn-blob-fg) hover:border-(--btn-blob) [transition-delay:0s,var(--rap-dur-fast),0s] active:scale-96 calm:active:scale-98",
+    /* colour on a short ease, the size on the spring (it overshoots, then settles) */
+    "[transition:color_var(--rap-dur-fast)_var(--rap-ease-out),border-color_var(--rap-dur-fast)_var(--rap-ease-out),background-color_var(--rap-dur-fast)_var(--rap-ease-out),scale_460ms_var(--rap-ease-spring)]",
+    // the rim changes with the fill, so the new colour reaches the edge in one go
+    "hover:text-(--btn-blob-fg) hover:border-(--btn-blob)",
+    "fun:hover:scale-105 active:scale-96 fun:active:scale-96 calm:active:scale-98",
     "disabled:opacity-40 disabled:pointer-events-none",
     "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring",
     "[-webkit-tap-highlight-color:transparent]",
@@ -50,6 +55,8 @@ const buttonVariants = cva(
           // an underline that draws itself from a quarter to full width
           "after:absolute after:inset-x-0 after:bottom-[0.55em] after:h-0.5 after:bg-current after:origin-left after:scale-x-25",
           "after:transition-transform after:duration-(--rap-dur) after:ease-soft hover:after:scale-x-100",
+          // a text link: the underline is its hover, it does not grow
+          "fun:hover:scale-100",
         ],
       },
       size: {
@@ -91,7 +98,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconPosition?: "start" | "end";
   /** Follow the pointer a little. */
   magnetic?: boolean;
-  /** Letters roll on hover (only when children is a string). */
+  /** The label rolls up once, as one line, on hover (only when children is a string). */
   roll?: boolean;
   /** Stretch to the full width of the container. */
   block?: boolean;
@@ -154,9 +161,9 @@ export const Arrow = () => (
 );
 
 /**
- * Pill button. On hover the other colour floods in as a concentric pill, letters roll,
- * (calm: the colour fades in, the letters stay, the arrow passes through its bubble)
- * the icon bubble spins. Optional magnetic pull.
+ * Pill button. On hover it grows a little on a spring and settles, the other colour
+ * fades in and the label rolls up once; the arrow nudges. Calm: only the colour.
+ * Optional magnetic pull.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
@@ -198,7 +205,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
   const iconNode = icon === true ? <Arrow /> : icon;
   const hasIcon = iconNode != null && state === "idle";
-  const idleLabel = typeof children === "string" && roll ? <RollText>{children}</RollText> : <span>{children}</span>;
+  // one line rolling as a whole (no per-letter ripple): the simple version of the roll
+  const idleLabel = typeof children === "string" && roll ? <RollText stagger={0}>{children}</RollText> : <span>{children}</span>;
   const label =
     state === "idle" ? (
       idleLabel
@@ -244,7 +252,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         state === "loading" && "pointer-events-none",
         state === "success" && "[--btn-bg:var(--rap-success)] [--btn-fg:#fff] [--btn-blob:var(--rap-success)] [--btn-blob-fg:#fff] fun:animate-splat",
         state === "error" && "[--btn-bg:var(--rap-danger)] [--btn-fg:#fff] [--btn-blob:var(--rap-danger)] [--btn-blob-fg:#fff] fun:animate-shake",
-        "transition-[color,border-color,transform,background-color]",
+        // in a FormStack the stack's blob is the pill we see: the button itself must not grow
+        stack && "fun:hover:scale-100",
         className,
       )}
       {...rest}
@@ -253,23 +262,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         sound.play("tap");
       }}
     >
-      {/* the hover fill: a concentric pill. It opens out from the pill's
-          own centre line with ONE inset on every side — clip-path
-          inset(t round 9999px) with t from half the height to 0 — so at
-          every frame it is the pill again, one step smaller, and at rest
-          on hover its edge sits the 1.5px border in all round. (It was a
-          circle 1.5× the width rising from below: mid-flood it showed as
-          a lens, far from the round ends and close to the top and bottom.) */}
+      {/* the hover fill: a concentric pill inside the border that simply fades
+          in — one colour change, no flood. (In a stack it swells with the blob.) */}
       <span
         aria-hidden
         data-slot="button-fill"
         className={cn(
           layer,
-          "bg-(--btn-blob)",
-          "[clip-path:inset(calc(var(--btn-h)/2)_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))] group-hover/btn:[clip-path:inset(0_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))]",
-          "[transition:clip-path_var(--rap-dur-slow)_var(--rap-ease-out),scale_420ms_var(--rap-swell-ease,var(--rap-ease-spring))]",
-          /* calm: no flood — the colour simply fades in over the whole shape */
-          "calm:[clip-path:inset(0_round_max(0px,calc(var(--rap-radius-pill)-1.5px)))] calm:opacity-0 calm:group-hover/btn:opacity-100 calm:[transition:opacity_var(--rap-dur)_var(--rap-ease-out),scale_420ms_var(--rap-ease-out)]",
+          "bg-(--btn-blob) opacity-0 group-hover/btn:opacity-100",
+          "[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-out),scale_420ms_var(--rap-swell-ease,var(--rap-ease-spring))]",
+          "calm:[transition:opacity_var(--rap-dur-fast)_var(--rap-ease-out),scale_420ms_var(--rap-ease-out)]",
         )}
       />
       {/* loading: diagonal stripes run across the pill, a barber pole for
@@ -304,21 +306,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
             "relative grid place-items-center size-[calc(var(--btn-h)*0.72)] overflow-hidden",
             "rounded-[max(2px,calc(min(var(--rap-radius-pill),var(--btn-h)/2)-var(--btn-h)*0.14))]",
             "bg-(--btn-icon-bg) text-(--btn-icon-fg) text-[calc(var(--btn-fs)*1.05)]",
-            "transition-[scale,background-color,color] duration-(--rap-dur) ease-spring",
-            // the arrow turns, not the bubble: a square bubble turned 45° would stand on its corner
-            "group-hover/btn:scale-106 group-hover/btn:bg-(--btn-blob-fg) group-hover/btn:text-(--btn-blob)",
-            /* calm: the bubble holds still; the glyph flies out to the top right and
-               its twin slides in from the bottom left — the one moving detail */
-            "calm:group-hover/btn:scale-100 calm:ease-soft",
+            "transition-[background-color,color] duration-(--rap-dur-fast) ease-out",
+            // the bubble swaps colours with the pill; it does not grow on its own
+            "group-hover/btn:bg-(--btn-blob-fg) group-hover/btn:text-(--btn-blob)",
             variant === "ghost" && "w-auto group-hover/btn:bg-transparent group-hover/btn:text-current",
           )}
         >
-          <span className="grid place-items-center transition-[rotate] duration-(--rap-dur) ease-spring group-hover/btn:rotate-45 calm:group-hover/btn:rotate-0 calm:transition-transform calm:duration-(--rap-dur) calm:ease-soft calm:group-hover/btn:translate-x-[140%] calm:group-hover/btn:-translate-y-[140%]">
-            {iconNode}
-          </span>
+          {/* the default arrow nudges a hair toward where it points; any other icon holds still */}
           <span
-            aria-hidden
-            className="hidden calm:grid absolute inset-0 place-items-center -translate-x-[140%] translate-y-[140%] transition-transform duration-(--rap-dur) ease-soft group-hover/btn:translate-0"
+            className={cn(
+              "grid place-items-center",
+              icon === true && "transition-[translate] duration-300 ease-out fun:group-hover/btn:translate-x-[0.1em] fun:group-hover/btn:-translate-y-[0.1em]",
+            )}
           >
             {iconNode}
           </span>
@@ -333,7 +332,9 @@ const circleVariants = cva(
     "group/cbtn relative isolate grid place-items-center overflow-hidden rounded-full p-4 cursor-pointer",
     "border-[1.5px] border-transparent bg-(--c-bg) text-(--c-fg)",
     "font-display-ui font-medium text-base leading-none tracking-[-0.03em] text-center",
-    "transition-colors duration-(--rap-dur) ease-soft hover:text-(--c-fill-fg)",
+    /* the same hover as Button: a springy grow that settles, the colour fades in, the arrow nudges */
+    "[transition:color_var(--rap-dur-fast)_var(--rap-ease-out),scale_460ms_var(--rap-ease-spring)] hover:text-(--c-fill-fg)",
+    "fun:hover:scale-105 fun:active:scale-96 active:scale-96 calm:active:scale-98",
     "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring",
   ],
   {
@@ -355,7 +356,7 @@ export interface CircleButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
   variant?: "accent" | "blue" | "ink" | "acid" | "outline";
 }
 
-/** Big round call-to-action — text around, arrow in the middle. Ink floods in from the centre on hover. */
+/** Big round call-to-action — text around, arrow in the middle. On hover it grows a little and the other colour fades in. */
 export function CircleButton({ size = 160, variant = "accent", className, children, style, ...rest }: CircleButtonProps) {
   const ref = useMagnetic<HTMLButtonElement>(0.4);
   const sound = useSound();
@@ -374,9 +375,9 @@ export function CircleButton({ size = 160, variant = "accent", className, childr
     >
       <span
         aria-hidden
-        className="absolute inset-0 -z-1 rounded-full bg-(--c-fill) scale-0 transition-[scale] duration-(--rap-dur-slow) ease-soft group-hover/cbtn:scale-100"
+        className="absolute inset-0 -z-1 rounded-full bg-(--c-fill) opacity-0 transition-opacity duration-(--rap-dur-fast) ease-out group-hover/cbtn:opacity-100"
       />
-      <span className="grid place-items-center size-full [&>svg]:size-[38%] [&>svg]:transition-[rotate] [&>svg]:duration-(--rap-dur) [&>svg]:ease-spring group-hover/cbtn:[&>svg]:rotate-45">
+      <span className="grid place-items-center size-full [&>svg]:size-[38%] [&>svg]:transition-[translate] [&>svg]:duration-300 [&>svg]:ease-out fun:group-hover/cbtn:[&>svg]:translate-x-[4%] fun:group-hover/cbtn:[&>svg]:-translate-y-[4%]">
         {children ?? <Arrow />}
       </span>
     </button>

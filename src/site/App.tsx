@@ -1,20 +1,16 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   Accent,
   BalanceChart,
   BarsChart,
-  BigLink,
   Button,
   CircleButton,
   ConfirmButton,
   Cursor,
   Display,
   DonutChart,
-  HeatGrid,
   HoldButton,
   Input,
-  Marquee,
-  RaceBars,
   RollText,
   SlideButton,
   Slider,
@@ -27,15 +23,9 @@ import {
   SheetTitle,
   Tabs,
   TiltCard,
-  AudioPlayer,
   CardStack,
-  FanGallery,
   Lightbox,
-  ShapeGallery,
   useLightbox,
-  VideoPlayer,
-  WarpStrip,
-  VoiceNote,
   useSound,
   Counter,
   Rating,
@@ -47,20 +37,11 @@ import { Code } from "./Code";
 import { SoundControls } from "./SoundControls";
 import { Wordmark } from "./Wordmark";
 import { PresetPicker, PresetScope, PresetsSection } from "./PresetsShowcase";
-import { ModulesSection } from "./ModulesSection";
 import { LandingCards } from "./LandingCards";
 import { usePauseOffscreen } from "./usePauseOffscreen";
-import "../rapui/fonts/all";
+import "./fonts";
 import type { RapPreset } from "../rapui";
-import { isCalm } from "../rapui/hooks/useGlide";
 import { FormDemo } from "./demos/FormDemo";
-import { ToolbarDemo } from "./demos/ToolbarDemo";
-import { DialsDemo } from "./demos/DialsDemo";
-import { StickersDemo } from "./demos/StickersDemo";
-import { ChecklistDemo } from "./demos/ChecklistDemo";
-import gridLines from "./media/grid-lines.wav";
-import voiceNote from "./media/voice-note.wav";
-import reel from "./media/reel.webm";
 import { ART } from "../docs/entries/galleries";
 
 /* How many components the docs list. Kept by hand so the landing does not pull
@@ -254,13 +235,15 @@ function Hero() {
       </h1>
 
       <div className="deal grid flex-1 grid-cols-4 auto-rows-[minmax(15rem,1fr)] gap-tile max-[1000px]:grid-cols-2 max-[560px]:grid-cols-1">
-        <div className={cn(TILE, "[--i:0] col-span-2 row-span-2 bg-ink text-paper place-items-stretch p-[clamp(1.5rem,3vw,3rem)] max-[560px]:col-span-1")}>
+        {/* the buttons' hover fill is the tile's own paper (resolved here, in the page's theme,
+            before the buttons switch to light), so it never sinks into the ink tile */}
+        <div className={cn(TILE, "[--i:0] col-span-2 row-span-2 bg-ink text-paper place-items-stretch p-[clamp(1.5rem,3vw,3rem)] max-[560px]:col-span-1 [--tile-fill:var(--rap-paper)] [--tile-fill-fg:var(--rap-ink)]")}>
           <div className="flex flex-col justify-between gap-10">
             <p className="m-0 text-[clamp(1.25rem,1.9vw,1.9rem)] leading-[1.3] tracking-[-0.02em] font-medium max-w-[30ch]">
               Everything you would reach for in shadcn/ui, on the same Radix + Tailwind base — plus the things it never shipped:
               hold-to-delete buttons, liquid forms, charts you scrub, galleries you throw. Bring a boring screen; we will rapui it.
             </p>
-            <div className="flex flex-wrap items-center gap-tight" data-rap-theme="light">
+            <div className="flex flex-wrap items-center gap-tight [&_[data-slot=button]]:[--btn-blob:var(--tile-fill)] [&_[data-slot=button]]:[--btn-blob-fg:var(--tile-fill-fg)]" data-rap-theme="light">
               <Button size="lg" variant="accent" icon onClick={() => (window.location.hash = "docs")}>
                 Browse all {COUNT}
               </Button>
@@ -290,35 +273,6 @@ function Hero() {
         </div>
       </div>
     </section>
-  );
-}
-
-const NAMES = ["Hold buttons", "Liquid forms", "Charts", "Dials", "Scrubbers", "Galleries", "Players", "Checklists", "Stickers", "Dialogs", "Data tables", "Calendars"];
-
-/* the moving words are the one place the poster face (Anton, capitals) shouts on this page:
-   1.25× the old size, since its letters are narrower (leading 0.8 keeps the old 1em line,
-   so the bands stand as tall as before; the capitals fill the padding a touch) */
-const BAND_WORD = "inline-flex items-center gap-10 font-poster font-normal uppercase [font-synthesis:none] text-[clamp(2.5rem,6.25vw,5.625rem)] tracking-[0.005em] leading-[0.8]";
-
-function Bands() {
-  return (
-    <div className="py-16 overflow-hidden">
-      {/* the bands overhang the page by 2rem each side so their tilted ends never show */}
-      <Marquee className="py-[1.1rem] -mx-8 relative z-1 bg-acid text-[#282828]" rotate={-2.5} duration={34} gap="2.5rem" repeat={1}>
-        {NAMES.map((n) => (
-          <span className={BAND_WORD} key={n}>
-            {n} <span className="inline-block text-flame fun:animate-[spin_6s_linear_infinite]">✳</span>
-          </span>
-        ))}
-      </Marquee>
-      <Marquee className="py-[1.1rem] -mx-8 -mt-[1.2rem] bg-ink text-paper" rotate={1.8} duration={40} reverse gap="2.5rem" repeat={1}>
-        {NAMES.map((n) => (
-          <span className={BAND_WORD} key={n}>
-            {n} <span className="size-[0.4em] rounded-full bg-flame" />
-          </span>
-        ))}
-      </Marquee>
-    </div>
   );
 }
 
@@ -373,7 +327,7 @@ function SameApi() {
     },
   ];
   return (
-    <section className="px-(--gutter) pt-10 pb-32 flex flex-col gap-12" id="same-api">
+    <section className="px-(--gutter) pt-10 pb-24 flex flex-col gap-12" id="same-api">
       <div className="grid grid-cols-[1fr_minmax(0,30rem)] gap-10 items-end max-[900px]:grid-cols-1">
         {/* the switch IS the third line of the headline: as big as the words, so it
             cannot be missed, and pressing it is the sentence's verb */}
@@ -393,7 +347,7 @@ function SameApi() {
             grows out of it on the back curve, a little later per tile. The eye follows
             the component turning into the other one, not the cards flickering. */}
         {tiles.map((t, i) => (
-          <div key={i} className="grid place-items-center min-h-[22rem] p-8 rounded-lg bg-paper-2 overflow-hidden">
+          <div key={i} className="grid place-items-center min-h-[16rem] p-8 rounded-lg bg-paper-2 overflow-hidden">
             {([
               [false, t.plain],
               [true, t.rap],
@@ -456,10 +410,8 @@ function GiantToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => 
    bottom, nothing else. The figure is the library's Counter — it recounts IN PLACE
    when the card scrolls into view, on an expo ease, so nothing flies in and nothing
    gets clipped: the count counts up, 0 counts down from a hundred, 1 from ten. */
-const STAT = "flex flex-col gap-5 min-h-[24rem] justify-between p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg overflow-hidden";
-/* the figures in the poster face too: tall narrow numerals, 1.25× the old size, on the
-   old line height (0.92 / 1.25), so the cards keep their size */
-const BIG = "font-poster font-normal [font-synthesis:none] tracking-[0.005em] text-[clamp(7.5rem,13.75vw,13.75rem)] leading-[0.736]";
+const STAT = "flex flex-col gap-5 min-h-[20rem] justify-between p-[clamp(1.5rem,3vw,2.5rem)] rounded-lg overflow-hidden";
+const BIG = "font-display font-medium tracking-[-0.06em] text-[clamp(6rem,11vw,11rem)] leading-[0.92]";
 const STAT_TEXT = "m-0 max-w-[24ch] text-[1.2rem] leading-[1.35] opacity-80";
 
 function Stats() {
@@ -469,7 +421,7 @@ function Stats() {
     { n: 1, from: 10, text: "attribute to turn every joke off, for the serious screens.", tone: "bg-ink text-paper" },
   ];
   return (
-    <section className="grid grid-cols-3 gap-tile px-(--gutter) pb-32 max-[1000px]:grid-cols-1">
+    <section className="grid grid-cols-3 gap-tile px-(--gutter) pb-24 max-[1000px]:grid-cols-1">
       {cards.map((c) => (
         <div key={c.text} className={cn(STAT, c.tone)}>
           {/* proportional digits: tabular ones leave a gap after a 1 */}
@@ -505,12 +457,12 @@ function Showcase({
 }) {
   const [preset, setPreset] = useState<RapPreset>("fun");
   const stage = (
-    <div className={cn("relative grid place-items-center min-h-[26rem] p-[clamp(1.25rem,5vw,5rem)] rounded-lg bg-paper-2 overflow-hidden transition-colors duration-500", stageClass)}>
+    <div className={cn("relative grid place-items-center min-h-[22rem] p-[clamp(1.25rem,4vw,3.5rem)] rounded-lg bg-paper-2 overflow-hidden transition-colors duration-500", stageClass)}>
       {children}
     </div>
   );
   return (
-    <section className="pt-20 pb-24 border-t-[1.5px] border-line" id={id}>
+    <section className="pt-16 pb-16 border-t-[1.5px] border-line" id={id}>
       <div className="grid grid-cols-[1fr_minmax(0,28rem)] gap-x-10 gap-y-6 items-end mb-10 max-[900px]:grid-cols-1">
         <Display size="xl">
           <SplitReveal>{title}</SplitReveal> {sub && <Accent tone="mute">{sub}</Accent>}
@@ -538,198 +490,10 @@ function Showcase({
 function GalleriesDemo() {
   const lb = useLightbox();
   return (
-    <div className="grid gap-16 w-full min-w-0">
-      <WarpStrip items={ART} onOpen={lb.open} aria-label="Posters" />
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-12 px-[clamp(1.25rem,5vw,5rem)] items-center justify-items-center">
-        <CardStack items={ART} aria-label="Poster pile" onOpen={lb.open} />
-        <FanGallery items={ART.slice(0, 9)} onOpen={lb.open} />
-      </div>
-      <div className="px-[clamp(1.25rem,5vw,5rem)]">
-        <ShapeGallery items={ART.slice(0, 7)} onOpen={lb.open} />
-      </div>
+    <>
+      <CardStack items={ART} aria-label="Poster pile" onOpen={lb.open} />
       <Lightbox items={ART} {...lb.props} />
-    </div>
-  );
-}
-
-/* a sparkline's natural habitat: a table row */
-const PAGES = [
-  { name: "Summer zine", views: "12.4k", data: [3, 5, 4, 8, 7, 11, 14] },
-  { name: "Portfolio", views: "8.1k", data: [9, 8, 9, 7, 8, 6, 7] },
-  { name: "Night swim", views: "5.6k", data: [2, 3, 5, 4, 6, 9, 8] },
-  { name: "Pricing", views: "3.9k", data: [6, 6, 5, 7, 6, 8, 9] },
-];
-
-function SparkTable() {
-  return (
-    <div className="w-80 max-w-full bg-surface rounded-[26px] pt-[22px] px-4 pb-3">
-      <p className="m-0 text-[33px] leading-none font-medium tracking-[-0.03em] tabular-nums">
-        30.0k<span className="text-[24px] opacity-35"> views</span>
-      </p>
-      <p className="mt-[9px] mb-3 text-[12.5px] font-medium text-success">
-        +12.4% <span className="text-ink/42">top pages, 7 days</span>
-      </p>
-      {PAGES.map((pg) => (
-        <div key={pg.name} className="flex items-center gap-3 py-2.5 border-t border-line text-[0.9rem] font-medium">
-          <span className="flex-1 truncate">{pg.name}</span>
-          <Sparkline data={pg.data} width={76} height={22} />
-          <span className="w-12 text-right tabular-nums text-ink/55">{pg.views}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── the players, as a conversation ─────────────────────────
-   Big chat bubbles with the media dropped in between them, the way people
-   actually send video and voice, on a loud pink ground so the grey video frame
-   and the white bubbles stand off it. Each bubble pops in as it scrolls into
-   view: up from below, tilted toward its own side, over-shooting on the back
-   curve and settling straight — a conversation arriving, not a page loading. */
-const BUBBLE = "max-w-[min(100%,34rem)] px-6 py-4 text-[clamp(1.1rem,1.8vw,1.5rem)] leading-[1.3] tracking-[-0.015em] font-medium";
-const THEM = "rounded-[28px] rounded-bl-[8px] bg-paper-2 text-ink";
-const ME = "rounded-[28px] rounded-br-[8px] bg-ink text-paper";
-
-/* The conversation plays on SCROLL. The pink frame (inside the page margins) pins
-   under the header while its tall section scrolls past, and the scroll position is
-   the playhead: every step down reveals the next beat — the other side's typing
-   dots, then their message; your messages land straight away. Scroll back up and
-   it plays backwards. Every row stays mounted and just opens or closes (height from
-   0fr, bubble popping in tilted toward its sender and landing straight), so going
-   back is the same animation in reverse. The thread is anchored to the bottom of
-   the frame, so older messages are pushed up and out the top, like a real chat.
-   Calm shows the whole thread, unpinned. */
-const DOT_GRID = "[background-image:radial-gradient(circle,rgb(255_255_255/0.55)_1.4px,transparent_1.7px)] [background-size:24px_24px]";
-
-function Typing() {
-  return (
-    <div className={cn(THEM, "flex gap-1.5 px-5 py-5")} aria-label="typing">
-      {[0, 1, 2].map((d) => (
-        <span key={d} className="size-2.5 rounded-full bg-ink/35 fun:animate-dot" style={{ animationDelay: `${d * 160}ms` }} />
-      ))}
-    </div>
-  );
-}
-
-function ChatRow({ side, open, children }: { side: "them" | "me"; open: boolean; children: ReactNode }) {
-  return (
-    <div
-      className="grid transition-[grid-template-rows] duration-500 ease-soft"
-      style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
-      aria-hidden={!open}
-    >
-      <div className="min-h-0">
-        <div
-          className={cn("flex pt-3", side === "me" ? "justify-end origin-bottom-right" : "justify-start origin-bottom-left")}
-          style={{
-            transform: open ? "none" : `translateY(56px) rotate(${side === "me" ? 7 : -7}deg) scale(0.8)`,
-            opacity: open ? 1 : 0,
-            transition: "transform 620ms var(--rap-ease-back), opacity 300ms var(--rap-ease-out)",
-          }}
-        >
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MediaChat() {
-  const chapters = [
-    { at: 0, title: "Intro" },
-    { at: 3, title: "Shapes" },
-    { at: 6, title: "Type" },
-    { at: 9, title: "Outro" },
-  ];
-  const items: { side: "them" | "me"; node: ReactNode }[] = [
-    { side: "them", node: <div className={cn(BUBBLE, THEM)}>Cut the reel for Friday. Tell me what you think 👀</div> },
-    { side: "them", node: <div className="w-[min(100%,36rem)]"><VideoPlayer src={reel} title="Studio reel" chapters={chapters} /></div> },
-    { side: "me", node: <div className={cn(BUBBLE, ME)}>wait — the whole frame leans when I scrub?? 😂</div> },
-    { side: "me", node: <VoiceNote src={voiceNote} from="me" sent="14:02" /> },
-    { side: "them", node: <div className={cn(BUBBLE, THEM)}>It does. And here’s the track for it:</div> },
-    { side: "them", node: <div className="w-[min(100%,30rem)]"><AudioPlayer src={gridLines} title="Grid Lines" artist="The Baseline Club" /></div> },
-    { side: "me", node: <div className={cn(BUBBLE, ME)}>ok this whole kit is ridiculous. shipping it 🚀</div> },
-  ];
-  // the beats: a "typing" beat before each of theirs, then the message itself
-  const beats: { kind: "typing" | "msg"; i: number }[] = [];
-  items.forEach((it, i) => {
-    if (it.side === "them") beats.push({ kind: "typing", i });
-    beats.push({ kind: "msg", i });
-  });
-
-  const track = useRef<HTMLDivElement>(null);
-  const [step, setStep] = useState(0); // how many beats have played
-  const [calm, setCalm] = useState(false);
-  const last = useRef(0);
-  const sound = useSound();
-
-  useEffect(() => {
-    const el = track.current;
-    if (!el) return;
-    if (isCalm(el)) {
-      setCalm(true);
-      setStep(beats.length);
-      return;
-    }
-    let raf = 0;
-    const read = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const run = r.height - innerHeight; // how far the frame stays pinned
-      const p = Math.min(1, Math.max(0, -r.top / Math.max(1, run)));
-      // a little lead-in so the first beat needs a real scroll, and the last lands before unpinning
-      const n = Math.min(beats.length, Math.max(0, Math.floor((p - 0.04) * (beats.length + 0.6)) + 1));
-      if (n !== last.current) {
-        const b = beats[n - 1];
-        if (n > last.current && b?.kind === "msg") sound.play("pop", { strength: 0.4, pitch: items[b.i].side === "me" ? 1.15 : 0.95 });
-        last.current = n;
-        setStep(n);
-      }
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(read);
-    };
-    read();
-    addEventListener("scroll", onScroll, { passive: true });
-    addEventListener("resize", onScroll);
-    return () => {
-      removeEventListener("scroll", onScroll);
-      removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const current = beats[step - 1];
-  const played = (i: number) => beats.findIndex((b) => b.kind === "msg" && b.i === i) < step;
-
-  return (
-    <div ref={track} className={cn("relative", calm ? "" : "h-[320svh]")}>
-      <div
-        className={cn(
-          "overflow-hidden rounded-lg bg-bubble",
-          DOT_GRID,
-          calm ? "" : "sticky top-[6.75rem] h-[calc(100svh-8.25rem)] min-h-[34rem]",
-        )}
-      >
-        <div className="h-full flex flex-col justify-end px-(--gutter) py-[clamp(1.5rem,4vw,3rem)]">
-          <div className="w-[min(100%,56rem)] mx-auto flex flex-col">
-            {items.map((it, i) => (
-              <div key={i}>
-                {it.side === "them" && (
-                  <ChatRow side="them" open={current?.kind === "typing" && current.i === i}>
-                    <Typing />
-                  </ChatRow>
-                )}
-                <ChatRow side={it.side} open={played(i)}>
-                  {it.node}
-                </ChatRow>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -747,7 +511,7 @@ function Wall() {
 <HoldButton variant="danger" onConfirm={deleteProject}>Hold to delete</HoldButton>
 <SlideButton label="Slide to publish" doneLabel="Published" onConfirm={publish} />
 <ConfirmButton label="Delete workspace" confirmLabel="Sure?" onConfirm={remove} />`}
-        stageClass={cn(DOTS, "min-h-[44rem]")}
+        stageClass={cn(DOTS, "min-h-[34rem]")}
       >
         <div className="flex flex-col items-center gap-10 w-[min(100%,36rem)]">
           <HoldButton variant="danger" size="hero">
@@ -784,154 +548,50 @@ function Wall() {
         desc={
           <>
             Minimal cards — one big number, one thin line — that read back under your finger. Scrub the balance, pull it down to
-            refresh, spin the donut, hover a day on the grid. Or drop a <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} width={70} height={18} />{" "}
+            refresh, spin the donut. Or drop a <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} width={70} height={18} />{" "}
             straight into a sentence.
           </>
         }
-        code={`import { BalanceChart, DonutChart, HeatGrid, BarsChart, RaceBars, Sparkline } from "@rapui/react";
+        code={`import { BalanceChart, DonutChart, BarsChart, Sparkline } from "@rapui/react";
 
 <BalanceChart />
 <DonutChart data={sources} />
-<HeatGrid />
+<BarsChart />
 <Sparkline data={[12, 18, 15, 22, 19, 27, 31]} />`}
         stageClass="bg-paper place-items-stretch"
       >
-        {/* Two rows of three, loosely scattered: a real grid with equal gaps (columns
-            are sized by their cards and spread edge to edge, so the air between them is
-            the same), and each card nudged a little off its row line — no tilt. The two
-            wide cards (heat grid, ranking) have fixed widths, so hovering a value never
-            re-flows them. Narrower screens fall to two columns, then one. */}
-        <div className="grid grid-cols-[repeat(3,auto)] justify-between items-start gap-x-8 gap-y-14 w-full py-6 max-[1180px]:grid-cols-[repeat(2,auto)] max-[1180px]:justify-around max-[760px]:grid-cols-1 max-[760px]:justify-center">
+        {/* one row of three cards, spread edge to edge; two columns, then one, on narrower screens */}
+        <div className="grid grid-cols-[repeat(3,auto)] justify-between items-start gap-x-8 gap-y-10 w-full py-6 max-[1180px]:grid-cols-[repeat(2,auto)] max-[1180px]:justify-around max-[760px]:grid-cols-1 max-[760px]:justify-center">
           {/* each chart in its own wrapper: BalanceChart cancels its pull-stretch with a
               negative margin, which a margin set on it directly would undo */}
-          {(
-            [
-              [<BalanceChart key="b" />, "mt-4 justify-self-end"],
-              [<DonutChart key="d" />, "mt-0"],
-              [<SparkTable key="s" />, "mt-6 justify-self-end"],
-              [<HeatGrid key="h" className="w-[24rem]" />, "mt-10 justify-self-start"],
-              [<BarsChart key="bars" />, "mt-8"],
-              [<RaceBars key="r" className="w-[22rem]" />, "mt-8 justify-self-end"],
-            ] as const
-          ).map(([c, offset]) => (
-            <div key={c.key} className={cn("flex justify-center max-w-full max-[1180px]:mt-0 max-[1180px]:justify-self-center", offset)}>
-              {c}
-            </div>
-          ))}
+          <div className="flex justify-center max-w-full">
+            <BalanceChart />
+          </div>
+          <div className="flex justify-center max-w-full">
+            <DonutChart />
+          </div>
+          <div className="flex justify-center max-w-full">
+            <BarsChart />
+          </div>
         </div>
-      </Showcase>
-
-      <Showcase
-        id="dials"
-        title="Dials"
-        sub="& scrubbers"
-        desc="Plan a night with nothing but rulers and rings: fling a strip of days, turn a tempo wheel that flashes on the beat, pick a lamp colour off a ring of hues, set the room under a magnifying lens, split rain against brown noise. The last card reads the whole desk back to you."
-        code={`import { DateScrubber, TempoDial, HueRing, LensRuler, SplitSlider, RangeDial } from "@rapui/react";
-
-<DateScrubber value={night} onValueChange={setNight} />
-<TempoDial bpm={68} onBeat={pulse} />
-<HueRing value={hue} onValueChange={setHue} />
-<LensRuler min={16} max={24} step={0.5} value={temp} onValueChange={setTemp} />
-<SplitSlider value={60} labels={["Rain", "Brown noise"]} />`}
-        stageClass="bg-paper p-[clamp(0.75rem,2vw,1.5rem)] place-items-stretch"
-      >
-        <DialsDemo />
       </Showcase>
 
       <Showcase
         id="galleries"
         title="Galleries"
-        sub="with a sense of humour"
-        desc="A strip that skews and stretches with your speed, a messy pile you throw cards off, a hand of cards that fans apart, a collage of stickers that morph their shape on hover. Click any picture: it flies out full screen, swipe to go on, pull down to put it back."
-        code={`import { WarpStrip, CardStack, FanGallery, Lightbox, useLightbox } from "@rapui/react";
+        sub="you throw"
+        desc="A messy pile of pictures: fling the top card off and it lands at the bottom, or use the arrows. Click a picture and it flies out full screen — swipe to go on, pull down to put it back."
+        code={`import { CardStack, Lightbox, useLightbox } from "@rapui/react";
 
 const lb = useLightbox();
 
-<WarpStrip items={posters} onOpen={lb.open} />
 <CardStack items={posters} onOpen={lb.open} />
-<FanGallery items={posters} onOpen={lb.open} />
 <Lightbox items={posters} {...lb.props} />`}
-        stageClass="px-0 [&>*]:min-w-0"
       >
         <GalleriesDemo />
       </Showcase>
 
-      <section className="pt-20 pb-24 border-t-[1.5px] border-line" id="media">
-        <div className="grid grid-cols-[1fr_minmax(0,28rem)] gap-x-10 gap-y-6 items-end mb-10 max-[900px]:grid-cols-1">
-          <Display size="xl">
-            <SplitReveal>Players</SplitReveal> <Accent tone="mute">that dance a little</Accent>
-          </Display>
-          <p className={COPY}>
-            Audio with a waveform you scrub like a chart, bars that breathe to the live level; video whose controls float in one
-            pill, snap to chapters and skew the frame as you drag; a voice note for chat. Scroll down — the conversation plays out.
-          </p>
-        </div>
-        <MediaChat />
-      </section>
 
-      <Showcase
-        id="tools"
-        title="Tools"
-        sub="that feel like toys"
-        desc="A big editor bar: chunky round slots, one pad that glides to the tool you pick, and sixteen hand-drawn icons that each do a little something — the cursor clicks, the ball bounces, the sticker peels. Press 1–9 to pick, + for widgets."
-        code={`import { EditorToolbar } from "@rapui/react";
-
-<EditorToolbar size="hero" tone="blue" onValueChange={setTool} />`}
-        stageClass="p-0 place-items-stretch"
-      >
-        <ToolbarDemo />
-      </Showcase>
-
-      <Showcase
-        id="lists"
-        title="Checklists"
-        sub="that pour"
-        stageClass="bg-paper"
-        desc="Tick a task and colour pours across its round row, a pen scribbles the words out, and the row rolls down onto the Done pile while the rest close up. Finish the list and the card squashes and throws confetti. The old heap-fall is still there as an option."
-        code={`import { Checklist } from "@rapui/react";
-
-<Checklist title="Launch day" tasks={tasks} />
-<Checklist finish="heap" tone="acid" />`}
-      >
-        <ChecklistDemo />
-      </Showcase>
-
-      <Showcase
-        id="loud"
-        title="The loud bits"
-        sub="for landing pages"
-        desc="Headline links, a board of stickers in fifteen shapes — punched price tags, seals with running text, stamps, speech bubbles, labels that peel — and cards that lean toward the cursor. Drag the stickers about, tap the paper to slap on another."
-        code={`import { BigLink, Sticker, TiltCard, CircleButton } from "@rapui/react";
-
-<BigLink href="/work" meta="24 projects">Work</BigLink>
-<Sticker color="flame" shape="burst">hot!</Sticker>
-<TiltCard tone="acid">…</TiltCard>
-<CircleButton size={160} />`}
-      >
-        <div className="grid gap-12 w-full">
-          <div className="border-t border-line">
-            <BigLink href="#loud" meta="24 projects">Work</BigLink>
-            <BigLink href="#loud" meta="→ mail">Say hello</BigLink>
-          </div>
-          <StickersDemo />
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-tile">
-            {(
-              [
-                ["flame", "Brand for a bakery on Mars", "Identity"],
-                ["ink", "Motion system", "Product"],
-                ["acid", "Zine for night owls", "Editorial"],
-              ] as const
-            ).map(([tone, title, kind]) => (
-              <TiltCard key={title} tone={tone} data-rap-cursor="Open">
-                <div className="flex flex-col justify-between gap-12 min-h-64">
-                  <Display size="lg">{title}</Display>
-                  <span className="text-[0.95rem] font-medium opacity-75">{kind}</span>
-                </div>
-              </TiltCard>
-            ))}
-          </div>
-        </div>
-      </Showcase>
     </div>
   );
 }
@@ -1009,7 +669,7 @@ function Tech() {
     }
   };
   return (
-    <section className="pt-32 pb-24 border-t-[1.5px] border-line" id="tech">
+    <section className="pt-24 pb-20 border-t-[1.5px] border-line" id="tech">
       <div className="flex flex-wrap items-end justify-between gap-8 pb-14 px-(--gutter)">
         <div className="flex flex-col gap-8">
           <Display size="xxl">
@@ -1068,7 +728,7 @@ function Tech() {
           <article
             key={t.title}
             className={cn(
-              "snap-start shrink-0 w-[min(70vw,60rem)] max-[760px]:w-[86vw] flex flex-col gap-10 p-[clamp(1.5rem,3.5vw,3rem)] rounded-lg min-h-[38rem]",
+              "snap-start shrink-0 w-[min(70vw,60rem)] max-[760px]:w-[86vw] flex flex-col gap-10 p-[clamp(1.5rem,3.5vw,3rem)] rounded-lg min-h-[28rem]",
               i % 3 === 0 ? "bg-paper-2" : i % 3 === 1 ? "bg-ink text-paper dark:bg-paper-2 dark:text-ink" : "bg-acid text-[#282828]",
             )}
           >
@@ -1111,7 +771,7 @@ const SWATCHES = [
 
 function Tokens() {
   return (
-    <section className="py-32 px-(--gutter) flex flex-col gap-8" id="tokens">
+    <section className="py-24 px-(--gutter) flex flex-col gap-8" id="tokens">
       <Display size="xxl">
         Grey paper, soft ink <Accent tone="mute">& six loud friends</Accent>
       </Display>
@@ -1122,7 +782,7 @@ function Tokens() {
       <div className="grid grid-cols-4 gap-tile mt-6 max-[760px]:grid-cols-2">
         {SWATCHES.map((s) => (
           <TiltCard key={s.name} tone={s.tone} max={8}>
-            <div className="flex flex-col justify-between min-h-56">
+            <div className="flex flex-col justify-between min-h-40">
               <Display size="md">{s.name}</Display>
               <span className="text-[0.9rem] font-medium opacity-75 tabular-nums">
                 {s.hex}
@@ -1139,7 +799,7 @@ function Tokens() {
 
 function Install() {
   return (
-    <section className="pt-24 px-(--gutter) pb-32 bg-paper-2 rounded-t-lg" id="install">
+    <section className="pt-24 px-(--gutter) pb-28 bg-paper-2 rounded-t-lg" id="install">
       <div className="grid grid-cols-[1fr_1.1fr] gap-12 items-start max-[900px]:grid-cols-1">
         {/* the heading stays in view while the snippets scroll past */}
         <div className="flex flex-col gap-6 sticky top-28 max-[900px]:static">
@@ -1157,7 +817,7 @@ function Install() {
           <Code>{`npm install @rapui/react`}</Code>
           <Code>{`// main.tsx
 import "@rapui/react/styles.css";
-import "@rapui/react/fonts"; // optional: Onest, Geist Mono + the Anton poster face
+import "@rapui/react/fonts"; // optional: Onest + Geist Mono
 
 import { Button, SoundProvider } from "@rapui/react";
 
@@ -1227,9 +887,7 @@ export function App({
       <Header dark={dark} setDark={setDark} sound={sound} setSound={setSound} />
       <main>
         <Hero />
-        <Bands />
         <PresetsSection copyClass={COPY} />
-        <ModulesSection copyClass={COPY} />
         <LandingCards copyClass={COPY} />
         <SameApi />
         <Stats />

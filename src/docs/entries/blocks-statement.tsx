@@ -1,10 +1,11 @@
 import { Accent, Badge, Button, Rating, Slider, Statement, StatementSlot, Switch, type BlockLook } from "../../rapui";
 import { BlockFrame } from "../blockFrame";
 import type { Control, DocEntry } from "../types";
+import { SITE_LOOKS } from "../../site/presets";
 
 const controls: Control[] = [
-  { type: "select", prop: "look", options: ["preset", "fun", "civic", "signal", "product", "minimal"], default: "preset", codeDefault: "preset" },
-  { type: "text", prop: "eyebrow", default: "One code, five characters" },
+  { type: "select", prop: "look", options: [...SITE_LOOKS], default: "preset", codeDefault: "preset" },
+  { type: "text", prop: "eyebrow", default: "One code, two characters" },
 ];
 
 export const entries: DocEntry[] = [
@@ -42,7 +43,7 @@ export const entries: DocEntry[] = [
     ),
     code: () => `import { Statement, StatementSlot, Switch, Button } from "@rapui/react";
 
-<Statement eyebrow="One code, five characters">
+<Statement eyebrow="One code, two characters">
   Components that <StatementSlot><Switch defaultChecked /></StatementSlot> switch on,
   <StatementSlot><Button size="sm" icon>Press</Button></StatementSlot> back…
 </Statement>`,

@@ -9,7 +9,7 @@ export const entries: DocEntry[] = [
     name: "Landing page",
     group: "Blocks",
     description:
-      "Every block on one page — five pages, really: each preset gets its own made-up product and its own copy, and every one of them talks about itself. Hollr shouts in fun, Precedent submits itself respectfully in civic, Fieldkit receives itself in fragments in signal, Shiplog ships itself in product, and Less says less in minimal. The blocks are the same JSX throughout; switch the preset at the top and watch the page re-lay itself. Open it full screen to see it at real size, with the grid overlay a Shift+G away.",
+      "Every block on one page — two pages, really: each preset gets its own made-up product and its own copy, and each talks about itself. Kazoo hums loudly in fun, Precedent submits itself respectfully in civic. The blocks are the same JSX throughout; switch the preset at the top and watch the page re-lay itself. Open it full screen to see it at real size, with the grid overlay a Shift+G away.",
     Demo: () => (
       <BlockFrame>
         <div className="flex justify-center pt-4 pb-2">
@@ -23,7 +23,7 @@ export const entries: DocEntry[] = [
     code: () => `import { SiteHeader, Hero, LogoCloud, Features, FeatureSplit, Stats,
   Testimonials, Pricing, FAQ, CTA, SiteFooter } from "@rapui/react";
 
-<RapStyle preset="civic" />   {/* or fun, signal, product, minimal */}
+<RapStyle preset="civic" />   {/* or fun */}
 
 <SiteHeader logo={logo} links={links} actions={<Button>Book a demo</Button>} />
 <Hero eyebrow="The morning edition for 300 firms" title="The law changed overnight. Here’s your brief." lead={lead} actions={actions} media={shot} />

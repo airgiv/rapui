@@ -1,66 +1,42 @@
-/* The five example landings as a sideways row of cards on the home page. Each
-   card is a small drawn preview — not a screenshot — set in that landing's own
-   preset (its paper, ink, display face, shape) through a PresetScope: the brand,
-   the hero's headline at card size, two buttons and one motif that says what
-   the preset is (fun's stickers, civic's centred column, signal's readout strip,
-   product's window, minimal's hairlines). Static: nothing in the row animates.
-   A click opens the whole page in that preset. */
-import { useRef, type ReactNode } from "react";
-import { Accent, Display, RAP_PRESETS, type RapPreset } from "../rapui";
+/* The two example landings as a pair of cards on the home page. Each card is a
+   small drawn preview — not a screenshot — set in that landing's own preset (its
+   paper, ink, display face, shape) through a PresetScope: the brand, the
+   tagline and one quiet signature. Static: nothing animates. A click opens the
+   whole page in that preset. */
+import { type ReactNode } from "react";
+import { Accent, Display, type RapPreset } from "../rapui";
 import { cn } from "../rapui/utils";
-import { ArrowLeft, ArrowRight } from "../rapui/icons";
+import { ArrowRight } from "../rapui/icons";
 import { CONTENT } from "./landing/content";
 import { openLanding, PresetScope } from "./PresetsShowcase";
+import { SITE_PRESETS } from "./presets";
 
 /* one quiet signature per preset, so a card says which character it is without noise */
-const SIGNATURE: Record<RapPreset, ReactNode> = {
+const SIGNATURE: Partial<Record<RapPreset, ReactNode>> = {
   fun: <span className="size-3 rounded-full bg-flame" />,
   civic: <span className="font-display text-[1rem] italic text-ink-2">est. this morning</span>,
-  signal: <span className="font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-flame">● 104.2 MHz</span>,
-  product: <span className="rounded-pill px-2 py-0.5 text-[0.6875rem] font-medium text-plum shadow-[inset_0_0_0_1px_var(--rap-edge)]">v2.0</span>,
-  minimal: <span className="h-px w-10 bg-ink" />,
 };
 
 /* centred presets centre their poster too */
-const CENTRED: Partial<Record<RapPreset, boolean>> = { civic: true, product: true };
+const CENTRED: Partial<Record<RapPreset, boolean>> = { civic: true };
 
 export function LandingCards({ copyClass }: { copyClass: string }) {
-  const row = useRef<HTMLUListElement>(null);
-  // the row has no visible scrollbar: two buttons step it one card at a time
-  const step = (dir: 1 | -1) => {
-    const el = row.current;
-    const card = el?.querySelector("li");
-    if (el && card) el.scrollBy({ left: dir * (card.getBoundingClientRect().width + 4), behavior: "smooth" });
-  };
-  const arrow =
-    "grid size-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-paper-2 text-ink transition-colors hover:bg-fill-hover focus-visible:outline-2 focus-visible:outline-ring [&_svg]:size-5";
   return (
-    <section className="flex flex-col gap-10 pt-10 pb-28" id="landings">
-      <div className="flex flex-col gap-6 px-(--gutter)">
+    <section className="flex flex-col gap-10 px-(--gutter) pt-10 pb-24" id="landings">
+      <div className="flex flex-col gap-6">
         <Display size="xl">
-          Five whole pages, <Accent tone="mute">one for each</Accent>
+          Two whole pages, <Accent tone="mute">one for each</Accent>
         </Display>
-        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
-          <p className={cn(copyClass, "max-w-[46ch]")}>
-          The same blocks laid out as five complete landing pages, each in its own preset and each talking about itself. Open one, then switch
-          the preset at the bottom and watch the page re-lay.
+        <p className={cn(copyClass, "max-w-[46ch]")}>
+          The same blocks laid out as two complete landing pages, each in its own preset. Open one, then switch the preset at the bottom and
+          watch the page re-lay.
         </p>
-          <div className="flex gap-2">
-            <button type="button" className={arrow} aria-label="Previous landing" onClick={() => step(-1)}>
-              <ArrowLeft aria-hidden />
-            </button>
-            <button type="button" className={arrow} aria-label="Next landing" onClick={() => step(1)}>
-              <ArrowRight aria-hidden />
-            </button>
-          </div>
-        </div>
       </div>
-      {/* one sideways row that snaps card by card; it bleeds to the window edge, padded to the gutter */}
-      <ul ref={row} className="m-0 -my-6 flex snap-x snap-mandatory list-none gap-tile overflow-x-auto overscroll-x-contain scroll-px-(--gutter) px-(--gutter) py-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {RAP_PRESETS.map((p) => {
+      <ul className="m-0 grid list-none grid-cols-2 gap-tile p-0 max-[700px]:grid-cols-1">
+        {SITE_PRESETS.map((p) => {
           const c = CONTENT[p.value];
           return (
-            <li key={p.value} className="flex w-[min(78vw,22rem)] shrink-0 snap-start">
+            <li key={p.value} className="flex">
               <a
                 href="#landing"
                 onClick={(e) => {
@@ -75,12 +51,12 @@ export function LandingCards({ copyClass }: { copyClass: string }) {
                   <div
                     aria-hidden
                     className={cn(
-                      "flex aspect-[4/5] flex-col justify-between overflow-hidden rounded-[calc(var(--rap-radius-lg)-6px)] bg-paper p-6 text-ink shadow-[inset_0_0_0_1px_var(--rap-line)]",
+                      "flex aspect-[16/10] flex-col justify-between overflow-hidden rounded-[calc(var(--rap-radius-lg)-6px)] bg-paper p-6 text-ink shadow-[inset_0_0_0_1px_var(--rap-line)]",
                       CENTRED[p.value] && "items-center text-center",
                     )}
                   >
                     <span className="flex h-4 items-center">{SIGNATURE[p.value]}</span>
-                    <span className={cn("font-display max-w-full leading-[0.9] whitespace-nowrap", p.value === "signal" ? "text-[clamp(1.75rem,4.5vw,2.5rem)]" : "text-[clamp(2.75rem,7.5vw,4.25rem)]", " font-[var(--rap-display-weight,500)] tracking-[var(--rap-display-tracking,-0.04em)] [text-transform:var(--rap-display-case,none)]")}>
+                    <span className={cn("font-display max-w-full leading-[0.9] whitespace-nowrap", "text-[clamp(2.75rem,7vw,6rem)]", " font-[var(--rap-display-weight,500)] tracking-[var(--rap-display-tracking,-0.04em)] [text-transform:var(--rap-display-case,none)]")}>
                       {c.brand}
                     </span>
                     <span className="max-w-[24ch] text-[0.9375rem] leading-snug text-ink-2">{c.tagline}</span>

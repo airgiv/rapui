@@ -5,6 +5,7 @@ import { Receipt, TransferStatus, type ReceiptItem, type TransferStep } from "..
 import { Transactions, type Transaction } from "../../rapui/components/Transactions";
 import { attrs } from "../codegen";
 import type { Control, DocEntry } from "../types";
+import { SITE_LOOKS } from "../../site/presets";
 
 /* a paper ground inside the white stage, so white cards and receipts read as sheets */
 const GROUND = "grid grid-cols-[minmax(0,1fr)] place-items-center w-full min-h-80 p-6 rounded-[calc(var(--rap-radius)-8px)] bg-paper";
@@ -52,7 +53,7 @@ const LINES: ReceiptItem[] = [
 
 const cardControls: Control[] = [
   { type: "select", prop: "brand", options: ["visa", "mastercard", "amex", "generic"], default: "visa" },
-  { type: "select", prop: "look", options: ["preset", "fun", "civic", "signal", "product", "minimal"], default: "preset", codeDefault: "preset" },
+  { type: "select", prop: "look", options: [...SITE_LOOKS], default: "preset", codeDefault: "preset" },
   { type: "text", prop: "holder", default: "Mira Okafor", codeDefault: null },
   { type: "text", prop: "expiry", default: "08/28", codeDefault: null },
   { type: "boolean", prop: "frozen", default: false },
@@ -144,9 +145,6 @@ export const entries: DocEntry[] = [
               [
                 ["fun", "visa", "Mira Okafor"],
                 ["civic", "mastercard", "Daniel Reyes"],
-                ["signal", "generic", "Ines Halvorsen"],
-                ["product", "amex", "Theo Nakamura"],
-                ["minimal", "visa", "Ruth Abernathy"],
               ] as const
             ).map(([look, brand, holder]) => (
               <PaymentCard key={look} look={look} brand={brand} number={NUMBERS[brand]} holder={holder} expiry="11/29" cvv="208" issuer="Fieldstone" />
@@ -156,9 +154,6 @@ export const entries: DocEntry[] = [
         ),
         code: `<PaymentCard look="fun" brand="visa" number="4242 4242 4242 4242" holder="Mira Okafor" expiry="11/29" />
 <PaymentCard look="civic" brand="mastercard" … />
-<PaymentCard look="signal" brand="generic" … />
-<PaymentCard look="product" brand="amex" … />
-<PaymentCard look="minimal" brand="visa" … />
 <PaymentCard brand="mastercard" … frozen />`,
       },
       {

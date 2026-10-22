@@ -6,11 +6,12 @@
    and figure together, through the per-preset --anatomy-* looks in
    figures/looks.ts. */
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Accent, Button, Display, RAP_PRESETS, RapStyle, type RapPreset } from "../rapui";
-import "../rapui/fonts/all";
+import { Accent, Button, Display, RapStyle, type RapPreset } from "../rapui";
+import "./fonts";
 import { FIGURE_LOOKS } from "./figures/looks";
 import { ControlModules, type ModulesHandle } from "./figures/modules";
 import { PresetPicker } from "./PresetsShowcase";
+import { SITE_PRESETS } from "./presets";
 
 /* the two caps that aren't the accent: kept colourless in minimal; in signal a deep green and the acid lime */
 const CAPS: Partial<Record<RapPreset, Record<string, string>>> = {
@@ -28,7 +29,7 @@ export function FiguresLab({ dark, setDark }: { dark: boolean; setDark: (v: bool
   const [preset, setPreset] = useState<RapPreset>("fun");
   const device = useRef<ModulesHandle>(null);
   const look = FIGURE_LOOKS[preset];
-  const label = RAP_PRESETS.find((p) => p.value === preset)?.label;
+  const label = SITE_PRESETS.find((p) => p.value === preset)?.label;
   useEffect(() => {
     document.title = "Figures — control modules in rapui presets";
     window.scrollTo(0, 0);
