@@ -33,11 +33,6 @@
   /* display headlines: weight and the tight tracking — presets retune both for their face */
   --rap-display-weight: 500;
   --rap-display-tracking: -0.045em;
-  /* the poster face: an extra, opt-in narrow grotesk in capitals (<Display face="poster">,
-     font-poster) — the same in every preset. Anton is narrower and taller than the display
-     face: poster sizes are the display steps times --rap-poster-scale */
-  --rap-font-poster: "Anton", Impact, "Haettenschweiler", "Arial Narrow Bold", ui-sans-serif, sans-serif;
-  --rap-poster-scale: 1.25;
 
   /* fluid scale */
   --rap-size-mega: clamp(3.5rem, 13vw, 15rem);

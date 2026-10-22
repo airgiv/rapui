@@ -14,7 +14,7 @@ type DisplaySize = "mega" | "xxl" | "xl" | "lg" | "md";
    later `text-*` size drop an earlier `leading-*`) */
 /* weight, tracking, case and leading are tokens, so a preset can retune them for its
    face (a serif wants less negative tracking than a grotesk, Plex a lighter weight,
-   fun's Anton capitals and no negative tracking at all). Each falls back to the
+   capitals and no negative tracking at all). Each falls back to the
    value the sizes always had, so a preset that leaves a token unset is unchanged. */
 const displayVariants = cva(
   "m-0 font-display [font-weight:var(--rap-display-weight,500)] [text-transform:var(--rap-display-case,none)] tracking-[-0.02em] text-balance",
@@ -33,40 +33,20 @@ const displayVariants = cva(
   },
 );
 
-/* face="poster": the extra narrow grotesk (--rap-font-poster, Anton) in capitals. Its
-   letters are narrower and its caps taller than the display face's, so each step is the
-   display size times --rap-poster-scale (a poster line fills about the width a normal one
-   would); one weight, so no faked bold; it is drawn tight already, so a hair of positive
-   tracking; and capitals stack close, 0.88. Each class replaces the size's own weight,
-   tracking, size and leading in tailwind-merge (the leading comes after the size). */
-/* (each size spelled out in full: Tailwind only builds classes it can read in the source) */
-const posterSize: Record<DisplaySize, string> = {
-  mega: "text-[length:calc(var(--rap-size-mega)*var(--rap-poster-scale,1.25))]",
-  xxl: "text-[length:calc(var(--rap-size-xxl)*var(--rap-poster-scale,1.25))]",
-  xl: "text-[length:calc(var(--rap-size-xl)*var(--rap-poster-scale,1.25))]",
-  lg: "text-[length:calc(var(--rap-size-lg)*var(--rap-poster-scale,1.25))]",
-  md: "text-[length:calc(var(--rap-size-md)*var(--rap-poster-scale,1.25))]",
-};
-const poster = (size: DisplaySize) =>
-  cn("font-poster [font-weight:400] [font-synthesis:none] [text-transform:uppercase] tracking-[0.005em]", posterSize[size], "leading-[0.88]");
-
 export interface DisplayProps extends HTMLAttributes<HTMLElement> {
   as?: ElementType;
   size?: DisplaySize;
-  /** display: the preset's headline face. poster: the extra narrow grotesk (Anton) in capitals, scaled up to fill the line. */
-  face?: "display" | "poster";
   /** Tight, slightly condensed tracking for giant headlines. */
   tight?: boolean;
   children?: ReactNode;
 }
 
 /** Huge editorial headline set in the display face. */
-export function Display({ as = "h2", size = "xl", tight = true, face = "display", className, ...rest }: DisplayProps) {
+export function Display({ as = "h2", size = "xl", tight = true, className, ...rest }: DisplayProps) {
   return createElement(as, {
     "data-slot": "display",
     "data-size": size,
-    "data-face": face === "poster" ? "poster" : undefined,
-    className: cn(displayVariants({ size, tight }), face === "poster" && poster(size), className),
+    className: cn(displayVariants({ size, tight }), className),
     ...rest,
   });
 }

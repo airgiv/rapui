@@ -66,8 +66,6 @@ Read this before adding a component. The reference implementations are
 ## Look (Readymag-inspired)
 
 - One typeface: `var(--rap-font-sans)` (Onest). No italics, no serif, no uppercase labels.
-  One opt-in extra: the poster face `--rap-font-poster` (Anton, `font-poster`, `<Display face="poster">`) for a
-  line of narrow capitals — an accent, never the default for headings.
   Labels/captions: 0.8125–0.9375rem, weight 500, `letter-spacing: -0.01em`, `color: var(--rap-mute)` for secondary.
 - Round: single-line controls are pills (`--rap-radius-pill`), heights
   `--rap-control-h-sm/-h/-h-lg` (36/44/52). Floating surfaces 20px radius; cards and dialogs `--rap-radius` (28px).

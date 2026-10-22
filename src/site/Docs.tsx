@@ -27,8 +27,8 @@ import { cn } from "../rapui/utils";
 import type { SoundSettings } from "../rapui";
 import { StyleControls, useStylePreset } from "./StyleControls";
 import { PRESET_MOTION, RapStyle } from "../rapui";
-// every preset's typefaces: the explorer switches presets live
-import "../rapui/fonts/all";
+// the shown presets' typefaces: the explorer switches between them live
+import "./fonts";
 import "./docs.css";
 
 /* ── settings panel ─────────────────────────────────────────── */

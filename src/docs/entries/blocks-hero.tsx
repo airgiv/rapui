@@ -6,10 +6,11 @@ import type { BlockLook } from "../../rapui";
 import { BlockFrame } from "../blockFrame";
 import { attrs } from "../codegen";
 import type { Control, DocEntry, Props } from "../types";
+import { SITE_LOOKS } from "../../site/presets";
 
 /* ── shared ── */
 
-const LOOKS = ["preset", "fun", "civic", "signal", "product", "minimal"] as const;
+const LOOKS = SITE_LOOKS;
 const lookControl: Control = { type: "select", prop: "look", options: LOOKS, default: "preset", codeDefault: "preset" };
 const lookOf = (p: Props) => (p.look === "preset" ? undefined : (p.look as BlockLook));
 

@@ -4,12 +4,15 @@ import { useEffect, type RefObject } from "react";
 
    The page is cut into blocks — the root's `main` children (a wrapper with data-pause-split hands the job to
    its own children instead) and its footer — and each block is watched with an IntersectionObserver. When a
-   block leaves the view (plus a small margin), every running CSS animation inside it that loops forever (the
-   marquee bands, spinning stars, typing dots, pulsing badges, sticker spins) gets an inline
+   block leaves the view (plus a small margin), every running CSS animation inside it that loops forever (spinning
+   stars, typing dots, pulsing badges and dots) gets an inline
    `animation-play-state: paused` on its element; when the block comes back the inline style is removed again,
    so the component's own rules (a marquee pausing under the hand, say) are in charge once more. One-off
    animations are left alone, and only the animated elements are touched: a block-wide attribute would make the
    browser restyle every node of the block each time it crosses the edge, a visible hitch mid-scroll.
+
+   Inside a block that is in view, each looping element is watched on its own as well, so a pulsing dot at the
+   bottom of a tall block holds still until it itself scrolls in.
 
    Blocks that mount later (lazy sections) are picked up by a MutationObserver on `main`. A hidden tab needs
    nothing: the browser already stops CSS animations and animation frames there. */
@@ -17,31 +20,53 @@ export function usePauseOffscreen(root: RefObject<HTMLElement | null>, margin = 
   useEffect(() => {
     const node = root.current;
     if (!node || typeof IntersectionObserver === "undefined" || typeof Element.prototype.getAnimations !== "function") return;
-    const held = new Map<Element, HTMLElement[]>();
-    const pause = (block: Element) => {
-      if (held.has(block)) return;
-      const els: HTMLElement[] = [];
+    const ours = new Set<HTMLElement>(); // elements we paused
+    const tracked = new Map<Element, HTMLElement[]>(); // block -> its looping elements under watch
+    const hold = (el: HTMLElement) => {
+      if (ours.has(el)) return;
+      if (el.style.animationPlayState) return; // the component set its own
+      el.style.animationPlayState = "paused";
+      ours.add(el);
+    };
+    const free = (el: HTMLElement) => {
+      if (!ours.delete(el)) return;
+      el.style.removeProperty("animation-play-state");
+    };
+    /* the elements of a block that run (or that we hold) an endless CSS animation */
+    const loopers = (block: Element) => {
+      const out = new Set<HTMLElement>();
       for (const a of block.getAnimations({ subtree: true })) {
-        if (!(a instanceof CSSAnimation) || a.playState !== "running") continue;
+        if (!(a instanceof CSSAnimation)) continue;
         const fx = a.effect as KeyframeEffect | null;
-        const el = fx?.target;
-        if (!fx || fx.pseudoElement || !(el instanceof HTMLElement || el instanceof SVGElement)) continue;
+        const target = fx?.target;
+        if (!fx || fx.pseudoElement || !(target instanceof HTMLElement || target instanceof SVGElement)) continue;
+        const el = target as HTMLElement;
         if (fx.getTiming().iterations !== Infinity) continue;
-        if ((el as HTMLElement).style.animationPlayState) continue; // the component set its own
-        (el as HTMLElement).style.animationPlayState = "paused";
-        els.push(el as HTMLElement);
+        if (a.playState === "running" || ours.has(el)) out.add(el);
       }
-      held.set(block, els);
+      return [...out];
     };
-    const resume = (block: Element) => {
-      const els = held.get(block);
-      if (!els) return;
-      held.delete(block);
-      for (const el of els) el.style.removeProperty("animation-play-state");
-    };
-    const io = new IntersectionObserver(
+    const elIo = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) (e.isIntersecting ? resume : pause)(e.target);
+        for (const e of entries) (e.isIntersecting ? free : hold)(e.target as HTMLElement);
+      },
+      { rootMargin: margin },
+    );
+    const blockIo = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const prev = tracked.get(e.target) ?? [];
+          for (const el of prev) elIo.unobserve(el);
+          tracked.delete(e.target);
+          if (e.isIntersecting) {
+            // in view: each looper follows its own visibility
+            const els = loopers(e.target);
+            tracked.set(e.target, els);
+            for (const el of els) elIo.observe(el);
+          } else {
+            for (const el of [...prev, ...loopers(e.target)]) hold(el);
+          }
+        }
       },
       { rootMargin: margin },
     );
@@ -58,7 +83,7 @@ export function usePauseOffscreen(root: RefObject<HTMLElement | null>, margin = 
       for (const el of blocks) {
         if (watched.has(el)) continue;
         watched.add(el);
-        io.observe(el);
+        blockIo.observe(el);
       }
     };
     scan();
@@ -66,9 +91,10 @@ export function usePauseOffscreen(root: RefObject<HTMLElement | null>, margin = 
     const mo = main ? new MutationObserver(scan) : null;
     mo?.observe(main!, { childList: true });
     return () => {
-      io.disconnect();
+      blockIo.disconnect();
+      elIo.disconnect();
       mo?.disconnect();
-      for (const block of [...held.keys()]) resume(block);
+      for (const el of [...ours]) free(el);
     };
   }, [root, margin]);
 }

@@ -7,10 +7,11 @@ import { AwardBadge, ReviewCard } from "../../rapui/components/ReviewCard";
 import { Globe, User } from "../../rapui/icons";
 import { attrs } from "../codegen";
 import type { Control, DocEntry, Props } from "../types";
+import { SITE_LOOKS } from "../../site/presets";
 
 /* ── shared ── */
 
-const LOOKS = ["preset", "fun", "civic", "signal", "product", "minimal"] as const;
+const LOOKS = SITE_LOOKS;
 const lookControl: Control = { type: "select", prop: "look", options: LOOKS, default: "preset", codeDefault: "preset" };
 const lookOf = (p: Props) => (p.look === "preset" ? undefined : (p.look as BlockLook));
 
@@ -165,7 +166,7 @@ function AllLooks() {
   return (
     <div className={GROUND}>
       <div className="grid w-full gap-3 sm:grid-cols-2">
-        {(["civic", "fun", "signal", "product", "minimal"] as const).map((l) => (
+        {(["civic", "fun"] as const).map((l) => (
           <div key={l} className="grid min-h-40 place-items-center rounded-card bg-surface px-4 py-6">
             <Laurel look={l} eyebrow="Editors' Choice" caption={`look="${l}"`}>
               App of the Year
@@ -239,10 +240,7 @@ export const entries: DocEntry[] = [
         title: "Every look",
         Demo: AllLooks,
         code: `<Laurel look="civic" eyebrow="Editors' Choice" caption='look="civic"'>App of the Year</Laurel>
-<Laurel look="fun" …>App of the Year</Laurel>
-<Laurel look="signal" …>App of the Year</Laurel>
-<Laurel look="product" …>App of the Year</Laurel>
-<Laurel look="minimal" …>App of the Year</Laurel>`,
+<Laurel look="fun" …>App of the Year</Laurel>`,
       },
       {
         title: "Sizes",
@@ -289,7 +287,7 @@ export const entries: DocEntry[] = [
         Demo: () => (
           <div className={GROUND}>
             <div className="flex flex-col items-start gap-3 rounded-card bg-surface px-6 py-6">
-              {(["civic", "fun", "signal", "product", "minimal"] as const).map((l) => (
+              {(["civic", "fun"] as const).map((l) => (
                 <span key={l} className="flex items-center gap-3 text-[0.8125rem] text-mute">
                   <Stars value={3.7} size={20} look={l} />
                   {l}

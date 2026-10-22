@@ -7,7 +7,6 @@ import {
   Accent,
   Button,
   Display,
-  RAP_PRESETS,
   RapStyle,
   Rating,
   Slider,
@@ -19,6 +18,7 @@ import {
   type RapPreset,
 } from "../rapui";
 import { cn } from "../rapui/utils";
+import { SITE_PRESETS } from "./presets";
 
 export function PresetPicker({ value, onChange, size = "md", className }: { value: RapPreset; onChange: (p: RapPreset) => void; size?: "sm" | "md"; className?: string }) {
   return (
@@ -30,7 +30,7 @@ export function PresetPicker({ value, onChange, size = "md", className }: { valu
       aria-label="Style preset"
       className={cn("w-fit max-w-full self-start overflow-x-auto", className)}
     >
-      {RAP_PRESETS.map((p) => (
+      {SITE_PRESETS.map((p) => (
         <ToggleGroupItem key={p.value} value={p.value}>
           {p.label}
         </ToggleGroupItem>
@@ -63,21 +63,21 @@ const OWN = "button, a, input, label, [role=slider], [role=switch], [role=radio]
 
 export function PresetsSection({ copyClass }: { copyClass: string }) {
   const [preset, setPreset] = useState<RapPreset>("fun");
-  const note = RAP_PRESETS.find((p) => p.value === preset)?.note;
-  const label = RAP_PRESETS.find((p) => p.value === preset)?.label;
+  const note = SITE_PRESETS.find((p) => p.value === preset)?.note;
+  const label = SITE_PRESETS.find((p) => p.value === preset)?.label;
   const next = () => {
-    const order = RAP_PRESETS.map((p) => p.value);
+    const order = SITE_PRESETS.map((p) => p.value);
     setPreset((p) => order[(order.indexOf(p) + 1) % order.length]);
   };
 
   return (
-    <section className="px-(--gutter) pt-10 pb-28 flex flex-col gap-10" id="presets">
+    <section className="px-(--gutter) pt-10 pb-24 flex flex-col gap-10" id="presets">
       <div className="flex flex-col gap-6">
         <Display size="xl">
-          Five characters, <Accent tone="mute">one code</Accent>
+          Two characters, <Accent tone="mute">one code</Accent>
         </Display>
         <p className={cn(copyClass, "max-w-[46ch]")}>
-          Not every product wants to be this loud. Pick a preset and the same components change their type, colour, shape, spacing and how
+          Not every product wants to be this loud. Flip to civic and the same components change their type, colour, shape, spacing and how
           much they move — and the blocks re-lay the page: flush left and huge here, centred and serif for a public service.
         </p>
       </div>
@@ -89,8 +89,8 @@ export function PresetsSection({ copyClass }: { copyClass: string }) {
           onClick={(e) => {
             if (!(e.target as HTMLElement).closest(OWN)) next();
           }}
-          title="Click to try the next preset"
-          className="relative flex min-h-[clamp(36.5rem,58vw,50rem)] cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-paper pt-[clamp(1.75rem,4vw,3.5rem)] text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)] [&>[data-slot=statement]]:my-auto [&>[data-slot=statement]]:w-full"
+          title="Click to try the other preset"
+          className="relative flex min-h-[clamp(30rem,42vw,38rem)] cursor-pointer flex-col items-center overflow-hidden rounded-lg bg-paper pt-[clamp(1.75rem,4vw,3.5rem)] text-ink transition-colors duration-500 shadow-[inset_0_0_0_1px_var(--rap-line)] [&>[data-slot=statement]]:my-auto [&>[data-slot=statement]]:w-full"
         >
           <div className="flex max-w-full justify-center px-3">
             <PresetPicker value={preset} onChange={setPreset} />

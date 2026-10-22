@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { RAP_PRESETS, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, ToggleGroup, ToggleGroupItem, type RapMotion, type RapPreset } from "../rapui";
+import { SITE_PRESETS, sitePreset } from "./presets";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, ToggleGroup, ToggleGroupItem, type RapMotion, type RapPreset } from "../rapui";
 
 /* the previewed preset (remembered per browser, shared by the docs and the
    landing preview) and a motion override — null means the preset's own */
 export function useStylePreset() {
   const [preset, setPresetState] = useState<RapPreset>(() => {
     try {
-      const v = localStorage.getItem("rapui-preset");
-      return RAP_PRESETS.some((p) => p.value === v) ? (v as RapPreset) : "fun";
+      return sitePreset(localStorage.getItem("rapui-preset"));
     } catch {
       return "fun";
     }
@@ -44,7 +44,7 @@ export function StyleControls({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {RAP_PRESETS.map((p) => (
+          {SITE_PRESETS.map((p) => (
             <SelectItem key={p.value} value={p.value}>
               {p.label}
             </SelectItem>

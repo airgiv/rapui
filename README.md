@@ -23,13 +23,12 @@ React 18 or 19. Every runtime dependency (Radix, framer-motion, recharts…) ins
 
 ```tsx
 import "@rapui/react/styles.css"; // precompiled theme + utilities; resets only inside rapui parts, never your app
-import "@rapui/react/fonts";      // Onest (+ Geist Mono for code, Anton for the poster face)
+import "@rapui/react/fonts";      // Onest (+ Geist Mono for code)
 
 import { Button, ButtonGroup, Display, Accent, SoundProvider } from "@rapui/react";
 
 <SoundProvider enabled={false}>
   <Display size="mega">Loud <Accent>interfaces</Accent></Display>
-  <Display size="xl" face="poster">One line in narrow capitals</Display>  {/* the opt-in poster face (Anton) */}
   <ButtonGroup>
     <Button size="lg" variant="blue" icon>Start a project</Button>
     <Button size="lg" variant="soft">Pricing</Button>

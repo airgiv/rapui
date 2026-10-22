@@ -59,7 +59,7 @@ const card = "flex w-full flex-col gap-4 rounded-card bg-surface p-(--rap-space-
 
 /* the award each landing gives itself, framed in the preset's laurels */
 const LAUREL: Record<RapPreset, { eyebrow: string; text: string; caption: string }> = {
-  fun: { eyebrow: "Self-awarded", text: "Loudest landing page of the year", caption: "Hollr · 2026" },
+  fun: { eyebrow: "Self-awarded", text: "Loudest landing page of the year", caption: "Kazoo · 2026" },
   civic: { eyebrow: "In the matter of this page", text: "Every component, working together", caption: "Precedent · so ordered" },
   signal: { eyebrow: "Field report", text: "Page received in full", caption: "Fieldkit · {0004}" },
   product: { eyebrow: "Editors’ Choice", text: "#1 in Landing pages", caption: "Shiplog · shipped itself" },
